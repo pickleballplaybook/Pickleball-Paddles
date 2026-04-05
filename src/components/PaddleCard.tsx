@@ -182,10 +182,10 @@ export default function PaddleCard({ paddle }: PaddleCardProps) {
                 href={reviewLink!}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1 inline-flex items-center justify-center gap-2 text-sm py-2.5 rounded-xl font-semibold transition-colors"
-                style={{ background: "rgba(220,38,38,0.1)", color: "#dc2626", border: "1px solid rgba(220,38,38,0.2)" }}
+                className="flex-1 inline-flex items-center justify-center gap-2 text-sm py-2.5 rounded-xl font-medium transition-colors"
+                style={{ background: "var(--bg-alt)", color: "#cbd5e1", border: "1px solid var(--border)" }}
               >
-                <YouTubeIcon className="w-4 h-4" />
+                <span style={{ color: "#dc2626" }}><YouTubeIcon className="w-4 h-4" /></span>
                 Watch Review
               </a>
             ) : (
@@ -233,10 +233,10 @@ export default function PaddleCard({ paddle }: PaddleCardProps) {
               href={reviewLink!}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-sm font-semibold transition-colors hover:opacity-80"
-              style={{ color: "#dc2626" }}
+              className="inline-flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-white"
+              style={{ color: "#cbd5e1" }}
             >
-              <YouTubeIcon className="w-3.5 h-3.5" />
+              <span style={{ color: "#dc2626" }}><YouTubeIcon className="w-3.5 h-3.5" /></span>
               Watch Review
             </a>
           )}
