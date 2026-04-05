@@ -83,7 +83,7 @@ export default function SavedPage() {
   useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div className="min-h-screen pt-16" style={{ background: "var(--bg-page)" }}>
+    <div className="min-h-screen" style={{ paddingTop: "calc(var(--topbar-h) + 64px)", background: "var(--bg-page)" }}>
       <div className="container-xl py-12 max-w-2xl">
 
         <Link

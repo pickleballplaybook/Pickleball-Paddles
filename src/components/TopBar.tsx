@@ -1,16 +1,32 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { X } from "lucide-react";
 
 export default function TopBar() {
   const [dismissed, setDismissed] = useState(false);
+  const barRef = useRef<HTMLDivElement>(null);
+
+  // Keep --topbar-h CSS variable in sync with actual rendered height.
+  // This lets Navigation and page content automatically adjust when
+  // the bar is dismissed or resized.
+  useEffect(() => {
+    function sync() {
+      const h = dismissed ? 0 : (barRef.current?.offsetHeight ?? 32);
+      document.documentElement.style.setProperty("--topbar-h", `${h}px`);
+    }
+    sync();
+    window.addEventListener("resize", sync);
+    return () => window.removeEventListener("resize", sync);
+  }, [dismissed]);
+
   if (dismissed) return null;
 
   return (
     <div
-      className="relative flex items-center justify-center gap-3 px-10 py-2 text-center"
+      ref={barRef}
+      className="fixed inset-x-0 top-0 z-[51] flex items-center justify-center gap-3 px-10 py-2 text-center"
       style={{ background: "#0b1628", borderBottom: "1px solid rgba(255,255,255,0.07)" }}
     >
       <p className="text-xs sm:text-sm leading-none">

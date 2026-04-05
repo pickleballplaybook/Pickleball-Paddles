@@ -4,7 +4,7 @@ import { Mail, MessageCircle } from "lucide-react";
 
 export default function ContactPage() {
   return (
-    <div className="min-h-screen pt-16" style={{ background: "var(--bg-page)" }}>
+    <div className="min-h-screen" style={{ paddingTop: "calc(var(--topbar-h) + 64px)", background: "var(--bg-page)" }}>
       <div className="container-xl py-20 md:py-28">
         <div className="max-w-xl">
           <p className="text-xs font-bold text-brand-500 uppercase tracking-widest mb-4">

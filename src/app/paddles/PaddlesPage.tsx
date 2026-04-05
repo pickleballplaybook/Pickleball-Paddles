@@ -20,8 +20,9 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 const PAGE_SIZE_OPTIONS = [20, 50];
 const PROMO_EVERY = 12; // must be LCM(2,3,4)=12 so every chunk fills complete rows at all breakpoints
 
-function daySeededShuffle<T>(arr: T[], offset = 0): T[] {
-  const seed = Math.floor(Date.now() / 86400000) + offset;
+// Same hourly seed as homepage/reviews — slice [5,6] so paddles never duplicates other pages
+function hourSeededShuffle<T>(arr: T[]): T[] {
+  const seed = Math.floor(Date.now() / 3600000);
   const out = [...arr];
   let s = seed | 0;
   for (let i = out.length - 1; i > 0; i--) {
@@ -100,8 +101,8 @@ function PaddlesInner({ paddles, priceCache }: { paddles: Paddle[]; priceCache: 
     fetchUserReactionMap().then(setReactions);
   }, []);
 
-  // offset=2 so paddles page shows different products than homepage (0) and reviews (1)
-  const promos = useMemo(() => daySeededShuffle(gearProducts, 2), []);
+  // Slice [5,6] from the shared hourly shuffle — unique across homepage [0,1,2] and reviews [3,4]
+  const promos = useMemo(() => { const s = hourSeededShuffle(gearProducts); return [s[5], s[6]]; }, []);
 
   // Persist applied filters to URL (no server re-render — uses replaceState)
   function handleFiltersChange(newFilters: ActiveFilters) {
@@ -235,7 +236,7 @@ export default function PaddlesPage({
   priceCache: PriceCache;
 }) {
   return (
-    <div className="min-h-screen pt-24" style={{ background: "var(--bg-page)" }}>
+    <div className="min-h-screen" style={{ paddingTop: "calc(var(--topbar-h) + 96px)", background: "var(--bg-page)" }}>
       <div className="container-xl">
 
         <div className="pt-10 pb-12 mb-10" style={{ borderBottom: "1px solid var(--border)" }}>

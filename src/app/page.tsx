@@ -15,14 +15,16 @@ import PromoBar       from "@/components/PromoBar";
 export const revalidate = 3600;
 
 // ── Seeded daily shuffle ───────────────────────────────────────────────────────
-// Uses the current UTC day number as seed so the selection changes once per day.
-// Runs server-side at build/revalidation time — no client JS needed.
-function daySeededShuffle<T>(arr: T[]): T[] {
-  const seed = Math.floor(Date.now() / 86400000);
+// Seeded shuffle keyed to the current UTC hour — changes every hour.
+// All pages (homepage, reviews, paddles) use the same seed so the full
+// product list is shuffled identically, then each page draws from a
+// non-overlapping slice: homepage [0,1,2], reviews [3,4], paddles [5,6].
+// This guarantees no duplicate product ever appears across pages simultaneously.
+function hourSeededShuffle<T>(arr: T[]): T[] {
+  const seed = Math.floor(Date.now() / 3600000);
   const out = [...arr];
   let s = seed | 0;
   for (let i = out.length - 1; i > 0; i--) {
-    // LCG step
     s = Math.imul(s ^ (s >>> 16), 0x45d9f3b);
     s = Math.imul(s ^ (s >>> 13), 0x8d7ea0c3);
     const j = (s >>> 0) % (i + 1);
@@ -111,7 +113,7 @@ export default async function HomePage() {
   const announcements = computeAnnouncements(paddles, allGroups);
 
   // Pick 3 distinct products from the full gear pool, changing each day
-  const [promoA, promoB, promoC] = daySeededShuffle(gearProducts);
+  const [promoA, promoB, promoC] = hourSeededShuffle(gearProducts);
 
   return (
     <>

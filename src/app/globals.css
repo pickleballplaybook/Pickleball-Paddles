@@ -50,6 +50,9 @@
 
   /* ── Discount savings text — dark teal for legibility on white cards ──── */
   --discount-text: #0d9488;
+
+  /* ── TopBar height — JS in TopBar.tsx keeps this in sync ───────────────── */
+  --topbar-h: 32px;
 }
 
 html.dark {

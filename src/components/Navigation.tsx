@@ -142,8 +142,9 @@ export default function Navigation() {
   return (
     <>
       <header
-        className="fixed top-0 inset-x-0 z-50 transition-all duration-300"
+        className="fixed inset-x-0 z-50 transition-all duration-300"
         style={{
+          top: "var(--topbar-h)",
           background: isScrolled ? "var(--nav-bg-blur)" : "var(--nav-bg)",
           borderBottom: `1px solid ${isScrolled ? "var(--nav-border)" : "transparent"}`,
           boxShadow: isScrolled ? "var(--nav-shadow)" : "none",

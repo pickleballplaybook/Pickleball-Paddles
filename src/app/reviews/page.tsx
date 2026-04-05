@@ -15,8 +15,9 @@ export const metadata: Metadata = {
   description: `Watch full video reviews for every pickleball paddle listed on ${siteConfig.name}.`,
 };
 
-function daySeededShuffle<T>(arr: T[], offset = 0): T[] {
-  const seed = Math.floor(Date.now() / 86400000) + offset;
+// Same hourly seed as homepage — slices [3,4] so reviews never duplicate homepage [0,1,2]
+function hourSeededShuffle<T>(arr: T[]): T[] {
+  const seed = Math.floor(Date.now() / 3600000);
   const out = [...arr];
   let s = seed | 0;
   for (let i = out.length - 1; i > 0; i--) {
@@ -49,8 +50,9 @@ export default async function ReviewsPage() {
   // Groups are deduped by video ID and sorted newest-first by publish date
   const groups = await getReviewGroups(paddles, reviewDates);
 
-  // Pick 2 promos — offset=1 so reviews page shows different products than homepage (offset=0)
-  const [promoA, promoB] = daySeededShuffle(gearProducts, 1);
+  // Slice [3,4] from the shared hourly shuffle — never overlaps with homepage [0,1,2]
+  const shuffled = hourSeededShuffle(gearProducts);
+  const [promoA, promoB] = [shuffled[3], shuffled[4]];
 
   // Chunk groups: [0..3], promo, [4..7], promo, [8+]
   const chunkA = groups.slice(0, 4);
@@ -95,7 +97,7 @@ export default async function ReviewsPage() {
   }
 
   return (
-    <div className="min-h-screen pt-16" style={{ background: "var(--bg-page)" }}>
+    <div className="min-h-screen" style={{ paddingTop: "calc(var(--topbar-h) + 64px)", background: "var(--bg-page)" }}>
       <div className="container-xl py-20">
 
         {/* Header */}
