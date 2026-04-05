@@ -73,10 +73,16 @@ export default function RootLayout({
       </head>
       <body className="font-sans antialiased">
         <ThemeProvider>
-          {/* Fixed shell — black safe-area fill above banner on notched devices */}
+          {/* Safe-area overlay — paints over the status-bar zone with black.
+              Height is 0 on non-notched devices so it has no visual effect there. */}
+          <div
+            className="fixed inset-x-0 top-0 pointer-events-none"
+            style={{ height: "env(safe-area-inset-top, 0px)", background: "#000", zIndex: 200 }}
+          />
+          {/* Fixed shell — padding pushes TopBar/Nav below the status bar */}
           <div
             className="fixed inset-x-0 top-0 z-50"
-            style={{ paddingTop: "env(safe-area-inset-top)", background: "#000" }}
+            style={{ paddingTop: "env(safe-area-inset-top)" }}
           >
             <TopBar />
             <Navigation />
