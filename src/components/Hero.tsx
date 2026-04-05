@@ -57,7 +57,7 @@ export default function Hero() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center min-h-[560px] lg:min-h-[680px]">
 
           {/* ── LEFT: copy ───────────────────────────────────────────────── */}
-          <div className="flex flex-col py-16 lg:py-20">
+          <div className="flex flex-col py-6 lg:py-10">
 
             {/* Eyebrow */}
             <div className="flex items-center gap-2.5 mb-6">
