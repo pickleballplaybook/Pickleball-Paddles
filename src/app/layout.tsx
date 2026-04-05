@@ -67,7 +67,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: `(function(){try{var s=localStorage.getItem('ppb_theme');if(s==='dark'||(!s&&window.matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');}}catch(e){}})();` }} />
         {/* iOS Safari status bar — black even before JS hydrates */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black" />
         <meta name="theme-color" content="#000000" />
       </head>
       <body className="font-sans antialiased">
