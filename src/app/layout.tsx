@@ -18,8 +18,9 @@ const inter = Inter({
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  // viewportFit intentionally left as default ("auto") so Safari reserves
-  // the safe-area naturally — the page does not extend behind the status bar.
+  // viewport-fit:cover lets env(safe-area-inset-top) return the real status-bar
+  // height so the fixed shell can paint black behind it and push content below.
+  viewportFit: "cover",
   themeColor: "#000000",
 };
 
