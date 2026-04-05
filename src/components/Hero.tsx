@@ -122,7 +122,7 @@ export default function Hero() {
                 {[0, 1, 2, 3, 4].map((i) => <StarIcon key={i} />)}
               </div>
               <span className="text-base font-medium" style={{ color: "rgba(255,255,255,0.45)" }}>
-                Trusted by 10,000+ pickleball players
+                Trusted by 150,000+ pickleball players
               </span>
             </div>
 
