@@ -13,7 +13,7 @@ export const siteConfig = {
   // Drop your logo file into /public/ and update the path below.
   // Supported formats: .svg (recommended), .png, .webp
   // To swap the logo: replace /public/logo.svg with your file, update path here.
-  logoPath: "/logo.svg",
+  logoPath: "/images/Logo.svg",
   logoWidth: 36,   // px — display width in nav
   logoHeight: 36,  // px — display height in nav
 
