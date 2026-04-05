@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Navigation from "@/components/Navigation";
@@ -14,6 +14,12 @@ const inter = Inter({
   display: "swap",
   weight: ["300", "400", "500", "600", "700", "800"],
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
 
 export const metadata: Metadata = {
   title: {
@@ -60,8 +66,8 @@ export default function RootLayout({
       </head>
       <body className="font-sans antialiased">
         <ThemeProvider>
-          {/* Single fixed shell — TopBar stacks naturally above Navigation */}
-          <div className="fixed inset-x-0 top-0 z-50">
+          {/* Single fixed shell — black bg fills safe-area on notched phones */}
+          <div className="fixed inset-x-0 top-0 z-50" style={{ background: "#000", paddingTop: "env(safe-area-inset-top)" }}>
             <TopBar />
             <Navigation />
           </div>

@@ -34,7 +34,7 @@ export default function Hero() {
       className="relative overflow-hidden flex flex-col"
       style={{
         background: "linear-gradient(160deg, #060d18 0%, #0b1628 100%)",
-        paddingTop: "calc(var(--topbar-h, 88px) + 64px)",
+        paddingTop: "calc(var(--topbar-h, 88px) + 64px + env(safe-area-inset-top, 0px))",
         minHeight: "100vh",
       }}
     >
@@ -57,11 +57,11 @@ export default function Hero() {
       />
 
       {/* Two-column content */}
-      <div className="relative container-xl flex-1 flex items-center">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-14 items-center w-full py-6 lg:py-12">
+      <div className="relative container-xl flex-1 flex items-start lg:items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 lg:gap-14 items-center w-full pb-6 lg:py-12">
 
           {/* ── MOBILE-FIRST: image comes first (order-1 mobile, order-2 desktop) ── */}
-          <div className="flex items-center justify-center order-1 lg:order-2 py-2 lg:py-0">
+          <div className="flex items-center justify-center order-1 lg:order-2">
             {/* Glow behind image — desktop only */}
             <div
               className="hidden lg:block absolute inset-0 pointer-events-none"

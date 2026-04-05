@@ -97,6 +97,7 @@ html.dark {
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    background-color: #000; /* fills safe-area inset on notched mobile devices */
   }
 
   body {

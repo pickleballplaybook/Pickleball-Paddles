@@ -26,7 +26,7 @@ export default function TopBar() {
       className="relative px-8 py-3 text-center"
       style={{ background: "#DEFA32", borderBottom: "1px solid rgba(0,0,0,0.12)" }}
     >
-      {/* Row 1 — all caps, bold, larger */}
+      {/* Row 1 — all caps, extrabold, largest */}
       <p
         className="font-extrabold uppercase tracking-tight leading-snug text-sm sm:text-[15px]"
         style={{ color: "#0B1A2B" }}
@@ -34,34 +34,33 @@ export default function TopBar() {
         Become a Paddle Reviewer.
       </p>
 
-      {/* Row 2 */}
+      {/* Row 2 — both actions on one line with real app icons */}
       <p
-        className="text-xs sm:text-sm leading-snug mt-1 flex items-center justify-center gap-1"
-        style={{ color: "#2A3A4A" }}
-      >
-        Give paddles a
-        <Heart className="w-3.5 h-3.5 flex-shrink-0" fill="#ef4444" stroke="#ef4444" />
-        that you like.
-      </p>
-
-      {/* Row 3 — inline "Start Reviewing" link */}
-      <p
-        className="text-xs sm:text-sm leading-snug mt-1 flex items-center justify-center gap-1 flex-wrap"
+        className="text-xs sm:text-sm leading-snug mt-1.5 flex items-center justify-center gap-x-2 flex-wrap"
         style={{ color: "#2A3A4A" }}
       >
         <span className="inline-flex items-center gap-1">
+          Give paddles a
+          <Heart className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="#ef4444" strokeWidth={2} />
+          that you like.
+        </span>
+        <span className="inline-flex items-center gap-1">
           Leave a
-          <ThumbsDown className="w-3.5 h-3.5 flex-shrink-0" fill="#0B1A2B" stroke="#0B1A2B" />
+          <ThumbsDown className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="#0B1A2B" strokeWidth={2} />
           on paddles you dislike.
-        </span>{" "}
+        </span>
+      </p>
+
+      {/* Row 3 — Start Reviewing CTA */}
+      <div className="mt-1.5">
         <Link
           href="/review-paddles"
-          className="font-bold underline underline-offset-2 transition-opacity hover:opacity-70"
+          className="inline-flex items-center font-bold text-xs sm:text-sm underline underline-offset-2 transition-opacity hover:opacity-70"
           style={{ color: "#0B1A2B" }}
         >
           Start Reviewing
         </Link>
-      </p>
+      </div>
 
       {/* Dismiss */}
       <button
@@ -72,7 +71,7 @@ export default function TopBar() {
         onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; }}
         onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "0.75"; }}
       >
-        <X className="w-[16px] h-[16px]" strokeWidth={2} />
+        <X className="w-4 h-4" strokeWidth={2} />
       </button>
     </div>
   );
