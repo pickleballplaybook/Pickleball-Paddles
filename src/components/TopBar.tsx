@@ -25,7 +25,7 @@ export default function TopBar() {
   return (
     <div
       ref={barRef}
-      className="relative flex items-center justify-center gap-3 px-4 sm:px-12 py-[15px] text-center"
+      className="relative flex items-center justify-center gap-3 px-6 sm:px-8 py-[15px] text-center"
       style={{ background: "#DEFA32", borderBottom: "1px solid rgba(0,0,0,0.12)" }}
     >
       <p className="leading-snug">
@@ -53,10 +53,11 @@ export default function TopBar() {
           border: "1px solid rgba(0,0,0,0.08)",
           boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
           borderRadius: "10px",
+          transition: "all 0.2s ease",
         }}
         onMouseEnter={e => {
           const el = e.currentTarget as HTMLElement;
-          el.style.boxShadow = "0 4px 12px rgba(0,0,0,0.20)";
+          el.style.boxShadow = "0 4px 10px rgba(0,0,0,0.18)";
           el.style.transform = "translateY(-1px)";
         }}
         onMouseLeave={e => {
@@ -72,11 +73,11 @@ export default function TopBar() {
         onClick={() => setDismissed(true)}
         aria-label="Dismiss"
         className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded transition-opacity"
-        style={{ color: "#0B1A2B", opacity: 0.5 }}
-        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "0.9"; }}
-        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "0.5"; }}
+        style={{ color: "#0B1A2B", opacity: 0.75 }}
+        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; }}
+        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "0.75"; }}
       >
-        <X className="w-3.5 h-3.5" strokeWidth={2.5} />
+        <X className="w-[18px] h-[18px]" strokeWidth={2} />
       </button>
     </div>
   );
