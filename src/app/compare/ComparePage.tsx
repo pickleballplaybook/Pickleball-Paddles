@@ -157,7 +157,7 @@ export default function ComparePage({ paddles }: { paddles: Paddle[] }) {
   const canAdd = selected.length < MAX_PADDLES;
 
   return (
-    <div className="min-h-screen pt-36" style={{ background: "var(--bg-page)" }}>
+    <div className="min-h-screen pt-[168px]" style={{ background: "var(--bg-page)" }}>
       <div className="container-xl">
 
         {/* Header */}

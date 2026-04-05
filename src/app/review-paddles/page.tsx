@@ -17,7 +17,7 @@ export default function ReviewPaddlesPage() {
 
   return (
     <div
-      className="min-h-screen pt-32"
+      className="min-h-screen pt-[156px]"
       style={{ background: "var(--bg-page)" }}
     >
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

@@ -101,7 +101,7 @@ export default async function PaddleDetailPage({ params }: Props) {
   const hasLink  = !!paddle.discountLink?.trim();
 
   return (
-    <div className="min-h-screen pt-32" style={{ background: "var(--flip-bg)" }}>
+    <div className="min-h-screen pt-[156px]" style={{ background: "var(--flip-bg)" }}>
 
       {/* Back nav */}
       <div className="container-xl pt-8 mb-6">

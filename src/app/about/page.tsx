@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen pt-32" style={{ background: "var(--bg-page)" }}>
+    <div className="min-h-screen pt-[156px]" style={{ background: "var(--bg-page)" }}>
       <div className="container-xl py-20 md:py-28">
         <div className="max-w-3xl">
           <p className="text-xs font-bold text-brand-500 uppercase tracking-widest mb-4">

@@ -189,7 +189,7 @@ function SquareCard({ p }: { p: GearProduct }) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function GearPage() {
   return (
-    <div className="min-h-screen pt-32" style={{ background: "var(--bg-page)" }}>
+    <div className="min-h-screen pt-[156px]" style={{ background: "var(--bg-page)" }}>
       <div className="container-xl py-16">
 
         {/* Header */}

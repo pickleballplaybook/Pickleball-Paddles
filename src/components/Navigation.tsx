@@ -152,9 +152,58 @@ export default function Navigation() {
         }}
       >
         <div className="container-xl">
-          <div className="flex items-center justify-between h-16">
+            {/* ── Mobile header: hamburger | centered logo | search ──────── */}
+          <div className="flex md:hidden items-center h-16 relative">
+            {/* Left: hamburger */}
+            <button
+              className="p-2 rounded-lg transition-colors flex-shrink-0"
+              style={{ color: "rgba(255,255,255,0.5)" }}
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-label="Toggle menu"
+            >
+              {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
 
-            {/* ── Logo ─────────────────────────────────────────────────────── */}
+            {/* Center: logo + brand name (truly centered via absolute) */}
+            <Link
+              href="/"
+              className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2 flex-shrink-0"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              <div className="flex-shrink-0">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={siteConfig.logoPath}
+                  alt={siteConfig.name}
+                  width={siteConfig.logoWidth}
+                  height={siteConfig.logoHeight}
+                />
+              </div>
+              <div className="flex flex-col leading-none">
+                <span className="font-extrabold text-[14px] tracking-tight leading-tight" style={{ color: "#e2e8f0" }}>
+                  Pickleball
+                </span>
+                <span className="font-extrabold text-brand-500 text-[14px] tracking-tight leading-tight">
+                  Playbook
+                </span>
+              </div>
+            </Link>
+
+            {/* Right: search */}
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="ml-auto p-2 rounded-lg transition-colors flex-shrink-0"
+              style={{ color: "rgba(255,255,255,0.5)" }}
+              aria-label="Search"
+            >
+              <Search className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* ── Desktop header ───────────────────────────────────────────── */}
+          <div className="hidden md:flex items-center justify-between h-16">
+
+            {/* Logo */}
             <Link
               href="/"
               className="flex items-center gap-2.5 group flex-shrink-0"
@@ -170,10 +219,7 @@ export default function Navigation() {
                 />
               </div>
               <div className="flex flex-col leading-none">
-                <span
-                  className="font-extrabold text-[14px] tracking-tight leading-tight"
-                  style={{ color: "#e2e8f0" }}
-                >
+                <span className="font-extrabold text-[14px] tracking-tight leading-tight" style={{ color: "#e2e8f0" }}>
                   Pickleball
                 </span>
                 <span className="font-extrabold text-brand-500 text-[14px] tracking-tight leading-tight">
@@ -182,8 +228,8 @@ export default function Navigation() {
               </div>
             </Link>
 
-            {/* ── Desktop nav ──────────────────────────────────────────────── */}
-            <nav className="hidden md:flex items-center gap-0.5">
+            {/* Nav links */}
+            <nav className="flex items-center gap-0.5">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
@@ -196,8 +242,8 @@ export default function Navigation() {
               ))}
             </nav>
 
-            {/* ── Desktop right actions ─────────────────────────────────────── */}
-            <div className="hidden md:flex items-center gap-2">
+            {/* Right actions */}
+            <div className="flex items-center gap-2">
               <button
                 onClick={() => setSearchOpen(true)}
                 aria-label="Search paddles"
@@ -221,26 +267,6 @@ export default function Navigation() {
                 className="btn-primary text-sm py-2 px-5"
               >
                 Find My Paddle Quiz
-              </button>
-            </div>
-
-            {/* ── Mobile toggle ────────────────────────────────────────────── */}
-            <div className="md:hidden flex items-center gap-2">
-              <button
-                onClick={() => setSearchOpen(true)}
-                className="p-2 rounded-lg transition-colors"
-                style={{ color: "rgba(255,255,255,0.5)" }}
-                aria-label="Search"
-              >
-                <Search className="w-5 h-5" />
-              </button>
-              <button
-                className="p-2 rounded-lg transition-colors"
-                style={{ color: "rgba(255,255,255,0.5)" }}
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                aria-label="Toggle menu"
-              >
-                {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
             </div>
           </div>

@@ -97,7 +97,7 @@ export default async function ReviewsPage() {
   }
 
   return (
-    <div className="min-h-screen pt-32" style={{ background: "var(--bg-page)" }}>
+    <div className="min-h-screen pt-[156px]" style={{ background: "var(--bg-page)" }}>
       <div className="container-xl py-20">
 
         {/* Header */}

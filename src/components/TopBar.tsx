@@ -8,8 +8,6 @@ export default function TopBar() {
   const [dismissed, setDismissed] = useState(false);
   const barRef = useRef<HTMLDivElement>(null);
 
-  // Keep --topbar-h in sync so page content padding-top accounts for this bar.
-  // The bar itself is NOT fixed — it flows inside the fixed shell in layout.tsx.
   useEffect(() => {
     function sync() {
       const h = dismissed ? 0 : (barRef.current?.offsetHeight ?? 0);
@@ -25,61 +23,50 @@ export default function TopBar() {
   return (
     <div
       ref={barRef}
-      className="relative flex items-center justify-center gap-3 px-6 sm:px-8 py-[15px] text-center"
+      className="relative px-8 py-3 text-center"
       style={{ background: "#DEFA32", borderBottom: "1px solid rgba(0,0,0,0.12)" }}
     >
-      <p className="leading-snug">
-        <span
-          className="font-extrabold text-xs sm:text-[15px] tracking-tight"
-          style={{ color: "#0B1A2B" }}
-        >
-          Become a Paddle Reviewer
-        </span>
-        <span
-          className="hidden sm:inline font-medium text-xs sm:text-sm ml-2.5"
-          style={{ color: "#2A3A4A" }}
-        >
-          <span style={{ opacity: 0.5 }}> · </span>Share your feedback and help shape what&apos;s trending
-        </span>
+      {/* Row 1 — all caps, bold, larger */}
+      <p
+        className="font-extrabold uppercase tracking-tight leading-snug text-sm sm:text-[15px]"
+        style={{ color: "#0B1A2B" }}
+      >
+        Become a Paddle Reviewer.
       </p>
 
-      <Link
-        href="/review-paddles"
-        className="hidden sm:inline-flex flex-shrink-0 text-xs font-bold px-4 py-1.5 rounded-lg transition-all whitespace-nowrap tracking-wide"
-        style={{
-          background: "#0B1A2B",
-          color: "#FFFFFF",
-          fontWeight: 600,
-          border: "none",
-          boxShadow: "0 2px 6px rgba(0,0,0,0.18)",
-          borderRadius: "10px",
-          transition: "all 0.2s ease",
-        }}
-        onMouseEnter={e => {
-          const el = e.currentTarget as HTMLElement;
-          el.style.background = "#12263A";
-          el.style.boxShadow = "0 4px 10px rgba(0,0,0,0.22)";
-          el.style.transform = "translateY(-1px)";
-        }}
-        onMouseLeave={e => {
-          const el = e.currentTarget as HTMLElement;
-          el.style.background = "#0B1A2B";
-          el.style.boxShadow = "0 2px 6px rgba(0,0,0,0.18)";
-          el.style.transform = "translateY(0)";
-        }}
+      {/* Row 2 */}
+      <p
+        className="text-xs sm:text-sm leading-snug mt-1"
+        style={{ color: "#2A3A4A" }}
       >
-        Start Reviewing
-      </Link>
+        Give paddles a ❤️ that you like.
+      </p>
 
+      {/* Row 3 — inline "Start Reviewing" link */}
+      <p
+        className="text-xs sm:text-sm leading-snug mt-1"
+        style={{ color: "#2A3A4A" }}
+      >
+        Leave a 👎 on paddles you dislike.{" "}
+        <Link
+          href="/review-paddles"
+          className="font-bold underline underline-offset-2 transition-opacity hover:opacity-70"
+          style={{ color: "#0B1A2B" }}
+        >
+          Start Reviewing
+        </Link>
+      </p>
+
+      {/* Dismiss */}
       <button
         onClick={() => setDismissed(true)}
         aria-label="Dismiss"
-        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded transition-opacity"
+        className="absolute right-3 top-3 p-1 rounded transition-opacity"
         style={{ color: "#0B1A2B", opacity: 0.75 }}
         onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; }}
         onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "0.75"; }}
       >
-        <X className="w-[18px] h-[18px]" strokeWidth={2} />
+        <X className="w-[16px] h-[16px]" strokeWidth={2} />
       </button>
     </div>
   );

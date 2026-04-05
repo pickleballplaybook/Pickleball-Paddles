@@ -13,7 +13,7 @@ const featuredPaddle = paddles.find((p) => p.slug === siteConfig.hottestPaddleSl
 
 function CheckIcon() {
   return (
-    <svg className="w-6 h-6 flex-shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden>
+    <svg className="w-5 h-5 lg:w-6 lg:h-6 flex-shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden>
       <circle cx="12" cy="12" r="12" fill="rgba(20,184,166,0.20)" />
       <path d="M7 12l3 3 7-6" stroke="#2dd4bf" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
@@ -22,7 +22,7 @@ function CheckIcon() {
 
 function StarIcon() {
   return (
-    <svg className="w-5 h-5" viewBox="0 0 20 20" fill="#14b8a6" aria-hidden>
+    <svg className="w-4 h-4 lg:w-5 lg:h-5" viewBox="0 0 20 20" fill="#14b8a6" aria-hidden>
       <path d="M10 1l2.39 7.26H19l-5.81 4.22 2.22 6.85L10 15.27l-5.41 4.06 2.22-6.85L1 8.26h6.61z" />
     </svg>
   );
@@ -32,7 +32,11 @@ export default function Hero() {
   return (
     <section
       className="relative overflow-hidden flex flex-col"
-      style={{ background: "linear-gradient(160deg, #060d18 0%, #0b1628 100%)", paddingTop: "var(--shell-offset, 108px)", minHeight: "100vh" }}
+      style={{
+        background: "linear-gradient(160deg, #060d18 0%, #0b1628 100%)",
+        paddingTop: "calc(var(--topbar-h, 88px) + 64px)",
+        minHeight: "100vh",
+      }}
     >
       {/* Teal glow */}
       <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 flex justify-center">
@@ -54,13 +58,32 @@ export default function Hero() {
 
       {/* Two-column content */}
       <div className="relative container-xl flex-1 flex items-center">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-14 items-center w-full py-10 lg:py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-14 items-center w-full py-6 lg:py-12">
 
-          {/* ── LEFT: copy ───────────────────────────────────────────────── */}
-          <div className="flex flex-col">
+          {/* ── MOBILE-FIRST: image comes first (order-1 mobile, order-2 desktop) ── */}
+          <div className="flex items-center justify-center order-1 lg:order-2 py-2 lg:py-0">
+            {/* Glow behind image — desktop only */}
+            <div
+              className="hidden lg:block absolute inset-0 pointer-events-none"
+              style={{ background: "radial-gradient(ellipse 75% 70% at 50% 55%, rgba(20,184,166,0.15) 0%, transparent 70%)" }}
+            />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/images/Hero-image.png"
+              alt="Pickleball paddle hero"
+              className="relative z-10 w-full max-w-[220px] lg:max-w-[520px]"
+              style={{
+                objectFit: "contain",
+                filter: "drop-shadow(0 20px 48px rgba(0,0,0,0.7))",
+              }}
+            />
+          </div>
+
+          {/* ── Text content (order-2 mobile, order-1 desktop) ── */}
+          <div className="flex flex-col order-2 lg:order-1">
 
             {/* Eyebrow */}
-            <div className="flex items-center gap-2.5 mb-4">
+            <div className="flex items-center gap-2.5 mb-3 lg:mb-4">
               <span className="h-px w-8 bg-teal-500/50" />
               <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-teal-400">
                 Pickleball Playbook
@@ -71,27 +94,27 @@ export default function Hero() {
             {/* Headline */}
             <h1
               className="font-extrabold text-white tracking-tight leading-[1.06]"
-              style={{ fontSize: "clamp(1.9rem, 4vw, 3rem)" }}
+              style={{ fontSize: "clamp(1.75rem, 4vw, 3rem)" }}
             >
               Real On-Court Paddle Reviews&nbsp;&amp; Discounts
             </h1>
 
             {/* Subheadline */}
             <p
-              className="mt-4 leading-relaxed max-w-lg"
-              style={{ fontSize: "clamp(0.95rem, 1.5vw, 1.1rem)", color: "rgba(255,255,255,0.55)" }}
+              className="mt-3 lg:mt-4 leading-relaxed max-w-lg"
+              style={{ fontSize: "clamp(0.9rem, 1.5vw, 1.1rem)", color: "rgba(255,255,255,0.55)" }}
             >
               Stop guessing based on specs. See how paddles actually feel when played on court.
             </p>
 
-            {/* Stacked bullet list */}
-            <ul className="mt-6 space-y-3">
+            {/* Bullet list */}
+            <ul className="mt-4 lg:mt-6 space-y-2 lg:space-y-3">
               {VALUE_PROPS.map((text) => (
-                <li key={text} className="flex items-center gap-4">
+                <li key={text} className="flex items-center gap-3 lg:gap-4">
                   <CheckIcon />
                   <span
                     className="font-semibold leading-snug"
-                    style={{ fontSize: "clamp(1rem, 1.5vw, 1.125rem)", color: "rgba(255,255,255,0.85)" }}
+                    style={{ fontSize: "clamp(0.875rem, 1.5vw, 1.125rem)", color: "rgba(255,255,255,0.85)" }}
                   >
                     {text}
                   </span>
@@ -100,52 +123,32 @@ export default function Hero() {
             </ul>
 
             {/* Buttons */}
-            <div className="mt-8 flex flex-col sm:flex-row gap-3">
+            <div className="mt-6 lg:mt-8 flex flex-col sm:flex-row gap-3">
               <a
                 href="/paddles"
-                className="inline-flex items-center justify-center rounded-xl bg-teal-500 px-8 py-3.5 text-base font-bold text-white transition-all duration-200 hover:bg-teal-400"
-                style={{ boxShadow: "0 0 36px rgba(20,184,166,0.45)" }}
+                className="inline-flex items-center justify-center rounded-xl bg-teal-500 px-8 py-3 lg:py-3.5 text-sm lg:text-base font-bold text-white transition-all duration-200 hover:bg-teal-400"
+                style={{ boxShadow: "0 0 28px rgba(20,184,166,0.40)" }}
               >
                 Browse Paddles
               </a>
               <a
                 href="#latest-reviews"
-                className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 px-8 py-3.5 text-base font-semibold text-white/70 transition-all duration-200 hover:border-white/20 hover:bg-white/10 hover:text-white"
+                className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 px-8 py-3 lg:py-3.5 text-sm lg:text-base font-semibold text-white/70 transition-all duration-200 hover:border-white/20 hover:bg-white/10 hover:text-white"
               >
                 Latest Reviews
               </a>
             </div>
 
             {/* Social proof */}
-            <div className="mt-5 flex items-center gap-3">
+            <div className="mt-4 lg:mt-5 flex items-center gap-2.5">
               <div className="flex gap-0.5">
                 {[0, 1, 2, 3, 4].map((i) => <StarIcon key={i} />)}
               </div>
-              <span className="text-base font-medium" style={{ color: "rgba(255,255,255,0.45)" }}>
+              <span className="text-sm font-medium" style={{ color: "rgba(255,255,255,0.45)" }}>
                 Trusted by 150,000+ pickleball players
               </span>
             </div>
 
-          </div>
-
-          {/* ── RIGHT: hero image ──────────────────────────────────────────── */}
-          <div className="relative hidden lg:flex items-center justify-center py-6">
-            {/* Glow behind image */}
-            <div
-              className="absolute inset-0 pointer-events-none"
-              style={{ background: "radial-gradient(ellipse 75% 70% at 50% 55%, rgba(20,184,166,0.15) 0%, transparent 70%)" }}
-            />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/images/Hero-image.png"
-              alt="Pickleball paddle hero"
-              className="relative z-10 w-full"
-              style={{
-                maxWidth: "520px",
-                objectFit: "contain",
-                filter: "drop-shadow(0 40px 80px rgba(0,0,0,0.75))",
-              }}
-            />
           </div>
 
         </div>

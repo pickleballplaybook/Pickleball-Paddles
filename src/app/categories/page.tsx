@@ -47,7 +47,7 @@ const categories = [
 
 export default function CategoriesPage() {
   return (
-    <div className="min-h-screen pt-32" style={{ background: "var(--bg-page)" }}>
+    <div className="min-h-screen pt-[156px]" style={{ background: "var(--bg-page)" }}>
       <div className="container-xl py-20">
         <div className="mb-14">
           <p className="text-xs font-bold text-brand-500 uppercase tracking-widest mb-2">
