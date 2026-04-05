@@ -61,7 +61,7 @@ export default function Hero() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 lg:gap-14 items-center w-full pb-6 lg:py-12">
 
           {/* ── MOBILE-FIRST: image comes first (order-1 mobile, order-2 desktop) ── */}
-          <div className="flex items-center justify-center order-1 lg:order-2">
+          <div className="flex items-center justify-center order-1 lg:order-2 mb-6 lg:mb-0">
             {/* Glow behind image — desktop only */}
             <div
               className="hidden lg:block absolute inset-0 pointer-events-none"
