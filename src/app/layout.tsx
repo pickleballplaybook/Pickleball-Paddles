@@ -60,8 +60,11 @@ export default function RootLayout({
       </head>
       <body className="font-sans antialiased">
         <ThemeProvider>
-          <TopBar />
-          <Navigation />
+          {/* Single fixed shell — TopBar stacks naturally above Navigation */}
+          <div className="fixed inset-x-0 top-0 z-50">
+            <TopBar />
+            <Navigation />
+          </div>
           <main>{children}</main>
           <Footer />
           <NewsletterPopup />

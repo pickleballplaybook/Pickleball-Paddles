@@ -8,12 +8,11 @@ export default function TopBar() {
   const [dismissed, setDismissed] = useState(false);
   const barRef = useRef<HTMLDivElement>(null);
 
-  // Keep --topbar-h CSS variable in sync with actual rendered height.
-  // This lets Navigation and page content automatically adjust when
-  // the bar is dismissed or resized.
+  // Keep --topbar-h in sync so page content padding-top accounts for this bar.
+  // The bar itself is NOT fixed — it flows inside the fixed shell in layout.tsx.
   useEffect(() => {
     function sync() {
-      const h = dismissed ? 0 : (barRef.current?.offsetHeight ?? 32);
+      const h = dismissed ? 0 : (barRef.current?.offsetHeight ?? 0);
       document.documentElement.style.setProperty("--topbar-h", `${h}px`);
     }
     sync();
@@ -26,7 +25,7 @@ export default function TopBar() {
   return (
     <div
       ref={barRef}
-      className="fixed inset-x-0 top-0 z-[51] flex items-center justify-center gap-3 px-10 py-2 text-center"
+      className="relative flex items-center justify-center gap-3 px-10 py-2 text-center"
       style={{ background: "#0b1628", borderBottom: "1px solid rgba(255,255,255,0.07)" }}
     >
       <p className="text-xs sm:text-sm leading-none">
