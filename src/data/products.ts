@@ -82,8 +82,8 @@ export const gearProducts: GearProduct[] = [
   },
   {
     id: "picklr",
-    brand: "Picklr",
-    name: "Picklr App",
+    brand: "",
+    name: "Picklr",
     price: "$30.00/mo",
     badge: "15-Day Trial",
     link: "https://tinyurl.com/49fe7ma5",
