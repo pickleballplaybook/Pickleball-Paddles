@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
-import { X, Heart, ThumbsDown } from "lucide-react";
+import { X, Heart } from "lucide-react";
 
 export default function TopBar() {
   const [dismissed, setDismissed] = useState(false);
@@ -26,7 +26,7 @@ export default function TopBar() {
       className="relative px-8 py-3 text-center"
       style={{ background: "#DEFA32", borderBottom: "1px solid rgba(0,0,0,0.12)" }}
     >
-      {/* Row 1 — all caps, extrabold, largest */}
+      {/* Line 1 — all caps, extrabold, largest */}
       <p
         className="font-extrabold uppercase tracking-tight leading-snug text-sm sm:text-[15px]"
         style={{ color: "#0B1A2B" }}
@@ -34,24 +34,17 @@ export default function TopBar() {
         Become a Paddle Reviewer.
       </p>
 
-      {/* Row 2 — both actions on one line with real app icons */}
+      {/* Line 2 — heart icon from the real app */}
       <p
-        className="text-xs sm:text-sm leading-snug mt-1.5 flex items-center justify-center gap-x-2 flex-wrap"
+        className="inline-flex items-center justify-center gap-1 text-xs sm:text-sm leading-snug mt-1.5"
         style={{ color: "#2A3A4A" }}
       >
-        <span className="inline-flex items-center gap-1">
-          Give paddles a
-          <Heart className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="#ef4444" strokeWidth={2} />
-          that you like.
-        </span>
-        <span className="inline-flex items-center gap-1">
-          Leave a
-          <ThumbsDown className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="#0B1A2B" strokeWidth={2} />
-          on paddles you dislike.
-        </span>
+        Give paddles a
+        <Heart className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="#ef4444" strokeWidth={2} />
+        that you like.
       </p>
 
-      {/* Row 3 — Start Reviewing CTA */}
+      {/* Line 3 — Start Reviewing button only */}
       <div className="mt-1.5">
         <Link
           href="/review-paddles"
