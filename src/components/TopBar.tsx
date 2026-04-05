@@ -47,22 +47,24 @@ export default function TopBar() {
         href="/review-paddles"
         className="hidden sm:inline-flex flex-shrink-0 text-xs font-bold px-4 py-1.5 rounded-lg transition-all whitespace-nowrap tracking-wide"
         style={{
-          background: "#ffffff",
-          color: "#0B1A2B",
+          background: "#0B1A2B",
+          color: "#FFFFFF",
           fontWeight: 600,
-          border: "1px solid rgba(0,0,0,0.08)",
-          boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+          border: "none",
+          boxShadow: "0 2px 6px rgba(0,0,0,0.18)",
           borderRadius: "10px",
           transition: "all 0.2s ease",
         }}
         onMouseEnter={e => {
           const el = e.currentTarget as HTMLElement;
-          el.style.boxShadow = "0 4px 10px rgba(0,0,0,0.18)";
+          el.style.background = "#12263A";
+          el.style.boxShadow = "0 4px 10px rgba(0,0,0,0.22)";
           el.style.transform = "translateY(-1px)";
         }}
         onMouseLeave={e => {
           const el = e.currentTarget as HTMLElement;
-          el.style.boxShadow = "0 2px 6px rgba(0,0,0,0.15)";
+          el.style.background = "#0B1A2B";
+          el.style.boxShadow = "0 2px 6px rgba(0,0,0,0.18)";
           el.style.transform = "translateY(0)";
         }}
       >
