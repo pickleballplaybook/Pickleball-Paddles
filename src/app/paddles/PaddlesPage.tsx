@@ -18,7 +18,7 @@ import {
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const PAGE_SIZE_OPTIONS = [20, 50];
-const PROMO_EVERY = 8; // insert a promo after every N paddles
+const PROMO_EVERY = 12; // must be LCM(2,3,4)=12 so every chunk fills complete rows at all breakpoints
 
 function daySeededShuffle<T>(arr: T[], offset = 0): T[] {
   const seed = Math.floor(Date.now() / 86400000) + offset;

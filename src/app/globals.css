@@ -47,6 +47,9 @@
   --nav-shadow:   0 1px 4px rgba(15,23,42,0.06);
   --nav-text:     #0f172a;
   --nav-hover-bg: rgba(20,184,166,0.06);
+
+  /* ── Discount savings text — dark teal for legibility on white cards ──── */
+  --discount-text: #0d9488;
 }
 
 html.dark {
@@ -80,6 +83,9 @@ html.dark {
   --nav-shadow:   0 1px 3px rgba(0,0,0,0.4);
   --nav-text:     #e2e8f0;
   --nav-hover-bg: rgba(255,255,255,0.06);
+
+  /* ── Discount savings text — yellow-green pops on dark cards ─────────── */
+  --discount-text: #defa32;
 }
 
 @layer base {

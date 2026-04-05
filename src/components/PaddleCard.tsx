@@ -157,7 +157,7 @@ export default function PaddleCard({ paddle }: PaddleCardProps) {
               PLAYBOOK
             </span>
             <span className="text-xs" style={{ color: "var(--text-muted)" }}>·</span>
-            <span className="text-xs font-semibold" style={{ color: "#defa32" }}>Save {paddle.amountOff}</span>
+            <span className="text-xs font-semibold" style={{ color: "var(--discount-text)" }}>Save {paddle.amountOff}</span>
           </div>
         )}
 
