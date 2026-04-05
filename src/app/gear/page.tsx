@@ -1,6 +1,6 @@
 import { ArrowRight, GraduationCap } from "lucide-react";
 import { Metadata } from "next";
-import { gearProducts } from "@/data/products";
+import { gearProducts, GearProduct } from "@/data/products";
 
 export const metadata: Metadata = {
   title: "Gear | Pickleball Playbook",
@@ -9,6 +9,153 @@ export const metadata: Metadata = {
 
 const titan = gearProducts.find((p) => p.id === "titan")!;
 const rest  = gearProducts.filter((p) => p.id !== "titan");
+
+// ── Wide-image hero card (full-width, image-left layout) ──────────────────────
+function WideCard({ p }: { p: GearProduct }) {
+  return (
+    <div className="md:col-span-2 rounded-3xl overflow-hidden" style={{ background: p.bg }}>
+      <div className="grid grid-cols-1 lg:grid-cols-5 items-stretch">
+
+        {/* Image — 3/5 width on desktop, full width on mobile */}
+        <div className="lg:col-span-3 relative overflow-hidden" style={{ minHeight: "300px" }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={p.image}
+            alt={`${p.brand} ${p.name}`}
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          {/* subtle gradient fade into copy panel */}
+          <div
+            className="absolute inset-y-0 right-0 w-24 hidden lg:block"
+            style={{ background: `linear-gradient(to right, transparent, ${p.bg})` }}
+          />
+        </div>
+
+        {/* Copy — 2/5 width on desktop */}
+        <div className="lg:col-span-2 p-8 lg:p-12 flex flex-col justify-center">
+          {p.badge && (
+            <span
+              className="inline-block self-start mb-4 text-[11px] font-bold uppercase tracking-widest px-3 py-1 rounded-full"
+              style={{ background: "rgba(20,184,166,0.2)", color: "#2dd4bf", border: "1px solid rgba(20,184,166,0.3)" }}
+            >
+              {p.badge}
+            </span>
+          )}
+          <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: "rgba(255,255,255,0.45)" }}>
+            {p.brand}
+          </p>
+          <h3 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight leading-tight mb-3">
+            {p.name}
+          </h3>
+          {p.price && p.price !== "Free" && (
+            <p className="text-sm font-semibold mb-2" style={{ color: "rgba(255,255,255,0.5)" }}>
+              {p.price}
+            </p>
+          )}
+          <p className="text-sm mb-8 leading-relaxed" style={{ color: "rgba(255,255,255,0.65)" }}>
+            {p.subtitle}
+          </p>
+          <a
+            href={p.link}
+            target="_blank"
+            rel="noopener noreferrer sponsored"
+            className="inline-flex items-center gap-2 self-start font-bold text-sm px-6 py-3.5 rounded-xl text-white transition-all duration-200 active:scale-[0.98]"
+            style={{
+              background: "linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)",
+              boxShadow: "0 0 24px rgba(20,184,166,0.25)",
+            }}
+          >
+            {p.ctaText}
+            <ArrowRight className="w-4 h-4" strokeWidth={2.5} />
+          </a>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+// ── Square / no-image card ─────────────────────────────────────────────────────
+function SquareCard({ p }: { p: GearProduct }) {
+  return (
+    <div
+      className="rounded-2xl overflow-hidden flex flex-col"
+      style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}
+    >
+      {/* Image area — true square with product brand color bg */}
+      {p.imageAspect === "square" && (
+        <div
+          className="w-full aspect-square flex items-center justify-center p-10 flex-shrink-0"
+          style={{ background: p.bg }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={p.image}
+            alt={`${p.brand} ${p.name}`}
+            className="w-full h-full object-contain drop-shadow-xl"
+          />
+        </div>
+      )}
+      {p.imageAspect === "none" && (
+        <div
+          className="w-full aspect-square flex items-center justify-center flex-shrink-0"
+          style={{ background: p.bg }}
+        >
+          <GraduationCap className="w-20 h-20" style={{ color: "#14b8a6", opacity: 0.7 }} strokeWidth={1.5} />
+        </div>
+      )}
+
+      {/* Card body */}
+      <div className="p-6 flex flex-col flex-1">
+        <div className="flex items-start justify-between gap-2 mb-2">
+          <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: "#14b8a6" }}>
+            {p.brand}
+          </p>
+          {p.badge && (
+            <span
+              className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full whitespace-nowrap flex-shrink-0"
+              style={{
+                background: "rgba(20,184,166,0.15)",
+                color: "#2dd4bf",
+                border: "1px solid rgba(20,184,166,0.25)",
+              }}
+            >
+              {p.badge}
+            </span>
+          )}
+        </div>
+
+        <h3 className="text-lg font-bold mb-2 leading-snug" style={{ color: "var(--text-primary)" }}>
+          {p.name}
+        </h3>
+        <p className="text-sm leading-relaxed mb-6 flex-1" style={{ color: "var(--text-muted)" }}>
+          {p.subtitle}
+        </p>
+
+        <div className="flex items-center justify-between gap-3 mt-auto">
+          {p.price && p.price !== "Free" && (
+            <span className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
+              {p.price}
+            </span>
+          )}
+          {p.price === "Free" && (
+            <span className="text-sm font-bold" style={{ color: "#14b8a6" }}>Free</span>
+          )}
+          <a
+            href={p.link}
+            target="_blank"
+            rel="noopener noreferrer sponsored"
+            className="inline-flex items-center gap-1.5 text-sm font-bold px-5 py-2.5 rounded-xl text-white transition-all duration-200 active:scale-[0.98] ml-auto whitespace-nowrap"
+            style={{ background: "linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)" }}
+          >
+            {p.ctaText}
+            <ArrowRight className="w-4 h-4" strokeWidth={2.5} />
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function GearPage() {
   return (
@@ -31,7 +178,6 @@ export default function GearPage() {
         {/* ── Titan hero card ────────────────────────────────────────────────── */}
         <div className="rounded-3xl overflow-hidden mb-8" style={{ background: titan.bg }}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 items-center">
-
             <div
               className="flex items-center justify-center p-10 lg:p-16"
               style={{ background: "rgba(255,255,255,0.03)" }}
@@ -43,7 +189,6 @@ export default function GearPage() {
                 className="w-full max-w-sm h-auto object-contain drop-shadow-2xl"
               />
             </div>
-
             <div className="p-10 lg:p-16">
               {titan.badge && (
                 <span
@@ -79,89 +224,13 @@ export default function GearPage() {
           </div>
         </div>
 
-        {/* ── Product grid ───────────────────────────────────────────────────── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {rest.map((p) => (
-            <div
-              key={p.id}
-              className="rounded-2xl overflow-hidden flex flex-col"
-              style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}
-            >
-              {/* Image area */}
-              {p.imageAspect === "wide" && (
-                <div className="aspect-video overflow-hidden flex-shrink-0">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={p.image} alt={`${p.brand} ${p.name}`} className="w-full h-full object-cover" />
-                </div>
-              )}
-              {p.imageAspect === "square" && (
-                <div
-                  className="aspect-video flex items-center justify-center p-6 flex-shrink-0"
-                  style={{ background: "var(--bg-alt)" }}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={p.image} alt={`${p.brand} ${p.name}`} className="max-w-full max-h-full object-contain" />
-                </div>
-              )}
-              {p.imageAspect === "none" && (
-                <div
-                  className="aspect-video flex items-center justify-center flex-shrink-0"
-                  style={{ background: "var(--bg-alt)" }}
-                >
-                  <GraduationCap className="w-16 h-16" style={{ color: "#14b8a6", opacity: 0.6 }} strokeWidth={1.5} />
-                </div>
-              )}
-
-              {/* Card body */}
-              <div className="p-5 flex flex-col flex-1">
-                <div className="flex items-start justify-between gap-2 mb-2">
-                  <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#14b8a6" }}>
-                    {p.brand}
-                  </p>
-                  {p.badge && (
-                    <span
-                      className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full whitespace-nowrap flex-shrink-0"
-                      style={{
-                        background: "rgba(20,184,166,0.15)",
-                        color: "#2dd4bf",
-                        border: "1px solid rgba(20,184,166,0.25)",
-                      }}
-                    >
-                      {p.badge}
-                    </span>
-                  )}
-                </div>
-
-                <h3 className="text-base font-bold mb-1 leading-snug" style={{ color: "var(--text-primary)" }}>
-                  {p.name}
-                </h3>
-                <p className="text-sm leading-relaxed mb-5 flex-1" style={{ color: "var(--text-muted)" }}>
-                  {p.subtitle}
-                </p>
-
-                <div className="flex items-center justify-between gap-3 mt-auto">
-                  {p.price && p.price !== "Free" && (
-                    <span className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
-                      {p.price}
-                    </span>
-                  )}
-                  {p.price === "Free" && (
-                    <span className="text-sm font-bold" style={{ color: "#14b8a6" }}>Free</span>
-                  )}
-                  <a
-                    href={p.link}
-                    target="_blank"
-                    rel="noopener noreferrer sponsored"
-                    className="inline-flex items-center gap-1.5 text-xs font-bold px-4 py-2.5 rounded-xl text-white transition-all duration-200 active:scale-[0.98] ml-auto whitespace-nowrap"
-                    style={{ background: "linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)" }}
-                  >
-                    {p.ctaText}
-                    <ArrowRight className="w-3.5 h-3.5" strokeWidth={2.5} />
-                  </a>
-                </div>
-              </div>
-            </div>
-          ))}
+        {/* ── Product grid — wide cards span full width, square cards fill 2-col ── */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {rest.map((p) =>
+            p.imageAspect === "wide"
+              ? <WideCard key={p.id} p={p} />
+              : <SquareCard key={p.id} p={p} />
+          )}
         </div>
 
       </div>
