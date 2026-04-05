@@ -25,53 +25,66 @@ export default function TopBar() {
     <div ref={wrapperRef}>
       {/* Announcement banner */}
       <div
-        className="relative"
-        style={{ background: "#DEFA32", borderBottom: "1px solid rgba(0,0,0,0.12)" }}
+        className="relative overflow-hidden"
+        style={{
+          background: "linear-gradient(90deg, #060d18 0%, #0d2240 50%, #060d18 100%)",
+          borderBottom: "1px solid rgba(20,184,166,0.2)",
+        }}
       >
+        {/* Sweeping teal shimmer */}
         <div
-          className="mx-auto text-center"
-          style={{ maxWidth: "900px", padding: "12px 48px 10px" }}
+          className="banner-shimmer absolute inset-y-0 pointer-events-none"
+          style={{
+            width: "50%",
+            background: "linear-gradient(90deg, transparent, rgba(20,184,166,0.07), transparent)",
+          }}
+        />
+
+        <div
+          className="relative mx-auto text-center"
+          style={{ maxWidth: "900px", padding: "11px 48px 11px" }}
         >
-          {/* Line 1 — all caps, extrabold */}
+          {/* Line 1 */}
           <p
-            className="md:text-lg text-[15px]"
-            style={{ margin: 0, fontWeight: 800, lineHeight: 1, letterSpacing: "-0.02em", color: "#0B1A2B" }}
+            className="md:text-[15px] text-[13px]"
+            style={{ margin: 0, fontWeight: 800, lineHeight: 1, letterSpacing: "0.12em", color: "#ffffff" }}
           >
-            BECOME A PADDLE REVIEWER.
+            BECOME A PADDLE REVIEWER
           </p>
 
-          {/* Line 2 — heart icon (same lucide Heart used across the site) */}
+          {/* Line 2 */}
           <p
-            className="flex items-center justify-center gap-1 md:text-base text-[13px]"
-            style={{ margin: "4px 0 0", lineHeight: 1.1, fontWeight: 500, color: "#2A3A4A" }}
+            className="flex items-center justify-center gap-1 md:text-[13px] text-[12px]"
+            style={{ margin: "5px 0 0", lineHeight: 1.1, fontWeight: 400, color: "rgba(255,255,255,0.5)" }}
           >
             Give paddles a
-            <Heart className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="#ff4f7a" strokeWidth={2} />
-            that you like.
+            <Heart className="w-3 h-3 flex-shrink-0" fill="none" stroke="#f472b6" strokeWidth={2} />
+            that you like
           </p>
 
-          {/* Line 3 — Start Reviewing CTA only */}
-          <div style={{ marginTop: "6px" }}>
+          {/* Line 3 — CTA */}
+          <div style={{ marginTop: "7px" }}>
             <Link
               href="/review-paddles"
-              className="md:text-base text-sm"
-              style={{ fontWeight: 700, color: "#0B1A2B", textDecoration: "underline", textUnderlineOffset: "2px" }}
+              className="inline-flex items-center gap-1 md:text-[13px] text-[12px]"
+              style={{ fontWeight: 600, color: "#2dd4bf", letterSpacing: "0.01em" }}
             >
               Start Reviewing
+              <span aria-hidden style={{ fontSize: "0.85em" }}>→</span>
             </Link>
           </div>
         </div>
 
-        {/* Dismiss button */}
+        {/* Dismiss */}
         <button
           onClick={() => setDismissed(true)}
           aria-label="Dismiss"
-          className="absolute top-1/2 -translate-y-1/2 right-3 md:right-3.5"
-          style={{ color: "#0B1A2B", opacity: 0.75, background: "transparent", border: "none", cursor: "pointer", padding: 0 }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "0.75"; }}
+          className="absolute top-1/2 -translate-y-1/2 right-3 md:right-4"
+          style={{ color: "rgba(255,255,255,0.35)", background: "transparent", border: "none", cursor: "pointer", padding: 0 }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.8)"; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.35)"; }}
         >
-          <X className="w-5 h-5 md:w-6 md:h-6" strokeWidth={2} />
+          <X className="w-4 h-4 md:w-5 md:h-5" strokeWidth={2} />
         </button>
       </div>
     </div>
