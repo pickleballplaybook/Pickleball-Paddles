@@ -121,6 +121,8 @@ export default async function HomePage() {
     <>
       <Hero />
 
+      <div id="latest-reviews"><LatestReviews items={latestReviewItems} /></div>
+
       {/* Drills App */}
       <PromoBar
         title="Pickleball Drills App"
@@ -130,8 +132,6 @@ export default async function HomePage() {
         icon={<Smartphone className="w-5 h-5" strokeWidth={2} />}
         bg="#0c1a2e"
       />
-
-      <div id="latest-reviews"><LatestReviews items={latestReviewItems} /></div>
       <LatestPaddles paddles={latestPaddles} />
       <div id="paddles"><HottestPaddle /></div>
 

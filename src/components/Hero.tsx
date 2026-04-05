@@ -54,13 +54,13 @@ export default function Hero() {
 
       {/* Two-column content */}
       <div className="relative container-xl">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center min-h-[560px] lg:min-h-[680px]">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-14 items-center min-h-[400px] lg:min-h-[500px]">
 
           {/* ── LEFT: copy ───────────────────────────────────────────────── */}
-          <div className="flex flex-col py-6 lg:py-10">
+          <div className="flex flex-col py-4 lg:py-6">
 
             {/* Eyebrow */}
-            <div className="flex items-center gap-2.5 mb-6">
+            <div className="flex items-center gap-2.5 mb-4">
               <span className="h-px w-8 bg-teal-500/50" />
               <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-teal-400">
                 Pickleball Playbook
@@ -71,21 +71,21 @@ export default function Hero() {
             {/* Headline */}
             <h1
               className="font-extrabold text-white tracking-tight leading-[1.06]"
-              style={{ fontSize: "clamp(2.25rem, 5vw, 3.75rem)" }}
+              style={{ fontSize: "clamp(1.9rem, 4vw, 3rem)" }}
             >
               Real On-Court Paddle Reviews&nbsp;&amp; Discounts
             </h1>
 
             {/* Subheadline */}
             <p
-              className="mt-6 leading-relaxed max-w-lg"
-              style={{ fontSize: "clamp(1.05rem, 1.8vw, 1.25rem)", color: "rgba(255,255,255,0.55)" }}
+              className="mt-4 leading-relaxed max-w-lg"
+              style={{ fontSize: "clamp(0.95rem, 1.5vw, 1.1rem)", color: "rgba(255,255,255,0.55)" }}
             >
               Stop guessing based on specs. See how paddles actually feel when played on court.
             </p>
 
             {/* Stacked bullet list */}
-            <ul className="mt-10 space-y-4">
+            <ul className="mt-6 space-y-3">
               {VALUE_PROPS.map((text) => (
                 <li key={text} className="flex items-center gap-4">
                   <CheckIcon />
@@ -100,24 +100,24 @@ export default function Hero() {
             </ul>
 
             {/* Buttons */}
-            <div className="mt-12 flex flex-col sm:flex-row gap-4">
+            <div className="mt-8 flex flex-col sm:flex-row gap-3">
               <a
                 href="/paddles"
-                className="inline-flex items-center justify-center rounded-xl bg-teal-500 px-10 py-4 text-lg font-bold text-white transition-all duration-200 hover:bg-teal-400"
+                className="inline-flex items-center justify-center rounded-xl bg-teal-500 px-8 py-3.5 text-base font-bold text-white transition-all duration-200 hover:bg-teal-400"
                 style={{ boxShadow: "0 0 36px rgba(20,184,166,0.45)" }}
               >
                 Browse Paddles
               </a>
               <a
                 href="#latest-reviews"
-                className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 px-10 py-4 text-lg font-semibold text-white/70 transition-all duration-200 hover:border-white/20 hover:bg-white/10 hover:text-white"
+                className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 px-8 py-3.5 text-base font-semibold text-white/70 transition-all duration-200 hover:border-white/20 hover:bg-white/10 hover:text-white"
               >
                 Latest Reviews
               </a>
             </div>
 
             {/* Social proof */}
-            <div className="mt-7 flex items-center gap-3">
+            <div className="mt-5 flex items-center gap-3">
               <div className="flex gap-0.5">
                 {[0, 1, 2, 3, 4].map((i) => <StarIcon key={i} />)}
               </div>
@@ -129,7 +129,7 @@ export default function Hero() {
           </div>
 
           {/* ── RIGHT: hero image ──────────────────────────────────────────── */}
-          <div className="relative hidden lg:flex items-center justify-center py-12">
+          <div className="relative hidden lg:flex items-center justify-center py-6">
             {/* Glow behind image */}
             <div
               className="absolute inset-0 pointer-events-none"
