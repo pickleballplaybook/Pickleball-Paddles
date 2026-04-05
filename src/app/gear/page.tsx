@@ -10,16 +10,16 @@ export const metadata: Metadata = {
 const titan = gearProducts.find((p) => p.id === "titan")!;
 const rest  = gearProducts.filter((p) => p.id !== "titan");
 
-// ── Shared CTA button ─────────────────────────────────────────────────────────
-function CtaButton({ href, text, large = false }: { href: string; text: string; large?: boolean }) {
+// ── CTA button ────────────────────────────────────────────────────────────────
+function Cta({ href, text, large }: { href: string; text: string; large?: boolean }) {
   return (
     <a
       href={href}
       target="_blank"
       rel="noopener noreferrer sponsored"
-      className={`inline-flex items-center gap-2 self-start font-bold text-white transition-all duration-200 active:scale-[0.97] rounded-2xl ${large ? "text-base px-8 py-4" : "text-sm px-7 py-3.5"}`}
+      className={`inline-flex items-center gap-2 font-bold text-white rounded-2xl transition-all duration-200 active:scale-[0.97] self-start flex-shrink-0 ${large ? "text-base px-8 py-4" : "text-sm px-7 py-3.5"}`}
       style={{
-        background: "linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)",
+        background: "linear-gradient(135deg,#0d9488,#14b8a6)",
         boxShadow: "0 0 40px rgba(20,184,166,0.35), 0 4px 16px rgba(0,0,0,0.3)",
       }}
     >
@@ -29,15 +29,15 @@ function CtaButton({ href, text, large = false }: { href: string; text: string; 
   );
 }
 
-// ── Premium badge pill ────────────────────────────────────────────────────────
+// ── Badge ─────────────────────────────────────────────────────────────────────
 function Badge({ text }: { text: string }) {
   return (
     <span
-      className="inline-block self-start text-[11px] font-bold uppercase tracking-[0.18em] px-3 py-1 rounded-full mb-5"
+      className="self-start inline-block text-[11px] font-bold uppercase tracking-[0.18em] px-3 py-1 rounded-full mb-5"
       style={{
         background: "rgba(20,184,166,0.15)",
         color: "#2dd4bf",
-        border: "1px solid rgba(20,184,166,0.35)",
+        border: "1px solid rgba(20,184,166,0.4)",
         boxShadow: "0 0 12px rgba(20,184,166,0.15)",
       }}
     >
@@ -46,9 +46,9 @@ function Badge({ text }: { text: string }) {
   );
 }
 
-// ── Wide-image feature card ───────────────────────────────────────────────────
-// Image fills the entire left column via absolute positioning.
-// The flex row min-height drives the stretch — both columns grow to match it.
+// ── Wide feature card ─────────────────────────────────────────────────────────
+// Fix: image column has EXPLICIT pixel heights (h-[320px] mobile, lg:h-[620px] desktop)
+// so the absolute-positioned img always has a defined parent height to fill.
 function WideCard({ p }: { p: GearProduct }) {
   return (
     <div
@@ -56,69 +56,67 @@ function WideCard({ p }: { p: GearProduct }) {
       style={{
         background: p.bg,
         border: "1px solid rgba(255,255,255,0.07)",
-        boxShadow: "0 32px 80px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.06)",
+        boxShadow: "0 32px 80px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)",
       }}
     >
-      {/* flex row — min-height drives both columns to the same tall height */}
-      <div className="flex flex-col lg:flex-row" style={{ minHeight: "600px" }}>
+      <div className="flex flex-col lg:flex-row">
 
-        {/* ── Image column: 60% wide, absolutely filled ── */}
-        <div
-          className="relative overflow-hidden flex-shrink-0"
-          style={{ flex: "0 0 60%", minHeight: "340px" }}
-        >
+        {/* Image — explicit heights ensure absolute fill always works */}
+        <div className="relative overflow-hidden flex-shrink-0 w-full lg:w-[62%] h-[320px] lg:h-[620px]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={p.image}
             alt={`${p.brand} ${p.name}`}
-            className="absolute inset-0 w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-cover object-center"
           />
-          {/* Right-edge gradient: bleeds the image seamlessly into the content panel */}
+          {/* right-edge blend — desktop */}
           <div
-            className="absolute inset-y-0 right-0 w-48 hidden lg:block pointer-events-none"
-            style={{ background: `linear-gradient(90deg, transparent 0%, ${p.bg} 100%)` }}
+            className="absolute inset-y-0 right-0 hidden lg:block pointer-events-none"
+            style={{ width: "220px", background: `linear-gradient(90deg,transparent 0%,${p.bg} 100%)` }}
           />
-          {/* Bottom-edge gradient for mobile stacked layout */}
+          {/* bottom-edge blend — mobile */}
           <div
-            className="absolute inset-x-0 bottom-0 h-28 lg:hidden pointer-events-none"
-            style={{ background: `linear-gradient(180deg, transparent 0%, ${p.bg} 100%)` }}
+            className="absolute inset-x-0 bottom-0 lg:hidden pointer-events-none"
+            style={{ height: "120px", background: `linear-gradient(180deg,transparent 0%,${p.bg} 100%)` }}
           />
         </div>
 
-        {/* ── Content column ── */}
-        <div className="flex-1 flex flex-col justify-center px-10 py-12 lg:px-14 lg:py-16">
+        {/* Content */}
+        <div className="flex-1 flex flex-col justify-center px-8 py-10 lg:px-14 lg:py-16">
           {p.badge && <Badge text={p.badge} />}
 
           <p
-            className="text-[11px] font-bold uppercase mb-2"
-            style={{ color: "rgba(255,255,255,0.35)", letterSpacing: "0.2em" }}
+            className="font-bold uppercase mb-2"
+            style={{ fontSize: "0.6875rem", letterSpacing: "0.22em", color: "rgba(255,255,255,0.35)" }}
           >
             {p.brand}
           </p>
 
-          <h3 className="text-3xl lg:text-4xl font-extrabold text-white tracking-tight leading-none mb-4">
+          <h3
+            className="font-extrabold text-white tracking-tight leading-none mb-4"
+            style={{ fontSize: "clamp(1.75rem, 3vw, 2.75rem)" }}
+          >
             {p.name}
           </h3>
 
           {p.price && p.price !== "Free" && (
-            <p className="text-sm font-semibold mb-4" style={{ color: "rgba(255,255,255,0.4)" }}>
+            <p className="text-sm font-semibold mb-4" style={{ color: "rgba(255,255,255,0.38)" }}>
               {p.price}
             </p>
           )}
 
-          <p className="text-base leading-relaxed mb-10" style={{ color: "rgba(255,255,255,0.6)", maxWidth: "36ch" }}>
+          <p className="text-base leading-relaxed mb-10" style={{ color: "rgba(255,255,255,0.62)", maxWidth: "34ch" }}>
             {p.subtitle}
           </p>
 
-          <CtaButton href={p.link} text={p.ctaText} />
+          <Cta href={p.link} text={p.ctaText} />
         </div>
-
       </div>
     </div>
   );
 }
 
-// ── Square / no-image card ─────────────────────────────────────────────────────
+// ── Square card ───────────────────────────────────────────────────────────────
 function SquareCard({ p }: { p: GearProduct }) {
   return (
     <div
@@ -126,56 +124,51 @@ function SquareCard({ p }: { p: GearProduct }) {
       style={{
         background: "var(--bg-card)",
         border: "1px solid rgba(255,255,255,0.07)",
-        boxShadow: "0 16px 40px rgba(0,0,0,0.3)",
+        boxShadow: "0 16px 48px rgba(0,0,0,0.35)",
       }}
     >
-      {/* Image area — square aspect, full brand bg */}
       {p.imageAspect === "square" && (
         <div
           className="w-full flex items-center justify-center flex-shrink-0 p-14"
-          style={{ background: p.bg, aspectRatio: "1 / 1" }}
+          style={{ background: p.bg, aspectRatio: "1/1" }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={p.image}
             alt={`${p.brand} ${p.name}`}
             className="w-full h-full object-contain"
-            style={{ filter: "drop-shadow(0 12px 32px rgba(0,0,0,0.5))" }}
+            style={{ filter: "drop-shadow(0 16px 40px rgba(0,0,0,0.55))" }}
           />
         </div>
       )}
       {p.imageAspect === "none" && (
         <div
           className="w-full flex items-center justify-center flex-shrink-0"
-          style={{ background: p.bg, aspectRatio: "1 / 1" }}
+          style={{ background: p.bg, aspectRatio: "1/1" }}
         >
-          <GraduationCap className="w-24 h-24" style={{ color: "#14b8a6", opacity: 0.6 }} strokeWidth={1.5} />
+          <GraduationCap className="w-24 h-24" style={{ color: "#14b8a6", opacity: 0.65 }} strokeWidth={1.5} />
         </div>
       )}
 
       <div className="p-8 flex flex-col flex-1">
         <div className="flex items-start justify-between gap-2 mb-3">
-          <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: "#14b8a6" }}>
+          <span className="text-[11px] font-bold uppercase tracking-widest" style={{ color: "#14b8a6" }}>
             {p.brand}
-          </p>
+          </span>
           {p.badge && (
             <span
               className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full whitespace-nowrap flex-shrink-0"
-              style={{
-                background: "rgba(20,184,166,0.12)",
-                color: "#2dd4bf",
-                border: "1px solid rgba(20,184,166,0.3)",
-              }}
+              style={{ background: "rgba(20,184,166,0.12)", color: "#2dd4bf", border: "1px solid rgba(20,184,166,0.3)" }}
             >
               {p.badge}
             </span>
           )}
         </div>
 
-        <h3 className="text-xl font-extrabold mb-2 leading-tight" style={{ color: "var(--text-primary)" }}>
+        <h3 className="text-xl font-extrabold leading-tight mb-2" style={{ color: "var(--text-primary)" }}>
           {p.name}
         </h3>
-        <p className="text-sm leading-relaxed mb-7 flex-1" style={{ color: "var(--text-muted)" }}>
+        <p className="text-sm leading-relaxed flex-1 mb-7" style={{ color: "var(--text-muted)" }}>
           {p.subtitle}
         </p>
 
@@ -186,25 +179,14 @@ function SquareCard({ p }: { p: GearProduct }) {
           {p.price === "Free" && (
             <span className="text-base font-bold" style={{ color: "#14b8a6" }}>Free</span>
           )}
-          <a
-            href={p.link}
-            target="_blank"
-            rel="noopener noreferrer sponsored"
-            className="inline-flex items-center gap-2 text-sm font-bold px-6 py-3 rounded-xl text-white transition-all duration-200 active:scale-[0.97] ml-auto whitespace-nowrap"
-            style={{
-              background: "linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)",
-              boxShadow: "0 0 24px rgba(20,184,166,0.25)",
-            }}
-          >
-            {p.ctaText}
-            <ArrowRight className="w-4 h-4" strokeWidth={2.5} />
-          </a>
+          <Cta href={p.link} text={p.ctaText} />
         </div>
       </div>
     </div>
   );
 }
 
+// ── Page ──────────────────────────────────────────────────────────────────────
 export default function GearPage() {
   return (
     <div className="min-h-screen pt-16" style={{ background: "var(--bg-page)" }}>
@@ -212,18 +194,14 @@ export default function GearPage() {
 
         {/* Header */}
         <div className="mb-12">
-          <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#14b8a6" }}>
-            Equipment
-          </p>
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight" style={{ color: "var(--text-primary)" }}>
-            Gear
-          </h1>
+          <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#14b8a6" }}>Equipment</p>
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight" style={{ color: "var(--text-primary)" }}>Gear</h1>
           <p className="mt-2 text-base" style={{ color: "var(--text-muted)" }}>
             Top-rated gear, clothing, and accessories for serious pickleball players.
           </p>
         </div>
 
-        {/* ── Titan — featured hero (square image, premium centered treatment) ── */}
+        {/* ── Titan hero ─────────────────────────────────────────────────────── */}
         <div
           className="rounded-3xl overflow-hidden mb-10"
           style={{
@@ -232,33 +210,27 @@ export default function GearPage() {
             boxShadow: "0 32px 80px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)",
           }}
         >
-          <div className="flex flex-col lg:flex-row" style={{ minHeight: "600px" }}>
+          <div className="flex flex-col lg:flex-row">
 
-            {/* Image — centered in left half with subtle inner glow */}
+            {/* Image — centered object-contain since Titan is a square product photo */}
             <div
-              className="flex-shrink-0 flex items-center justify-center relative overflow-hidden"
-              style={{
-                flex: "0 0 50%",
-                minHeight: "340px",
-                background: "rgba(255,255,255,0.03)",
-              }}
+              className="flex-shrink-0 flex items-center justify-center relative w-full lg:w-1/2 h-[340px] lg:h-[640px]"
+              style={{ background: "rgba(255,255,255,0.03)" }}
             >
-              {/* radial glow behind product */}
               <div
                 className="absolute inset-0 pointer-events-none"
-                style={{
-                  background: "radial-gradient(ellipse 70% 60% at 50% 50%, rgba(20,184,166,0.1) 0%, transparent 70%)",
-                }}
+                style={{ background: "radial-gradient(ellipse 65% 60% at 50% 50%, rgba(20,184,166,0.12) 0%, transparent 70%)" }}
               />
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={titan.image}
                 alt={`${titan.brand} ${titan.name}`}
-                className="relative z-10 w-full h-auto object-contain"
+                className="relative z-10 w-full h-full object-contain"
                 style={{
-                  maxHeight: "440px",
-                  maxWidth: "440px",
-                  filter: "drop-shadow(0 20px 60px rgba(0,0,0,0.6))",
+                  maxWidth: "480px",
+                  maxHeight: "480px",
+                  padding: "2.5rem",
+                  filter: "drop-shadow(0 24px 64px rgba(0,0,0,0.65))",
                 }}
               />
             </div>
@@ -266,29 +238,24 @@ export default function GearPage() {
             {/* Copy */}
             <div className="flex-1 flex flex-col justify-center px-10 py-12 lg:px-16 lg:py-20">
               {titan.badge && <Badge text={titan.badge} />}
-
-              <p
-                className="text-[11px] font-bold uppercase mb-2"
-                style={{ color: "rgba(255,255,255,0.35)", letterSpacing: "0.2em" }}
-              >
+              <p className="font-bold uppercase mb-2" style={{ fontSize: "0.6875rem", letterSpacing: "0.22em", color: "rgba(255,255,255,0.35)" }}>
                 {titan.brand}
               </p>
-
-              <h2 className="text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-none mb-5">
+              <h2
+                className="font-extrabold text-white tracking-tight leading-none mb-5"
+                style={{ fontSize: "clamp(2.5rem, 5vw, 3.75rem)" }}
+              >
                 {titan.name}
               </h2>
-
-              <p className="text-lg leading-relaxed mb-10" style={{ color: "rgba(255,255,255,0.6)", maxWidth: "38ch" }}>
+              <p className="text-lg leading-relaxed mb-10" style={{ color: "rgba(255,255,255,0.62)", maxWidth: "38ch" }}>
                 {titan.subtitle}
               </p>
-
-              <CtaButton href={titan.link} text={titan.ctaText} large />
+              <Cta href={titan.link} text={titan.ctaText} large />
             </div>
-
           </div>
         </div>
 
-        {/* ── Product grid — wide cards full-width, square cards 2-col ── */}
+        {/* ── Product grid ───────────────────────────────────────────────────── */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {rest.map((p) =>
             p.imageAspect === "wide"
