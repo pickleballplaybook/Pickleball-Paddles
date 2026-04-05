@@ -120,10 +120,8 @@ export default async function HomePage() {
   return (
     <>
       <Hero />
-      <LatestPaddles paddles={latestPaddles} />
-      <div id="paddles"><HottestPaddle /></div>
 
-      {/* Drills App — moved up */}
+      {/* Drills App */}
       <PromoBar
         title="Pickleball Drills App"
         subtitle="Start your free trial."
@@ -134,6 +132,8 @@ export default async function HomePage() {
       />
 
       <div id="latest-reviews"><LatestReviews items={latestReviewItems} /></div>
+      <LatestPaddles paddles={latestPaddles} />
+      <div id="paddles"><HottestPaddle /></div>
 
       {/* Rotating gear promo A */}
       <PromoBar
