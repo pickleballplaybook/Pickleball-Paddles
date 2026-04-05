@@ -147,9 +147,9 @@ export const gearProducts: GearProduct[] = [
   },
   {
     id: "trigger-grip",
-    brand: "Trigger Grip",
-    name: "Pro Pickleball Grip",
-    price: "",
+    brand: "TriggerGrip",
+    name: "Pro",
+    price: "$24.99",
     badge: "15% Off",
     link: "https://www.triggergrippro.com/discount/playbook",
     image: "/images/products/Trigger-Grip.png",

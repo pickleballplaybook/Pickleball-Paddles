@@ -53,6 +53,7 @@
 
   /* ── TopBar height — JS in TopBar.tsx keeps this in sync ───────────────── */
   --topbar-h: 32px;
+  --shell-offset: 128px;
 }
 
 html.dark {

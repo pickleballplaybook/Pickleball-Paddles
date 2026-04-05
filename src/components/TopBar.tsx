@@ -25,7 +25,7 @@ export default function TopBar() {
   return (
     <div
       ref={barRef}
-      className="relative flex items-center justify-center gap-3 px-4 sm:px-12 py-2.5 text-center"
+      className="relative flex items-center justify-center gap-3 px-4 sm:px-12 py-4 text-center"
       style={{ background: "#3cacae", borderBottom: "1px solid rgba(255,255,255,0.2)" }}
     >
       <p className="leading-snug">

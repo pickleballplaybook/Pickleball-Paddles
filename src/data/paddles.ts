@@ -1255,6 +1255,16 @@ export function getJustAdded(count: number): Paddle[] {
     .slice(0, count);
 }
 
+export function getLatestPaddles(count: number): Paddle[] {
+  return [...paddles]
+    .sort((a, b) => {
+      const dateDiff = new Date(b.addedAt).getTime() - new Date(a.addedAt).getTime();
+      if (dateDiff !== 0) return dateDiff;
+      return parseInt(b.id) - parseInt(a.id); // higher ID = more recently added
+    })
+    .slice(0, count);
+}
+
 export function getTrending(count: number): Paddle[] {
   return [...paddles]
     .sort((a, b) => b.trendingScore - a.trendingScore)

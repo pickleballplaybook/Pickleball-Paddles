@@ -1,4 +1,4 @@
-import { paddles, getJustAdded, reviewDates } from "@/data/paddles";
+import { paddles, getJustAdded, getLatestPaddles, reviewDates } from "@/data/paddles";
 import { gearProducts } from "@/data/products";
 import { getReviewGroups } from "@/lib/youtube";
 import { siteConfig } from "@/config/site";
@@ -6,6 +6,7 @@ import { Paddle, ReviewGroup } from "@/types";
 import { Smartphone, GraduationCap } from "lucide-react";
 
 import Hero           from "@/components/Hero";
+import LatestPaddles  from "@/components/LatestPaddles";
 import HottestPaddle  from "@/components/HottestPaddle";
 import TrendingSection from "@/components/TrendingSection";
 import LatestReviews  from "@/components/LatestReviews";
@@ -108,6 +109,7 @@ function computeAnnouncements(allPaddles: Paddle[], groups: ReviewGroup[]): Anno
 
 export default async function HomePage() {
   const justAdded = getJustAdded(siteConfig.justAddedCount);
+  const latestPaddles = getLatestPaddles(12);
   const allGroups = await getReviewGroups(paddles, reviewDates);
   const latestReviewItems = spreadGroups(allGroups, siteConfig.latestReviewsCount);
   const announcements = computeAnnouncements(paddles, allGroups);
@@ -118,6 +120,7 @@ export default async function HomePage() {
   return (
     <>
       <Hero />
+      <LatestPaddles paddles={latestPaddles} />
       <div id="paddles"><HottestPaddle /></div>
 
       {/* Drills App — moved up */}
