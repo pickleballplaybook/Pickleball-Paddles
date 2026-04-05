@@ -72,8 +72,11 @@ export default function RootLayout({
       </head>
       <body className="font-sans antialiased">
         <ThemeProvider>
-          {/* Single fixed shell — TopBar includes its own mobile safe-area fix */}
-          <div className="fixed inset-x-0 top-0 z-50">
+          {/* Fixed shell — black safe-area fill above banner on notched devices */}
+          <div
+            className="fixed inset-x-0 top-0 z-50"
+            style={{ paddingTop: "env(safe-area-inset-top)", background: "#000" }}
+          >
             <TopBar />
             <Navigation />
           </div>
