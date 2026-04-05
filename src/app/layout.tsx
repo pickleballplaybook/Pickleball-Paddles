@@ -19,6 +19,8 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
+  // Controls browser chrome color on Android Chrome + iOS Safari 15+
+  themeColor: "#000000",
 };
 
 export const metadata: Metadata = {
@@ -63,6 +65,10 @@ export default function RootLayout({
     <html lang="en" className={inter.variable}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: `(function(){try{var s=localStorage.getItem('ppb_theme');if(s==='dark'||(!s&&window.matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');}}catch(e){}})();` }} />
+        {/* iOS Safari status bar — black even before JS hydrates */}
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="theme-color" content="#000000" />
       </head>
       <body className="font-sans antialiased">
         <ThemeProvider>
