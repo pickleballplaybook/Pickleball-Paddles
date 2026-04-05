@@ -5,6 +5,8 @@ import { paddles, reviewDates } from "@/data/paddles";
 import { getReviewGroups } from "@/lib/youtube";
 import { siteConfig } from "@/config/site";
 import YouTubeEmbed from "@/components/YouTubeEmbed";
+import PromoBar from "@/components/PromoBar";
+import { gearProducts } from "@/data/products";
 
 export const revalidate = 3600;
 
@@ -13,9 +15,84 @@ export const metadata: Metadata = {
   description: `Watch full video reviews for every pickleball paddle listed on ${siteConfig.name}.`,
 };
 
+function daySeededShuffle<T>(arr: T[], offset = 0): T[] {
+  const seed = Math.floor(Date.now() / 86400000) + offset;
+  const out = [...arr];
+  let s = seed | 0;
+  for (let i = out.length - 1; i > 0; i--) {
+    s = Math.imul(s ^ (s >>> 16), 0x45d9f3b);
+    s = Math.imul(s ^ (s >>> 13), 0x8d7ea0c3);
+    const j = (s >>> 0) % (i + 1);
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
+function PromoSlot({ product }: { product: typeof gearProducts[number] }) {
+  return (
+    <div className="my-10">
+      <PromoBar
+        title={`${product.brand} ${product.name}`}
+        subtitle={product.subtitle}
+        ctaText={product.ctaText}
+        ctaHref={product.link}
+        image={product.image || undefined}
+        imageAlt={`${product.brand} ${product.name}`}
+        badge={product.badge || undefined}
+        bg={product.bg}
+      />
+    </div>
+  );
+}
+
 export default async function ReviewsPage() {
   // Groups are deduped by video ID and sorted newest-first by publish date
   const groups = await getReviewGroups(paddles, reviewDates);
+
+  // Pick 2 promos — offset=1 so reviews page shows different products than homepage (offset=0)
+  const [promoA, promoB] = daySeededShuffle(gearProducts, 1);
+
+  // Chunk groups: [0..3], promo, [4..7], promo, [8+]
+  const chunkA = groups.slice(0, 4);
+  const chunkB = groups.slice(4, 8);
+  const chunkC = groups.slice(8);
+
+  function ReviewGrid({ items }: { items: typeof groups }) {
+    return (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+        {items.map((group) => (
+          <div key={group.videoId} className="space-y-4">
+            <div>
+              <p className="text-xs font-semibold text-brand-500 uppercase tracking-wide mb-0.5">
+                {group.brand}
+              </p>
+              <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>
+                {group.title}
+              </h2>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {group.paddles.map(({ name, slug }) => (
+                  <Link
+                    key={slug}
+                    href={`/paddles/${slug}`}
+                    className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full transition-colors"
+                    style={{
+                      background: "var(--bg-alt)",
+                      color: "var(--text-secondary)",
+                      border: "1px solid var(--border)",
+                    }}
+                  >
+                    {name}
+                    <ArrowRight className="w-3 h-3 opacity-50" />
+                  </Link>
+                ))}
+              </div>
+            </div>
+            <YouTubeEmbed videoId={group.videoId} title={group.title} />
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen pt-16" style={{ background: "var(--bg-page)" }}>
@@ -48,44 +125,22 @@ export default async function ReviewsPage() {
           </a>
         </div>
 
-        {/* Review grid — one card per unique video */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-          {groups.map((group) => (
-            <div key={group.videoId} className="space-y-4">
+        {/* Review grid with interleaved promos */}
+        <ReviewGrid items={chunkA} />
 
-              {/* Card header */}
-              <div>
-                <p className="text-xs font-semibold text-brand-500 uppercase tracking-wide mb-0.5">
-                  {group.brand}
-                </p>
-                <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>
-                  {group.title}
-                </h2>
+        {chunkB.length > 0 && (
+          <>
+            <PromoSlot product={promoA} />
+            <ReviewGrid items={chunkB} />
+          </>
+        )}
 
-                {/* Paddle chips */}
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {group.paddles.map(({ name, slug }) => (
-                    <Link
-                      key={slug}
-                      href={`/paddles/${slug}`}
-                      className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full transition-colors"
-                      style={{
-                        background: "var(--bg-alt)",
-                        color: "var(--text-secondary)",
-                        border: "1px solid var(--border)",
-                      }}
-                    >
-                      {name}
-                      <ArrowRight className="w-3 h-3 opacity-50" />
-                    </Link>
-                  ))}
-                </div>
-              </div>
-
-              <YouTubeEmbed videoId={group.videoId} title={group.title} />
-            </div>
-          ))}
-        </div>
+        {chunkC.length > 0 && (
+          <>
+            <PromoSlot product={promoB} />
+            <ReviewGrid items={chunkC} />
+          </>
+        )}
 
       </div>
     </div>

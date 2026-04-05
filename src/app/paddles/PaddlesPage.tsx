@@ -5,6 +5,8 @@ import { useSearchParams } from "next/navigation";
 import PaddleCard        from "@/components/PaddleCard";
 import FilterSystem      from "@/components/FilterSystem";
 import DiscountBanner    from "@/components/DiscountBanner";
+import PromoBar          from "@/components/PromoBar";
+import { gearProducts }  from "@/data/products";
 import { ActiveFilters, Paddle, PriceCache } from "@/types";
 import { fetchUserReactionMap, ReactionMap } from "@/hooks/useReactions";
 import {
@@ -16,6 +18,20 @@ import {
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const PAGE_SIZE_OPTIONS = [20, 50];
+const PROMO_EVERY = 8; // insert a promo after every N paddles
+
+function daySeededShuffle<T>(arr: T[], offset = 0): T[] {
+  const seed = Math.floor(Date.now() / 86400000) + offset;
+  const out = [...arr];
+  let s = seed | 0;
+  for (let i = out.length - 1; i > 0; i--) {
+    s = Math.imul(s ^ (s >>> 16), 0x45d9f3b);
+    s = Math.imul(s ^ (s >>> 13), 0x8d7ea0c3);
+    const j = (s >>> 0) % (i + 1);
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
 
 // ── Pagination controls ───────────────────────────────────────────────────────
 
@@ -84,6 +100,9 @@ function PaddlesInner({ paddles, priceCache }: { paddles: Paddle[]; priceCache: 
     fetchUserReactionMap().then(setReactions);
   }, []);
 
+  // offset=2 so paddles page shows different products than homepage (0) and reviews (1)
+  const promos = useMemo(() => daySeededShuffle(gearProducts, 2), []);
+
   // Persist applied filters to URL (no server re-render — uses replaceState)
   function handleFiltersChange(newFilters: ActiveFilters) {
     setFilters(newFilters);
@@ -111,6 +130,16 @@ function PaddlesInner({ paddles, priceCache }: { paddles: Paddle[]; priceCache: 
     setPage(Math.max(1, Math.min(totalPages, p)));
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
+
+  // Build interleaved segments: chunks of PROMO_EVERY paddles with a promo between each
+  const segments: { paddles: Paddle[]; promoIndex: number | null }[] = [];
+  for (let i = 0; i < paginated.length; i += PROMO_EVERY) {
+    const chunk = paginated.slice(i, i + PROMO_EVERY);
+    const promoIndex = segments.length < promos.length ? segments.length : null;
+    segments.push({ paddles: chunk, promoIndex });
+  }
+
+  const GRID = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6";
 
   return (
     <>
@@ -146,11 +175,33 @@ function PaddlesInner({ paddles, priceCache }: { paddles: Paddle[]; priceCache: 
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-            {paginated.map((paddle) => (
-              <PaddleCard key={paddle.id} paddle={paddle} />
-            ))}
-          </div>
+          {segments.map((seg, si) => {
+            const promo = seg.promoIndex !== null ? promos[seg.promoIndex] : null;
+            return (
+              <div key={si}>
+                <div className={`${GRID} mb-8`}>
+                  {seg.paddles.map((paddle) => (
+                    <PaddleCard key={paddle.id} paddle={paddle} />
+                  ))}
+                </div>
+                {/* Insert promo after every chunk except the last */}
+                {promo && si < segments.length - 1 && (
+                  <div className="mb-8">
+                    <PromoBar
+                      title={`${promo.brand} ${promo.name}`}
+                      subtitle={promo.subtitle}
+                      ctaText={promo.ctaText}
+                      ctaHref={promo.link}
+                      image={promo.image || undefined}
+                      imageAlt={`${promo.brand} ${promo.name}`}
+                      badge={promo.badge || undefined}
+                      bg={promo.bg}
+                    />
+                  </div>
+                )}
+              </div>
+            );
+          })}
 
           <Pagination page={page} totalPages={totalPages} onPage={handlePage} />
         </>
