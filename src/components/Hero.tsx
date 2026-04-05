@@ -71,7 +71,7 @@ export default function Hero() {
             <img
               src="/images/Hero-image.png"
               alt="Pickleball paddle hero"
-              className="relative z-10 w-full max-w-[220px] lg:max-w-[520px]"
+              className="relative z-10 w-full max-w-[340px] lg:max-w-[520px]"
               style={{
                 objectFit: "contain",
                 filter: "drop-shadow(0 20px 48px rgba(0,0,0,0.7))",

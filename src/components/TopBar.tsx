@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
-import { X } from "lucide-react";
+import { X, Heart, ThumbsDown } from "lucide-react";
 
 export default function TopBar() {
   const [dismissed, setDismissed] = useState(false);
@@ -36,18 +36,24 @@ export default function TopBar() {
 
       {/* Row 2 */}
       <p
-        className="text-xs sm:text-sm leading-snug mt-1"
+        className="text-xs sm:text-sm leading-snug mt-1 flex items-center justify-center gap-1"
         style={{ color: "#2A3A4A" }}
       >
-        Give paddles a ❤️ that you like.
+        Give paddles a
+        <Heart className="w-3.5 h-3.5 flex-shrink-0" fill="#ef4444" stroke="#ef4444" />
+        that you like.
       </p>
 
       {/* Row 3 — inline "Start Reviewing" link */}
       <p
-        className="text-xs sm:text-sm leading-snug mt-1"
+        className="text-xs sm:text-sm leading-snug mt-1 flex items-center justify-center gap-1 flex-wrap"
         style={{ color: "#2A3A4A" }}
       >
-        Leave a 👎 on paddles you dislike.{" "}
+        <span className="inline-flex items-center gap-1">
+          Leave a
+          <ThumbsDown className="w-3.5 h-3.5 flex-shrink-0" fill="#0B1A2B" stroke="#0B1A2B" />
+          on paddles you dislike.
+        </span>{" "}
         <Link
           href="/review-paddles"
           className="font-bold underline underline-offset-2 transition-opacity hover:opacity-70"
