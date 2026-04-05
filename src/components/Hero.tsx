@@ -7,8 +7,6 @@ const VALUE_PROPS = [
   "Real on-court reviews, not just spec sheets",
   "Compare any two paddles side by side",
   "Exclusive discount codes from top brands",
-  "Smart filters to find your ideal paddle",
-  "Honest takes from actual gameplay",
 ];
 
 const featuredPaddle = paddles.find((p) => p.slug === siteConfig.hottestPaddleSlug);
