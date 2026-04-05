@@ -32,7 +32,7 @@ export default function Hero() {
   return (
     <>
       <section
-        className="relative overflow-hidden pt-16"
+        className="relative overflow-hidden pt-28"
         style={{ background: "linear-gradient(160deg, #060d18 0%, #0b1628 100%)" }}
       >
         {/* Teal glow */}

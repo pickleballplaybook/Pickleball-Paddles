@@ -25,12 +25,12 @@ export default function TopBar() {
   return (
     <div
       ref={barRef}
-      className="relative flex items-center justify-center gap-4 px-12 py-2.5 text-center"
+      className="relative flex items-center justify-center gap-3 px-4 sm:px-12 py-2.5 text-center"
       style={{ background: "#3cacae", borderBottom: "1px solid rgba(255,255,255,0.2)" }}
     >
       <p className="leading-snug">
         <span
-          className="font-extrabold text-white text-sm sm:text-[15px] tracking-tight"
+          className="font-extrabold text-white text-xs sm:text-[15px] tracking-tight"
         >
           Become a Paddle Reviewer
         </span>
@@ -44,7 +44,7 @@ export default function TopBar() {
 
       <Link
         href="/review-paddles"
-        className="flex-shrink-0 text-xs font-bold px-4 py-1.5 rounded-lg transition-colors whitespace-nowrap tracking-wide"
+        className="hidden sm:inline-flex flex-shrink-0 text-xs font-bold px-4 py-1.5 rounded-lg transition-colors whitespace-nowrap tracking-wide"
         style={{
           background: "#ffffff",
           color: "#0c6b70",
