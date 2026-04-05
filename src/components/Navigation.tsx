@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Menu, X, Search, Sun, Moon } from "lucide-react";
 import { siteConfig } from "@/config/site";
@@ -162,12 +161,12 @@ export default function Navigation() {
               onClick={() => setIsMenuOpen(false)}
             >
               <div className="flex-shrink-0 transition-transform duration-200 group-hover:scale-105">
-                <Image
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
                   src={siteConfig.logoPath}
                   alt={siteConfig.name}
                   width={siteConfig.logoWidth}
                   height={siteConfig.logoHeight}
-                  priority
                 />
               </div>
               <div className="flex flex-col leading-none">
