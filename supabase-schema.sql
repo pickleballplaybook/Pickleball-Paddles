@@ -1,0 +1,44 @@
+-- Run this in the Supabase SQL Editor:
+-- https://supabase.com/dashboard/project/yloxiibtewpewpvtdtvp/sql/new
+
+-- ── Reactions table ───────────────────────────────────────────────────────────
+
+create table if not exists public.reactions (
+  id         bigint generated always as identity primary key,
+  session_id text        not null,
+  paddle_id  text        not null,
+  reaction   text        not null check (reaction in ('heart', 'dislike')),
+  created_at timestamptz not null default now(),
+  constraint reactions_session_paddle_unique unique (session_id, paddle_id)
+);
+
+-- Fast lookups by session (loading a user's own hearts)
+create index if not exists idx_reactions_session_id on public.reactions (session_id);
+-- Fast lookups by paddle (counting hearts for trending)
+create index if not exists idx_reactions_paddle_id  on public.reactions (paddle_id);
+-- Fast filter by reaction type
+create index if not exists idx_reactions_reaction    on public.reactions (reaction);
+
+-- ── Row-Level Security ────────────────────────────────────────────────────────
+-- Heart data is intentionally public — it powers the trending section.
+-- Anyone with the anon key can read all reactions and write their own.
+
+alter table public.reactions enable row level security;
+
+-- Allow anon users to read all reactions (needed for trending across all users)
+create policy "anon can read all reactions"
+  on public.reactions for select
+  to anon using (true);
+
+-- Allow anon users to insert/update/delete (they are identified by session_id)
+create policy "anon can write reactions"
+  on public.reactions for insert
+  to anon with check (true);
+
+create policy "anon can update reactions"
+  on public.reactions for update
+  to anon using (true) with check (true);
+
+create policy "anon can delete reactions"
+  on public.reactions for delete
+  to anon using (true);
