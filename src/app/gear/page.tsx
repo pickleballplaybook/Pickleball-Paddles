@@ -10,29 +10,44 @@ export const metadata: Metadata = {
 const titan = gearProducts.find((p) => p.id === "titan")!;
 const rest  = gearProducts.filter((p) => p.id !== "titan");
 
-// ── Wide-image hero card (full-width, image-left layout) ──────────────────────
+// ── Shared CTA button ─────────────────────────────────────────────────────────
+function CtaButton({ href, text }: { href: string; text: string }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer sponsored"
+      className="inline-flex items-center gap-2 self-start font-bold text-sm px-6 py-3.5 rounded-xl text-white transition-all duration-200 active:scale-[0.98]"
+      style={{
+        background: "linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)",
+        boxShadow: "0 0 24px rgba(20,184,166,0.25)",
+      }}
+    >
+      {text}
+      <ArrowRight className="w-4 h-4" strokeWidth={2.5} />
+    </a>
+  );
+}
+
+// ── Wide-image card — full-width, large image left, copy right ────────────────
 function WideCard({ p }: { p: GearProduct }) {
   return (
-    <div className="md:col-span-2 rounded-3xl overflow-hidden" style={{ background: p.bg }}>
-      <div className="grid grid-cols-1 lg:grid-cols-5 items-stretch">
+    <div className="col-span-full rounded-3xl overflow-hidden" style={{ background: p.bg }}>
+      <div className="flex flex-col lg:flex-row" style={{ minHeight: "420px" }}>
 
-        {/* Image — 3/5 width on desktop, full width on mobile */}
-        <div className="lg:col-span-3 relative overflow-hidden" style={{ minHeight: "300px" }}>
+        {/* Image — full width on mobile, 60% on desktop */}
+        <div className="w-full lg:w-[60%] flex-shrink-0 overflow-hidden" style={{ minHeight: "280px" }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={p.image}
             alt={`${p.brand} ${p.name}`}
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-          {/* subtle gradient fade into copy panel */}
-          <div
-            className="absolute inset-y-0 right-0 w-24 hidden lg:block"
-            style={{ background: `linear-gradient(to right, transparent, ${p.bg})` }}
+            className="w-full h-full object-cover"
+            style={{ minHeight: "280px" }}
           />
         </div>
 
-        {/* Copy — 2/5 width on desktop */}
-        <div className="lg:col-span-2 p-8 lg:p-12 flex flex-col justify-center">
+        {/* Copy — full width on mobile, 40% on desktop */}
+        <div className="flex-1 p-8 lg:p-14 flex flex-col justify-center">
           {p.badge && (
             <span
               className="inline-block self-start mb-4 text-[11px] font-bold uppercase tracking-widest px-3 py-1 rounded-full"
@@ -48,26 +63,12 @@ function WideCard({ p }: { p: GearProduct }) {
             {p.name}
           </h3>
           {p.price && p.price !== "Free" && (
-            <p className="text-sm font-semibold mb-2" style={{ color: "rgba(255,255,255,0.5)" }}>
-              {p.price}
-            </p>
+            <p className="text-sm font-semibold mb-3" style={{ color: "rgba(255,255,255,0.5)" }}>{p.price}</p>
           )}
           <p className="text-sm mb-8 leading-relaxed" style={{ color: "rgba(255,255,255,0.65)" }}>
             {p.subtitle}
           </p>
-          <a
-            href={p.link}
-            target="_blank"
-            rel="noopener noreferrer sponsored"
-            className="inline-flex items-center gap-2 self-start font-bold text-sm px-6 py-3.5 rounded-xl text-white transition-all duration-200 active:scale-[0.98]"
-            style={{
-              background: "linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)",
-              boxShadow: "0 0 24px rgba(20,184,166,0.25)",
-            }}
-          >
-            {p.ctaText}
-            <ArrowRight className="w-4 h-4" strokeWidth={2.5} />
-          </a>
+          <CtaButton href={p.link} text={p.ctaText} />
         </div>
 
       </div>
@@ -82,11 +83,10 @@ function SquareCard({ p }: { p: GearProduct }) {
       className="rounded-2xl overflow-hidden flex flex-col"
       style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}
     >
-      {/* Image area — true square with product brand color bg */}
       {p.imageAspect === "square" && (
         <div
-          className="w-full aspect-square flex items-center justify-center p-10 flex-shrink-0"
-          style={{ background: p.bg }}
+          className="w-full flex items-center justify-center flex-shrink-0 p-12"
+          style={{ background: p.bg, aspectRatio: "1 / 1" }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -98,54 +98,45 @@ function SquareCard({ p }: { p: GearProduct }) {
       )}
       {p.imageAspect === "none" && (
         <div
-          className="w-full aspect-square flex items-center justify-center flex-shrink-0"
-          style={{ background: p.bg }}
+          className="w-full flex items-center justify-center flex-shrink-0"
+          style={{ background: p.bg, aspectRatio: "1 / 1" }}
         >
-          <GraduationCap className="w-20 h-20" style={{ color: "#14b8a6", opacity: 0.7 }} strokeWidth={1.5} />
+          <GraduationCap className="w-24 h-24" style={{ color: "#14b8a6", opacity: 0.7 }} strokeWidth={1.5} />
         </div>
       )}
 
-      {/* Card body */}
-      <div className="p-6 flex flex-col flex-1">
-        <div className="flex items-start justify-between gap-2 mb-2">
-          <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: "#14b8a6" }}>
+      <div className="p-7 flex flex-col flex-1">
+        <div className="flex items-start justify-between gap-2 mb-3">
+          <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "#14b8a6" }}>
             {p.brand}
           </p>
           {p.badge && (
             <span
               className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full whitespace-nowrap flex-shrink-0"
-              style={{
-                background: "rgba(20,184,166,0.15)",
-                color: "#2dd4bf",
-                border: "1px solid rgba(20,184,166,0.25)",
-              }}
+              style={{ background: "rgba(20,184,166,0.15)", color: "#2dd4bf", border: "1px solid rgba(20,184,166,0.25)" }}
             >
               {p.badge}
             </span>
           )}
         </div>
-
-        <h3 className="text-lg font-bold mb-2 leading-snug" style={{ color: "var(--text-primary)" }}>
+        <h3 className="text-xl font-bold mb-2 leading-snug" style={{ color: "var(--text-primary)" }}>
           {p.name}
         </h3>
         <p className="text-sm leading-relaxed mb-6 flex-1" style={{ color: "var(--text-muted)" }}>
           {p.subtitle}
         </p>
-
         <div className="flex items-center justify-between gap-3 mt-auto">
           {p.price && p.price !== "Free" && (
-            <span className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
-              {p.price}
-            </span>
+            <span className="text-base font-semibold" style={{ color: "var(--text-secondary)" }}>{p.price}</span>
           )}
           {p.price === "Free" && (
-            <span className="text-sm font-bold" style={{ color: "#14b8a6" }}>Free</span>
+            <span className="text-base font-bold" style={{ color: "#14b8a6" }}>Free</span>
           )}
           <a
             href={p.link}
             target="_blank"
             rel="noopener noreferrer sponsored"
-            className="inline-flex items-center gap-1.5 text-sm font-bold px-5 py-2.5 rounded-xl text-white transition-all duration-200 active:scale-[0.98] ml-auto whitespace-nowrap"
+            className="inline-flex items-center gap-2 text-sm font-bold px-5 py-3 rounded-xl text-white transition-all duration-200 active:scale-[0.98] ml-auto whitespace-nowrap"
             style={{ background: "linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)" }}
           >
             {p.ctaText}
@@ -175,24 +166,29 @@ export default function GearPage() {
           </p>
         </div>
 
-        {/* ── Titan hero card ────────────────────────────────────────────────── */}
+        {/* ── Titan hero card (featured, extra large) ───────────────────────── */}
         <div className="rounded-3xl overflow-hidden mb-8" style={{ background: titan.bg }}>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 items-center">
+          <div className="flex flex-col lg:flex-row" style={{ minHeight: "500px" }}>
+
+            {/* Image */}
             <div
-              className="flex items-center justify-center p-10 lg:p-16"
+              className="w-full lg:w-1/2 flex items-center justify-center flex-shrink-0 p-12 lg:p-20"
               style={{ background: "rgba(255,255,255,0.03)" }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={titan.image}
                 alt={`${titan.brand} ${titan.name}`}
-                className="w-full max-w-sm h-auto object-contain drop-shadow-2xl"
+                className="w-full h-auto object-contain drop-shadow-2xl"
+                style={{ maxHeight: "380px" }}
               />
             </div>
-            <div className="p-10 lg:p-16">
+
+            {/* Copy */}
+            <div className="flex-1 p-10 lg:p-16 flex flex-col justify-center">
               {titan.badge && (
                 <span
-                  className="inline-block mb-4 text-[11px] font-bold uppercase tracking-widest px-3 py-1 rounded-full"
+                  className="inline-block self-start mb-5 text-[11px] font-bold uppercase tracking-widest px-3 py-1 rounded-full"
                   style={{ background: "rgba(20,184,166,0.2)", color: "#2dd4bf", border: "1px solid rgba(20,184,166,0.3)" }}
                 >
                   {titan.badge}
@@ -201,30 +197,20 @@ export default function GearPage() {
               <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: "rgba(255,255,255,0.45)" }}>
                 {titan.brand}
               </p>
-              <h2 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight leading-tight mb-3">
+              <h2 className="text-3xl md:text-5xl font-extrabold text-white tracking-tight leading-tight mb-4">
                 {titan.name}
               </h2>
-              <p className="text-base mb-8" style={{ color: "rgba(255,255,255,0.65)" }}>
+              <p className="text-lg mb-10" style={{ color: "rgba(255,255,255,0.65)" }}>
                 {titan.subtitle}
               </p>
-              <a
-                href={titan.link}
-                target="_blank"
-                rel="noopener noreferrer sponsored"
-                className="inline-flex items-center gap-2 font-bold text-sm px-6 py-3.5 rounded-xl text-white transition-all duration-200 active:scale-[0.98]"
-                style={{
-                  background: "linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)",
-                  boxShadow: "0 0 24px rgba(20,184,166,0.3)",
-                }}
-              >
-                {titan.ctaText}
-                <ArrowRight className="w-4 h-4" strokeWidth={2.5} />
-              </a>
+              <CtaButton href={titan.link} text={titan.ctaText} />
             </div>
+
           </div>
         </div>
 
-        {/* ── Product grid — wide cards span full width, square cards fill 2-col ── */}
+        {/* ── Product grid ──────────────────────────────────────────────────── */}
+        {/* Wide cards use col-span-full; square cards fill one of 2 columns */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {rest.map((p) =>
             p.imageAspect === "wide"
