@@ -137,19 +137,17 @@ export default function Hero() {
               className="absolute inset-0 pointer-events-none"
               style={{ background: "radial-gradient(ellipse 75% 70% at 50% 55%, rgba(20,184,166,0.15) 0%, transparent 70%)" }}
             />
-            {featuredPaddle?.image && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={featuredPaddle.image}
-                alt={`${featuredPaddle.brand} ${featuredPaddle.name}`}
-                className="relative z-10 w-full"
-                style={{
-                  maxWidth: "520px",
-                  objectFit: "contain",
-                  filter: "drop-shadow(0 40px 80px rgba(0,0,0,0.75))",
-                }}
-              />
-            )}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/images/Hero-image.png"
+              alt="Pickleball paddle hero"
+              className="relative z-10 w-full"
+              style={{
+                maxWidth: "520px",
+                objectFit: "contain",
+                filter: "drop-shadow(0 40px 80px rgba(0,0,0,0.75))",
+              }}
+            />
           </div>
 
         </div>
