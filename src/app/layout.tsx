@@ -72,10 +72,8 @@ export default function RootLayout({
       </head>
       <body className="font-sans antialiased">
         <ThemeProvider>
-          {/* Single fixed shell */}
+          {/* Single fixed shell — TopBar includes its own mobile safe-area fix */}
           <div className="fixed inset-x-0 top-0 z-50">
-            {/* Safe-area inset — dark strip behind status bar on notched iPhones (0px on desktop) */}
-            <div style={{ height: "env(safe-area-inset-top, 0px)", background: "#000" }} />
             <TopBar />
             <Navigation />
           </div>

@@ -34,7 +34,7 @@ export default function Hero() {
       className="relative overflow-hidden flex flex-col"
       style={{
         background: "linear-gradient(160deg, #060d18 0%, #0b1628 100%)",
-        paddingTop: "calc(var(--topbar-h, 88px) + 64px + env(safe-area-inset-top, 0px))",
+        paddingTop: "calc(var(--topbar-h, 108px) + 64px)",
         minHeight: "100vh",
       }}
     >
