@@ -132,8 +132,8 @@ export default async function HomePage() {
         icon={<Smartphone className="w-5 h-5" strokeWidth={2} />}
         bg="#0c1a2e"
       />
-      <LatestPaddles paddles={latestPaddles} />
       <div id="paddles"><HottestPaddle /></div>
+      <LatestPaddles paddles={latestPaddles} />
 
       {/* Rotating gear promo A */}
       <PromoBar

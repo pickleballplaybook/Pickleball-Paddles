@@ -31,8 +31,8 @@ function StarIcon() {
 export default function Hero() {
   return (
     <section
-      className="relative overflow-hidden"
-      style={{ background: "linear-gradient(160deg, #060d18 0%, #0b1628 100%)", paddingTop: "var(--shell-offset, 128px)" }}
+      className="relative overflow-hidden flex flex-col"
+      style={{ background: "linear-gradient(160deg, #060d18 0%, #0b1628 100%)", paddingTop: "var(--shell-offset, 108px)", minHeight: "100vh" }}
     >
       {/* Teal glow */}
       <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 flex justify-center">
@@ -53,11 +53,11 @@ export default function Hero() {
       />
 
       {/* Two-column content */}
-      <div className="relative container-xl">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-14 items-center min-h-[400px] lg:min-h-[500px]">
+      <div className="relative container-xl flex-1 flex items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-14 items-center w-full py-10 lg:py-12">
 
           {/* ── LEFT: copy ───────────────────────────────────────────────── */}
-          <div className="flex flex-col py-4 lg:py-6">
+          <div className="flex flex-col">
 
             {/* Eyebrow */}
             <div className="flex items-center gap-2.5 mb-4">

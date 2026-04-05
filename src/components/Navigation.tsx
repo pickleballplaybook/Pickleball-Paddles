@@ -62,7 +62,7 @@ function GlobalSearch({ onClose }: { onClose: () => void }) {
       >
         {/* Input row */}
         <div className="flex items-center gap-3 px-4 py-3.5" style={{ borderBottom: "1px solid var(--border)" }}>
-          <Search className="w-4 h-4 flex-shrink-0" style={{ color: "var(--text-muted)" }} />
+          <Search className="w-4 h-4 flex-shrink-0" style={{ color: "rgba(255,255,255,0.5)" }} />
           <input
             ref={inputRef}
             type="text"
@@ -75,7 +75,7 @@ function GlobalSearch({ onClose }: { onClose: () => void }) {
           <button
             onClick={onClose}
             className="w-7 h-7 flex items-center justify-center rounded-lg transition-colors hover:text-red-400 flex-shrink-0"
-            style={{ color: "var(--text-muted)" }}
+            style={{ color: "rgba(255,255,255,0.5)" }}
             aria-label="Close search"
           >
             <X className="w-4 h-4" />
@@ -85,13 +85,13 @@ function GlobalSearch({ onClose }: { onClose: () => void }) {
         {/* Results */}
         {query.trim() === "" ? (
           <div className="px-4 py-6 text-center">
-            <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+            <p className="text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>
               Start typing to search paddles by brand or name.
             </p>
           </div>
         ) : results.length === 0 ? (
           <div className="px-4 py-6 text-center">
-            <p className="text-sm" style={{ color: "var(--text-muted)" }}>No paddles found for &ldquo;{query}&rdquo;</p>
+            <p className="text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>No paddles found for &ldquo;{query}&rdquo;</p>
           </div>
         ) : (
           <div>
@@ -112,7 +112,7 @@ function GlobalSearch({ onClose }: { onClose: () => void }) {
                   <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#14b8a6" }}>{p.brand}</p>
                   <p className="text-sm font-bold truncate">{p.name}</p>
                 </div>
-                <p className="text-xs flex-shrink-0" style={{ color: "var(--text-muted)" }}>
+                <p className="text-xs flex-shrink-0" style={{ color: "rgba(255,255,255,0.5)" }}>
                   {p.shape} · {p.thickness}
                 </p>
               </button>
@@ -144,9 +144,9 @@ export default function Navigation() {
       <header
         className="relative transition-all duration-300"
         style={{
-          background: isScrolled ? "var(--nav-bg-blur)" : "var(--nav-bg)",
-          borderBottom: `1px solid ${isScrolled ? "var(--nav-border)" : "transparent"}`,
-          boxShadow: isScrolled ? "var(--nav-shadow)" : "none",
+          background: isScrolled ? "rgba(0,0,0,0.96)" : "#000000",
+          borderBottom: `1px solid ${isScrolled ? "rgba(255,255,255,0.08)" : "transparent"}`,
+          boxShadow: isScrolled ? "0 1px 3px rgba(0,0,0,0.5)" : "none",
           backdropFilter: isScrolled ? "blur(12px)" : "none",
           WebkitBackdropFilter: isScrolled ? "blur(12px)" : "none",
         }}
@@ -172,7 +172,7 @@ export default function Navigation() {
               <div className="flex flex-col leading-none">
                 <span
                   className="font-extrabold text-[14px] tracking-tight leading-tight"
-                  style={{ color: "var(--nav-text)" }}
+                  style={{ color: "#e2e8f0" }}
                 >
                   Pickleball
                 </span>
@@ -189,7 +189,7 @@ export default function Navigation() {
                   key={link.href}
                   href={link.href}
                   className="text-sm font-medium px-3.5 py-2 rounded-lg transition-all duration-150 hover:text-brand-500"
-                  style={{ color: "var(--nav-text)" }}
+                  style={{ color: "#e2e8f0" }}
                 >
                   {link.label}
                 </Link>
@@ -202,7 +202,7 @@ export default function Navigation() {
                 onClick={() => setSearchOpen(true)}
                 aria-label="Search paddles"
                 className="w-9 h-9 flex items-center justify-center rounded-lg transition-all hover:text-brand-500"
-                style={{ color: "var(--text-muted)" }}
+                style={{ color: "rgba(255,255,255,0.5)" }}
               >
                 <Search className="w-4 h-4" strokeWidth={2} />
               </button>
@@ -210,7 +210,7 @@ export default function Navigation() {
                 onClick={toggle}
                 aria-label="Toggle theme"
                 className="w-9 h-9 flex items-center justify-center rounded-lg transition-all hover:text-brand-500"
-                style={{ color: "var(--text-muted)" }}
+                style={{ color: "rgba(255,255,255,0.5)" }}
               >
                 {theme === "dark"
                   ? <Sun className="w-4 h-4" strokeWidth={2} />
@@ -229,14 +229,14 @@ export default function Navigation() {
               <button
                 onClick={() => setSearchOpen(true)}
                 className="p-2 rounded-lg transition-colors"
-                style={{ color: "var(--text-muted)" }}
+                style={{ color: "rgba(255,255,255,0.5)" }}
                 aria-label="Search"
               >
                 <Search className="w-5 h-5" />
               </button>
               <button
                 className="p-2 rounded-lg transition-colors"
-                style={{ color: "var(--text-muted)" }}
+                style={{ color: "rgba(255,255,255,0.5)" }}
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 aria-label="Toggle menu"
               >
@@ -251,7 +251,7 @@ export default function Navigation() {
           className={`md:hidden transition-all duration-300 overflow-hidden ${
             isMenuOpen ? "max-h-[400px] opacity-100" : "max-h-0 opacity-0"
           }`}
-          style={{ borderTop: "1px solid var(--nav-border)", background: "var(--nav-bg)" }}
+          style={{ borderTop: "1px solid rgba(255,255,255,0.08)", background: "#000000" }}
         >
           <div className="container-xl py-4 flex flex-col gap-1">
             {navLinks.map((link) => (
@@ -259,7 +259,7 @@ export default function Navigation() {
                 key={link.href}
                 href={link.href}
                 className="text-sm font-medium px-4 py-3 rounded-xl transition-all hover:text-brand-500"
-                style={{ color: "var(--nav-text)" }}
+                style={{ color: "#e2e8f0" }}
                 onClick={() => setIsMenuOpen(false)}
               >
                 {link.label}
@@ -269,7 +269,7 @@ export default function Navigation() {
               <button
                 onClick={toggle}
                 className="flex items-center gap-2 text-sm font-medium px-4 py-3 rounded-xl transition-all hover:text-brand-500"
-                style={{ color: "var(--nav-text)" }}
+                style={{ color: "#e2e8f0" }}
               >
                 {theme === "dark"
                   ? <><Sun className="w-4 h-4" strokeWidth={2} /> Light Mode</>
