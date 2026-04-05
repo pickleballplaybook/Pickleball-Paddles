@@ -23,12 +23,6 @@ export default function TopBar() {
 
   return (
     <div ref={wrapperRef}>
-      {/* Mobile-only black strip behind time / wifi / battery — hidden on desktop */}
-      <div
-        className="block md:hidden"
-        style={{ height: "env(safe-area-inset-top, 20px)", background: "#000" }}
-      />
-
       {/* Announcement banner */}
       <div
         className="relative"

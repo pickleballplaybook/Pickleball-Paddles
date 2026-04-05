@@ -18,8 +18,8 @@ const inter = Inter({
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  viewportFit: "cover",
-  // Controls browser chrome color on Android Chrome + iOS Safari 15+
+  // viewportFit intentionally left as default ("auto") so Safari reserves
+  // the safe-area naturally — the page does not extend behind the status bar.
   themeColor: "#000000",
 };
 
