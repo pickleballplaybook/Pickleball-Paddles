@@ -236,7 +236,7 @@ export default function PaddlesPage({
   priceCache: PriceCache;
 }) {
   return (
-    <div className="min-h-screen" style={{ paddingTop: "calc(var(--topbar-h) + 96px)", background: "var(--bg-page)" }}>
+    <div className="min-h-screen pt-32" style={{ background: "var(--bg-page)" }}>
       <div className="container-xl">
 
         <div className="pt-10 pb-12 mb-10" style={{ borderBottom: "1px solid var(--border)" }}>
