@@ -26,7 +26,7 @@ export default function TopBar() {
     <div
       ref={barRef}
       className="relative flex items-center justify-center gap-3 px-4 sm:px-12 py-[15px] text-center"
-      style={{ background: "#DEFA32", borderBottom: "1px solid rgba(0,0,0,0.08)" }}
+      style={{ background: "#DEFA32", borderBottom: "1px solid rgba(0,0,0,0.12)" }}
     >
       <p className="leading-snug">
         <span
@@ -37,9 +37,9 @@ export default function TopBar() {
         </span>
         <span
           className="hidden sm:inline font-medium text-xs sm:text-sm ml-2.5"
-          style={{ color: "rgba(11,26,43,0.65)" }}
+          style={{ color: "#2A3A4A" }}
         >
-          · Share your feedback and help shape what&apos;s trending
+          <span style={{ opacity: 0.5 }}> · </span>Share your feedback and help shape what&apos;s trending
         </span>
       </p>
 
@@ -49,18 +49,20 @@ export default function TopBar() {
         style={{
           background: "#ffffff",
           color: "#0B1A2B",
-          border: "1px solid rgba(0,0,0,0.10)",
-          boxShadow: "0 1px 3px rgba(0,0,0,0.10)",
+          fontWeight: 600,
+          border: "1px solid rgba(0,0,0,0.08)",
+          boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+          borderRadius: "10px",
         }}
         onMouseEnter={e => {
           const el = e.currentTarget as HTMLElement;
-          el.style.background = "#f0f0f0";
-          el.style.boxShadow = "0 2px 6px rgba(0,0,0,0.15)";
+          el.style.boxShadow = "0 4px 12px rgba(0,0,0,0.20)";
+          el.style.transform = "translateY(-1px)";
         }}
         onMouseLeave={e => {
           const el = e.currentTarget as HTMLElement;
-          el.style.background = "#ffffff";
-          el.style.boxShadow = "0 1px 3px rgba(0,0,0,0.10)";
+          el.style.boxShadow = "0 2px 6px rgba(0,0,0,0.15)";
+          el.style.transform = "translateY(0)";
         }}
       >
         Start Reviewing
