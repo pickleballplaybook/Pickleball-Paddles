@@ -1,5 +1,33 @@
 "use client";
 
+const VALUE_PROPS = [
+  "Real on-court reviews, not just spec sheets",
+  "Compare any two paddles side by side",
+  "Exclusive discount codes from top brands",
+  "Smart filters to find your ideal paddle",
+  "Honest takes from actual gameplay",
+];
+
+function CheckIcon() {
+  return (
+    <svg
+      className="w-[15px] h-[15px] flex-shrink-0"
+      viewBox="0 0 15 15"
+      fill="none"
+      aria-hidden
+    >
+      <circle cx="7.5" cy="7.5" r="7.5" fill="rgba(20,184,166,0.18)" />
+      <path
+        d="M4.5 7.5l2 2 4-4"
+        stroke="#2dd4bf"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export default function Hero() {
   return (
     <>
@@ -67,6 +95,22 @@ export default function Hero() {
               Latest Reviews
             </a>
           </div>
+
+          {/* ── Value props ────────────────────────────────────────────────── */}
+          <div
+            className="mt-10 pt-8 flex flex-wrap items-center justify-center gap-x-7 gap-y-3"
+            style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}
+          >
+            {VALUE_PROPS.map((text) => (
+              <span key={text} className="flex items-center gap-2">
+                <CheckIcon />
+                <span className="text-[13px] font-medium text-slate-300 leading-none whitespace-nowrap">
+                  {text}
+                </span>
+              </span>
+            ))}
+          </div>
+
         </div>
 
         {/* Bottom rule */}
