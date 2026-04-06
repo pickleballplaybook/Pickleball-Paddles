@@ -23,7 +23,7 @@ function ratingBars(paddle: Paddle) {
 
 // ── Discount helpers ──────────────────────────────────────────────────────────
 function getCode(brand: string) {
-  return brand === "Selkirk" ? "INF-PLAYBOOK" : siteConfig.discountCode;
+  return (brand === "Selkirk" || brand === "SLK") ? "INF-PLAYBOOK" : siteConfig.discountCode;
 }
 
 function isGiftCard(brand: string, amountOff: string) {

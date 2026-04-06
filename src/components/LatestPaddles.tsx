@@ -83,7 +83,7 @@ function PaddleCard({ paddle }: { paddle: Paddle }) {
           )}
           {paddle.amountOff && paddle.amountOff !== "$0" && paddle.amountOff !== "" && (
             <p className="text-[11px] font-semibold" style={{ color: "var(--discount-text)" }}>
-              Code <span className="font-mono tracking-wider">PLAYBOOK</span> saves {paddle.amountOff}
+              Code <span className="font-mono tracking-wider">{(paddle.brand === "Selkirk" || paddle.brand === "SLK") ? "INF-PLAYBOOK" : "PLAYBOOK"}</span> saves {paddle.amountOff}
             </p>
           )}
         </div>

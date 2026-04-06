@@ -10,7 +10,7 @@ interface PaddleOfTheMonthProps {
 
 export default function PaddleOfTheMonth({ paddle }: PaddleOfTheMonthProps) {
   const hasLink = !!paddle.discountLink?.trim();
-  const code = paddle.brand === "Selkirk" ? "INF-PLAYBOOK" : "PLAYBOOK";
+  const code = (paddle.brand === "Selkirk" || paddle.brand === "SLK") ? "INF-PLAYBOOK" : "PLAYBOOK";
 
   return (
     <section className="section-y bg-slate-900 text-white overflow-hidden relative">

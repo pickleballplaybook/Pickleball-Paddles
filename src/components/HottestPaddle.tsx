@@ -16,7 +16,7 @@ export default function HottestPaddle() {
   const { hottestPaddleSlug, hottestPaddleSeries, discountCode } = siteConfig;
   const paddle = getPaddleBySlug(hottestPaddleSlug);
   const shopLink = hottestPaddleSeries.seriesLink || paddle?.discountLink || "/paddles";
-  const code = paddle?.brand === "Selkirk" ? "INF-PLAYBOOK" : discountCode;
+  const code = (paddle?.brand === "Selkirk" || paddle?.brand === "SLK") ? "INF-PLAYBOOK" : discountCode;
 
   return (
     <section
