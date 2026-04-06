@@ -70,9 +70,24 @@ function PaddleCard({ paddle }: { paddle: Paddle }) {
         <p className="font-bold text-sm leading-snug mb-1" style={{ color: "var(--text-primary)" }}>
           {paddle.name}
         </p>
-        <p className="text-xs mb-3" style={{ color: "var(--text-muted)" }}>
+        <p className="text-xs mb-2" style={{ color: "var(--text-muted)" }}>
           {paddle.shape} · {paddle.thickness}
         </p>
+
+        {/* Price + discount */}
+        <div className="mb-3 flex flex-col gap-1">
+          {paddle.price && (
+            <p className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>
+              {paddle.price}
+            </p>
+          )}
+          {paddle.amountOff && paddle.amountOff !== "$0" && paddle.amountOff !== "" && (
+            <p className="text-[11px] font-semibold" style={{ color: "var(--discount-text)" }}>
+              Code <span className="font-mono tracking-wider">PLAYBOOK</span> saves {paddle.amountOff}
+            </p>
+          )}
+        </div>
+
         <div className="mt-auto">
           <span
             className="inline-flex items-center text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"

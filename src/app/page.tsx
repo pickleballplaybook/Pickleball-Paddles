@@ -121,7 +121,7 @@ export default async function HomePage() {
     <>
       <Hero />
 
-      <div id="latest-reviews"><LatestReviews items={latestReviewItems} /></div>
+      <LatestPaddles paddles={latestPaddles} />
 
       {/* Drills App */}
       <PromoBar
@@ -133,7 +133,7 @@ export default async function HomePage() {
         bg="#0c1a2e"
       />
       <div id="paddles"><HottestPaddle /></div>
-      <LatestPaddles paddles={latestPaddles} />
+      <div id="latest-reviews"><LatestReviews items={latestReviewItems} /></div>
 
       {/* Rotating gear promo A */}
       <PromoBar

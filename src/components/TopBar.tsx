@@ -57,9 +57,8 @@ export default function TopBar() {
             className="flex items-center justify-center gap-1 md:text-[13px] text-[12px]"
             style={{ margin: "5px 0 0", lineHeight: 1.1, fontWeight: 400, color: "rgba(255,255,255,0.5)" }}
           >
-            Give paddles a
             <Heart className="w-3 h-3 flex-shrink-0" fill="none" stroke="#f472b6" strokeWidth={2} />
-            that you like
+            paddles you like
           </p>
 
           {/* Line 3 — CTA */}
