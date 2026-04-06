@@ -81,11 +81,18 @@ function PaddleCard({ paddle }: { paddle: Paddle }) {
               {paddle.price}
             </p>
           )}
-          {paddle.amountOff && paddle.amountOff !== "$0" && paddle.amountOff !== "" && (
-            <p className="text-[11px] font-semibold" style={{ color: "var(--discount-text)" }}>
-              Code <span className="font-mono tracking-wider">{(paddle.brand === "Selkirk" || paddle.brand === "SLK") ? "INF-PLAYBOOK" : "PLAYBOOK"}</span> saves {paddle.amountOff}
-            </p>
-          )}
+          {(() => {
+            const isSelkirk = paddle.brand === "Selkirk" || paddle.brand === "SLK";
+            const hasDiscount = paddle.amountOff && paddle.amountOff !== "$0" && paddle.amountOff !== "";
+            if (!isSelkirk && !hasDiscount) return null;
+            const code = isSelkirk ? "INF-PLAYBOOK" : "PLAYBOOK";
+            return (
+              <p className="text-[11px] font-semibold" style={{ color: "var(--discount-text)" }}>
+                Code <span className="font-mono tracking-wider">{code}</span>
+                {hasDiscount ? ` saves ${paddle.amountOff}` : ""}
+              </p>
+            );
+          })()}
         </div>
 
         <div className="mt-auto">
