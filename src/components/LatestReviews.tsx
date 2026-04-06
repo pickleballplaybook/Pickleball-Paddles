@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Play, Youtube } from "lucide-react";
+import { ArrowRight, Eye, Play, Youtube } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { ReviewGroup } from "@/types";
 
@@ -96,10 +96,22 @@ export default function LatestReviews({ items }: LatestReviewsProps) {
                       {group.paddles.map((p) => p.name).join(", ")}
                     </p>
                   )}
-                  <p className="text-xs mt-auto pt-2 flex items-center gap-1" style={{ color: "var(--text-muted)" }}>
-                    <Play className="w-3 h-3" strokeWidth={2} />
-                    Watch full review
-                  </p>
+                  <div className="flex items-center justify-between mt-auto pt-2">
+                    <p className="text-xs flex items-center gap-1" style={{ color: "var(--text-muted)" }}>
+                      <Play className="w-3 h-3" strokeWidth={2} />
+                      Watch full review
+                    </p>
+                    {group.viewCount !== undefined && (
+                      <p className="text-xs flex items-center gap-1" style={{ color: "var(--text-muted)" }}>
+                        <Eye className="w-3 h-3" strokeWidth={2} />
+                        {group.viewCount >= 1_000_000
+                          ? `${(group.viewCount / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`
+                          : group.viewCount >= 1_000
+                          ? `${(group.viewCount / 1_000).toFixed(1).replace(/\.0$/, "")}K`
+                          : group.viewCount}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </Link>
             );

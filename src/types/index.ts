@@ -105,6 +105,7 @@ export interface ReviewGroup {
   paddles: { name: string; slug: string }[]; // all paddles in this review
   primarySlug: string;                 // highest-trending paddle's page
   reviewDate: string;                  // ISO "YYYY-MM-DD" or ""
+  viewCount?: number;                  // fetched from YouTube Statistics API
 }
 
 // ── YouTube types ─────────────────────────────────────────────────────────────

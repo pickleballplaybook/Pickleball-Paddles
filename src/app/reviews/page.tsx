@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Youtube } from "lucide-react";
+import { ArrowRight, Eye, Youtube } from "lucide-react";
 import { paddles, reviewDates } from "@/data/paddles";
 import { getReviewGroups } from "@/lib/youtube";
 import { siteConfig } from "@/config/site";
@@ -27,6 +27,12 @@ function hourSeededShuffle<T>(arr: T[]): T[] {
     [out[i], out[j]] = [out[j], out[i]];
   }
   return out;
+}
+
+function formatViews(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1).replace(/\.0$/, "")}M views`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1).replace(/\.0$/, "")}K views`;
+  return `${n} views`;
 }
 
 function PromoSlot({ product }: { product: typeof gearProducts[number] }) {
@@ -71,6 +77,12 @@ export default async function ReviewsPage() {
               <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>
                 {group.title}
               </h2>
+              {group.viewCount !== undefined && (
+                <p className="flex items-center gap-1 text-xs mt-1" style={{ color: "var(--text-muted)" }}>
+                  <Eye className="w-3.5 h-3.5" strokeWidth={2} />
+                  {formatViews(group.viewCount)}
+                </p>
+              )}
               <div className="flex flex-wrap gap-2 mt-2">
                 {group.paddles.map(({ name, slug }) => (
                   <Link

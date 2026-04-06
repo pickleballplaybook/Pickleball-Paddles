@@ -147,6 +147,37 @@ export async function getVideoForPaddle(
   return { videoId: null, source: "none" };
 }
 
+// ── Fetch view counts for video IDs via YouTube Data API v3 ──────────────────
+// Returns { videoId: viewCount } — empty map if no API key configured
+// Cached for 1 hour so counts stay reasonably fresh without hammering the API
+export async function fetchVideoViewCounts(
+  videoIds: string[]
+): Promise<Record<string, number>> {
+  const apiKey = siteConfig.youtubeApiKey;
+  if (!apiKey || !videoIds.length) return {};
+  const result: Record<string, number> = {};
+  try {
+    // API allows up to 50 IDs per request
+    for (let i = 0; i < videoIds.length; i += 50) {
+      const batch = videoIds.slice(i, i + 50);
+      const params = new URLSearchParams({ part: "statistics", id: batch.join(","), key: apiKey });
+      const res = await fetch(
+        `https://www.googleapis.com/youtube/v3/videos?${params}`,
+        { next: { revalidate: 3600 } } // cache 1 hour
+      );
+      if (!res.ok) continue;
+      const data = await res.json();
+      for (const item of data.items ?? []) {
+        const n = parseInt(item.statistics?.viewCount ?? "", 10);
+        if (!isNaN(n)) result[item.id] = n;
+      }
+    }
+  } catch {
+    // silently return whatever we have
+  }
+  return result;
+}
+
 // ── Fetch publish dates for video IDs via YouTube Data API v3 ─────────────────
 // Returns { videoId: "YYYY-MM-DD" } — empty map if no API key configured
 export async function fetchVideoPublishDates(
@@ -202,7 +233,10 @@ export async function getReviewGroups(
     )
   );
 
-  const apiDates = await fetchVideoPublishDates(videoIds);
+  const [apiDates, viewCounts] = await Promise.all([
+    fetchVideoPublishDates(videoIds),
+    fetchVideoViewCounts(videoIds),
+  ]);
   // API dates win; non-empty manual dates act as fallback / correction
   const dates: Record<string, string> = { ...manualDates };
   for (const [id, d] of Object.entries(apiDates)) {
@@ -244,6 +278,7 @@ export async function getReviewGroups(
         paddles: paddleList,
         primarySlug: topSlug,
         reviewDate,
+        viewCount: viewCounts[videoId],
       };
     })
     .sort((a, b) => {
