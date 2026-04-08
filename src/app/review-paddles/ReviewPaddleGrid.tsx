@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Heart, ThumbsDown } from "lucide-react";
+import { useState, useEffect } from "react";
 import { useReactions } from "@/hooks/useReactions";
 
 interface PaddleEntry {
@@ -12,7 +13,9 @@ interface PaddleEntry {
   image: string | null;
 }
 
-function PaddleReviewCard({ paddle }: { paddle: PaddleEntry }) {
+type HeartCountMap = Record<string, number>;
+
+function PaddleReviewCard({ paddle, heartCount = 0 }: { paddle: PaddleEntry; heartCount?: number }) {
   const { reaction, toggle } = useReactions(paddle.id);
 
   return (
@@ -64,6 +67,11 @@ function PaddleReviewCard({ paddle }: { paddle: PaddleEntry }) {
             strokeWidth={2}
           />
         </button>
+        {heartCount > 0 && (
+          <span className="text-xs font-semibold tabular-nums mr-1" style={{ color: "var(--text-muted)" }}>
+            {heartCount}
+          </span>
+        )}
         <button
           onClick={() => toggle("dislike")}
           aria-label="Not for me"
@@ -82,10 +90,29 @@ function PaddleReviewCard({ paddle }: { paddle: PaddleEntry }) {
 }
 
 export default function ReviewPaddleGrid({ paddles }: { paddles: PaddleEntry[] }) {
+  const [heartCounts, setHeartCounts] = useState<HeartCountMap>({});
+
+  useEffect(() => {
+    function load() {
+      fetch("/api/paddle-hearts")
+        .then((r) => r.json())
+        .then((data: { slug: string; hearts: number }[]) => {
+          if (!Array.isArray(data)) return;
+          const map: HeartCountMap = {};
+          for (const item of data) map[String(item.slug)] = item.hearts;
+          setHeartCounts(map);
+        })
+        .catch(() => {});
+    }
+    load();
+    window.addEventListener("hearts-updated", load);
+    return () => window.removeEventListener("hearts-updated", load);
+  }, []);
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
       {paddles.map((p) => (
-        <PaddleReviewCard key={p.id} paddle={p} />
+        <PaddleReviewCard key={p.id} paddle={p} heartCount={heartCounts[p.id] ?? 0} />
       ))}
     </div>
   );
