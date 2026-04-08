@@ -12,6 +12,24 @@ import { getPaddleBySlug } from "@/data/paddles";
  *   1. Update siteConfig.hottestPaddleSlug
  *   2. Update siteConfig.hottestPaddleSeries (headline, subheadline, bullets, link)
  */
+function calcDiscountedPrice(price: string, amountOff: string): string | null {
+  if (!amountOff || amountOff === "$0") return null;
+  const base = parseFloat(price.replace(/[^0-9.]/g, ""));
+  if (isNaN(base) || base <= 0) return null;
+  let discounted: number;
+  if (amountOff.endsWith("%")) {
+    const pct = parseFloat(amountOff);
+    if (isNaN(pct)) return null;
+    discounted = base * (1 - pct / 100);
+  } else {
+    const off = parseFloat(amountOff.replace(/[^0-9.]/g, ""));
+    if (isNaN(off)) return null;
+    discounted = base - off;
+  }
+  if (discounted <= 0) return null;
+  return `$${discounted.toFixed(2)}`;
+}
+
 export default function HottestPaddle() {
   const { hottestPaddleSlug, hottestPaddleSeries, discountCode } = siteConfig;
   const paddle = getPaddleBySlug(hottestPaddleSlug);
@@ -101,6 +119,26 @@ export default function HottestPaddle() {
                 </li>
               ))}
             </ul>
+
+            {/* Price */}
+            {paddle?.price && (() => {
+              const discounted = calcDiscountedPrice(paddle.price!, paddle.amountOff);
+              return (
+                <div className="flex items-baseline gap-3 mb-10">
+                  <span
+                    className="text-2xl font-bold"
+                    style={{ color: discounted ? "var(--flip-text-muted)" : "var(--flip-text-head)", textDecoration: discounted ? "line-through" : "none" }}
+                  >
+                    {paddle.price}
+                  </span>
+                  {discounted && (
+                    <span className="text-2xl font-extrabold" style={{ color: "#14b8a6" }}>
+                      {discounted}
+                    </span>
+                  )}
+                </div>
+              );
+            })()}
 
             {/* CTA */}
             <div className="flex flex-col sm:flex-row sm:items-center gap-4">
