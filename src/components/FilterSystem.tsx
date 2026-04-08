@@ -80,10 +80,12 @@ export default function FilterSystem({
   filters,
   onChange,
   resultCount,
+  loadingHearts = false,
 }: {
   filters:     ActiveFilters;
   onChange:    (f: ActiveFilters) => void;
   resultCount: number;
+  loadingHearts?: boolean;
 }) {
   const [isOpen, setIsOpen]   = useState(false);
   const [staged, setStaged]   = useState<ActiveFilters>(filters);
@@ -156,16 +158,22 @@ export default function FilterSystem({
           <label className="text-xs font-bold uppercase tracking-widest whitespace-nowrap" style={labelStyle}>
             Sort
           </label>
-          <select
-            className="text-sm font-medium appearance-none cursor-pointer rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-shadow"
-            style={selectStyle}
-            value={filters.sort}
-            onChange={(e) => onChange({ ...filters, sort: e.target.value as SortOption })}
-          >
-            {SORT_OPTIONS.map(({ value, label }) => (
-              <option key={value} value={value}>{label}</option>
-            ))}
-          </select>
+          <div className="relative">
+            <select
+              className="text-sm font-medium appearance-none cursor-pointer rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-shadow"
+              style={selectStyle}
+              value={filters.sort}
+              onChange={(e) => onChange({ ...filters, sort: e.target.value as SortOption })}
+              disabled={loadingHearts}
+            >
+              {SORT_OPTIONS.map(({ value, label }) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </select>
+            {loadingHearts && (
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 border-2 border-transparent border-t-brand-500 rounded-full animate-spin" />
+            )}
+          </div>
         </div>
 
         {/* Result count */}

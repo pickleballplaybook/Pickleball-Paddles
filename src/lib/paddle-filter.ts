@@ -97,11 +97,15 @@ function weightedHeart(reactions: ReactionMap, id: string): number {
   return Math.exp(-(Date.now() - e.ts) / HALF_LIFE_MS);
 }
 
+// Type for aggregated heart counts from API
+export type HeartCountMap = Record<string, number>;
+
 export function sortPaddles(
   paddles:   Paddle[],
   sort:      SortOption,
   priceCache: PriceCache,
-  reactions:  ReactionMap = {}
+  reactions:  ReactionMap = {},
+  heartCounts: HeartCountMap = {}
 ): Paddle[] {
   return [...paddles].sort((a, b) => {
     switch (sort) {
@@ -126,9 +130,10 @@ export function sortPaddles(
       case "oldest":  return a.addedAt.localeCompare(b.addedAt);
 
       case "most-hearts": {
-        const ha = reactions[a.id]?.r === "heart" ? 1 : 0;
-        const hb = reactions[b.id]?.r === "heart" ? 1 : 0;
-        return hb - ha || b.trendingScore - a.trendingScore;
+        const ha = heartCounts[a.id] ?? 0;
+        const hb = heartCounts[b.id] ?? 0;
+        if (hb !== ha) return hb - ha;
+        return b.addedAt.localeCompare(a.addedAt);
       }
 
       case "power":
@@ -146,9 +151,10 @@ export function sortPaddles(
       case "popular-month":
       case "default":
       default: {
-        const wa = weightedHeart(reactions, a.id);
-        const wb = weightedHeart(reactions, b.id);
-        return wb - wa || b.trendingScore - a.trendingScore;
+        const ha = heartCounts[a.id] ?? 0;
+        const hb = heartCounts[b.id] ?? 0;
+        if (hb !== ha) return hb - ha;
+        return b.addedAt.localeCompare(a.addedAt);
       }
     }
   });
@@ -160,10 +166,11 @@ export function applyFiltersAndSort(
   allPaddles: Paddle[],
   filters:    ActiveFilters,
   priceCache: PriceCache,
-  reactions:  ReactionMap = {}
+  reactions:  ReactionMap = {},
+  heartCounts: HeartCountMap = {}
 ): Paddle[] {
   const filtered = filterPaddles(allPaddles, filters, priceCache);
-  return sortPaddles(filtered, filters.sort, priceCache, reactions);
+  return sortPaddles(filtered, filters.sort, priceCache, reactions, heartCounts);
 }
 
 // ── URL param helpers ─────────────────────────────────────────────────────────

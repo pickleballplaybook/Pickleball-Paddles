@@ -326,7 +326,7 @@ export const paddles: Paddle[] = [
     swingWeight: 111.89,
     twistWeight: 6.27,
     thickness: "16mm",
-    image: "/images/paddles/Alpha-Pro-16mm.png",
+    image: "/images/paddles/Alpha-Pro-16mm.png?v=2",
     amountOff: "10%",
     price: "$199.99",
     discountLink: "https://engagepickleball.com/?aff=601",

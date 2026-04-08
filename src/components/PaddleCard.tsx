@@ -108,8 +108,14 @@ export default function PaddleCard({ paddle }: PaddleCardProps) {
         </Link>
 
         {paddle.tagline && (
-          <p className="text-sm leading-relaxed mb-3 line-clamp-2" style={{ color: "var(--text-muted)" }}>
+          <p className="text-sm leading-relaxed mb-2 line-clamp-2" style={{ color: "var(--text-muted)" }}>
             {paddle.tagline}
+          </p>
+        )}
+
+        {paddle.price && (
+          <p className="text-base font-bold mb-3" style={{ color: "var(--text-primary)" }}>
+            {paddle.price}
           </p>
         )}
 

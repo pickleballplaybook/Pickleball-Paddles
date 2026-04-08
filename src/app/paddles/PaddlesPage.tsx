@@ -14,6 +14,7 @@ import {
   parseSearchParams,
   filtersToSearchParams,
   DEFAULT_FILTERS,
+  HeartCountMap,
 } from "@/lib/paddle-filter";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -94,12 +95,40 @@ function PaddlesInner({ paddles, priceCache }: { paddles: Paddle[]; priceCache: 
 
   const [filters,   setFilters]   = useState<ActiveFilters>(() => parseSearchParams(initialParams));
   const [reactions, setReactions] = useState<ReactionMap>({});
+  const [heartCounts, setHeartCounts] = useState<HeartCountMap>({});
+  const [loadingHearts, setLoadingHearts] = useState(true);
   const [pageSize,  setPageSize]  = useState(20);
   const [page,      setPage]      = useState(1);
 
+  // Fetch aggregated heart counts from API
+  function reloadHeartCounts() {
+    fetch("/api/paddle-hearts")
+      .then((res) => res.json())
+      .then((data: { slug: string; hearts: number }[]) => {
+        if (!Array.isArray(data)) return;
+        const map: HeartCountMap = {};
+        for (const item of data) {
+          map[String(item.slug)] = item.hearts;
+        }
+        setHeartCounts(map);
+      })
+      .catch((err) => {
+        console.error("[PaddlesPage] Failed to fetch heart counts:", err);
+      })
+      .finally(() => {
+        setLoadingHearts(false);
+      });
+  }
+
+  // Fetch user's reactions and aggregated heart counts on mount
   useEffect(() => {
     fetchUserReactionMap().then(setReactions);
-  }, []);
+    reloadHeartCounts();
+
+    // Re-sort when any paddle is hearted/unhearted
+    window.addEventListener("hearts-updated", reloadHeartCounts);
+    return () => window.removeEventListener("hearts-updated", reloadHeartCounts);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Slice [5,6] from the shared hourly shuffle — unique across homepage [0,1,2] and reviews [3,4]
   const promos = useMemo(() => { const s = hourSeededShuffle(gearProducts); return [s[5], s[6]]; }, []);
@@ -115,8 +144,8 @@ function PaddlesInner({ paddles, priceCache }: { paddles: Paddle[]; priceCache: 
   }
 
   const filtered = useMemo(
-    () => applyFiltersAndSort(paddles, filters, priceCache, reactions),
-    [paddles, filters, priceCache, reactions]
+    () => applyFiltersAndSort(paddles, filters, priceCache, reactions, heartCounts),
+    [paddles, filters, priceCache, reactions, heartCounts]
   );
 
   const totalPages = Math.ceil(filtered.length / pageSize);
@@ -148,6 +177,7 @@ function PaddlesInner({ paddles, priceCache }: { paddles: Paddle[]; priceCache: 
         filters={filters}
         onChange={handleFiltersChange}
         resultCount={filtered.length}
+        loadingHearts={loadingHearts}
       />
 
       {filtered.length > 0 ? (
