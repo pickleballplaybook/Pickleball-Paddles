@@ -8,6 +8,8 @@ import { useReactions } from "@/hooks/useReactions";
 interface PaddleCardProps {
   paddle: Paddle;
   priority?: boolean;
+  index?: number;
+  heartCount?: number;
 }
 
 const BADGE_STYLES: Record<string, string> = {
@@ -56,15 +58,20 @@ function calcDiscountedPrice(price: string, amountOff: string): string | null {
   return `$${discounted.toFixed(2)}`;
 }
 
-export default function PaddleCard({ paddle }: PaddleCardProps) {
+export default function PaddleCard({ paddle, index = 0, heartCount = 0 }: PaddleCardProps) {
   const { reaction, toggle } = useReactions(paddle.id);
 
   const hasDiscount = !!paddle.discountLink?.trim();
   const reviewLink  = paddle.reviewUrl ?? (paddle.manualVideoId ? `https://youtu.be/${paddle.manualVideoId}` : null);
   const hasReview   = !!reviewLink;
 
+  const staggerDelay = `${Math.min(index, 10) * 50}ms`;
+
   return (
-    <article className="card group flex flex-col overflow-hidden">
+    <article
+      className="animate-slide-up card group flex flex-col overflow-hidden"
+      style={{ animationDelay: staggerDelay }}
+    >
 
       {/* Image */}
       <Link href={`/paddles/${paddle.slug}`} tabIndex={-1} className="block">
@@ -249,6 +256,11 @@ export default function PaddleCard({ paddle }: PaddleCardProps) {
                   strokeWidth={2}
                 />
               </button>
+              {heartCount > 0 && (
+                <span className="text-xs font-semibold tabular-nums mr-1" style={{ color: "var(--text-muted)" }}>
+                  {heartCount}
+                </span>
+              )}
               <button
                 onClick={() => toggle("dislike")}
                 aria-label="Not for me"

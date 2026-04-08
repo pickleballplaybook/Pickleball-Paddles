@@ -101,8 +101,8 @@ export default function Hero() {
 
             {/* Subheadline */}
             <p
-              className="mt-3 lg:mt-4 leading-relaxed max-w-lg"
-              style={{ fontSize: "clamp(0.9rem, 1.5vw, 1.1rem)", color: "rgba(255,255,255,0.55)" }}
+              className="animate-slide-up mt-3 lg:mt-4 leading-relaxed max-w-lg"
+              style={{ fontSize: "clamp(0.9rem, 1.5vw, 1.1rem)", color: "rgba(255,255,255,0.55)", animationDelay: "120ms" }}
             >
               Stop guessing based on specs. See how paddles actually feel when played on court.
             </p>

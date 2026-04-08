@@ -206,13 +206,15 @@ function PaddlesInner({ paddles, priceCache }: { paddles: Paddle[]; priceCache: 
             </div>
           </div>
 
+          <div key={`${page}-${JSON.stringify(filters)}`}>
           {segments.map((seg, si) => {
             const promo = seg.promoIndex !== null ? promos[seg.promoIndex] : null;
+            const segOffset = si * PROMO_EVERY;
             return (
               <div key={si}>
                 <div className={`${GRID} mb-8`}>
-                  {seg.paddles.map((paddle) => (
-                    <PaddleCard key={paddle.id} paddle={paddle} />
+                  {seg.paddles.map((paddle, i) => (
+                    <PaddleCard key={paddle.id} paddle={paddle} index={segOffset + i} heartCount={heartCounts[paddle.id] ?? 0} />
                   ))}
                 </div>
                 {/* Insert promo after every chunk except the last */}
@@ -233,6 +235,7 @@ function PaddlesInner({ paddles, priceCache }: { paddles: Paddle[]; priceCache: 
               </div>
             );
           })}
+          </div>
 
           <Pagination page={page} totalPages={totalPages} onPage={handlePage} />
         </>
