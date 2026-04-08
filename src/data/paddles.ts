@@ -291,7 +291,7 @@ export const paddles: Paddle[] = [
     image: "/images/paddles/Barrage-1-16mm.png",
     amountOff: "15%",
     price: "$279.99",
-    discountLink: "https://lockerroompickleball.com/products/trufoam-barrage?sca_ref=8334840.yY4rLJi7oU9HDNHD",
+    discountLink: "https://www.crbnpickleball.com/discount/PLAYBOOK",
     reviewUrl: "https://youtu.be/XLfM3Z3CKlU",
     addedAt: "2025-06-01",
     trendingScore: 72,
