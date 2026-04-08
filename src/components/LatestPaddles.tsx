@@ -24,6 +24,24 @@ function ArrowBtn({ dir, onClick }: { dir: "left" | "right"; onClick: () => void
   );
 }
 
+function calcDiscountedPrice(price: string, amountOff: string): string | null {
+  if (!amountOff || amountOff === "$0") return null;
+  const base = parseFloat(price.replace(/[^0-9.]/g, ""));
+  if (isNaN(base) || base <= 0) return null;
+  let discounted: number;
+  if (amountOff.endsWith("%")) {
+    const pct = parseFloat(amountOff);
+    if (isNaN(pct)) return null;
+    discounted = base * (1 - pct / 100);
+  } else {
+    const off = parseFloat(amountOff.replace(/[^0-9.]/g, ""));
+    if (isNaN(off)) return null;
+    discounted = base - off;
+  }
+  if (discounted <= 0) return null;
+  return `$${discounted.toFixed(2)}`;
+}
+
 function PaddleCard({ paddle }: { paddle: Paddle }) {
   return (
     <Link
@@ -76,20 +94,30 @@ function PaddleCard({ paddle }: { paddle: Paddle }) {
 
         {/* Price + discount */}
         <div className="mb-3 flex flex-col gap-1">
-          {paddle.price && (
-            <p className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>
-              {paddle.price}
-            </p>
-          )}
+          {paddle.price && (() => {
+            const discounted = calcDiscountedPrice(paddle.price!, paddle.amountOff);
+            return (
+              <div className="flex items-baseline gap-2">
+                <span
+                  className="text-sm font-bold"
+                  style={{ color: discounted ? "var(--text-muted)" : "var(--text-primary)", textDecoration: discounted ? "line-through" : "none" }}
+                >
+                  {paddle.price}
+                </span>
+                {discounted && (
+                  <span className="text-sm font-bold" style={{ color: "#14b8a6" }}>
+                    {discounted}
+                  </span>
+                )}
+              </div>
+            );
+          })()}
           {(() => {
             const isSelkirk = paddle.brand === "Selkirk" || paddle.brand === "SLK";
-            const hasDiscount = paddle.amountOff && paddle.amountOff !== "$0" && paddle.amountOff !== "";
-            if (!isSelkirk && !hasDiscount) return null;
             const code = isSelkirk ? "INF-PLAYBOOK" : "PLAYBOOK";
             return (
               <p className="text-[11px] font-semibold" style={{ color: "var(--discount-text)" }}>
                 Code <span className="font-mono tracking-wider">{code}</span>
-                {hasDiscount ? ` saves ${paddle.amountOff}` : ""}
               </p>
             );
           })()}
