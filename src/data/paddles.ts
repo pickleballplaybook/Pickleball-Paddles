@@ -474,7 +474,7 @@ export const paddles: Paddle[] = [
     image: "/images/paddles/Aura-Hybrid-16mm.png",
     amountOff: "$10",
     price: "$129.00",
-    discountLink: "https://lockerroompickleball.com/products/aura?sca_ref=8334840.yY4rLJi7oU9HDNHD",
+    discountLink: "https://www.fridaypickle.com/PLAYBOOK",
     reviewUrl: "https://youtu.be/O8555NozXPo",
     addedAt: "2025-06-01",
     trendingScore: 55,
