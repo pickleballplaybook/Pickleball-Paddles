@@ -93,7 +93,7 @@ export default function Hero() {
 
             {/* Headline */}
             <h1
-              className="font-extrabold text-white tracking-tight leading-[1.06]"
+              className="animate-slide-up font-extrabold text-white tracking-tight leading-[1.06]"
               style={{ fontSize: "clamp(1.75rem, 4vw, 3rem)" }}
             >
               Real On-Court Paddle Reviews&nbsp;&amp; Discounts

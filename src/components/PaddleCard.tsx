@@ -38,6 +38,24 @@ function YouTubeIcon({ className }: { className?: string }) {
   );
 }
 
+function calcDiscountedPrice(price: string, amountOff: string): string | null {
+  if (!amountOff || amountOff === "$0") return null;
+  const base = parseFloat(price.replace(/[^0-9.]/g, ""));
+  if (isNaN(base) || base <= 0) return null;
+  let discounted: number;
+  if (amountOff.endsWith("%")) {
+    const pct = parseFloat(amountOff);
+    if (isNaN(pct)) return null;
+    discounted = base * (1 - pct / 100);
+  } else {
+    const off = parseFloat(amountOff.replace(/[^0-9.]/g, ""));
+    if (isNaN(off)) return null;
+    discounted = base - off;
+  }
+  if (discounted <= 0) return null;
+  return `$${discounted.toFixed(2)}`;
+}
+
 export default function PaddleCard({ paddle }: PaddleCardProps) {
   const { reaction, toggle } = useReactions(paddle.id);
 
@@ -113,11 +131,24 @@ export default function PaddleCard({ paddle }: PaddleCardProps) {
           </p>
         )}
 
-        {paddle.price && (
-          <p className="text-base font-bold mb-3" style={{ color: "var(--text-primary)" }}>
-            {paddle.price}
-          </p>
-        )}
+        {paddle.price && (() => {
+          const discounted = calcDiscountedPrice(paddle.price!, paddle.amountOff);
+          return (
+            <div className="flex items-baseline gap-2 mb-3">
+              <span
+                className="text-base font-bold"
+                style={{ color: discounted ? "var(--text-muted)" : "var(--text-primary)", textDecoration: discounted ? "line-through" : "none" }}
+              >
+                {paddle.price}
+              </span>
+              {discounted && (
+                <span className="text-base font-bold" style={{ color: "#14b8a6" }}>
+                  {discounted}
+                </span>
+              )}
+            </div>
+          );
+        })()}
 
         {/* Performance bars */}
         {paddle.ratings && (
