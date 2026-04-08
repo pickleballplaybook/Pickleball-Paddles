@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Heart, ThumbsDown } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useReactions } from "@/hooks/useReactions";
+import { supabase } from "@/lib/supabaseClient";
 
 interface PaddleEntry {
   id: string;
@@ -93,16 +94,16 @@ export default function ReviewPaddleGrid({ paddles }: { paddles: PaddleEntry[] }
   const [heartCounts, setHeartCounts] = useState<HeartCountMap>({});
 
   useEffect(() => {
-    function load() {
-      fetch("/api/paddle-hearts")
-        .then((r) => r.json())
-        .then((data: { slug: string; hearts: number }[]) => {
-          if (!Array.isArray(data)) return;
-          const map: HeartCountMap = {};
-          for (const item of data) map[String(item.slug)] = item.hearts;
-          setHeartCounts(map);
-        })
-        .catch(() => {});
+    async function load() {
+      const { data, error } = await supabase
+        .from("paddle_hearts")
+        .select("paddle_id");
+      if (error || !data) return;
+      const map: HeartCountMap = {};
+      for (const row of data) {
+        map[row.paddle_id] = (map[row.paddle_id] ?? 0) + 1;
+      }
+      setHeartCounts(map);
     }
     load();
     window.addEventListener("hearts-updated", load);
