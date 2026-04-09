@@ -1320,6 +1320,40 @@ export const paddles: Paddle[] = [
     addedAt: "2026-04-09",
     trendingScore: 63,
   },
+
+  // ── Beyond Measure ─────────────────────────────────────────────────────────
+  {
+    id: "74",
+    slug: "beyond-measure-ronin-hybrid",
+    brand: "Beyond Measure",
+    name: "Ronin",
+    shape: "Hybrid",
+    weight: "8.1 oz",
+    swingWeight: 115.65,
+    twistWeight: 6.36,
+    thickness: "16mm",
+    image: "/images/paddles/Ronin-Hybrid-16mm.png",
+    amountOff: "",
+    discountLink: "https://playbeyondmeasure.com/PLAYBOOK",
+    addedAt: "2026-04-09",
+    trendingScore: 64,
+  },
+  {
+    id: "75",
+    slug: "beyond-measure-ronin-elongated",
+    brand: "Beyond Measure",
+    name: "Ronin",
+    shape: "Elongated",
+    weight: "8.0 oz",
+    swingWeight: 114.98,
+    twistWeight: 6.53,
+    thickness: "16mm",
+    image: "/images/paddles/Ronin-Elongated-16mm.png",
+    amountOff: "",
+    discountLink: "https://playbeyondmeasure.com/PLAYBOOK",
+    addedAt: "2026-04-09",
+    trendingScore: 64,
+  },
 ];
 
 // Review dates — ISO publish dates for Latest Reviews sort (newest-first)
