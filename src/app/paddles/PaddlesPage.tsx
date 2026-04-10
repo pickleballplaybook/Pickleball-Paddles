@@ -9,6 +9,7 @@ import PromoBar          from "@/components/PromoBar";
 import { gearProducts }  from "@/data/products";
 import { ActiveFilters, Paddle, PriceCache } from "@/types";
 import { fetchUserReactionMap, ReactionMap } from "@/hooks/useReactions";
+import { supabase } from "@/lib/supabaseClient";
 import {
   applyFiltersAndSort,
   parseSearchParams,
@@ -103,25 +104,24 @@ function PaddlesInner({ paddles, priceCache }: { paddles: Paddle[]; priceCache: 
   const [pageSize,  setPageSize]  = useState(20);
   const [page,      setPage]      = useState(1);
 
-  // Fetch aggregated heart counts from API (initial load only)
-  function loadHeartCounts() {
-    fetch("/api/paddle-hearts")
-      .then((res) => res.json())
-      .then((data: { slug: string; hearts: number }[]) => {
-        if (!Array.isArray(data)) return;
-        const map: HeartCountMap = {};
-        for (const item of data) {
-          map[String(item.slug)] = item.hearts;
-        }
-        setSortHeartCounts(map);
-        setDisplayHeartCounts(map);
-      })
-      .catch((err) => {
-        console.error("[PaddlesPage] Failed to fetch heart counts:", err);
-      })
-      .finally(() => {
-        setLoadingHearts(false);
-      });
+  // Load aggregated heart counts directly from Supabase (bypasses API caching)
+  async function loadHeartCounts() {
+    try {
+      const { data, error } = await supabase
+        .from("paddle_hearts")
+        .select("paddle_id");
+      if (error || !data) return;
+      const map: HeartCountMap = {};
+      for (const row of data) {
+        map[row.paddle_id] = (map[row.paddle_id] ?? 0) + 1;
+      }
+      setSortHeartCounts(map);
+      setDisplayHeartCounts(map);
+    } catch (err) {
+      console.error("[PaddlesPage] Failed to load heart counts:", err);
+    } finally {
+      setLoadingHearts(false);
+    }
   }
 
   // Fetch user's reactions and heart counts on mount
