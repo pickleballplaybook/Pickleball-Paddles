@@ -1356,6 +1356,25 @@ export const paddles: Paddle[] = [
     addedAt: "2026-04-09",
     trendingScore: 64,
   },
+
+  // ── Hudef ──────────────────────────────────────────────────────────────────
+  {
+    id: "76",
+    slug: "hudef-viva-elongated",
+    brand: "Hudef",
+    name: "Viva",
+    shape: "Elongated",
+    weight: "8.0 oz",
+    swingWeight: 121.24,
+    twistWeight: 6.22,
+    thickness: "16mm",
+    image: "/images/paddles/Viva-16mm.png",
+    amountOff: "10%",
+    price: "$169.99",
+    discountLink: "https://hudefsport.com?sca_ref=10944964.y9HgU7qs5s",
+    addedAt: "2026-04-10",
+    trendingScore: 64,
+  },
 ];
 
 // Review dates — ISO publish dates for Latest Reviews sort (newest-first)
