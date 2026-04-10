@@ -18,6 +18,7 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: "power",         label: "Highest Power"       },
   { value: "control",       label: "Highest Control"     },
   { value: "spin",          label: "Highest Spin"        },
+  { value: "twist-weight",  label: "Best Twist Weight"   },
   { value: "most-hearts",   label: "Most Hearts"         },
 ];
 

@@ -148,6 +148,10 @@ export function sortPaddles(
         return (b.ratings?.spin ?? 0) - (a.ratings?.spin ?? 0)
           || b.trendingScore - a.trendingScore;
 
+      case "twist-weight":
+        return (b.twistWeight ?? 0) - (a.twistWeight ?? 0)
+          || b.trendingScore - a.trendingScore;
+
       case "popular-month":
       case "default":
       default: {
@@ -187,7 +191,7 @@ export const DEFAULT_FILTERS: ActiveFilters = {
 
 const VALID_SORTS: SortOption[] = [
   "default", "price-high", "price-low", "newest", "oldest",
-  "most-hearts", "popular-month", "power", "control", "spin",
+  "most-hearts", "popular-month", "power", "control", "spin", "twist-weight",
 ];
 
 export function parseSearchParams(

@@ -63,7 +63,8 @@ export type SortOption =
   | "popular-month"
   | "power"
   | "control"
-  | "spin";
+  | "spin"
+  | "twist-weight";
 
 // ── Price cache — populated by server-side sync ────────────────────────────────
 
