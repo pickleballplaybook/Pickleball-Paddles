@@ -95,13 +95,16 @@ function PaddlesInner({ paddles, priceCache }: { paddles: Paddle[]; priceCache: 
 
   const [filters,   setFilters]   = useState<ActiveFilters>(() => parseSearchParams(initialParams));
   const [reactions, setReactions] = useState<ReactionMap>({});
-  const [heartCounts, setHeartCounts] = useState<HeartCountMap>({});
+  // sortHeartCounts — used only for sort order, set once on load, never on individual clicks
+  const [sortHeartCounts, setSortHeartCounts] = useState<HeartCountMap>({});
+  // displayHeartCounts — shown on cards, updated optimistically on click
+  const [displayHeartCounts, setDisplayHeartCounts] = useState<HeartCountMap>({});
   const [loadingHearts, setLoadingHearts] = useState(true);
   const [pageSize,  setPageSize]  = useState(20);
   const [page,      setPage]      = useState(1);
 
-  // Fetch aggregated heart counts from API
-  function reloadHeartCounts() {
+  // Fetch aggregated heart counts from API (initial load only)
+  function loadHeartCounts() {
     fetch("/api/paddle-hearts")
       .then((res) => res.json())
       .then((data: { slug: string; hearts: number }[]) => {
@@ -110,7 +113,8 @@ function PaddlesInner({ paddles, priceCache }: { paddles: Paddle[]; priceCache: 
         for (const item of data) {
           map[String(item.slug)] = item.hearts;
         }
-        setHeartCounts(map);
+        setSortHeartCounts(map);
+        setDisplayHeartCounts(map);
       })
       .catch((err) => {
         console.error("[PaddlesPage] Failed to fetch heart counts:", err);
@@ -120,24 +124,21 @@ function PaddlesInner({ paddles, priceCache }: { paddles: Paddle[]; priceCache: 
       });
   }
 
-  // Fetch user's reactions and aggregated heart counts on mount
+  // Fetch user's reactions and heart counts on mount
   useEffect(() => {
     fetchUserReactionMap().then(setReactions);
-    reloadHeartCounts();
+    loadHeartCounts();
 
-    // Re-sort when any paddle is hearted/unhearted
+    // On heart click: only update display count (no re-sort, no page jump)
     function onHeartsUpdated(e: Event) {
       const ev = e as CustomEvent<{ paddleId?: string; delta?: number }>;
       const { paddleId, delta } = ev.detail ?? {};
-      // Optimistic update — show new count immediately before API responds
       if (paddleId != null && delta != null) {
-        setHeartCounts((prev) => ({
+        setDisplayHeartCounts((prev) => ({
           ...prev,
           [paddleId]: Math.max(0, (prev[paddleId] ?? 0) + delta),
         }));
       }
-      // Then sync accurate count from server
-      reloadHeartCounts();
     }
 
     window.addEventListener("hearts-updated", onHeartsUpdated);
@@ -158,8 +159,8 @@ function PaddlesInner({ paddles, priceCache }: { paddles: Paddle[]; priceCache: 
   }
 
   const filtered = useMemo(
-    () => applyFiltersAndSort(paddles, filters, priceCache, reactions, heartCounts, !loadingHearts),
-    [paddles, filters, priceCache, reactions, heartCounts, loadingHearts]
+    () => applyFiltersAndSort(paddles, filters, priceCache, reactions, sortHeartCounts),
+    [paddles, filters, priceCache, reactions, sortHeartCounts]
   );
 
   const totalPages = Math.ceil(filtered.length / pageSize);
@@ -184,6 +185,7 @@ function PaddlesInner({ paddles, priceCache }: { paddles: Paddle[]; priceCache: 
   }
 
   const GRID = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6";
+  const isHeartSort = ["most-hearts", "popular-month", "default"].includes(filters.sort);
 
   return (
     <>
@@ -194,7 +196,22 @@ function PaddlesInner({ paddles, priceCache }: { paddles: Paddle[]; priceCache: 
         loadingHearts={loadingHearts}
       />
 
-      {filtered.length > 0 ? (
+      {/* Skeleton while hearts are loading for heart-based sorts */}
+      {loadingHearts && isHeartSort ? (
+        <div className={`${GRID} mb-8`}>
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="card overflow-hidden">
+              <div className="aspect-square animate-pulse rounded-t-2xl" style={{ background: "var(--bg-section)" }} />
+              <div className="p-5 space-y-3">
+                <div className="h-2.5 w-14 rounded animate-pulse" style={{ background: "var(--bg-section)" }} />
+                <div className="h-4 w-3/4 rounded animate-pulse" style={{ background: "var(--bg-section)" }} />
+                <div className="h-3 w-full rounded animate-pulse" style={{ background: "var(--bg-section)" }} />
+                <div className="h-3 w-2/3 rounded animate-pulse" style={{ background: "var(--bg-section)" }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : filtered.length > 0 ? (
         <>
           {/* Per-page selector + count */}
           <div className="flex items-center justify-between mb-4">
@@ -228,7 +245,7 @@ function PaddlesInner({ paddles, priceCache }: { paddles: Paddle[]; priceCache: 
               <div key={si}>
                 <div className={`${GRID} mb-8`}>
                   {seg.paddles.map((paddle, i) => (
-                    <PaddleCard key={paddle.id} paddle={paddle} index={segOffset + i} heartCount={heartCounts[paddle.id] ?? 0} />
+                    <PaddleCard key={paddle.id} paddle={paddle} index={segOffset + i} heartCount={displayHeartCounts[paddle.id] ?? 0} />
                   ))}
                 </div>
                 {/* Insert promo after every chunk except the last */}

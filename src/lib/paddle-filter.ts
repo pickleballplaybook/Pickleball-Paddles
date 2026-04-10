@@ -105,8 +105,7 @@ export function sortPaddles(
   sort:      SortOption,
   priceCache: PriceCache,
   reactions:  ReactionMap = {},
-  heartCounts: HeartCountMap = {},
-  heartsReady: boolean = true
+  heartCounts: HeartCountMap = {}
 ): Paddle[] {
   return [...paddles].sort((a, b) => {
     switch (sort) {
@@ -134,7 +133,6 @@ export function sortPaddles(
         const ha = heartCounts[a.id] ?? 0;
         const hb = heartCounts[b.id] ?? 0;
         if (hb !== ha) return hb - ha;
-        if (!heartsReady) return b.trendingScore - a.trendingScore;
         return b.addedAt.localeCompare(a.addedAt);
       }
 
@@ -156,7 +154,6 @@ export function sortPaddles(
         const ha = heartCounts[a.id] ?? 0;
         const hb = heartCounts[b.id] ?? 0;
         if (hb !== ha) return hb - ha;
-        if (!heartsReady) return b.trendingScore - a.trendingScore;
         return b.addedAt.localeCompare(a.addedAt);
       }
     }
@@ -170,11 +167,10 @@ export function applyFiltersAndSort(
   filters:    ActiveFilters,
   priceCache: PriceCache,
   reactions:  ReactionMap = {},
-  heartCounts: HeartCountMap = {},
-  heartsReady: boolean = true
+  heartCounts: HeartCountMap = {}
 ): Paddle[] {
   const filtered = filterPaddles(allPaddles, filters, priceCache);
-  return sortPaddles(filtered, filters.sort, priceCache, reactions, heartCounts, heartsReady);
+  return sortPaddles(filtered, filters.sort, priceCache, reactions, heartCounts);
 }
 
 // ── URL param helpers ─────────────────────────────────────────────────────────
