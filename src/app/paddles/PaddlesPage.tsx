@@ -126,8 +126,22 @@ function PaddlesInner({ paddles, priceCache }: { paddles: Paddle[]; priceCache: 
     reloadHeartCounts();
 
     // Re-sort when any paddle is hearted/unhearted
-    window.addEventListener("hearts-updated", reloadHeartCounts);
-    return () => window.removeEventListener("hearts-updated", reloadHeartCounts);
+    function onHeartsUpdated(e: Event) {
+      const ev = e as CustomEvent<{ paddleId?: string; delta?: number }>;
+      const { paddleId, delta } = ev.detail ?? {};
+      // Optimistic update — show new count immediately before API responds
+      if (paddleId != null && delta != null) {
+        setHeartCounts((prev) => ({
+          ...prev,
+          [paddleId]: Math.max(0, (prev[paddleId] ?? 0) + delta),
+        }));
+      }
+      // Then sync accurate count from server
+      reloadHeartCounts();
+    }
+
+    window.addEventListener("hearts-updated", onHeartsUpdated);
+    return () => window.removeEventListener("hearts-updated", onHeartsUpdated);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Slice [5,6] from the shared hourly shuffle — unique across homepage [0,1,2] and reviews [3,4]
@@ -144,8 +158,8 @@ function PaddlesInner({ paddles, priceCache }: { paddles: Paddle[]; priceCache: 
   }
 
   const filtered = useMemo(
-    () => applyFiltersAndSort(paddles, filters, priceCache, reactions, heartCounts),
-    [paddles, filters, priceCache, reactions, heartCounts]
+    () => applyFiltersAndSort(paddles, filters, priceCache, reactions, heartCounts, !loadingHearts),
+    [paddles, filters, priceCache, reactions, heartCounts, loadingHearts]
   );
 
   const totalPages = Math.ceil(filtered.length / pageSize);

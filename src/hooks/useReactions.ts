@@ -80,11 +80,11 @@ export function useReactions(paddleId: string) {
       const userKey = getUserKey();
       if (next === "heart") {
         addHeart(paddleId, userKey).then(() => {
-          window.dispatchEvent(new CustomEvent("hearts-updated"));
+          window.dispatchEvent(new CustomEvent("hearts-updated", { detail: { paddleId, delta: 1 } }));
         });
       } else {
         removeHeart(paddleId, userKey).then(() => {
-          window.dispatchEvent(new CustomEvent("hearts-updated"));
+          window.dispatchEvent(new CustomEvent("hearts-updated", { detail: { paddleId, delta: -1 } }));
         });
       }
       return next;
