@@ -153,9 +153,9 @@ export const gearProducts: GearProduct[] = [
     badge: "",
     link: "https://www.pickleclips.shop?sca_ref=10963780.z20nVKRfLAl1fn",
     image: "/images/products/Pickle-Clips.png",
-    imageAspect: "square",
+    imageAspect: "wide",
     subtitle: "The easiest way to keep your paddle secure. Clips onto any bag in seconds.",
-    bg: "#0f2a18",
+    bg: "#111827",
     ctaText: "Shop Now",
   },
   {
