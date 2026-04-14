@@ -1408,6 +1408,7 @@ export const paddles: Paddle[] = [
     amountOff: "15%",
     price: "$450.00",
     discountLink: "https://lockerroompickleball.com/products/tesla-plaid-pickleball-paddle-by-selkirk?sca_ref=8334840.yY4rLJi7oU9HDNHD",
+    manualVideoId: "VVMzgV-q9Wo",
     addedAt: "2026-04-13",
     trendingScore: 66,
   },
@@ -1452,7 +1453,8 @@ export const paddles: Paddle[] = [
 // Review dates — ISO publish dates for Latest Reviews sort (newest-first)
 // Set youtubeApiKey in site.ts to auto-fetch real dates; or fill in manually.
 export const reviewDates: Record<string, string> = {
-  UQrRM5KPDsw:   "2026-04-04",  // Nox JMA & JC6            ← newest
+  VVMzgV-q9Wo:   "2026-04-14",  // Selkirk Tesla Plaid      ← newest
+  UQrRM5KPDsw:   "2026-04-04",  // Nox JMA & JC6
   l6efRcEngHo:   "2026-04-03",  // Friday Aura Pro
   "79lOG4-HuqM": "2026-04-02",  // APL Starion & Ascend
   "8Cnc0_BBXjc": "2026-04-01",  // Ronbus Quanta R3 & R4
