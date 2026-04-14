@@ -22,8 +22,12 @@ function ratingBars(paddle: Paddle) {
 }
 
 // ── Discount helpers ──────────────────────────────────────────────────────────
-function getCode(brand: string) {
-  return (brand === "Selkirk" || brand === "SLK") ? "INF-PLAYBOOK" : siteConfig.discountCode;
+function getCode(brand: string, discountLink?: string) {
+  if (brand === "Selkirk" || brand === "SLK") {
+    if (discountLink?.includes("lockerroompickleball.com")) return siteConfig.discountCode;
+    return "INF-PLAYBOOK";
+  }
+  return siteConfig.discountCode;
 }
 
 function isGiftCard(brand: string, amountOff: string) {
@@ -34,7 +38,7 @@ function isGiftCard(brand: string, amountOff: string) {
 
 export default function PaddleOfTheWeek({ paddle }: Props) {
   const bars     = ratingBars(paddle);
-  const code     = getCode(paddle.brand);
+  const code     = getCode(paddle.brand, paddle.discountLink);
   const giftCard = isGiftCard(paddle.brand, paddle.amountOff);
   const hasLink  = !!paddle.discountLink?.trim();
 

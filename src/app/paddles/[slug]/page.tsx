@@ -24,7 +24,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const paddle = getPaddleBySlug(params.slug);
   if (!paddle) return {};
-  const code = (paddle.brand === "Selkirk" || paddle.brand === "SLK") ? "INF-PLAYBOOK" : siteConfig.discountCode;
+  const code = getDiscountCode(paddle.brand, paddle.discountLink);
   return {
     title: `${paddle.name} (${paddle.shape}) | ${paddle.brand} | Pickleball Playbook`,
     description: `${paddle.brand} ${paddle.name} specs, review, and discount. Use code ${code} at checkout. ${paddle.thickness} core · ${paddle.weight} · Swing Weight ${paddle.swingWeight}.`,
@@ -33,8 +33,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function getDiscountCode(brand: string): string {
-  return (brand === "Selkirk" || brand === "SLK") ? "INF-PLAYBOOK" : siteConfig.discountCode;
+function getDiscountCode(brand: string, discountLink?: string): string {
+  if (brand === "Selkirk" || brand === "SLK") {
+    if (discountLink?.includes("lockerroompickleball.com")) return siteConfig.discountCode;
+    return "INF-PLAYBOOK";
+  }
+  return siteConfig.discountCode;
 }
 
 function isSelkirkGiftCard(brand: string, amountOff: string): boolean {
@@ -95,7 +99,7 @@ export default async function PaddleDetailPage({ params }: Props) {
   );
 
   const related  = paddles.filter((p) => p.id !== paddle.id).slice(0, 3);
-  const code     = getDiscountCode(paddle.brand);
+  const code     = getDiscountCode(paddle.brand, paddle.discountLink);
   const giftCard = isSelkirkGiftCard(paddle.brand, paddle.amountOff);
   const savings  = savingsDisplay(paddle.amountOff);
   const hasLink  = !!paddle.discountLink?.trim();

@@ -198,7 +198,7 @@ export default function PaddleCard({ paddle, index = 0, heartCount = 0 }: Paddle
         {paddle.amountOff && paddle.amountOff !== "$0" && paddle.amountOff !== "" && (
           <div className="flex items-center gap-1.5 mb-3">
             <span className="text-xs font-mono font-bold text-brand-600 bg-brand-50 border border-brand-200 px-2 py-0.5 rounded tracking-widest">
-              {(paddle.brand === "Selkirk" || paddle.brand === "SLK") ? "INF-PLAYBOOK" : "PLAYBOOK"}
+              {(paddle.brand === "Selkirk" || paddle.brand === "SLK") && !paddle.discountLink?.includes("lockerroompickleball.com") ? "INF-PLAYBOOK" : "PLAYBOOK"}
             </span>
             <span className="text-xs" style={{ color: "var(--text-muted)" }}>·</span>
             <span className="text-xs font-semibold" style={{ color: "var(--discount-text)" }}>Save {paddle.amountOff}</span>

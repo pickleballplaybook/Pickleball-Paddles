@@ -114,7 +114,7 @@ function PaddleCard({ paddle }: { paddle: Paddle }) {
           })()}
           {(() => {
             const isSelkirk = paddle.brand === "Selkirk" || paddle.brand === "SLK";
-            const code = isSelkirk ? "INF-PLAYBOOK" : "PLAYBOOK";
+            const code = isSelkirk && !paddle.discountLink?.includes("lockerroompickleball.com") ? "INF-PLAYBOOK" : "PLAYBOOK";
             return (
               <p className="text-[11px] font-semibold" style={{ color: "var(--discount-text)" }}>
                 Code <span className="font-mono tracking-wider">{code}</span>
