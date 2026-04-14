@@ -1453,7 +1453,7 @@ export const paddles: Paddle[] = [
 // Review dates — ISO publish dates for Latest Reviews sort (newest-first)
 // Set youtubeApiKey in site.ts to auto-fetch real dates; or fill in manually.
 export const reviewDates: Record<string, string> = {
-  VVMzgV-q9Wo:   "2026-04-14",  // Selkirk Tesla Plaid      ← newest
+  "VVMzgV-q9Wo": "2026-04-14",  // Selkirk Tesla Plaid      ← newest
   UQrRM5KPDsw:   "2026-04-04",  // Nox JMA & JC6
   l6efRcEngHo:   "2026-04-03",  // Friday Aura Pro
   "79lOG4-HuqM": "2026-04-02",  // APL Starion & Ascend
