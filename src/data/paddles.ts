@@ -1527,9 +1527,9 @@ export const paddles: Paddle[] = [
   },
   {
     id: "86",
-    slug: "rpm-q3-elongated",
+    slug: "rpm-q2-elongated",
     brand: "RPM",
-    name: "Q3",
+    name: "Q2",
     shape: "Elongated",
     weight: "7.9 oz",
     swingWeight: 120.16,
