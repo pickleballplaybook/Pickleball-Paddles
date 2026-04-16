@@ -186,7 +186,7 @@ export const DEFAULT_FILTERS: ActiveFilters = {
   playStyle:  "all",
   thickness:  "all",
   sweetSpot:  "all",
-  sort:       "popular-month",
+  sort:       "newest",
 };
 
 const VALID_SORTS: SortOption[] = [
