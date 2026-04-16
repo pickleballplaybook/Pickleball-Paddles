@@ -1213,7 +1213,7 @@ export const paddles: Paddle[] = [
 
   // ── Kobo ───────────────────────────────────────────────────────────────────
   {
-    id: "68",
+    id: "81",
     slug: "kobo-thunder-axe-infinity-elongated",
     brand: "Kobo",
     name: "Thunder Axe ∞",
@@ -1226,6 +1226,7 @@ export const paddles: Paddle[] = [
     amountOff: "15%",
     price: "$399.00",
     discountLink: "https://www.kobopickleball.co/PLAYBOOK",
+    manualVideoId: "l_MUwG28UII",
     addedAt: "2026-04-08",
     trendingScore: 70,
   },
@@ -1391,6 +1392,7 @@ export const paddles: Paddle[] = [
     amountOff: "15%",
     price: "$333.00",
     discountLink: "https://lockerroompickleball.com/products/labs-project-boomstik?sca_ref=8334840.yY4rLJi7oU9HDNHD",
+    manualVideoId: "GeVglhdjWQg",
     addedAt: "2026-04-13",
     trendingScore: 66,
   },
@@ -1448,12 +1450,102 @@ export const paddles: Paddle[] = [
     addedAt: "2026-04-13",
     trendingScore: 60,
   },
+
+  // ── Flik ───────────────────────────────────────────────────────────────────
+  {
+    id: "82",
+    slug: "flik-f3-triple-core-elongated",
+    brand: "Flik",
+    name: "F3 Triple Core",
+    shape: "Elongated",
+    weight: "8.0 oz",
+    swingWeight: 119.85,
+    twistWeight: 6.09,
+    thickness: "16mm",
+    amountOff: "10%",
+    price: "$190.00",
+    discountLink: "https://flikpickleball.com/?ref=PLAYBOOK",
+    addedAt: "2026-04-16",
+    trendingScore: 62,
+  },
+  {
+    id: "83",
+    slug: "flik-f3-triple-core-hybrid",
+    brand: "Flik",
+    name: "F3 Triple Core",
+    shape: "Hybrid",
+    weight: "8.0 oz",
+    swingWeight: 117.38,
+    twistWeight: 6.27,
+    thickness: "16mm",
+    amountOff: "10%",
+    price: "$190.00",
+    discountLink: "https://flikpickleball.com/?ref=PLAYBOOK",
+    addedAt: "2026-04-16",
+    trendingScore: 62,
+  },
+
+  // ── Honolulu ───────────────────────────────────────────────────────────────
+  {
+    id: "84",
+    slug: "honolulu-j6cr-elongated",
+    brand: "Honolulu",
+    name: "J6CR",
+    shape: "Elongated",
+    weight: "8.0 oz",
+    swingWeight: 115.36,
+    twistWeight: 6.43,
+    thickness: "16mm",
+    amountOff: "10%",
+    price: "$195.00",
+    discountLink: "https://808pickle.com/products/j6cr",
+    manualVideoId: "B-CWUS78KTc",
+    addedAt: "2026-04-16",
+    trendingScore: 62,
+  },
+
+  // ── RPM ────────────────────────────────────────────────────────────────────
+  {
+    id: "85",
+    slug: "rpm-q2-widebody",
+    brand: "RPM",
+    name: "Q2",
+    shape: "Widebody",
+    weight: "7.9 oz",
+    swingWeight: 107.71,
+    twistWeight: 6.80,
+    thickness: "16mm",
+    amountOff: "15%",
+    price: "$249.99",
+    discountLink: "https://rpmpb.com/PLAYBOOK",
+    addedAt: "2026-04-16",
+    trendingScore: 62,
+  },
+  {
+    id: "86",
+    slug: "rpm-q3-elongated",
+    brand: "RPM",
+    name: "Q3",
+    shape: "Elongated",
+    weight: "7.9 oz",
+    swingWeight: 120.16,
+    twistWeight: 6.05,
+    thickness: "16mm",
+    amountOff: "15%",
+    price: "$249.99",
+    discountLink: "https://rpmpb.com/PLAYBOOK",
+    addedAt: "2026-04-16",
+    trendingScore: 62,
+  },
 ];
 
 // Review dates — ISO publish dates for Latest Reviews sort (newest-first)
 // Set youtubeApiKey in site.ts to auto-fetch real dates; or fill in manually.
 export const reviewDates: Record<string, string> = {
-  "VVMzgV-q9Wo": "2026-04-14",  // Selkirk Tesla Plaid      ← newest
+  GeVglhdjWQg:   "2026-04-16",  // Selkirk Boomstik         ← newest
+  "B-CWUS78KTc": "2026-04-16",  // Honolulu J6CR
+  l_MUwG28UII:   "2026-04-16",  // Kobo Thunder Axe ∞
+  "VVMzgV-q9Wo": "2026-04-14",  // Selkirk Tesla Plaid
   UQrRM5KPDsw:   "2026-04-04",  // Nox JMA & JC6
   l6efRcEngHo:   "2026-04-03",  // Friday Aura Pro
   "79lOG4-HuqM": "2026-04-02",  // APL Starion & Ascend
