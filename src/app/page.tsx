@@ -133,8 +133,9 @@ export default async function HomePage() {
         icon={<Smartphone className="w-5 h-5" strokeWidth={2} />}
         bg="#0c1a2e"
       />
-      <div id="paddles"><HottestPaddle /></div>
       <div id="latest-reviews"><LatestReviews items={latestReviewItems} /></div>
+
+      <GearScroll />
 
       {/* Rotating gear promo A */}
       <PromoBar
@@ -148,6 +149,8 @@ export default async function HomePage() {
         icon={!promoA.image ? <GraduationCap className="w-5 h-5" strokeWidth={2} /> : undefined}
         bg={promoA.bg}
       />
+
+      <div id="paddles"><HottestPaddle /></div>
 
       <TrendingSection paddles={paddles} />
 
@@ -165,8 +168,6 @@ export default async function HomePage() {
       />
 
       <WhatsNew announcements={announcements} justAdded={justAdded} />
-
-      <GearScroll />
 
       {/* Rotating gear promo C */}
       <PromoBar
