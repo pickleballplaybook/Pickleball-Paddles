@@ -8,6 +8,7 @@ export interface GearProduct {
   image: string;
   imageAspect: "square" | "wide" | "none";
   subtitle: string;
+  features?: string;
   bg: string;
   ctaText: string;
 }
@@ -144,6 +145,20 @@ export const gearProducts: GearProduct[] = [
     subtitle: "Because every serious pickleball player needs a seriously serious truck.",
     bg: "#111111",
     ctaText: "Order Now",
+  },
+  {
+    id: "cuurt",
+    brand: "Cuurt",
+    name: "Muuv Shoes",
+    price: "$149.00",
+    badge: "10% Off",
+    link: "https://cuurt.com/?ref=PLAYBOOK",
+    image: "/images/products/Cuurt-Muuv-Shoes.png",
+    imageAspect: "wide",
+    subtitle: "Court shoes built for natural movement. Designed specifically for the demands of pickleball.",
+    features: "CUURT SHOES ARE:\n✓ Wide toe box (natural stability)\n✓ Zero drop (proper alignment)\n✓ Firm cushioning (court protection)\n✓ Mild arch-support (foot strengthening)\n\nCUURT SHOES ARE NOT:\n❌ Narrow fitting\n❌ Heavily cushioned\n❌ Heavy arch-supporting\n❌ Orthopedic/medical",
+    bg: "#0f1e2e",
+    ctaText: "Buy with Discount",
   },
   {
     id: "pickle-clips",

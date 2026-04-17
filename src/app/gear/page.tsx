@@ -105,9 +105,15 @@ function WideCard({ p }: { p: GearProduct }) {
             </p>
           )}
 
-          <p className="text-base leading-relaxed mb-10" style={{ color: "rgba(255,255,255,0.62)", maxWidth: "34ch" }}>
+          <p className="text-base leading-relaxed mb-6" style={{ color: "rgba(255,255,255,0.62)", maxWidth: "34ch" }}>
             {p.subtitle}
           </p>
+
+          {p.features && (
+            <pre className="text-sm leading-relaxed mb-8 whitespace-pre-wrap font-sans" style={{ color: "rgba(255,255,255,0.70)", maxWidth: "36ch" }}>
+              {p.features}
+            </pre>
+          )}
 
           <Cta href={p.link} text={p.ctaText} />
         </div>
@@ -168,9 +174,15 @@ function SquareCard({ p }: { p: GearProduct }) {
         <h3 className="text-xl font-extrabold leading-tight mb-2" style={{ color: "var(--text-primary)" }}>
           {p.name}
         </h3>
-        <p className="text-sm leading-relaxed flex-1 mb-7" style={{ color: "var(--text-muted)" }}>
+        <p className="text-sm leading-relaxed mb-4" style={{ color: "var(--text-muted)" }}>
           {p.subtitle}
         </p>
+
+        {p.features && (
+          <pre className="text-xs leading-relaxed mb-6 whitespace-pre-wrap font-sans flex-1" style={{ color: "var(--text-muted)" }}>
+            {p.features}
+          </pre>
+        )}
 
         <div className="flex items-center justify-between gap-3 mt-auto">
           {p.price && p.price !== "Free" && (
