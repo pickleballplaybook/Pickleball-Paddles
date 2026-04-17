@@ -4,7 +4,6 @@ import "./globals.css";
 import Navigation from "@/components/Navigation";
 import TopBar from "@/components/TopBar";
 import Footer from "@/components/Footer";
-import NewsletterPopup from "@/components/NewsletterPopup";
 import ThemeProvider from "@/components/ThemeProvider";
 import { siteConfig } from "@/config/site";
 
@@ -89,7 +88,6 @@ export default function RootLayout({
           </div>
           <main>{children}</main>
           <Footer />
-          <NewsletterPopup />
         </ThemeProvider>
       </body>
     </html>
