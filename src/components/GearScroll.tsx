@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { gearProducts } from "@/data/products";
 
+
 // Exclude the academy (no image / free) from the scroll
 const scrollProducts = gearProducts.filter((p) => p.imageAspect !== "none");
 
@@ -34,11 +35,9 @@ export default function GearScroll() {
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {scrollProducts.map((p) => (
-            <a
+            <Link
               key={p.id}
-              href={p.link}
-              target="_blank"
-              rel="noopener noreferrer sponsored"
+              href={`/gear/${p.id}`}
               className="flex-shrink-0 rounded-2xl overflow-hidden flex flex-col transition-transform duration-200 hover:scale-[1.02]"
               style={{
                 width: "200px",
@@ -91,7 +90,7 @@ export default function GearScroll() {
                   </span>
                 </div>
               </div>
-            </a>
+            </Link>
           ))}
         </div>
       </div>

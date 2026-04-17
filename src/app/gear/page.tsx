@@ -1,5 +1,6 @@
 import { ArrowRight, GraduationCap } from "lucide-react";
 import { Metadata } from "next";
+import Link from "next/link";
 import { gearProducts, GearProduct } from "@/data/products";
 
 export const metadata: Metadata = {
@@ -51,8 +52,9 @@ function Badge({ text }: { text: string }) {
 // so the absolute-positioned img always has a defined parent height to fill.
 function WideCard({ p }: { p: GearProduct }) {
   return (
+    <Link href={`/gear/${p.id}`} className="col-span-full block">
     <div
-      className="col-span-full rounded-3xl overflow-hidden"
+      className="rounded-3xl overflow-hidden"
       style={{
         background: p.bg,
         border: "1px solid rgba(255,255,255,0.07)",
@@ -119,14 +121,16 @@ function WideCard({ p }: { p: GearProduct }) {
         </div>
       </div>
     </div>
+    </Link>
   );
 }
 
 // ── Square card ───────────────────────────────────────────────────────────────
 function SquareCard({ p }: { p: GearProduct }) {
   return (
+    <Link href={`/gear/${p.id}`} className="block">
     <div
-      className="rounded-2xl overflow-hidden flex flex-col"
+      className="rounded-2xl overflow-hidden flex flex-col h-full"
       style={{
         background: "var(--bg-card)",
         border: "1px solid rgba(255,255,255,0.07)",
@@ -195,6 +199,7 @@ function SquareCard({ p }: { p: GearProduct }) {
         </div>
       </div>
     </div>
+    </Link>
   );
 }
 
@@ -214,8 +219,9 @@ export default function GearPage() {
         </div>
 
         {/* ── Titan hero ─────────────────────────────────────────────────────── */}
+        <Link href="/gear/titan" className="block mb-10">
         <div
-          className="rounded-3xl overflow-hidden mb-10"
+          className="rounded-3xl overflow-hidden"
           style={{
             background: titan.bg,
             border: "1px solid rgba(255,255,255,0.07)",
@@ -266,6 +272,7 @@ export default function GearPage() {
             </div>
           </div>
         </div>
+        </Link>
 
         {/* ── Product grid ───────────────────────────────────────────────────── */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
