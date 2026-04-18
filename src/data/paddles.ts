@@ -1522,6 +1522,7 @@ export const paddles: Paddle[] = [
     amountOff: "15%",
     price: "$249.99",
     discountLink: "https://rpmpb.com/PLAYBOOK",
+    manualVideoId: "6xff-1cCF30",
     addedAt: "2026-04-16",
     trendingScore: 62,
   },
@@ -1539,6 +1540,7 @@ export const paddles: Paddle[] = [
     amountOff: "15%",
     price: "$249.99",
     discountLink: "https://rpmpb.com/PLAYBOOK",
+    manualVideoId: "6xff-1cCF30",
     addedAt: "2026-04-16",
     trendingScore: 62,
   },
@@ -1581,7 +1583,8 @@ export const paddles: Paddle[] = [
 // Review dates — ISO publish dates for Latest Reviews sort (newest-first)
 // Set youtubeApiKey in site.ts to auto-fetch real dates; or fill in manually.
 export const reviewDates: Record<string, string> = {
-  GeVglhdjWQg:   "2026-04-18",  // Selkirk Boomstik         ← newest
+  "6xff-1cCF30": "2026-04-18",  // RPM Q2 Widebody + Elongated ← newest
+  GeVglhdjWQg:   "2026-04-18",  // Selkirk Boomstik
   "B-CWUS78KTc": "2026-04-17",  // Honolulu J6CR
   l_MUwG28UII:   "2026-04-16",  // Kobo Thunder Axe ∞
   "VVMzgV-q9Wo": "2026-04-14",  // Selkirk Tesla Plaid

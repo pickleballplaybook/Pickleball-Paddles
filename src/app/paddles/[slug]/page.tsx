@@ -50,6 +50,20 @@ function savingsDisplay(amountOff: string): string {
   return `Save ${amountOff}`;
 }
 
+function calcDiscountedPrice(price: string, amountOff: string): string | null {
+  if (!price || !amountOff || amountOff === "$0" || amountOff === "") return null;
+  const base = parseFloat(price.replace(/[^0-9.]/g, ""));
+  if (isNaN(base)) return null;
+  let discounted: number;
+  if (amountOff.endsWith("%")) {
+    discounted = base * (1 - parseFloat(amountOff) / 100);
+  } else {
+    discounted = base - parseFloat(amountOff.replace(/[^0-9.]/g, ""));
+  }
+  if (discounted <= 0) return null;
+  return `$${discounted.toFixed(2)}`;
+}
+
 // ── Spec row ──────────────────────────────────────────────────────────────────
 
 function SpecRow({
@@ -99,10 +113,13 @@ export default async function PaddleDetailPage({ params }: Props) {
   );
 
   const related  = paddles.filter((p) => p.id !== paddle.id).slice(0, 3);
-  const code     = getDiscountCode(paddle.brand, paddle.discountLink);
-  const giftCard = isSelkirkGiftCard(paddle.brand, paddle.amountOff);
-  const savings  = savingsDisplay(paddle.amountOff);
-  const hasLink  = !!paddle.discountLink?.trim();
+  const code           = getDiscountCode(paddle.brand, paddle.discountLink);
+  const giftCard       = isSelkirkGiftCard(paddle.brand, paddle.amountOff);
+  const savings        = savingsDisplay(paddle.amountOff);
+  const hasLink        = !!paddle.discountLink?.trim();
+  const discountedPrice = paddle.price && paddle.amountOff
+    ? calcDiscountedPrice(paddle.price, paddle.amountOff)
+    : null;
 
   return (
     <div className="min-h-screen pt-[156px]" style={{ background: "var(--flip-bg)" }}>
@@ -172,23 +189,27 @@ export default async function PaddleDetailPage({ params }: Props) {
               </p>
             )}
 
-            {/* Specs grid */}
-            <div
-              className="rounded-2xl px-6 py-1 mb-6"
-              style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}
-            >
-              <SpecRow label="Brand"        value={paddle.brand}       />
-              <SpecRow label="Shape"        value={paddle.shape}       />
-              <SpecRow label="Weight"       value={paddle.weight}      />
-              <SpecRow label="Swing Weight" value={paddle.swingWeight} />
-              <SpecRow label="Twist Weight" value={paddle.twistWeight} />
-              <SpecRow label="Thickness"    value={paddle.thickness}   last />
-            </div>
-
+            {/* Price display */}
             {paddle.price && (
-              <p className="text-3xl font-extrabold mb-5" style={{ color: "var(--flip-text-head)" }}>
-                {paddle.price}
-              </p>
+              <div className="flex items-baseline gap-3 mb-5">
+                {discountedPrice ? (
+                  <>
+                    <span
+                      className="text-2xl font-semibold line-through"
+                      style={{ color: "var(--flip-text-muted)" }}
+                    >
+                      {paddle.price}
+                    </span>
+                    <span className="text-4xl font-extrabold" style={{ color: "#2dd4bf" }}>
+                      {discountedPrice}
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-3xl font-extrabold" style={{ color: "var(--flip-text-head)" }}>
+                    {paddle.price}
+                  </span>
+                )}
+              </div>
             )}
 
             {/* Discount / code box */}
@@ -253,22 +274,22 @@ export default async function PaddleDetailPage({ params }: Props) {
               )}
             </div>
 
-            {/* Buy Now / Link Coming Soon */}
+            {/* Get Discount / Link Coming Soon */}
             {hasLink ? (
               <a
                 href={paddle.discountLink}
                 target="_blank"
                 rel="noopener noreferrer sponsored"
-                className="flex items-center justify-center gap-2 w-full font-bold text-base py-4 rounded-2xl text-white transition-all duration-200 active:scale-[0.98]"
+                className="flex items-center justify-center gap-2 w-full font-bold text-base py-4 rounded-2xl text-white transition-all duration-200 active:scale-[0.98] mb-6"
                 style={{ background: "#14b8a6" }}
               >
-                Buy Now
+                Get Discount
                 <ExternalLink className="w-4 h-4" strokeWidth={2.5} />
               </a>
             ) : (
               <button
                 disabled
-                className="flex items-center justify-center gap-2 w-full font-bold text-base py-4 rounded-2xl cursor-not-allowed"
+                className="flex items-center justify-center gap-2 w-full font-bold text-base py-4 rounded-2xl cursor-not-allowed mb-6"
                 style={{
                   background: "var(--flip-bg-card)",
                   color: "var(--flip-text-muted)",
@@ -278,6 +299,19 @@ export default async function PaddleDetailPage({ params }: Props) {
                 Link Coming Soon
               </button>
             )}
+
+            {/* Specs grid */}
+            <div
+              className="rounded-2xl px-6 py-1 mb-6"
+              style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}
+            >
+              <SpecRow label="Brand"        value={paddle.brand}       />
+              <SpecRow label="Shape"        value={paddle.shape}       />
+              <SpecRow label="Weight"       value={paddle.weight}      />
+              <SpecRow label="Swing Weight" value={paddle.swingWeight} />
+              <SpecRow label="Twist Weight" value={paddle.twistWeight} />
+              <SpecRow label="Thickness"    value={paddle.thickness}   last />
+            </div>
 
             {/* Save / React */}
             <div className="mt-3">
@@ -422,7 +456,7 @@ export default async function PaddleDetailPage({ params }: Props) {
               className="inline-flex items-center gap-2 font-bold text-base px-10 py-4 rounded-2xl text-white transition-all duration-200 active:scale-[0.98]"
               style={{ background: "#14b8a6" }}
             >
-              Buy Now
+              Get Discount
               <ExternalLink className="w-4 h-4" strokeWidth={2.5} />
             </a>
           </div>
