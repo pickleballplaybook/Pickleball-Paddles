@@ -142,12 +142,38 @@ export default async function PaddleDetailPage({ params }: Props) {
 
           {/* Left — image */}
           <div
-            className="rounded-3xl aspect-square flex flex-col items-center justify-center border"
+            className="relative rounded-3xl aspect-square flex flex-col items-center justify-center border"
             style={{
               background: "var(--flip-bg-card)",
               borderColor: "var(--flip-card-border)",
             }}
           >
+            {/* Shape + Thickness badges */}
+            <div className="absolute top-4 left-4 flex gap-2 z-10">
+              <span
+                className="text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full"
+                style={{
+                  background: "rgba(20,184,166,0.15)",
+                  color: "#2dd4bf",
+                  border: "1px solid rgba(20,184,166,0.3)",
+                  backdropFilter: "blur(8px)",
+                }}
+              >
+                {paddle.shape}
+              </span>
+              <span
+                className="text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full"
+                style={{
+                  background: "rgba(20,184,166,0.15)",
+                  color: "#2dd4bf",
+                  border: "1px solid rgba(20,184,166,0.3)",
+                  backdropFilter: "blur(8px)",
+                }}
+              >
+                {paddle.thickness}
+              </span>
+            </div>
+
             {paddle.image ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={paddle.image} alt={paddle.name} className="w-full h-full object-contain p-10" />
@@ -179,9 +205,6 @@ export default async function PaddleDetailPage({ params }: Props) {
             >
               {paddle.name}
             </h1>
-            <p className="text-base font-medium mb-6" style={{ color: "var(--flip-text-muted)" }}>
-              {paddle.shape} · {paddle.thickness} core
-            </p>
 
             {paddle.tagline && (
               <p className="text-lg font-light mb-6" style={{ color: "var(--flip-text-body)" }}>
