@@ -12,7 +12,8 @@ import TrendingSection from "@/components/TrendingSection";
 import LatestReviews  from "@/components/LatestReviews";
 import WhatsNew, { AnnouncementItem } from "@/components/WhatsNew";
 import PromoBar       from "@/components/PromoBar";
-import GearScroll     from "@/components/GearScroll";
+import GearScroll        from "@/components/GearScroll";
+import NewsletterSignup  from "@/components/NewsletterSignup";
 
 export const revalidate = 3600;
 
@@ -168,6 +169,8 @@ export default async function HomePage() {
       />
 
       <WhatsNew announcements={announcements} justAdded={justAdded} />
+
+      <NewsletterSignup />
 
       {/* Rotating gear promo C */}
       <PromoBar
