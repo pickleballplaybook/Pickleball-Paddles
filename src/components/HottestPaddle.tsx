@@ -1,17 +1,8 @@
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, Flame } from "lucide-react";
+import { ArrowRight, Flame } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { getPaddleBySlug } from "@/data/paddles";
 
-/**
- * HottestPaddle — Section 1 of the homepage.
- *
- * "Hottest Paddle Right Now" launch-style hero.
- *
- * TO SWAP THE FEATURED PADDLE:
- *   1. Update siteConfig.hottestPaddleSlug
- *   2. Update siteConfig.hottestPaddleSeries (headline, subheadline, bullets, link)
- */
 function calcDiscountedPrice(price: string, amountOff: string): string | null {
   if (!amountOff || amountOff === "$0") return null;
   const base = parseFloat(price.replace(/[^0-9.]/g, ""));
@@ -35,256 +26,200 @@ export default function HottestPaddle() {
   const paddle = getPaddleBySlug(hottestPaddleSlug);
   const shopLink = hottestPaddleSeries.seriesLink || paddle?.discountLink || "/paddles";
   const code = (paddle?.brand === "Selkirk" || paddle?.brand === "SLK") && !paddle?.discountLink?.includes("lockerroompickleball.com") ? "INF-PLAYBOOK" : discountCode;
+  const discounted = paddle?.price && paddle?.amountOff ? calcDiscountedPrice(paddle.price, paddle.amountOff) : null;
 
   return (
-    <section
-      className="relative min-h-[90vh] flex items-center overflow-hidden"
-      style={{ background: "var(--flip-bg)" }}
-    >
-      {/* ── Background atmosphere ─────────────────────────────────────────── */}
-      <div
+    <section className="relative w-full overflow-hidden" style={{ minHeight: "92vh" }}>
+
+      {/* ── Full-bleed hero image ──────────────────────────────────────────── */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/images/11six24-Power-2-Hero.png"
+        alt="11SIX24 Power 2 Series"
+        className="absolute inset-0 w-full h-full object-cover object-center"
         aria-hidden="true"
-        className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full"
+      />
+
+      {/* ── Gradient overlays ─────────────────────────────────────────────── */}
+      {/* Bottom-to-top dark fade for text legibility */}
+      <div
+        className="absolute inset-0"
         style={{
-          background: "radial-gradient(circle at 60% 50%, rgba(20,184,166,0.15) 0%, rgba(20,184,166,0.04) 40%, transparent 70%)",
-          filter: "blur(1px)",
+          background: "linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.55) 40%, rgba(0,0,0,0.15) 70%, transparent 100%)",
         }}
       />
+      {/* Left fade so copy stands out */}
       <div
-        aria-hidden="true"
-        className="pointer-events-none absolute left-0 bottom-0 w-[500px] h-[500px] rounded-full"
+        className="absolute inset-0"
         style={{
-          background: "radial-gradient(circle, rgba(22,58,106,0.2) 0%, transparent 70%)",
+          background: "linear-gradient(to right, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.3) 50%, transparent 100%)",
         }}
       />
-      {/* Subtle grid texture */}
+      {/* Subtle teal tint at bottom */}
       <div
-        aria-hidden="true"
-        className="absolute inset-0 opacity-[0.03]"
+        className="absolute bottom-0 left-0 right-0 h-48 pointer-events-none"
         style={{
-          backgroundImage:
-            "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)",
-          backgroundSize: "48px 48px",
+          background: "linear-gradient(to top, rgba(13,148,136,0.18) 0%, transparent 100%)",
         }}
       />
 
-      <div className="container-xl relative z-10 py-24 md:py-32">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-6 items-center">
+      {/* ── Content ───────────────────────────────────────────────────────── */}
+      <div className="relative z-10 container-xl flex flex-col justify-end h-full py-16 md:py-24" style={{ minHeight: "92vh" }}>
+        <div className="max-w-2xl">
 
-          {/* ── Left: copy ───────────────────────────────────────────────── */}
-          <div className="max-w-xl">
-            {/* Label */}
-            <div className="flex items-center gap-2.5 mb-6">
-              <div
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest"
+          {/* Badge */}
+          <div className="flex items-center gap-2 mb-5">
+            <div
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest"
+              style={{
+                background: "rgba(20,184,166,0.18)",
+                border: "1px solid rgba(20,184,166,0.45)",
+                color: "#2dd4bf",
+                backdropFilter: "blur(8px)",
+              }}
+            >
+              <Flame className="w-3 h-3" />
+              Hottest Paddle Right Now
+            </div>
+          </div>
+
+          {/* Headline */}
+          <h2
+            className="font-extrabold tracking-tight leading-[0.93] mb-4 text-white"
+            style={{ fontSize: "clamp(3rem, 7vw, 5.5rem)", textShadow: "0 2px 24px rgba(0,0,0,0.5)" }}
+          >
+            {hottestPaddleSeries.headline}
+          </h2>
+
+          {/* Subheadline */}
+          <p
+            className="text-lg md:text-xl leading-relaxed mb-6 font-light"
+            style={{ color: "rgba(255,255,255,0.78)", maxWidth: "52ch" }}
+          >
+            {hottestPaddleSeries.subheadline}
+          </p>
+
+          {/* Bullets */}
+          <ul className="flex flex-wrap gap-2 mb-8">
+            {hottestPaddleSeries.bullets.map((bullet) => (
+              <li
+                key={bullet}
+                className="text-xs font-semibold px-3 py-1.5 rounded-full"
                 style={{
-                  background: "rgba(20,184,166,0.12)",
-                  border: "1px solid rgba(20,184,166,0.3)",
-                  color: "#2dd4bf",
+                  background: "rgba(255,255,255,0.1)",
+                  border: "1px solid rgba(255,255,255,0.2)",
+                  color: "rgba(255,255,255,0.85)",
+                  backdropFilter: "blur(8px)",
                 }}
               >
-                <Flame className="w-3 h-3" />
-                Hottest Paddle Right Now
-              </div>
-            </div>
+                {bullet}
+              </li>
+            ))}
+          </ul>
 
-            {/* Headline */}
-            <h1
-              className="font-extrabold tracking-tight leading-[0.95] mb-6"
-              style={{ fontSize: "clamp(2.8rem, 6vw, 5rem)", color: "var(--flip-text-head)" }}
-            >
-              {hottestPaddleSeries.headline}
-            </h1>
-
-            {/* Subheadline */}
-            <p
-              className="text-lg md:text-xl leading-relaxed mb-8 font-light"
-              style={{ color: "var(--flip-text-body)" }}
-            >
-              {hottestPaddleSeries.subheadline}
-            </p>
-
-            {/* Bullets */}
-            <ul className="space-y-3 mb-10">
-              {hottestPaddleSeries.bullets.map((bullet) => (
-                <li key={bullet} className="flex items-center gap-3">
-                  <CheckCircle2
-                    className="w-5 h-5 flex-shrink-0"
-                    style={{ color: "#14b8a6" }}
-                    strokeWidth={2}
-                  />
-                  <span className="text-base font-medium" style={{ color: "var(--flip-text-body)" }}>
-                    {bullet}
-                  </span>
-                </li>
-              ))}
-            </ul>
-
-            {/* Price */}
-            {paddle?.price && (() => {
-              const discounted = calcDiscountedPrice(paddle.price!, paddle.amountOff);
-              return (
-                <div className="flex items-baseline gap-3 mb-10">
+          {/* Price */}
+          {paddle?.price && (
+            <div className="flex items-baseline gap-3 mb-8">
+              {discounted ? (
+                <>
                   <span
-                    className="text-2xl font-bold"
-                    style={{ color: discounted ? "var(--flip-text-muted)" : "var(--flip-text-head)", textDecoration: discounted ? "line-through" : "none" }}
+                    className="text-xl font-semibold line-through"
+                    style={{ color: "rgba(255,255,255,0.45)" }}
                   >
                     {paddle.price}
                   </span>
-                  {discounted && (
-                    <span className="text-2xl font-extrabold" style={{ color: "#14b8a6" }}>
-                      {discounted}
-                    </span>
-                  )}
-                </div>
-              );
-            })()}
-
-            {/* CTA */}
-            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-              <a
-                href={shopLink}
-                target="_blank"
-                rel="noopener noreferrer sponsored"
-                className="inline-flex items-center justify-center gap-2 font-extrabold text-base px-8 py-4 rounded-2xl text-white tracking-wide transition-all duration-200 active:scale-[0.98]"
-                style={{
-                  background: "linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)",
-                  boxShadow: "0 0 32px rgba(20,184,166,0.3)",
-                  letterSpacing: "0.04em",
-                }}
-              >
-                SHOP NOW
-                <ArrowRight className="w-4 h-4" strokeWidth={2.5} />
-              </a>
-              <Link
-                href={`/paddles/${hottestPaddleSlug}`}
-                className="inline-flex items-center gap-1.5 text-sm font-semibold transition-colors hover:text-brand-500"
-                style={{ color: "var(--flip-text-muted)" }}
-              >
-                See full review
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
+                  <span className="text-4xl font-extrabold" style={{ color: "#2dd4bf" }}>
+                    {discounted}
+                  </span>
+                </>
+              ) : (
+                <span className="text-3xl font-extrabold text-white">{paddle.price}</span>
+              )}
             </div>
+          )}
 
-            {/* Code note */}
-            <p className="mt-4 text-xs font-medium" style={{ color: "var(--flip-text-faint)" }}>
-              Use code{" "}
-              <span className="font-mono font-bold" style={{ color: "rgba(45,212,191,0.8)" }}>
-                {code}
-              </span>
-              {" "}for savings
-            </p>
-          </div>
-
-          {/* ── Right: paddle visual ─────────────────────────────────────── */}
-          <div className="relative flex items-center justify-center lg:justify-end">
-
-            {/* Glow layer */}
-            <div
-              aria-hidden="true"
-              className="absolute inset-0 rounded-full"
+          {/* CTAs */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-5">
+            <a
+              href={shopLink}
+              target="_blank"
+              rel="noopener noreferrer sponsored"
+              className="inline-flex items-center justify-center gap-2 font-extrabold text-base px-9 py-4 rounded-2xl text-white tracking-wide transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
               style={{
-                background: "radial-gradient(circle at 50% 50%, rgba(20,184,166,0.2) 0%, transparent 65%)",
-                filter: "blur(32px)",
-                transform: "scale(1.2)",
-              }}
-            />
-
-            {/* Paddle image / placeholder */}
-            <div
-              className="relative w-[340px] h-[340px] md:w-[460px] md:h-[460px] rounded-3xl flex flex-col items-center justify-center"
-              style={{
-                background: "var(--flip-bg-card)",
-                border: "1px solid rgba(20,184,166,0.15)",
-                boxShadow: "0 0 80px rgba(20,184,166,0.1), inset 0 1px 0 rgba(255,255,255,0.04)",
+                background: "linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)",
+                boxShadow: "0 0 40px rgba(20,184,166,0.45), 0 4px 16px rgba(0,0,0,0.4)",
+                letterSpacing: "0.05em",
               }}
             >
-              {paddle?.image ? (
-                /* Real paddle image */
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={paddle.image}
-                  alt={paddle.name}
-                  className="w-52 md:w-72 h-auto object-contain drop-shadow-2xl"
-                />
-              ) : (
-                /* Fallback SVG */
-                <>
-                  <svg
-                    viewBox="0 0 200 280"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="w-48 md:w-64 h-auto"
-                    aria-hidden="true"
-                  >
-                    <rect x="8" y="8" width="184" height="196" rx="92" fill="url(#paddle-grad)" />
-                    <rect x="78" y="200" width="44" height="72" rx="22" fill="url(#handle-grad)" />
-                    {[55,85,115,145].map(y =>
-                      [45,80,115,150].map(x => (
-                        <circle key={`${x}-${y}`} cx={x} cy={y} r="6" fill="#0f766e" opacity="0.5" />
-                      ))
-                    )}
-                    <ellipse cx="72" cy="55" rx="28" ry="40" fill="white" opacity="0.08" />
-                    <defs>
-                      <linearGradient id="paddle-grad" x1="0" y1="0" x2="200" y2="200" gradientUnits="userSpaceOnUse">
-                        <stop offset="0%" stopColor="#14b8a6" />
-                        <stop offset="100%" stopColor="#0d9488" />
-                      </linearGradient>
-                      <linearGradient id="handle-grad" x1="0" y1="0" x2="0" y2="72" gradientUnits="userSpaceOnUse">
-                        <stop offset="0%" stopColor="#0f766e" />
-                        <stop offset="100%" stopColor="#0a5c56" />
-                      </linearGradient>
-                    </defs>
-                  </svg>
-                  {/* Brand label (only shown with SVG placeholder) */}
-                  <p
-                    className="mt-4 text-xs font-bold uppercase tracking-widest"
-                    style={{ color: "rgba(45,212,191,0.7)" }}
-                  >
-                    {paddle?.brand ?? "11SIX24"}
-                  </p>
-                </>
-              )}
-
-              {/* Floating spec chips */}
-              {paddle && (
-                <>
-                  <div
-                    className="absolute top-6 right-6 px-3 py-1.5 rounded-xl text-xs font-bold"
-                    style={{ background: "rgba(20,184,166,0.15)", color: "#2dd4bf", border: "1px solid rgba(20,184,166,0.2)" }}
-                  >
-                    {paddle.thickness} Core
-                  </div>
-                  <div
-                    className="absolute bottom-6 left-6 flex gap-2"
-                  >
-                    <div
-                      className="px-3 py-1.5 rounded-xl text-xs font-bold"
-                      style={{
-                        background: "var(--flip-bg-card)",
-                        color: "var(--flip-text-body)",
-                        border: "1px solid var(--flip-card-border)",
-                      }}
-                    >
-                      SW {paddle.swingWeight}
-                    </div>
-                    <div
-                      className="px-3 py-1.5 rounded-xl text-xs font-bold"
-                      style={{
-                        background: "var(--flip-bg-card)",
-                        color: "var(--flip-text-body)",
-                        border: "1px solid var(--flip-card-border)",
-                      }}
-                    >
-                      TW {paddle.twistWeight}
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
+              SHOP NOW
+              <ArrowRight className="w-4 h-4" strokeWidth={2.5} />
+            </a>
+            <Link
+              href={`/paddles/${hottestPaddleSlug}`}
+              className="inline-flex items-center gap-1.5 text-sm font-semibold px-6 py-4 rounded-2xl transition-all duration-200 hover:scale-[1.02]"
+              style={{
+                background: "rgba(255,255,255,0.1)",
+                border: "1px solid rgba(255,255,255,0.2)",
+                color: "rgba(255,255,255,0.85)",
+                backdropFilter: "blur(8px)",
+              }}
+            >
+              Full Review
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
 
+          {/* Discount code note */}
+          <p className="text-xs font-medium" style={{ color: "rgba(255,255,255,0.45)" }}>
+            Use code{" "}
+            <span className="font-mono font-bold" style={{ color: "rgba(45,212,191,0.9)" }}>
+              {code}
+            </span>
+            {" "}at checkout for savings
+          </p>
+
         </div>
+
+        {/* Floating spec chips — bottom right */}
+        {paddle && (
+          <div className="absolute bottom-10 right-6 md:right-10 flex flex-col gap-2 items-end">
+            <div
+              className="px-4 py-2 rounded-xl text-xs font-bold"
+              style={{
+                background: "rgba(0,0,0,0.55)",
+                border: "1px solid rgba(20,184,166,0.35)",
+                color: "#2dd4bf",
+                backdropFilter: "blur(12px)",
+              }}
+            >
+              {paddle.thickness} Core
+            </div>
+            <div className="flex gap-2">
+              <div
+                className="px-4 py-2 rounded-xl text-xs font-bold"
+                style={{
+                  background: "rgba(0,0,0,0.55)",
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  color: "rgba(255,255,255,0.8)",
+                  backdropFilter: "blur(12px)",
+                }}
+              >
+                SW {paddle.swingWeight}
+              </div>
+              <div
+                className="px-4 py-2 rounded-xl text-xs font-bold"
+                style={{
+                  background: "rgba(0,0,0,0.55)",
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  color: "rgba(255,255,255,0.8)",
+                  backdropFilter: "blur(12px)",
+                }}
+              >
+                TW {paddle.twistWeight}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );
