@@ -1282,6 +1282,7 @@ export const paddles: Paddle[] = [
     amountOff: "10%",
     price: "$179.99",
     discountLink: "https://www.gherkinusa.com?sca_ref=10967552.q1z8WlPL8s",
+    manualVideoId: "gXAkwcVJ3uk",
     addedAt: "2026-04-09",
     trendingScore: 65,
   },
@@ -1301,6 +1302,7 @@ export const paddles: Paddle[] = [
     amountOff: "10%",
     price: "$169.00",
     discountLink: "https://gruvn.co?sca_ref=10975651.1PBYn4k30m7fDH",
+    manualVideoId: "fcbAhEtDvjo",
     addedAt: "2026-04-09",
     trendingScore: 63,
   },
@@ -1318,6 +1320,7 @@ export const paddles: Paddle[] = [
     amountOff: "10%",
     price: "$169.00",
     discountLink: "https://gruvn.co?sca_ref=10975651.1PBYn4k30m7fDH",
+    manualVideoId: "fcbAhEtDvjo",
     addedAt: "2026-04-09",
     trendingScore: 63,
   },
@@ -1430,6 +1433,7 @@ export const paddles: Paddle[] = [
     amountOff: "15%",
     price: "$229.00",
     discountLink: "https://luzzpickleball.com/playbook",
+    manualVideoId: "LYdP6v-anyc",
     addedAt: "2026-04-13",
     trendingScore: 60,
   },
@@ -1583,7 +1587,10 @@ export const paddles: Paddle[] = [
 // Review dates — ISO publish dates for Latest Reviews sort (newest-first)
 // Set youtubeApiKey in site.ts to auto-fetch real dates; or fill in manually.
 export const reviewDates: Record<string, string> = {
-  "6xff-1cCF30": "2026-04-18",  // RPM Q2 Widebody + Elongated ← newest
+  fcbAhEtDvjo:   "2026-04-22",  // Gruvn Lazr (16hd + 16x)    ← newest
+  gXAkwcVJ3uk:   "2026-04-22",  // Gherkin Draco
+  "LYdP6v-anyc": "2026-04-22",  // Luzz Inferno
+  "6xff-1cCF30": "2026-04-18",  // RPM Q2 Widebody + Elongated
   GeVglhdjWQg:   "2026-04-18",  // Selkirk Boomstik
   "B-CWUS78KTc": "2026-04-17",  // Honolulu J6CR
   l_MUwG28UII:   "2026-04-16",  // Kobo Thunder Axe ∞
