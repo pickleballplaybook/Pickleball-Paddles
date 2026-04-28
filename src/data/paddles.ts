@@ -1628,7 +1628,7 @@ export const paddles: Paddle[] = [
     thickness: "14mm",
     image: "/images/paddles/Joysent-Gearfoam-Max-14mm.png",
     amountOff: "10%",
-    price: "",
+    price: "$129.99",
     discountLink: "https://www.joysentsport.com?sca_ref=10987962.CoGSrAtoYA3",
     addedAt: "2026-04-28",
     trendingScore: 50,
