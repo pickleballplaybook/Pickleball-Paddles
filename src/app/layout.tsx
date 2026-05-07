@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
+import { headers } from "next/headers";
 import "./globals.css";
 import Navigation from "@/components/Navigation";
 import TopBar from "@/components/TopBar";
@@ -17,8 +18,6 @@ const inter = Inter({
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  // viewport-fit:cover lets env(safe-area-inset-top) return the real status-bar
-  // height so the fixed shell can paint black behind it and push content below.
   viewportFit: "cover",
   themeColor: "#000000",
 };
@@ -61,33 +60,42 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Hide marketing chrome on admin routes so the dashboard gets full-height canvas
+  const headersList = headers();
+  const pathname =
+    headersList.get("x-invoke-path") ||
+    headersList.get("next-url") ||
+    headersList.get("x-pathname") ||
+    "";
+  const isAdmin = pathname.startsWith("/admin");
+
   return (
     <html lang="en" className={inter.variable}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: `(function(){try{var s=localStorage.getItem('ppb_theme');if(s==='dark'||(!s&&window.matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');}}catch(e){}})();` }} />
-        {/* iOS Safari status bar — black even before JS hydrates */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black" />
         <meta name="theme-color" content="#000000" />
       </head>
       <body className="font-sans antialiased">
         <ThemeProvider>
-          {/* Safe-area overlay — paints over the status-bar zone with black.
-              Height is 0 on non-notched devices so it has no visual effect there. */}
-          <div
-            className="fixed inset-x-0 top-0 pointer-events-none"
-            style={{ height: "env(safe-area-inset-top, 0px)", background: "#000", zIndex: 200 }}
-          />
-          {/* Fixed shell — padding pushes TopBar/Nav below the status bar */}
-          <div
-            className="fixed inset-x-0 top-0 z-50"
-            style={{ paddingTop: "env(safe-area-inset-top)" }}
-          >
-            <TopBar />
-            <Navigation />
-          </div>
+          {!isAdmin && (
+            <>
+              <div
+                className="fixed inset-x-0 top-0 pointer-events-none"
+                style={{ height: "env(safe-area-inset-top, 0px)", background: "#000", zIndex: 200 }}
+              />
+              <div
+                className="fixed inset-x-0 top-0 z-50"
+                style={{ paddingTop: "env(safe-area-inset-top)" }}
+              >
+                <TopBar />
+                <Navigation />
+              </div>
+            </>
+          )}
           <main>{children}</main>
-          <Footer />
+          {!isAdmin && <Footer />}
         </ThemeProvider>
       </body>
     </html>
