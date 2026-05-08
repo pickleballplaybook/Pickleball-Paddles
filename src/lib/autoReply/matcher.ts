@@ -48,7 +48,7 @@ export async function findMatchingCampaign(
     .from("auto_reply_campaigns")
     .select("*")
     .eq("is_active", true)
-    .contains("platforms", [platform]);
+    .overlaps("platforms", [platform]);
 
   log(`[matcher] platform=${platform} postId=${postId} text="${commentText.slice(0, 30)}" campaigns_returned=${campaigns?.length ?? "null"} err=${error?.message || "none"}`);
 
