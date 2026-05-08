@@ -3,7 +3,7 @@ import { getValidAccessToken, type YoutubeConnection } from "./tokenRefresh";
 import { findMatchingCampaign } from "@/lib/autoReply/matcher";
 
 const YT_API = "https://www.googleapis.com/youtube/v3";
-const VIDEOS_PER_POLL = 10;
+const VIDEOS_PER_POLL = 30;
 const COMMENTS_PER_VIDEO = 100;
 
 interface YoutubeComment {
