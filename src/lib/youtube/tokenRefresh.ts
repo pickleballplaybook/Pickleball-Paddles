@@ -49,6 +49,19 @@ export async function getValidAccessToken(conn: YoutubeConnection): Promise<stri
   };
 
   console.log(`[tokenRefresh] conn=${conn.id} got token first=${data.access_token?.slice(0,25)} last=${data.access_token?.slice(-10)} len=${data.access_token?.length} scope=${data.scope || "none"}`);
+  try {
+    const sb = getSupabaseAdmin();
+    await sb.from("auto_reply_logs").insert({
+      platform: "youtube",
+      comment_id: `debug_refresh_${Date.now()}`,
+      post_id: "debug",
+      commenter_id: "debug",
+      commenter_username: "debug",
+      comment_text: `REFRESH: first=${data.access_token?.slice(0,25)} last=${data.access_token?.slice(-10)} len=${data.access_token?.length} scope=${data.scope || "none"}`,
+      reply_status: "skipped",
+      reply_error: "debug_refresh",
+    });
+  } catch {}
 
   const newExpiresAt = new Date(Date.now() + data.expires_in * 1000).toISOString();
   const supabase = getSupabaseAdmin();
