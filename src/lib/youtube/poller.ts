@@ -155,11 +155,10 @@ async function processComment(
   if (existing) return false;
 
   // Run matcher.
-  const match = await findMatchingCampaign({
+  const match = await findMatchingCampaign(supabase, {
     platform: "youtube",
-    text: comment.text,
     postId: comment.videoId,
-    commenterId: comment.authorChannelId,
+    commentText: comment.text,
   });
   if (!match) {
     // Log skipped (no match) but with reply_status="skipped" so we don't re-attempt.
@@ -210,7 +209,7 @@ async function processComment(
     commenter_id: comment.authorChannelId,
     commenter_username: comment.authorDisplayName,
     comment_text: comment.text,
-    matched_keyword: match.matched_keyword,
+    matched_keyword: match.matchedKeyword,
     reply_status: replyStatus,
     reply_error: replyError,
     dm_status: "skipped", // YouTube has no DMs
