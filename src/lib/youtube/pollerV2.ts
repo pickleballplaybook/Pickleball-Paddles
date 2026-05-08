@@ -37,12 +37,15 @@ export async function pollChannel(conn: YoutubeConnection): Promise<{
   console.log(`[v2-rows] total_rows=${allStateRows?.length ?? "null"} err=${stateErr?.message || "null"}`);
 
   // Same for dedup logs - fetch once.
-  const { data: allYtLogs } = await supabase
+  const ytLogsRes = await supabase
     .from("auto_reply_logs")
-    .select("comment_id")
+    .select("comment_id, platform, created_at", { count: "exact" })
     .eq("platform", "youtube");
+  const allYtLogs = ytLogsRes.data;
   const seenCommentIds = new Set((allYtLogs || []).map((l) => l.comment_id));
-  debug.push(`[v2-logs] total_seen=${seenCommentIds.size} url=${process.env.NEXT_PUBLIC_SUPABASE_URL?.slice(0,40)} firstId=${Array.from(seenCommentIds)[0] || "none"}`);
+  debug.push(`[v2-logs] supabase_count=${ytLogsRes.count ?? "null"} data_len=${allYtLogs?.length ?? "null"} err=${ytLogsRes.error?.message || "none"} status=${ytLogsRes.status} url=${process.env.NEXT_PUBLIC_SUPABASE_URL}`);
+  debug.push(`[v2-logs] firstThree=${JSON.stringify((allYtLogs || []).slice(0, 3))}`);
+  debug.push(`[v2-logs] svc_key_first10=${process.env.SUPABASE_SERVICE_ROLE_KEY?.slice(0, 10) || "missing"}`);
 
   const videosRes = await fetch(
     `${YT_API}/search?part=id&channelId=${conn.account_id}&maxResults=${VIDEOS_PER_POLL}&order=date&type=video`,
