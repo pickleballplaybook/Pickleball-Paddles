@@ -108,7 +108,7 @@ export async function pollChannel(conn: YoutubeConnection): Promise<{
     }
 console.log(`[poll] video=${videoId} stored_last=${lastCommentId} fetched_first=${comments[0]?.id} idx_match=${lastCommentId ? comments.findIndex(c => c.id === lastCommentId) : 'no_state'} new=${newComments.length}`);   
  comments_found += newComments.length;
-console.log(`[v2-state] state=${JSON.stringify(state)} err=${stateErr?.message || 'null'}`);
+console.log(`[v2-state] ch="${conn.account_id}" vid="${videoId}" state=${JSON.stringify(state)} err=${stateErr?.message || 'null'}`);
 
     // Process newest first - reverse so oldest gets the earliest reply.
     for (const c of newComments.reverse()) {
