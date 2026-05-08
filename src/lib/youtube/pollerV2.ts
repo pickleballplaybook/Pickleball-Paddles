@@ -54,6 +54,7 @@ export async function pollChannel(conn: YoutubeConnection): Promise<{
     .from("youtube_videos_cache")
     .select("video_id, last_polled_at")
     .eq("channel_id", conn.account_id)
+    .eq("comments_disabled", false)
     .order("last_polled_at", { ascending: true, nullsFirst: true })
     .limit(VIDEOS_PER_POLL);
 
@@ -83,7 +84,16 @@ export async function pollChannel(conn: YoutubeConnection): Promise<{
     );
     if (!commentsRes.ok) {
       const txt = await commentsRes.text();
-      errors.push(`video ${videoId} comments fetch failed: ${txt.slice(0, 100)}`);
+      // commentsDisabled is permanent — flag it so we never re-poll
+      if (commentsRes.status === 403 && txt.includes("commentsDisabled")) {
+        await supabase.from("youtube_videos_cache").update({
+          comments_disabled: true,
+          last_polled_at: new Date().toISOString(),
+        }).eq("channel_id", conn.account_id).eq("video_id", videoId);
+        debug.push(`[v2-skip-disabled] ${videoId} marked comments_disabled`);
+      } else {
+        errors.push(`video ${videoId} comments fetch failed: ${txt.slice(0, 100)}`);
+      }
       continue;
     }
     const commentsData = (await commentsRes.json()) as {
