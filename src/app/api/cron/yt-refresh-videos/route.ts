@@ -104,25 +104,54 @@ async function refreshChannelVideos(conn: YoutubeConnection): Promise<{
     pages++;
   } while (pageToken && pages < MAX_PAGES);
 
-  // Step 3: bulk upsert. We don't overwrite last_polled_at on existing rows.
-  const rows = allVideoIds.map((video_id) => ({
+  // Step 3: insert any new videos, then assign tiers.
+  // The most recent HOT_COUNT uploads become 'hot' (polled every minute),
+  // everything else becomes 'cold' (polled slowly throughout the day).
+  const HOT_COUNT = 20;
+
+  // Insert any new videos (allVideoIds is in upload order, newest first)
+  const newRows = allVideoIds.map((video_id) => ({
     channel_id: conn.account_id,
     video_id,
   }));
 
   let videos_added = 0;
-  if (rows.length > 0) {
-    // Insert with ignoreDuplicates so existing rows keep their last_polled_at.
-    const { data: inserted, error: upsertErr } = await supabase
+  if (newRows.length > 0) {
+    const { data: inserted, error: insertErr } = await supabase
       .from("youtube_videos_cache")
-      .upsert(rows, { onConflict: "channel_id,video_id", ignoreDuplicates: true })
+      .upsert(newRows, { onConflict: "channel_id,video_id", ignoreDuplicates: true })
       .select("video_id");
-    if (upsertErr) throw new Error(`upsert failed: ${upsertErr.message}`);
+    if (insertErr) throw new Error(`insert failed: ${insertErr.message}`);
     videos_added = inserted?.length || 0;
+  }
+
+  // Mark the newest HOT_COUNT as hot, rest as cold
+  const hotIds = allVideoIds.slice(0, HOT_COUNT);
+  const coldIds = allVideoIds.slice(HOT_COUNT);
+
+  if (hotIds.length > 0) {
+    const { error: hotErr } = await supabase
+      .from("youtube_videos_cache")
+      .update({ tier: "hot" })
+      .eq("channel_id", conn.account_id)
+      .in("video_id", hotIds);
+    if (hotErr) throw new Error(`hot tier update failed: ${hotErr.message}`);
+  }
+
+  if (coldIds.length > 0) {
+    // Demote any previously-hot videos that have aged out
+    const { error: coldErr } = await supabase
+      .from("youtube_videos_cache")
+      .update({ tier: "cold" })
+      .eq("channel_id", conn.account_id)
+      .in("video_id", coldIds);
+    if (coldErr) throw new Error(`cold tier update failed: ${coldErr.message}`);
   }
 
   return {
     videos_added,
     total_videos: allVideoIds.length,
+    hot_videos: hotIds.length,
+    cold_videos: coldIds.length,
   };
 }

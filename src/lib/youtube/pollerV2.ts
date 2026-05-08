@@ -48,27 +48,47 @@ export async function pollChannel(conn: YoutubeConnection): Promise<{
   debug.push(`[v2-logs] firstThree=${JSON.stringify((allYtLogs || []).slice(0, 3))}`);
   debug.push(`[v2-logs] svc_key_first10=${process.env.SUPABASE_SERVICE_ROLE_KEY?.slice(0, 10) || "missing"}`);
 
-  // Pull oldest-polled videos from the cache. Rotates through the entire
-  // library over time. Refreshed daily by /api/cron/yt-refresh-videos.
-  const { data: cachedVideos, error: cacheErr } = await supabase
-    .from("youtube_videos_cache")
-    .select("video_id, last_polled_at")
-    .eq("channel_id", conn.account_id)
-    .eq("comments_disabled", false)
-    .order("last_polled_at", { ascending: true, nullsFirst: true })
-    .limit(VIDEOS_PER_POLL);
+  // Tiered poll: ALL hot videos (latest uploads, polled every minute)
+  // PLUS a rotating slice of cold videos (older uploads, covered over 24h).
+  const COLD_PER_POLL = 65; // ~65/min × 1440min = 93,600 polls/day - more than enough
+                           // to cycle through all cold videos every day.
 
-  if (cacheErr) {
-    errors.push(`cache fetch failed: ${cacheErr.message}`);
+  const [hotRes, coldRes] = await Promise.all([
+    supabase
+      .from("youtube_videos_cache")
+      .select("video_id")
+      .eq("channel_id", conn.account_id)
+      .eq("comments_disabled", false)
+      .eq("tier", "hot"),
+    supabase
+      .from("youtube_videos_cache")
+      .select("video_id")
+      .eq("channel_id", conn.account_id)
+      .eq("comments_disabled", false)
+      .eq("tier", "cold")
+      .order("last_polled_at", { ascending: true, nullsFirst: true })
+      .limit(COLD_PER_POLL),
+  ]);
+
+  if (hotRes.error) {
+    errors.push(`hot fetch failed: ${hotRes.error.message}`);
     return { videos_checked, comments_found, matches, errors, debug };
   }
-  if (!cachedVideos || cachedVideos.length === 0) {
+  if (coldRes.error) {
+    errors.push(`cold fetch failed: ${coldRes.error.message}`);
+    return { videos_checked, comments_found, matches, errors, debug };
+  }
+
+  const hotIds = (hotRes.data || []).map((v) => v.video_id);
+  const coldIds = (coldRes.data || []).map((v) => v.video_id);
+  const videoIds = [...hotIds, ...coldIds];
+
+  if (videoIds.length === 0) {
     errors.push("no videos in youtube_videos_cache - run /api/cron/yt-refresh-videos first");
     return { videos_checked, comments_found, matches, errors, debug };
   }
 
-  const videoIds = cachedVideos.map((v) => v.video_id);
-  debug.push(`[v2-cache] picked ${videoIds.length} videos from cache (oldest-polled first)`);
+  debug.push(`[v2-cache] hot=${hotIds.length} cold=${coldIds.length} total=${videoIds.length}`);
 
   for (const videoId of videoIds) {
     videos_checked++;
