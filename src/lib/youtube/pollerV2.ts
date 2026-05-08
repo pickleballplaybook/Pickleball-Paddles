@@ -48,17 +48,26 @@ export async function pollChannel(conn: YoutubeConnection): Promise<{
   debug.push(`[v2-logs] firstThree=${JSON.stringify((allYtLogs || []).slice(0, 3))}`);
   debug.push(`[v2-logs] svc_key_first10=${process.env.SUPABASE_SERVICE_ROLE_KEY?.slice(0, 10) || "missing"}`);
 
-  const videosRes = await fetch(
-    `${YT_API}/search?part=id&channelId=${conn.account_id}&maxResults=${VIDEOS_PER_POLL}&order=date&type=video`,
-    { headers: { Authorization: `Bearer ${accessToken}` } }
-  );
-  if (!videosRes.ok) {
-    const txt = await videosRes.text();
-    errors.push(`videos fetch failed: ${txt.slice(0, 200)}`);
+  // Pull oldest-polled videos from the cache. Rotates through the entire
+  // library over time. Refreshed daily by /api/cron/yt-refresh-videos.
+  const { data: cachedVideos, error: cacheErr } = await supabase
+    .from("youtube_videos_cache")
+    .select("video_id, last_polled_at")
+    .eq("channel_id", conn.account_id)
+    .order("last_polled_at", { ascending: true, nullsFirst: true })
+    .limit(VIDEOS_PER_POLL);
+
+  if (cacheErr) {
+    errors.push(`cache fetch failed: ${cacheErr.message}`);
     return { videos_checked, comments_found, matches, errors, debug };
   }
-  const videosData = (await videosRes.json()) as { items: Array<{ id: { videoId: string } }> };
-  const videoIds = videosData.items.map((v) => v.id.videoId);
+  if (!cachedVideos || cachedVideos.length === 0) {
+    errors.push("no videos in youtube_videos_cache - run /api/cron/yt-refresh-videos first");
+    return { videos_checked, comments_found, matches, errors, debug };
+  }
+
+  const videoIds = cachedVideos.map((v) => v.video_id);
+  debug.push(`[v2-cache] picked ${videoIds.length} videos from cache (oldest-polled first)`);
 
   for (const videoId of videoIds) {
     videos_checked++;
@@ -137,6 +146,11 @@ export async function pollChannel(conn: YoutubeConnection): Promise<{
         { onConflict: "channel_id,video_id" }
       );
     }
+
+    // Always mark polled in cache so we rotate through the full library
+    await supabase.from("youtube_videos_cache").update({
+      last_polled_at: new Date().toISOString(),
+    }).eq("channel_id", conn.account_id).eq("video_id", videoId);
   }
 
   return { videos_checked, comments_found, matches, errors, debug };
