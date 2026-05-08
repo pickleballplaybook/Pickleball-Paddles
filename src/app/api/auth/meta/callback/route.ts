@@ -151,7 +151,7 @@ async function exchangeCodeForToken(
 ): Promise<string> {
   const url = `${GRAPH}/oauth/access_token?${new URLSearchParams({
     client_id: cfg.appId,
-    client_secret: cfg.appSecret,
+    client_secret: cfg.oauthSecret,
     redirect_uri: cfg.redirectUri,
     code,
   })}`;
@@ -172,7 +172,7 @@ async function exchangeForLongLivedToken(
   const url = `${GRAPH}/oauth/access_token?${new URLSearchParams({
     grant_type: "fb_exchange_token",
     client_id: cfg.appId,
-    client_secret: cfg.appSecret,
+    client_secret: cfg.oauthSecret,
     fb_exchange_token: shortToken,
   })}`;
   const res = await fetch(url);
