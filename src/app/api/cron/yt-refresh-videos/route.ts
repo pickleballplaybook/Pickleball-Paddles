@@ -53,6 +53,8 @@ export async function GET(req: NextRequest) {
 async function refreshChannelVideos(conn: YoutubeConnection): Promise<{
   videos_added: number;
   total_videos: number;
+  hot_videos?: number;
+  cold_videos?: number;
 }> {
   const accessToken = await getValidAccessToken(conn);
   const supabase = getSupabaseAdmin();
