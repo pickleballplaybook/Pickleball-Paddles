@@ -42,7 +42,7 @@ export async function pollChannel(conn: YoutubeConnection): Promise<{
     .select("comment_id")
     .eq("platform", "youtube");
   const seenCommentIds = new Set((allYtLogs || []).map((l) => l.comment_id));
-  debug.push(`[v2-logs] total_seen=${seenCommentIds.size}`);
+  debug.push(`[v2-logs] total_seen=${seenCommentIds.size} url=${process.env.NEXT_PUBLIC_SUPABASE_URL?.slice(0,40)} firstId=${[...seenCommentIds][0] || "none"}`);
 
   const videosRes = await fetch(
     `${YT_API}/search?part=id&channelId=${conn.account_id}&maxResults=${VIDEOS_PER_POLL}&order=date&type=video`,
