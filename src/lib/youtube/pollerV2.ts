@@ -54,13 +54,11 @@ export async function pollChannel(conn: YoutubeConnection): Promise<{
   for (const videoId of videoIds) {
     videos_checked++;
 
-    // Find existing poll state for this video.
-    const { data: state, error: stateErr } = await supabase
+    const { data: stateRows, error: stateErr } = await supabase
       .from("youtube_poll_state")
-      .select("last_comment_id")
-      .eq("channel_id", conn.account_id)
-      .eq("video_id", videoId)
-      .maybeSingle();
+      .select("last_comment_id, channel_id, video_id");
+    console.log(`[v2-rows] total_rows=${stateRows?.length} sample=${JSON.stringify(stateRows?.slice(0, 2))}`);
+    const state = stateRows?.find(r => r.channel_id === conn.account_id && r.video_id === videoId);
     console.log(`[poll-state] channel=${conn.account_id} video=${videoId} state=${JSON.stringify(state)} err=${stateErr?.message || 'null'}`);
     const lastCommentId = state?.last_comment_id;
 
