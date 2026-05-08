@@ -57,7 +57,7 @@ export async function getValidAccessToken(conn: YoutubeConnection): Promise<stri
       post_id: "debug",
       commenter_id: "debug",
       commenter_username: "debug",
-      comment_text: `REFRESH: first=${data.access_token?.slice(0,25)} last=${data.access_token?.slice(-10)} len=${data.access_token?.length} scope=${data.scope || "none"}`,
+      comment_text: `REFRESH: first=${data.access_token?.slice(0,25)} last=${data.access_token?.slice(-10)} len=${data.access_token?.length} scope=${data.scope || "none"} CID_first10=${process.env.GOOGLE_CLIENT_ID?.slice(0,10)} CID_last20=${process.env.GOOGLE_CLIENT_ID?.slice(-20)} CS_first6=${process.env.GOOGLE_CLIENT_SECRET?.slice(0,6)} CS_len=${process.env.GOOGLE_CLIENT_SECRET?.length} REDIRECT=${process.env.GOOGLE_REDIRECT_URI}`,
       reply_status: "skipped",
       reply_error: "debug_refresh",
     });
