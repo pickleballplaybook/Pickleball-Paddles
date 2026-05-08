@@ -1,0 +1,829 @@
+export interface BlogSection {
+  type: "p" | "h2" | "ul" | "verdict";
+  text?: string;
+  items?: string[];
+}
+
+export interface BlogPost {
+  slug: string;
+  title: string;
+  metaDescription: string;
+  publishDate: string;
+  videoId?: string;
+  brand: string;
+  paddleName: string;
+  thumbnail?: string;
+  excerpt: string;
+  paddleSlugs: string[];
+  sections: BlogSection[];
+}
+
+export const blogPosts: BlogPost[] = [
+  // ── Speedup Tide 14L / 14H ─────────────────────────────────────────────────
+  {
+    slug: "speedup-tide-14-review",
+    title: "Speedup Tide 14L & 14H Review: Affordable All-Court Foam Core Paddles",
+    metaDescription: "Full review of the Speedup Tide 14L (Elongated) and Tide 14H (Hybrid). 14mm foam core, ~8.0 oz, all-court performance at $169.99. Save 10% with code PLAYBOOK.",
+    publishDate: "2026-04-28",
+    videoId: "rmkPAroh2BM",
+    brand: "Speedup",
+    paddleName: "Tide 14L & 14H",
+    thumbnail: "/images/paddles/Speedup-Tide-14L-Elongated-14mm.png",
+    excerpt: "Speedup enters the foam core market with the Tide series — two shapes, one mission: balanced all-court performance at a price point that's hard to beat.",
+    paddleSlugs: ["speedup-tide-14l-elongated", "speedup-tide-14h-hybrid"],
+    sections: [
+      { type: "p", text: "Speedup has been quietly building a reputation for punching above its price point, and the Tide series is their most ambitious release yet. Two shapes — the 14L Elongated and the 14H Hybrid — both built around a 14mm foam core that aims to deliver a soft, controlled touch without sacrificing too much pop." },
+      { type: "h2", text: "Specs at a Glance" },
+      { type: "ul", items: [
+        "Core: 14mm foam",
+        "Weight: ~8.0 oz",
+        "Tide 14L (Elongated) — Swing Weight: 121.4, Twist Weight: 6.13",
+        "Tide 14H (Hybrid) — Swing Weight: 113.74, Twist Weight: 6.09",
+        "Price: $169.99 — use code PLAYBOOK for 10% off",
+      ]},
+      { type: "h2", text: "On-Court Feel" },
+      { type: "p", text: "The 14mm core gives both Tide paddles a noticeably softer feel at contact — great for resets and third-shot drops. The 14L's swing weight of 121.4 is unusually high for an elongated at this thickness, which means you get more drive-game pop than you'd expect from a control-oriented core. If you like a soft feel but still want to put balls away at the kitchen, the 14L delivers." },
+      { type: "p", text: "The 14H Hybrid is the more maneuverable of the two at SW 113.74. It's easier to whip through for quick exchanges and works well for players who live at the non-volley zone. The twist weight on both paddles sits around 6.1, giving solid off-center stability without going heavy." },
+      { type: "h2", text: "Who Should Buy the Speedup Tide?" },
+      { type: "ul", items: [
+        "All-court players who want a soft, responsive touch without breaking the bank",
+        "Intermediate players moving from a power paddle who want more control",
+        "Players who prioritize dink consistency but still need to finish points",
+        "Buyers looking for serious performance under $170",
+      ]},
+      { type: "verdict", text: "The Speedup Tide series punches well above its $169.99 price. The 14L is the go-to for players who want range — soft touch plus a surprise amount of drive power. The 14H fits true all-court grinders. Use code PLAYBOOK to save 10% at checkout." },
+    ],
+  },
+
+  // ── Luzz Inferno ───────────────────────────────────────────────────────────
+  {
+    slug: "luzz-inferno-review",
+    title: "Luzz Inferno Review: High-Swing-Weight Power Paddle Worth the Hype?",
+    metaDescription: "Luzz Inferno review — 16mm elongated, swing weight 118.52, twist weight 6.02, $229. Is this power paddle worth it? Save 15% with code PLAYBOOK.",
+    publishDate: "2026-04-22",
+    videoId: "LYdP6v-anyc",
+    brand: "Luzz",
+    paddleName: "Inferno",
+    thumbnail: "/images/paddles/Inferno-Elongated16mm.png",
+    excerpt: "The Luzz Inferno is a high-swing-weight elongated paddle built for players who want to impose their game. With a SW of 118.52 and a 16mm core, it delivers serious firepower.",
+    paddleSlugs: ["luzz-inferno-elongated"],
+    sections: [
+      { type: "p", text: "Luzz is a newer brand making waves with paddles that pack serious specs at competitive prices. The Inferno is their flagship elongated power paddle — and the name is earned. A swing weight of 118.52 puts it among the harder-hitting paddles in this price range." },
+      { type: "h2", text: "Specs at a Glance" },
+      { type: "ul", items: [
+        "Shape: Elongated",
+        "Core: 16mm",
+        "Weight: 7.9 oz",
+        "Swing Weight: 118.52",
+        "Twist Weight: 6.02",
+        "Price: $229 — use code PLAYBOOK for 15% off",
+      ]},
+      { type: "h2", text: "Power Game" },
+      { type: "p", text: "The Inferno's 118.52 swing weight gives you real pop on drives and overheads without feeling uncontrollably stiff. The 16mm core keeps some forgiveness in the paddle — it's not a brick wall, but it's definitely oriented toward offensive players. Groundstrokes from the transition zone carry easily to the baseline." },
+      { type: "h2", text: "Control and Feel" },
+      { type: "p", text: "The twist weight of 6.02 is in a solid middle range — enough stability on off-center hits to keep balls in play, but still responsive enough to feel the ball. At the kitchen, experienced players will find the Inferno controllable enough for third-shot drops; less experienced players may find it punishing on mishits." },
+      { type: "h2", text: "Who Should Buy the Luzz Inferno?" },
+      { type: "ul", items: [
+        "Power-first players who want a high-SW elongated under $230",
+        "Bangers who want more reach and leverage than a hybrid provides",
+        "Intermediate-to-advanced players comfortable managing a higher-SW paddle",
+        "Players looking to step up from a mid-range power paddle",
+      ]},
+      { type: "verdict", text: "The Luzz Inferno delivers legitimate power with a SW of 118.52 and enough feel from the 16mm core to stay competitive at the kitchen. At $229 with 15% off using code PLAYBOOK, it's one of the better value power paddles on the market right now." },
+    ],
+  },
+
+  // ── Flik F3 Triple Core ────────────────────────────────────────────────────
+  {
+    slug: "flik-f3-triple-core-review",
+    title: "Flik F3 Triple Core Review: A Unique Construction That Changes the Game",
+    metaDescription: "Flik F3 Triple Core review — 16mm, elongated and hybrid shapes, SW up to 119.85. Triple-layer core construction for all-court performance at $190. Save 10% with code PLAYBOOK.",
+    publishDate: "2026-04-28",
+    videoId: "0TPukMyrCTQ",
+    brand: "Flik",
+    paddleName: "F3 Triple Core",
+    thumbnail: "/images/paddles/Flik-F3-Tripple-Core-Elongated-16mm.png",
+    excerpt: "The Flik F3 Triple Core stands out from the crowd with its three-layer core construction — a design choice that reshapes how the paddle plays across all court situations.",
+    paddleSlugs: ["flik-f3-triple-core-elongated", "flik-f3-triple-core-hybrid"],
+    sections: [
+      { type: "p", text: "Flik Pickleball isn't trying to copy what everyone else is doing. The F3 Triple Core uses a proprietary three-layer core construction that, in theory, provides a softer touch than a standard foam core while still generating pop. After thorough testing, the reality mostly matches the pitch." },
+      { type: "h2", text: "Specs at a Glance" },
+      { type: "ul", items: [
+        "Core: 16mm Triple Core",
+        "Weight: 8.0 oz (both shapes)",
+        "Elongated — Swing Weight: 119.85, Twist Weight: 6.09",
+        "Hybrid — Swing Weight: 117.38, Twist Weight: 6.27",
+        "Price: $190 — use code PLAYBOOK for 10% off",
+      ]},
+      { type: "h2", text: "What Makes the Triple Core Different?" },
+      { type: "p", text: "Standard foam core paddles have one density of foam throughout. Flik's triple core construction layers different densities, which creates a more nuanced feel — softer at the face for touch shots, with a firmer backing layer that doesn't completely absorb driving shots. The result is a paddle that feels at home in all-court play rather than excelling at one specific thing." },
+      { type: "h2", text: "Elongated vs Hybrid" },
+      { type: "p", text: "The Elongated version (SW 119.85) gives you noticeably more pop on drives and a longer reach for poaching. The Hybrid (SW 117.38, TW 6.27) is slightly more maneuverable and stable on off-center hits thanks to the higher twist weight. If you play mostly NVZ-heavy pickleball, go Hybrid. If you like to drive from the transition zone, go Elongated." },
+      { type: "h2", text: "Who Should Buy the Flik F3 Triple Core?" },
+      { type: "ul", items: [
+        "All-court players who want versatility over specialization",
+        "Players who feel most foam paddles are too soft or too stiff",
+        "Intermediate players looking for an upgrade under $200",
+        "Anyone curious about innovative paddle construction",
+      ]},
+      { type: "verdict", text: "The Flik F3 Triple Core earns its all-court classification. It's not the most powerful paddle in its price range and not the softest, but that's the point — it's genuinely versatile. At $190 with 10% off using PLAYBOOK, it's worth serious consideration." },
+    ],
+  },
+
+  // ── Luzz Cannon ────────────────────────────────────────────────────────────
+  {
+    slug: "luzz-cannon-review",
+    title: "Luzz Cannon Review: The Best Value Power Paddle Under $110?",
+    metaDescription: "Luzz Cannon review — 16mm elongated, swing weight 119.19, only $109. One of the highest-SW paddles at this price point. Save 15% with code PLAYBOOK.",
+    publishDate: "2026-04-28",
+    videoId: "CyANMox81Is",
+    brand: "Luzz",
+    paddleName: "Cannon",
+    thumbnail: "/images/paddles/Cannon-Elongated-16mm.png",
+    excerpt: "A swing weight of 119.19 for $109. The Luzz Cannon might be the most overlooked value play in pickleball right now.",
+    paddleSlugs: ["luzz-cannon-elongated"],
+    sections: [
+      { type: "p", text: "Let's cut straight to it: the Luzz Cannon has a swing weight of 119.19. That's elite-level pop territory. It costs $109. With code PLAYBOOK you're paying under $93. These two facts alone make it worth paying attention to." },
+      { type: "h2", text: "Specs at a Glance" },
+      { type: "ul", items: [
+        "Shape: Elongated",
+        "Core: 16mm",
+        "Weight: 7.9 oz",
+        "Swing Weight: 119.19",
+        "Twist Weight: 6.10",
+        "Price: $109 — use code PLAYBOOK for 15% off",
+      ]},
+      { type: "h2", text: "The Value Proposition" },
+      { type: "p", text: "Paddles with swing weights in the 118–120 range typically cost $200 or more. The Cannon undercuts that dramatically. For players who want to drive hard, serve with pace, and attack mid-court floaters, the Cannon will feel immediately powerful in a way that many budget paddles simply don't." },
+      { type: "h2", text: "Tradeoffs to Know" },
+      { type: "p", text: "The twist weight of 6.10 is solid but not exceptional — you'll notice off-center hits more than on premium paddles. The 16mm core provides a bit of forgiveness on touch shots but this is not a dink paddle. It rewards aggressive, offense-first players. Kitchen-heavy players should look elsewhere." },
+      { type: "h2", text: "Who Should Buy the Luzz Cannon?" },
+      { type: "ul", items: [
+        "Budget-conscious bangers who want premium swing weight without the premium price",
+        "Players transitioning from rec play into more competitive pickleball",
+        "Anyone who wants a second paddle for hitting practice without babying their main paddle",
+        "Players who have tried power paddles at $200+ and want a comparable feel at half the price",
+      ]},
+      { type: "verdict", text: "The Luzz Cannon is a genuine anomaly — elite swing weight, budget price. At $109 with 15% off using PLAYBOOK, there's almost no reason not to try it if you're a power player on any kind of budget." },
+    ],
+  },
+
+  // ── Beyond Measure Ronin ───────────────────────────────────────────────────
+  {
+    slug: "beyond-measure-ronin-review",
+    title: "Beyond Measure Ronin Review: Balanced All-Court Paddle at a Starter Price",
+    metaDescription: "Beyond Measure Ronin review — 16mm, hybrid and elongated, SW 114–115, $117. Balanced all-court performance for under $120. Save 10% with code PLAYBOOK.",
+    publishDate: "2026-04-28",
+    videoId: "i3w8qGG574o",
+    brand: "Beyond Measure",
+    paddleName: "Ronin",
+    thumbnail: "/images/paddles/Ronin-Hybrid-16mm.png",
+    excerpt: "Beyond Measure keeps the Ronin priced under $120 while delivering swing weights and specs that compete with paddles costing twice as much.",
+    paddleSlugs: ["beyond-measure-ronin-hybrid", "beyond-measure-ronin-elongated"],
+    sections: [
+      { type: "p", text: "The Beyond Measure Ronin is one of those paddles that forces you to reconsider how much you need to spend to play well. Priced at $117 — with 10% off using PLAYBOOK — it comes in with swing weights of 115.65 (Hybrid) and 114.98 (Elongated). Those numbers match plenty of paddles over $200." },
+      { type: "h2", text: "Specs at a Glance" },
+      { type: "ul", items: [
+        "Core: 16mm",
+        "Weight: 8.0–8.1 oz",
+        "Hybrid — Swing Weight: 115.65, Twist Weight: 6.36",
+        "Elongated — Swing Weight: 114.98, Twist Weight: 6.53",
+        "Price: $117 — use code PLAYBOOK for 10% off",
+      ]},
+      { type: "h2", text: "Hybrid vs Elongated" },
+      { type: "p", text: "The Hybrid has a slightly higher swing weight (115.65) and slightly lower twist weight (6.36), making it a bit punchier with a tighter sweet spot. The Elongated flips this — lower SW, higher TW (6.53) — meaning it's more stable on off-center hits and better suited for reach-heavy play and poaching. Both are firmly all-court paddles." },
+      { type: "h2", text: "Feel and Playability" },
+      { type: "p", text: "The 16mm core keeps both Ronin shapes soft enough for resets and consistent dinking. The balance between touch and power is exactly where you'd expect an all-court paddle to land — you won't overpower anyone, but you won't be leaving easy balls on the table either. The value story here is genuinely compelling." },
+      { type: "h2", text: "Who Should Buy the Beyond Measure Ronin?" },
+      { type: "ul", items: [
+        "New-to-intermediate players who want a proper all-court paddle without spending big",
+        "Players upgrading from a big-box beginner paddle",
+        "Anyone who wants to test an elongated shape for the first time without committing to a premium price",
+        "Rec players who want a consistent, predictable paddle",
+      ]},
+      { type: "verdict", text: "The Beyond Measure Ronin is an easy recommendation for anyone under $150. Both shapes deliver competitive specs, solid feel, and genuine versatility. Use code PLAYBOOK to save 10% — at under $110, this is a no-brainer try." },
+    ],
+  },
+
+  // ── Head Radical Pro 15 ────────────────────────────────────────────────────
+  {
+    slug: "head-radical-pro-15-review",
+    title: "Head Radical Pro 15 Review: Premium Control From a Tennis Legend",
+    metaDescription: "Head Radical Pro 15 review — 15mm core, widebody and elongated, SW 113–118, $199. Head's flagship pickleball paddle with elite control. Save 15% at checkout.",
+    publishDate: "2026-04-28",
+    videoId: "sVS9FtvTulg",
+    brand: "Head",
+    paddleName: "Radical Pro 15",
+    thumbnail: "/images/paddles/Radical-Elongated-15mm.png",
+    excerpt: "Head brings its tennis DNA to pickleball with the Radical Pro 15 — a premium 15mm control paddle available in widebody and elongated shapes.",
+    paddleSlugs: ["head-radical-widebody", "head-radical-elongated"],
+    sections: [
+      { type: "p", text: "Head is one of the most recognized names in racket sports, and the Radical Pro 15 is their flagship pickleball offering. The 15mm core sits between the ultra-soft 16mm+ control paddles and the snappier 14mm options — a deliberate choice that gives it a unique feel profile." },
+      { type: "h2", text: "Specs at a Glance" },
+      { type: "ul", items: [
+        "Core: 15mm",
+        "Weight: 8.3–8.4 oz",
+        "Widebody — Swing Weight: 113.83, Twist Weight: 6.83",
+        "Elongated — Swing Weight: 118.67, Twist Weight: 6.46",
+        "Price: $199 — save 15% at checkout",
+      ]},
+      { type: "h2", text: "The 15mm Sweet Spot" },
+      { type: "p", text: "Most paddles go 13mm, 14mm, 16mm, or thicker. The Radical Pro's 15mm thickness lands in a gap that Head has intentionally targeted for a specific feel: softer than a standard foam core but with slightly more response than a super-thick control paddle. It rewards players who want to feel the ball and place it, rather than simply absorb or explode on it." },
+      { type: "h2", text: "Widebody vs Elongated" },
+      { type: "p", text: "The Widebody's TW of 6.83 is exceptional — it's among the most stable paddles off-center in our entire database. This makes it very beginner-friendly while still being competitive. The Elongated version cranks the SW up to 118.67, making it one of the more powerful elongated control paddles you'll find, with enough touch from the 15mm core to stay nuanced." },
+      { type: "h2", text: "Who Should Buy the Head Radical Pro 15?" },
+      { type: "ul", items: [
+        "Control-oriented players who find 16mm paddles too dead but 13mm too snappy",
+        "Players who want elite off-center stability (especially the Widebody)",
+        "Tennis players making the jump to pickleball who want familiar brand quality",
+        "Competitive players looking for a premium control paddle under $200",
+      ]},
+      { type: "verdict", text: "The Head Radical Pro 15 is a polished, premium paddle that earns its $199 price tag. The 15mm core fills a genuine gap in the market, and both shapes are well-executed. The Widebody is one of the most stable paddles we've tested at any price point." },
+    ],
+  },
+
+  // ── RPM Q2 ─────────────────────────────────────────────────────────────────
+  {
+    slug: "rpm-q2-review",
+    title: "RPM Q2 Review: Two Completely Different Paddles in One Name",
+    metaDescription: "RPM Q2 review — 16mm, widebody (SW 107.71) and elongated (SW 120.16), $249.99. Two radically different play styles from the same paddle line. Save 15% with code PLAYBOOK.",
+    publishDate: "2026-04-18",
+    videoId: "6xff-1cCF30",
+    brand: "RPM",
+    paddleName: "Q2",
+    thumbnail: "/images/paddles/RPM-Q2-Elongated-16mm.png",
+    excerpt: "The RPM Q2 exists in two shapes that play almost nothing alike — a SW-107 widebody built for control and a SW-120 elongated built for power. Know which one you need before you buy.",
+    paddleSlugs: ["rpm-q2-widebody", "rpm-q2-elongated"],
+    sections: [
+      { type: "p", text: "The RPM Q2 is one of those paddle lines where the shape choice isn't just about preference — it fundamentally changes the type of player the paddle is for. The widebody and elongated versions of the Q2 have a 12-point swing weight gap, which is enormous." },
+      { type: "h2", text: "Specs at a Glance" },
+      { type: "ul", items: [
+        "Core: 16mm",
+        "Weight: 7.9 oz (both)",
+        "Widebody — Swing Weight: 107.71, Twist Weight: 6.80",
+        "Elongated — Swing Weight: 120.16, Twist Weight: 6.05",
+        "Price: $249.99 — use code PLAYBOOK for 15% off",
+      ]},
+      { type: "h2", text: "Widebody: Control and Maneuverability" },
+      { type: "p", text: "The Q2 Widebody with a SW of 107.71 is in pure control territory. You give up drive power in exchange for exceptional maneuverability — quick hands, fast reaction volleys, and a very maneuverable feel at the kitchen. The TW of 6.80 is outstanding, giving you huge forgiveness on off-center hits. This is a dink-heavy player's paddle." },
+      { type: "h2", text: "Elongated: One of the Highest SWs in the Game" },
+      { type: "p", text: "The Q2 Elongated at SW 120.16 is a legitimate power weapon. That swing weight, combined with a 16mm core for touch and the reach of an elongated shape, gives you a complete offensive package. Drives are heavy, serves carry pace, and putaways are decisive. It demands a player confident in their footwork and technique to use effectively." },
+      { type: "verdict", text: "The RPM Q2 is actually two distinct paddles sharing a name. The Widebody is for control-first players who want elite stability; the Elongated is for power players who want one of the highest swing weights available. Save 15% with code PLAYBOOK at $249.99." },
+    ],
+  },
+
+  // ── Gherkin Draco ──────────────────────────────────────────────────────────
+  {
+    slug: "gherkin-draco-review",
+    title: "Gherkin Draco Review: Three Shapes, Three Play Styles, One Paddle",
+    metaDescription: "Gherkin Draco review — 16mm, hybrid (power), elongated (power), widebody (all-court), $179.99. Save 10% with code PLAYBOOK.",
+    publishDate: "2026-04-22",
+    videoId: "gXAkwcVJ3uk",
+    brand: "Gherkin",
+    paddleName: "Draco",
+    thumbnail: "/images/paddles/Gherkin-Draco-Elongated-16mm.png",
+    excerpt: "Gherkin offers the Draco in three shapes that actually feel different — power-oriented hybrid and elongated, plus an all-court widebody for players who want options.",
+    paddleSlugs: ["gherkin-draco-hybrid", "gherkin-draco-elongated", "gherkin-draco-widebody"],
+    sections: [
+      { type: "p", text: "Gherkin isn't a household name yet, but the Draco is a serious paddle with serious specs. Available in Hybrid, Elongated, and Widebody shapes, the Draco line covers a wide range of play styles under a single design language." },
+      { type: "h2", text: "Specs at a Glance" },
+      { type: "ul", items: [
+        "Core: 16mm",
+        "Hybrid — SW: 108.27, TW: 6.43 (Power)",
+        "Elongated — SW: 112.13, TW: 6.14 (Power)",
+        "Widebody — SW: 105.94, TW: 6.74 (All-Court)",
+        "Price: $179.99 — use code PLAYBOOK for 10% off",
+      ]},
+      { type: "h2", text: "Hybrid: Compact Power" },
+      { type: "p", text: "Despite being classified as a power paddle, the Draco Hybrid's SW of 108.27 keeps it maneuverable. It's the shape for players who want pop without sacrificing speed at the kitchen. Think of it as a 'controlled power' option." },
+      { type: "h2", text: "Elongated: More Pop, More Reach" },
+      { type: "p", text: "The Elongated version steps up to SW 112.13, adding meaningful pop on drives and giving you extra reach for poaching. At this SW it's still manageable at the NVZ but starts leaning toward offensive play." },
+      { type: "h2", text: "Widebody: The All-Court Option" },
+      { type: "p", text: "With SW 105.94 and TW 6.74, the Widebody Draco is the most forgiving and maneuverable of the three. It's an all-court paddle for players who want a big sweet spot, lots of stability, and a paddle that forgives misreads at the NVZ." },
+      { type: "verdict", text: "The Gherkin Draco is a smart paddle line that gives you genuine choices. All three shapes are well-executed at $179.99. Use code PLAYBOOK for 10% off." },
+    ],
+  },
+
+  // ── Gruvn Lazr ─────────────────────────────────────────────────────────────
+  {
+    slug: "gruvn-lazr-review",
+    title: "Gruvn Lazr Review: All-Court Foam Core Paddles for Every Level",
+    metaDescription: "Gruvn Lazr review — Lazr-16hd Hybrid (SW 107) and Lazr-16x Elongated (SW 110), 16mm all-court paddles at $169. Save 10% with code PLAYBOOK.",
+    publishDate: "2026-04-22",
+    videoId: "fcbAhEtDvjo",
+    brand: "Gruvn",
+    paddleName: "Lazr-16hd & Lazr-16x",
+    thumbnail: "/images/paddles/Lazr-16HD-Hybrid-16mm.png",
+    excerpt: "The Gruvn Lazr series delivers soft, all-court foam core performance in two shapes — a hybrid and an elongated — at a price that won't require a second mortgage.",
+    paddleSlugs: ["gruvn-lazr-16hd-hybrid", "gruvn-lazr-16x-elongated"],
+    sections: [
+      { type: "p", text: "Gruvn has built a following among players who want foam core softness without the price tag of the bigger brands. The Lazr series is their take on the all-court foam paddle — two shapes, both intentionally tuned for touch-first players." },
+      { type: "h2", text: "Specs at a Glance" },
+      { type: "ul", items: [
+        "Core: 16mm foam",
+        "Weight: 7.8 oz (both)",
+        "Lazr-16hd Hybrid — SW: 107.07, TW: 6.29",
+        "Lazr-16x Elongated — SW: 110.58, TW: 5.93",
+        "Price: $169 — use code PLAYBOOK for 10% off",
+      ]},
+      { type: "h2", text: "Lazr-16hd: Kitchen Specialist" },
+      { type: "p", text: "The Lazr-16hd's SW of 107.07 is well into NVZ-specialist territory. It's quick, maneuverable, and soft off the face. Players who drop, reset, and dink for a living will feel right at home. Don't expect to overpower anyone with it — that's not what it's for." },
+      { type: "h2", text: "Lazr-16x: Adding Range" },
+      { type: "p", text: "The Elongated 16x brings the SW up to 110.58 while maintaining the same soft core feel. You get a bit more pop on drives and a longer reach without completely abandoning the kitchen-friendly characteristics of the 16hd. It's a genuinely good all-court option." },
+      { type: "verdict", text: "The Gruvn Lazr series is a well-executed all-court line at an honest price. The 16hd is a kitchen specialist; the 16x is more versatile. Both are solid performers at $169. Use PLAYBOOK for 10% off." },
+    ],
+  },
+
+  // ── Selkirk Boomstik ───────────────────────────────────────────────────────
+  {
+    slug: "selkirk-boomstik-review",
+    title: "Selkirk Boomstik Review: The Most Powerful Elongated Paddle Selkirk Has Ever Made?",
+    metaDescription: "Selkirk Boomstik review — 16mm elongated, swing weight 120.09, twist weight 6.84, $333. Selkirk's most aggressive Labs paddle yet. Save 15% with code PLAYBOOK.",
+    publishDate: "2026-04-18",
+    videoId: "GeVglhdjWQg",
+    brand: "Selkirk",
+    paddleName: "Boomstik",
+    thumbnail: "/images/paddles/Boomstik-Elongated-16mm.png",
+    excerpt: "The Selkirk Boomstik from the Labs Project line pushes the boundaries of what a legal paddle can do. SW 120.09 and TW 6.84 — this is Selkirk's most aggressive release.",
+    paddleSlugs: ["selkirk-boomstik-elongated"],
+    sections: [
+      { type: "p", text: "When Selkirk releases something under the 'Labs Project' banner, it means they've pushed the engineering envelope. The Boomstik is their most aggressive elongated paddle to date — a swing weight of 120.09 combined with a twist weight of 6.84 that's exceptional for its shape class." },
+      { type: "h2", text: "Specs at a Glance" },
+      { type: "ul", items: [
+        "Shape: Elongated",
+        "Core: 16mm",
+        "Weight: 8.2 oz",
+        "Swing Weight: 120.09",
+        "Twist Weight: 6.84",
+        "Price: $333 — use code PLAYBOOK for 15% off",
+      ]},
+      { type: "h2", text: "The Spec Story" },
+      { type: "p", text: "SW 120.09 is elite-tier driving power. What makes the Boomstik unusual is pairing that with a TW of 6.84 — a twist weight that high on an elongated paddle means you get both power AND forgiveness. Most high-SW elongateds sacrifice TW to achieve their swing weight. The Boomstik doesn't." },
+      { type: "h2", text: "Who Is This For?" },
+      { type: "p", text: "This is not a beginner paddle. At 8.2 oz with a SW of 120, it demands good fundamentals. Players who already move well and have a consistent stroke will find the Boomstik feels like an upgrade — drives go deeper, overheads are heavier, and the stability on poaches is confidence-inspiring. Players still developing their game may find it fatiguing or difficult to control." },
+      { type: "verdict", text: "The Selkirk Boomstik is a legitimately exceptional paddle for the right player. If you're a power-oriented advanced player who wants the best SW + TW combination available from Selkirk's Labs line, this is it. Save 15% with code PLAYBOOK." },
+    ],
+  },
+
+  // ── Selkirk Tesla Plaid ────────────────────────────────────────────────────
+  {
+    slug: "selkirk-tesla-plaid-review",
+    title: "Selkirk Tesla Plaid Review: The Highest Swing Weight in Our Database",
+    metaDescription: "Selkirk Tesla Plaid review — 16mm elongated, swing weight 121.52, $450. The highest SW paddle we've tested. Is it worth $450? Save 15% with code PLAYBOOK.",
+    publishDate: "2026-04-14",
+    videoId: "VVMzgV-q9Wo",
+    brand: "Selkirk",
+    paddleName: "Tesla Plaid",
+    thumbnail: "/images/paddles/Tesla-Plaid-16mm.png",
+    excerpt: "Swing weight 121.52. That's not a typo. The Selkirk Tesla Plaid sits at the very top of our database for raw driving power. Here's whether it justifies the $450 price.",
+    paddleSlugs: ["selkirk-tesla-elongated"],
+    sections: [
+      { type: "p", text: "The Selkirk Tesla Plaid is a collaboration paddle with a premium price and a premium spec sheet. At a swing weight of 121.52, it's the highest-SW paddle in our entire database — a legitimate claim to 'most powerful' status in terms of raw numbers." },
+      { type: "h2", text: "Specs at a Glance" },
+      { type: "ul", items: [
+        "Shape: Elongated",
+        "Core: 16mm",
+        "Weight: 8.0 oz",
+        "Swing Weight: 121.52",
+        "Twist Weight: 6.06",
+        "Price: $450 — use code PLAYBOOK for 15% off",
+      ]},
+      { type: "h2", text: "Is SW 121 Actually Different?" },
+      { type: "p", text: "Yes. Players who have tested multiple high-SW paddles consistently report that the jump from SW 117–118 to 120+ is noticeable, especially on drives from the baseline and overheads. The Tesla Plaid's 121.52 translates to genuinely heavy ball-pounding — the kind of pace that forces errors from opponents." },
+      { type: "h2", text: "The $450 Question" },
+      { type: "p", text: "The premium price is partly the collaboration cost and partly the paddle's construction. The Boomstik and Q2 Elongated are both SW 120+ at lower prices. The Tesla Plaid edges them out on swing weight and adds Selkirk's premium build quality and finishing. For dedicated power players who want the absolute top of the spec sheet, it's worth considering. For everyone else, the Boomstik or Q2 Elongated represent better value." },
+      { type: "verdict", text: "The Selkirk Tesla Plaid is a benchmark power paddle — SW 121.52 is simply the highest we've tested. The $450 price is real, but 15% off with PLAYBOOK brings it closer to earth. Best suited to advanced players who have already maxed out what lower-SW paddles can offer them." },
+    ],
+  },
+
+  // ── Kobo Thunder Axe ───────────────────────────────────────────────────────
+  {
+    slug: "kobo-thunder-axe-review",
+    title: "Kobo Thunder Axe ∞ Review: 18mm Control Masterpiece at a Steep Price",
+    metaDescription: "Kobo Thunder Axe ∞ review — 18mm elongated, SW 114.89, TW 5.21, $399. Premium control paddle with exceptional NVZ touch. Save 15% with code PLAYBOOK.",
+    publishDate: "2026-04-16",
+    videoId: "l_MUwG28UII",
+    brand: "Kobo",
+    paddleName: "Thunder Axe ∞",
+    thumbnail: "/images/paddles/Thunder-Axe-18mm.png",
+    excerpt: "Kobo's Thunder Axe ∞ uses an 18mm core to deliver control so soft it almost feels like cheating. Whether it justifies $399 depends entirely on how seriously you take your dink game.",
+    paddleSlugs: ["kobo-thunder-axe-infinity-elongated"],
+    sections: [
+      { type: "p", text: "The Kobo Thunder Axe ∞ (Infinity) is built for one type of player: the control-obsessed pickleball purist who wants maximum feel at the NVZ and is willing to pay for it. The 18mm core is one of the thickest available in the market, and it shows in the way the paddle absorbs hard shots and returns them softly." },
+      { type: "h2", text: "Specs at a Glance" },
+      { type: "ul", items: [
+        "Shape: Elongated",
+        "Core: 18mm",
+        "Weight: 8.0 oz",
+        "Swing Weight: 114.89",
+        "Twist Weight: 5.21",
+        "Price: $399 — use code PLAYBOOK for 15% off",
+      ]},
+      { type: "h2", text: "The 18mm Feel" },
+      { type: "p", text: "An 18mm core is very thick. The result at the kitchen is a paddle that eats pace and makes resets feel almost effortless — the ball simply doesn't come off the face hot. For bangers and hard-drivers you're playing against, this is a genuine weapon. The tradeoff is that generating pace requires more intention; you can't accidentally hit winners." },
+      { type: "h2", text: "Twist Weight Note" },
+      { type: "p", text: "The TW of 5.21 is on the lower end for an elongated paddle. Off-center hits toward the edges will be noticeable — something control players need to be aware of despite the generous 18mm core. Keep the ball in the center of the face and this paddle is exceptional; stray to the edges and it reminds you." },
+      { type: "verdict", text: "The Kobo Thunder Axe ∞ is a premium control instrument with a price to match. At $399 with 15% off using PLAYBOOK, it's a significant investment. Worth it for advanced control players who want the softest NVZ game possible." },
+    ],
+  },
+
+  // ── Honolulu J6CR ──────────────────────────────────────────────────────────
+  {
+    slug: "honolulu-j6cr-review",
+    title: "Honolulu J6CR Review: Hawaii-Made Power Paddle With Serious Specs",
+    metaDescription: "Honolulu J6CR review — 16mm elongated, SW 115.36, TW 6.43, $195. Made in Hawaii, power-oriented, 10% off with code PLAYBOOK.",
+    publishDate: "2026-04-17",
+    videoId: "B-CWUS78KTc",
+    brand: "Honolulu",
+    paddleName: "J6CR",
+    thumbnail: "/images/paddles/Honolulu-J6CR-16mm.png",
+    excerpt: "The Honolulu J6CR comes out of Hawaii with a SW of 115.36, solid power specs, and a build quality that punches well above its $195 price point.",
+    paddleSlugs: ["honolulu-j6cr-elongated"],
+    sections: [
+      { type: "p", text: "Honolulu Pickleball brings some island spirit to the gear market with the J6CR — a 16mm elongated paddle designed for power-oriented players who want strong driving game numbers at a sub-$200 price. The specs hold up." },
+      { type: "h2", text: "Specs at a Glance" },
+      { type: "ul", items: [
+        "Shape: Elongated",
+        "Core: 16mm",
+        "Weight: 8.0 oz",
+        "Swing Weight: 115.36",
+        "Twist Weight: 6.43",
+        "Price: $195 — 10% off available",
+      ]},
+      { type: "h2", text: "On-Court Performance" },
+      { type: "p", text: "SW 115.36 puts the J6CR in solid power territory without becoming unmanageable. The TW of 6.43 provides good stability off-center, which is important for an elongated shape where mishits toward the tip are common. The 16mm core gives you enough touch for kitchen play while still generating meaningful pace on offense." },
+      { type: "h2", text: "Value at $195" },
+      { type: "p", text: "At $195 with 10% off, the J6CR is competing with paddles from much bigger brands. The spec sheet stands on its own — you're not paying a brand premium here. For players who want a legitimate power elongated without the sticker shock of premium brands, this is worth a serious look." },
+      { type: "verdict", text: "The Honolulu J6CR is a quietly impressive paddle from an up-and-coming brand. Great specs, honest pricing, and Hawaii-made pride make it stand out in a crowded market." },
+    ],
+  },
+
+  // ── 11SIX24 Power 2 ────────────────────────────────────────────────────────
+  {
+    slug: "11six24-power-2-review",
+    title: "11SIX24 Power 2 Review: Three Shapes, One Dominant Power Platform",
+    metaDescription: "11SIX24 Power 2 review — 16mm, Vapor (Hybrid SW 113.77), Hurache (Elongated SW 111.87), Pegasus (Widebody SW 110.07). Power paddles at $209.99. Save $10 with code PLAYBOOK.",
+    publishDate: "2026-03-31",
+    videoId: "ffiit6IWsHo",
+    brand: "11SIX24",
+    paddleName: "Power 2 Series",
+    thumbnail: "/images/paddles/Vapor-Power-2-16.png",
+    excerpt: "The 11SIX24 Power 2 series covers all three major shapes — Hybrid (Vapor), Elongated (Hurache), Widebody (Pegasus) — all with a consistent power-first identity and a 16mm core.",
+    paddleSlugs: ["11six24-vapor-power-2-hybrid", "11six24-hurache-power-2-elongated", "11six24-pegasus-power-2-widebody"],
+    sections: [
+      { type: "p", text: "11SIX24 is one of the most well-respected independent paddle brands in pickleball, and the Power 2 series represents their refined take on power-oriented play. Three shapes — Vapor (Hybrid), Hurache (Elongated), and Pegasus (Widebody) — all built on the same 16mm platform with a clear power identity." },
+      { type: "h2", text: "Specs at a Glance" },
+      { type: "ul", items: [
+        "Core: 16mm",
+        "Weight: 8.0 oz (all shapes)",
+        "Vapor Hybrid — SW: 113.77, TW: 6.73",
+        "Hurache Elongated — SW: 111.87, TW: 6.06",
+        "Pegasus Widebody — SW: 110.07, TW: 7.01",
+        "Price: $209.99 — save $10 with code PLAYBOOK",
+      ]},
+      { type: "h2", text: "Choosing Your Shape" },
+      { type: "p", text: "The Vapor Hybrid's SW of 113.77 paired with a TW of 6.73 makes it the most stable and versatile of the three. The Hurache Elongated trades some TW (6.06) for a slightly longer reach. The Pegasus Widebody has the lowest SW (110.07) but the highest TW (7.01) of any of the three — an excellent choice for players who want a big, forgiving sweet spot over raw driving power." },
+      { type: "h2", text: "Build Quality" },
+      { type: "p", text: "11SIX24's construction quality is consistently praised in the pickleball community. The Power 2 paddles feel premium in hand — the surface texture, edge guard, and overall durability are at the top of the market." },
+      { type: "verdict", text: "The 11SIX24 Power 2 series is a premium power lineup with genuine shape differentiation. All three paddles are excellent; your choice comes down to shape preference. Save $10 with PLAYBOOK at $209.99." },
+    ],
+  },
+
+  // ── Battle Paddles El Toro ─────────────────────────────────────────────────
+  {
+    slug: "battle-paddles-el-toro-review",
+    title: "Battle Paddles El Toro Review: Underrated Control Paddle at an Honest Price",
+    metaDescription: "Battle Paddles El Toro review — 16mm elongated, SW 115.73, TW 5.93, $149. Control-first elongated paddle at an excellent price point. 10% off with code PLAYBOOK.",
+    publishDate: "2026-03-18",
+    videoId: "9IdOGtzJoww",
+    brand: "Battle Paddles",
+    paddleName: "El Toro",
+    thumbnail: "/images/paddles/El-Toro-16mm.png",
+    excerpt: "The Battle Paddles El Toro delivers a control-oriented elongated paddle with a swing weight of 115.73 at a price that's hard to argue with.",
+    paddleSlugs: ["battle-paddles-el-toro-elongated"],
+    sections: [
+      { type: "p", text: "Battle Paddles may not have the marketing budget of the big names, but the El Toro is a well-constructed elongated paddle that deserves more attention than it gets. At $149 with 10% off using PLAYBOOK, it's one of the more competitive value options in the elongated control category." },
+      { type: "h2", text: "Specs" },
+      { type: "ul", items: [
+        "Shape: Elongated",
+        "Core: 16mm",
+        "Weight: 7.9 oz",
+        "Swing Weight: 115.73",
+        "Twist Weight: 5.93",
+        "Price: $149 — 10% off with code PLAYBOOK",
+      ]},
+      { type: "h2", text: "Play Feel" },
+      { type: "p", text: "SW 115.73 gives the El Toro meaningful pop on drives, but its control classification comes from the 16mm core's soft feel and the paddle's emphasis on placement over pace. At the kitchen, it's responsive and predictable. Resets come naturally; aggressive attackers may find it a touch soft for their taste." },
+      { type: "verdict", text: "The Battle Paddles El Toro is an honest, well-made elongated control paddle. At $149 with 10% off it's hard to beat for players stepping into the elongated category without wanting to commit $200+." },
+    ],
+  },
+
+  // ── Bread & Butter Loco ────────────────────────────────────────────────────
+  {
+    slug: "bread-and-butter-loco-review",
+    title: "Bread & Butter Loco Review: Power in Three Shapes — Which Is Right for You?",
+    metaDescription: "Bread & Butter Loco review — 16mm in elongated (SW 118.20), hybrid (SW 115.46), and widebody (SW 108.06). Power-first paddles at $199. Save 10% with code PLAYBOOK.",
+    publishDate: "2026-03-27",
+    videoId: "fEzgY0ZQGAU",
+    brand: "Bread & Butter",
+    paddleName: "Loco",
+    thumbnail: "/images/paddles/Loco-Elongated-16mm.png",
+    excerpt: "The Bread & Butter Loco is a power platform available in three shapes with vastly different swing weights — from a widebody at 108 to an elongated at 118.",
+    paddleSlugs: ["bread-and-butter-loco-elongated", "bread-and-butter-loco-hybrid", "bread-and-butter-loco-widebody"],
+    sections: [
+      { type: "p", text: "Bread & Butter has become one of the most talked-about brands in competitive pickleball circles, and the Loco is their power flagship. Three shapes give you a wide range of options, all sharing the same 16mm core and power-first DNA." },
+      { type: "h2", text: "Specs by Shape" },
+      { type: "ul", items: [
+        "Elongated — SW: 118.20, TW: 6.09",
+        "Hybrid — SW: 115.46, TW: 6.86",
+        "Widebody — SW: 108.06, TW: 7.29",
+        "Weight: 7.9–8.2 oz",
+        "Price: $199 — 10% off with code PLAYBOOK",
+      ]},
+      { type: "h2", text: "Elongated: Top-End Power" },
+      { type: "p", text: "SW 118.20 on the elongated is where the Loco earns its 'power' label most convincingly. It's among the harder-hitting elongateds in its price class. Drives are heavy, overheads are decisive, and the reach is excellent for poaching." },
+      { type: "h2", text: "Hybrid: Best of Both" },
+      { type: "p", text: "The hybrid's TW of 6.86 is the highest of the three, making it the most stable and forgiving. At SW 115.46, it's still punchy enough to impose offensively while being more reliable on off-center hits. For most players, this is the sweet spot of the Loco line." },
+      { type: "h2", text: "Widebody: For the NVZ Player" },
+      { type: "p", text: "SW 108.06 with TW 7.29 — the widebody Loco is the most maneuverable and stable shape. If you're a kitchen-dominant player who wants the Bread & Butter brand experience without the demanding swing weight of the elongated, this is your pick." },
+      { type: "verdict", text: "The Bread & Butter Loco delivers on its power promise across all three shapes. The elongated is elite; the hybrid is most versatile; the widebody is best for NVZ players. All at $199 with 10% off using PLAYBOOK." },
+    ],
+  },
+
+  // ── CRBN TruFoam Barrage ───────────────────────────────────────────────────
+  {
+    slug: "crbn-trufoam-barrage-review",
+    title: "CRBN TruFoam Barrage Review: Premium Foam Core Power at a Premium Price",
+    metaDescription: "CRBN TruFoam Barrage 1 and 2 review — 14mm, elongated (SW 117.97) and widebody (SW 108.77), $279.99. CRBN's most powerful foam core paddles. Save 15% with code PLAYBOOK.",
+    publishDate: "2026-03-17",
+    videoId: "XLfM3Z3CKlU",
+    brand: "CRBN",
+    paddleName: "TruFoam Barrage",
+    thumbnail: "/images/paddles/Barrage-1-16mm.png",
+    excerpt: "CRBN's TruFoam Barrage lineup brings their proprietary foam core tech to a power-first build. The Barrage 1 Elongated and Barrage 2 Widebody offer two ways to attack.",
+    paddleSlugs: ["crbn-trufoam-barrage-1-elongated", "crbn-trufoam-barrage-2-widebody"],
+    sections: [
+      { type: "p", text: "CRBN has built a loyal following by consistently delivering innovative construction at premium prices. The TruFoam Barrage is their power line — using a 14mm foam core (unusual for a power paddle) to give you a livelier response than a standard 16mm design." },
+      { type: "h2", text: "Specs" },
+      { type: "ul", items: [
+        "Core: 14mm TruFoam",
+        "Barrage 1 Elongated — SW: 117.97, TW: 6.01, 8.0 oz",
+        "Barrage 2 Widebody — SW: 108.77, TW: 6.88, 7.9 oz",
+        "Price: $279.99 — 15% off with code PLAYBOOK",
+      ]},
+      { type: "h2", text: "The 14mm Power Advantage" },
+      { type: "p", text: "A 14mm core in a power paddle gives you a slightly crisper response than a 16mm foam core. The Barrage 1 Elongated at SW 117.97 generates significant pace while maintaining a livelier feel than softer foam alternatives. It's a different kind of power paddle — not dead and heavy, but snappy and decisive." },
+      { type: "h2", text: "Barrage 2 Widebody" },
+      { type: "p", text: "SW 108.77 and TW 6.88 make the Barrage 2 a solid widebody option with excellent stability and a large sweet spot. It's less of a power paddle in practice and more of an all-court option that benefits from CRBN's TruFoam construction quality." },
+      { type: "verdict", text: "The CRBN TruFoam Barrage paddles are premium products worthy of their $279.99 price. The Barrage 1 Elongated is one of the most interesting power paddles on the market for its 14mm foam approach. Use PLAYBOOK for 15% off." },
+    ],
+  },
+
+  // ── Enhance Turbo EPP ──────────────────────────────────────────────────────
+  {
+    slug: "enhance-turbo-epp-review",
+    title: "Enhance Turbo EPP Review: Foam Core All-Court Paddles Under $120",
+    metaDescription: "Enhance Turbo EPP review — 16mm, elongated (SW 115.76), widebody (SW 108.35), hybrid (SW 111.74). EPP foam core all-court paddles at $119.99. Save $20 with code PLAYBOOK.",
+    publishDate: "2026-03-21",
+    videoId: "oggwg3PKrgY",
+    brand: "Enhance",
+    paddleName: "Turbo EPP",
+    thumbnail: "/images/paddles/Turbo-EPP-Elongated-16mm.png",
+    excerpt: "The Enhance Turbo EPP brings EPP foam core technology to an all-court platform available in three shapes — all under $120 with a $20 discount using code PLAYBOOK.",
+    paddleSlugs: ["enhance-turbo-epp-elongated", "enhance-turbo-epp-widebody", "enhance-turbo-epp-hybrid"],
+    sections: [
+      { type: "p", text: "Enhance Pickleball's Turbo EPP series offers genuine foam core performance at one of the most accessible price points in the market. EPP (Expanded Polypropylene) foam delivers a specific feel — slightly bouncier and more responsive than standard polymer foam — and at $119.99 with $20 off using PLAYBOOK, it's hard to beat for the price." },
+      { type: "h2", text: "Specs Across Shapes" },
+      { type: "ul", items: [
+        "Core: 16mm EPP foam",
+        "Elongated — SW: 115.76, TW: 6.12",
+        "Widebody — SW: 108.35, TW: 7.07",
+        "Hybrid — SW: 111.74, TW: 6.38",
+        "Price: $119.99 — save $20 with code PLAYBOOK",
+      ]},
+      { type: "h2", text: "EPP Feel" },
+      { type: "p", text: "EPP foam is distinct from standard foam cores — it has a livelier, more reactive feel that some players prefer for its immediate feedback. The Turbo EPP paddles feel responsive without being harsh, and they absorb hard drives well enough for NVZ play. They're genuinely all-court — good at resetting AND putting balls away." },
+      { type: "h2", text: "Shape Guide" },
+      { type: "p", text: "The Elongated (SW 115.76) offers the most drive power of the three. The Widebody (SW 108.35, TW 7.07) is the most stable and forgiving — great for beginners and NVZ specialists. The Hybrid (SW 111.74) splits the difference and is the most versatile pick for all-court play." },
+      { type: "verdict", text: "The Enhance Turbo EPP series is one of the best value propositions in pickleball. Three shapes, good specs, unique EPP feel, and a $119.99 price with $20 off using PLAYBOOK. Hard to beat for players looking to upgrade without overspending." },
+    ],
+  },
+
+  // ── Friday Aura Pro ────────────────────────────────────────────────────────
+  {
+    slug: "friday-aura-pro-review",
+    title: "Friday Aura Pro Review: Power-Forward Elongated From an Underrated Brand",
+    metaDescription: "Friday Aura Pro review — 16mm elongated, SW 116.33, TW 5.77, $169. Power-oriented elongated paddle from Friday Pickleball. Save $10 with code PLAYBOOK.",
+    publishDate: "2026-04-03",
+    videoId: "l6efRcEngHo",
+    brand: "Friday",
+    paddleName: "Aura Pro",
+    thumbnail: "/images/paddles/Aura-Pro-Elongated-16mm.png",
+    excerpt: "Friday's Aura Pro is a power-forward elongated that brings a SW of 116.33 and a clean build at $169 — a strong choice for attacking players looking to upgrade.",
+    paddleSlugs: ["friday-aura-pro-elongated"],
+    sections: [
+      { type: "p", text: "Friday Pickleball has been building a reputation for well-engineered paddles that don't demand a premium price. The Aura Pro is their top elongated offering — a power-first build that performs above its $169 price tag." },
+      { type: "h2", text: "Specs" },
+      { type: "ul", items: [
+        "Shape: Elongated",
+        "Core: 16mm",
+        "Weight: 7.9 oz",
+        "Swing Weight: 116.33",
+        "Twist Weight: 5.77",
+        "Price: $169 — save $10 with code PLAYBOOK",
+      ]},
+      { type: "h2", text: "Power Performance" },
+      { type: "p", text: "SW 116.33 is strong territory for a $169 paddle. The Aura Pro drives hard and reaches easily, giving offensive players the tools to take control from the baseline. The 16mm core provides enough touch to stay in points at the NVZ, though the TW of 5.77 means you'll notice mishits toward the edges." },
+      { type: "verdict", text: "The Friday Aura Pro is a value power paddle that competes with options costing significantly more. At $169 with $10 off using PLAYBOOK, it's one of the better under-$160 elongated paddles available." },
+    ],
+  },
+
+  // ── Friday Aura ────────────────────────────────────────────────────────────
+  {
+    slug: "friday-aura-review",
+    title: "Friday Aura Review: Control Paddles for Consistent All-Court Players",
+    metaDescription: "Friday Aura review — 16mm, elongated (SW 114.73) and hybrid (SW 108.60), $129. Control-oriented all-court paddles at a great price. Save $10 with code PLAYBOOK.",
+    publishDate: "2026-03-19",
+    videoId: "O8555NozXPo",
+    brand: "Friday",
+    paddleName: "Aura",
+    thumbnail: "/images/paddles/Aura-Elongated-16mm.png",
+    excerpt: "Friday's entry-level Aura is a control-oriented paddle available in elongated and hybrid, both priced at $129. Strong value for players focused on consistency.",
+    paddleSlugs: ["friday-aura-elongated", "friday-aura-hybrid"],
+    sections: [
+      { type: "p", text: "The Friday Aura sits below the Aura Pro in the lineup — a more accessible price ($129) with a control focus. Both elongated and hybrid shapes give players options without breaking the bank." },
+      { type: "h2", text: "Specs" },
+      { type: "ul", items: [
+        "Core: 16mm",
+        "Elongated — SW: 114.73, TW: 5.64, 8.0 oz",
+        "Hybrid — SW: 108.60, TW: 5.91, 7.6 oz",
+        "Price: $129 — save $10 with code PLAYBOOK",
+      ]},
+      { type: "h2", text: "Control Feel" },
+      { type: "p", text: "The Aura's 16mm core is soft and touch-oriented. At the kitchen, resets and drops come naturally. The hybrid's low SW of 108.60 keeps it maneuverable for quick exchanges. Neither shape will punish attackers, but they reward players who work on placement and consistency." },
+      { type: "verdict", text: "The Friday Aura is a no-frills control paddle that does what it says it does. At $129 with $10 off using PLAYBOOK, it's an excellent choice for beginners and consistent mid-level players who don't want to overspend." },
+    ],
+  },
+
+  // ── Holbrook Fuze ──────────────────────────────────────────────────────────
+  {
+    slug: "holbrook-fuze-review",
+    title: "Holbrook Fuze Review: Premium All-Court Paddle in Four Shapes",
+    metaDescription: "Holbrook Fuze review — 16mm and 14mm, four shapes, all-court classification, $229.99. Holbrook's versatile flagship paddle. Save 15% with code PLAYBOOK.",
+    publishDate: "2026-02-27",
+    videoId: "tIcA0rzaB_U",
+    brand: "Holbrook",
+    paddleName: "Fuze",
+    thumbnail: "/images/paddles/Fuze-Elongated-16mm.png",
+    excerpt: "The Holbrook Fuze comes in four variations — widebody, elongated 16mm, hybrid, and elongated 14mm — all classified as all-court paddles. There's a Fuze for every type of player.",
+    paddleSlugs: ["holbrook-fuze-widebody", "holbrook-fuze-elongated-16mm", "holbrook-fuze-hybrid", "holbrook-fuze-elongated-14mm"],
+    sections: [
+      { type: "p", text: "Holbrook has established itself as one of the most consistently quality-oriented independent brands in pickleball. The Fuze is their all-court flagship — available in four variations that cover every common shape preference." },
+      { type: "h2", text: "Specs by Shape" },
+      { type: "ul", items: [
+        "Widebody 16mm — SW: 111.19, TW: 6.72",
+        "Elongated 16mm — SW: 115.76, TW: 6.19",
+        "Hybrid 16mm — SW: 110.96, TW: 6.22",
+        "Elongated 14mm — SW: 113.23, TW: 5.70",
+        "Price: $229.99 — 15% off with code PLAYBOOK",
+      ]},
+      { type: "h2", text: "Which Fuze?" },
+      { type: "p", text: "The Elongated 16mm (SW 115.76) is the most powerful, offering solid drive game without losing the all-court balance. The Widebody (SW 111.19, TW 6.72) is the most stable and forgiving — ideal for consistent NVZ play with a big sweet spot. The Hybrid (SW 110.96) balances all attributes. The Elongated 14mm has a crisper feel from the thinner core, more responsive but slightly less forgiving." },
+      { type: "h2", text: "Build Quality" },
+      { type: "p", text: "Holbrook's construction is consistently praised. The Fuze paddles feel premium — the surface texture, balance, and durability all speak to careful manufacturing. At $229.99 with 15% off, you're getting a premium product at a fair price." },
+      { type: "verdict", text: "The Holbrook Fuze is one of the best all-court paddles available at any price. The four shape options mean virtually any player can find their fit. Use code PLAYBOOK for 15% off." },
+    ],
+  },
+
+  // ── Joola Pro V Perseus ────────────────────────────────────────────────────
+  {
+    slug: "joola-pro-v-perseus-review",
+    title: "Joola Pro V Perseus Review: Professional-Grade Power Elongated",
+    metaDescription: "Joola Pro V Perseus review — 16mm elongated, SW 116.29, TW 6.35, $299.95. Joola's top professional pickleball paddle. Save 15% with code PLAYBOOK.",
+    publishDate: "2026-03-03",
+    videoId: "gRU_Zwn2iwQ",
+    brand: "Joola",
+    paddleName: "Pro V Perseus",
+    thumbnail: "/images/paddles/Pro-V-16mm.png",
+    excerpt: "The Joola Pro V Perseus is their tour-level elongated paddle — 16mm, SW 116.29, TW 6.35. It's what the professionals reach for when they want performance without compromise.",
+    paddleSlugs: ["joola-pro-v-perseus-elongated"],
+    sections: [
+      { type: "p", text: "Joola is one of the biggest names in European table tennis, and they've brought that engineering pedigree to pickleball. The Pro V Perseus is their top-tier offering — an elongated power paddle used by tour-level professionals." },
+      { type: "h2", text: "Specs" },
+      { type: "ul", items: [
+        "Shape: Elongated",
+        "Core: 16mm",
+        "Weight: 8.1 oz",
+        "Swing Weight: 116.29",
+        "Twist Weight: 6.35",
+        "Price: $299.95 — 15% off with code PLAYBOOK",
+      ]},
+      { type: "h2", text: "Tour-Level Feel" },
+      { type: "p", text: "The Pro V Perseus has a crisp, responsive feel that comes from Joola's construction quality rather than from any single spec being extreme. SW 116.29 gives solid power; TW 6.35 gives good stability without going heavy. The 8.1 oz weight adds to the driving mass. This is a balanced power paddle executed with premium build quality." },
+      { type: "verdict", text: "The Joola Pro V Perseus justifies its $299.95 price through quality of execution rather than spec extremes. For players who want a tour-level power elongated with genuine brand pedigree, use PLAYBOOK for 15% off." },
+    ],
+  },
+
+  // ── Mint Paddles ───────────────────────────────────────────────────────────
+  {
+    slug: "mint-paddles-review",
+    title: "Mint Paddles Review: Mon Ami, Maestro, and Megalodon Compared",
+    metaDescription: "Mint paddles review — Mon Ami 18mm (SW 123.47), Maestro 20mm (SW 123.23), Megalodon 20mm (SW 112.41). All-court and control options from $169. Save 15% with code PLAYBOOK.",
+    publishDate: "2026-03-25",
+    videoId: "JvXTRzAdNp8",
+    brand: "Mint",
+    paddleName: "Mon Ami, Maestro & Megalodon",
+    thumbnail: "/images/paddles/Mon-Ami-18mm.png",
+    excerpt: "Mint Sport offers three thick-core paddles across different thickness levels — the Mon Ami (18mm), Maestro (20mm), and Megalodon (20mm) — each with a distinct spec profile.",
+    paddleSlugs: ["mint-mon-ami-elongated", "mint-maestro-elongated", "mint-megalodon-elongated"],
+    sections: [
+      { type: "p", text: "Mint Sport takes an interesting approach to paddle design — all three of their elongated paddles use thick cores (18mm or 20mm) that sit well above the typical 16mm foam standard. The result is a family of paddles with distinctly soft, touch-forward feel profiles." },
+      { type: "h2", text: "Specs Compared" },
+      { type: "ul", items: [
+        "Mon Ami 18mm — SW: 123.47, TW: 6.16, 8.7 oz — all-court",
+        "Maestro 20mm — SW: 123.23, TW: 6.17, 9.1 oz — control",
+        "Megalodon 20mm — SW: 112.41, TW: 6.04, 8.4 oz — control",
+        "Price: $169–$179.99 — 15% off with code PLAYBOOK",
+      ]},
+      { type: "h2", text: "Mon Ami: Surprising Power" },
+      { type: "p", text: "For an 18mm foam paddle, the Mon Ami's SW of 123.47 is exceptional — among the highest in our database. Its 8.7 oz weight contributes to that driving mass. Despite its thick core, it generates serious pace while still offering the soft, absorbing feel of thick-foam construction. It's the most versatile of the three." },
+      { type: "h2", text: "Maestro: Heaviest, Softest" },
+      { type: "p", text: "The Maestro at 9.1 oz and 20mm is the heaviest, softest paddle Mint makes. SW 123.23 is powerful, but the 20mm foam absorbs pace so thoroughly that resets and drops are almost effortless. This is an advanced player's tool — the weight demands good fundamentals." },
+      { type: "h2", text: "Megalodon: Control Specialist" },
+      { type: "p", text: "The Megalodon's SW of 112.41 is considerably lower than its siblings — 8.4 oz with 20mm foam makes it the most touch-oriented of the three. It's a true control paddle for kitchen-dominant players." },
+      { type: "verdict", text: "Mint's thick-core lineup is genuinely unique. The Mon Ami is the most versatile; the Maestro is for dedicated touch players; the Megalodon is a pure control specialist. All 15% off with PLAYBOOK." },
+    ],
+  },
+
+  // ── Nox X-Foam ─────────────────────────────────────────────────────────────
+  {
+    slug: "nox-x-foam-review",
+    title: "Nox X-Foam JMA & JC6 Review: European All-Court Foam Core Paddles",
+    metaDescription: "Nox X-Foam JMA and JC6 review — 16mm, JMA Hybrid (SW 109.66) and JC6 Elongated (SW 114.68), $204.99. Spanish engineering meets pickleball. Save 15% with code PLAYBOOK.",
+    publishDate: "2026-04-04",
+    videoId: "UQrRM5KPDsw",
+    brand: "Nox",
+    paddleName: "X-Foam JMA & JC6",
+    thumbnail: "/images/paddles/X-Foam-JMA-16mm.png",
+    excerpt: "Spanish brand Nox brings European paddle engineering to the US market with the X-Foam JMA and JC6 — all-court foam core paddles with a distinct feel.",
+    paddleSlugs: ["nox-jma-hybrid", "nox-jc6-elongated"],
+    sections: [
+      { type: "p", text: "Nox Sport is a respected Spanish brand in racket sports, and their X-Foam pickleball paddles bring that European engineering sensibility to the American market. The JMA (Hybrid) and JC6 (Elongated) are their 16mm all-court offerings." },
+      { type: "h2", text: "Specs" },
+      { type: "ul", items: [
+        "Core: 16mm X-Foam",
+        "JMA Hybrid — SW: 109.66, TW: 6.54, 8.2 oz",
+        "JC6 Elongated — SW: 114.68, TW: 6.06, 8.1 oz",
+        "Price: $204.99 — 15% off with code PLAYBOOK",
+      ]},
+      { type: "h2", text: "X-Foam Technology" },
+      { type: "p", text: "Nox's X-Foam core is formulated for a specific feel profile — soft at contact for touch shots, with enough response to generate pace when you need it. It's a distinctly European approach to foam core construction that feels subtly different from American-branded foam paddles." },
+      { type: "h2", text: "JMA vs JC6" },
+      { type: "p", text: "The JMA Hybrid (SW 109.66) is a maneuverable, kitchen-friendly all-court paddle. The JC6 Elongated (SW 114.68) adds more reach and pop for players who also want a drive game. Both are solid all-court performers with good NVZ feel." },
+      { type: "verdict", text: "The Nox X-Foam JMA and JC6 are well-made all-court paddles from a brand with genuine racket-sport pedigree. At $204.99 with 15% off using PLAYBOOK, they're worth considering for players who want something a little different from the American-brand mainstream." },
+    ],
+  },
+
+  // ── Ronbus Quanta ──────────────────────────────────────────────────────────
+  {
+    slug: "ronbus-quanta-review",
+    title: "Ronbus Quanta R3 & R4 Review: All-Court Paddles That Over-Deliver",
+    metaDescription: "Ronbus Quanta R3 and R4 review — 16mm, R3 Elongated (SW 115.40) and R4 Hybrid (SW 105), $119.99. Save $20 with code PLAYBOOK.",
+    publishDate: "2026-04-01",
+    videoId: "8Cnc0_BBXjc",
+    brand: "Ronbus",
+    paddleName: "Quanta R3 & R4",
+    thumbnail: "/images/paddles/Quanta-R3-16mm.png",
+    excerpt: "Ronbus makes bold claims about their Quanta R3 and R4 paddles — and largely backs them up with specs and feel that punch well above the $119.99 price.",
+    paddleSlugs: ["ronbus-quanta-r3-elongated", "ronbus-quanta-r4-hybrid"],
+    sections: [
+      { type: "p", text: "Ronbus is a brand that has built a loyal community around the idea that performance paddles shouldn't cost $250+. The Quanta R3 and R4 are their flagship all-court paddles — 16mm foam cores, solid specs, and a price that makes them accessible to a wide range of players." },
+      { type: "h2", text: "Specs" },
+      { type: "ul", items: [
+        "Core: 16mm foam",
+        "R3 Elongated — SW: 115.40, TW: 5.74, 7.8 oz",
+        "R4 Hybrid — SW: 105.00, TW: 5.75, 7.6 oz",
+        "Price: $119.99 — save $20 with code PLAYBOOK",
+      ]},
+      { type: "h2", text: "R3 Elongated: Reach + Pop" },
+      { type: "p", text: "SW 115.40 gives the R3 meaningful power while the 16mm foam keeps touch-shot feel accessible. At $99.99 effective (after $20 off with PLAYBOOK), this is exceptional value for an elongated paddle with these specs." },
+      { type: "h2", text: "R4 Hybrid: Soft and Maneuverable" },
+      { type: "p", text: "SW 105 puts the R4 Hybrid in pure NVZ-specialist territory. It's fast, maneuverable, and very soft at contact. Best for players who run a slow, patient game based around placement and outlasting opponents." },
+      { type: "verdict", text: "The Ronbus Quanta R3 and R4 are outstanding value. Both paddles deliver specs and feel that significantly outperform their price points. Use code PLAYBOOK to save $20 — at under $100 effective, these are no-brainer buys." },
+    ],
+  },
+];
+
+export function getBlogPostBySlug(slug: string): BlogPost | undefined {
+  return blogPosts.find((p) => p.slug === slug);
+}
+
+export function getBlogPostForPaddle(paddleSlug: string): BlogPost | undefined {
+  return blogPosts.find((p) => p.paddleSlugs.includes(paddleSlug));
+}
+
+export function getRecentBlogPosts(count: number): BlogPost[] {
+  return [...blogPosts]
+    .sort((a, b) => b.publishDate.localeCompare(a.publishDate))
+    .slice(0, count);
+}

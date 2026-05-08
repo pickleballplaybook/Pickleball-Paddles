@@ -104,7 +104,7 @@ export default function PaddleCard({ paddle, index = 0, heartCount = 0 }: Paddle
             </div>
           )}
 
-          <div className="absolute top-3 right-3">
+          <div className="absolute top-3 right-3 flex flex-col items-end gap-1.5">
             <span
               className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
                 SHAPE_COLORS[paddle.shape] ?? "bg-slate-50 text-slate-500 border-slate-200"
@@ -112,6 +112,23 @@ export default function PaddleCard({ paddle, index = 0, heartCount = 0 }: Paddle
             >
               {paddle.shape}
             </span>
+            {paddle.playStyle && (
+              <span
+                className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
+                style={{
+                  background: paddle.playStyle === "power"
+                    ? "rgba(251,146,60,0.18)" : paddle.playStyle === "control"
+                    ? "rgba(99,102,241,0.18)" : "rgba(34,197,94,0.18)",
+                  color: paddle.playStyle === "power" ? "#fb923c"
+                    : paddle.playStyle === "control" ? "#818cf8" : "#4ade80",
+                  border: paddle.playStyle === "power"
+                    ? "1px solid rgba(251,146,60,0.35)" : paddle.playStyle === "control"
+                    ? "1px solid rgba(99,102,241,0.35)" : "1px solid rgba(34,197,94,0.35)",
+                }}
+              >
+                {paddle.playStyle === "all-court" ? "All-Court" : paddle.playStyle === "power" ? "Power" : "Control"}
+              </span>
+            )}
           </div>
         </div>
       </Link>
@@ -219,7 +236,7 @@ export default function PaddleCard({ paddle, index = 0, heartCount = 0 }: Paddle
                 rel="noopener noreferrer sponsored"
                 className="flex-1 inline-flex items-center justify-center gap-1.5 btn-primary text-sm py-2.5"
               >
-                Buy with Discount
+                Get Discount
               </a>
             ) : hasReview ? (
               <a

@@ -7,6 +7,7 @@ import { Smartphone, GraduationCap } from "lucide-react";
 
 import Hero           from "@/components/Hero";
 import LatestPaddles  from "@/components/LatestPaddles";
+import Link           from "next/link";
 import HottestPaddle  from "@/components/HottestPaddle";
 import TrendingSection from "@/components/TrendingSection";
 import LatestReviews  from "@/components/LatestReviews";
@@ -124,6 +125,38 @@ export default async function HomePage() {
       <Hero />
 
       <LatestPaddles paddles={latestPaddles} />
+
+      {/* Best Paddles 2026 banner */}
+      <section className="container-xl py-6">
+        <Link
+          href="/best-pickleball-paddles"
+          className="group flex flex-col sm:flex-row items-center justify-between gap-4 rounded-3xl px-8 py-6 transition-all duration-200 hover:scale-[1.01]"
+          style={{
+            background: "linear-gradient(135deg, rgba(13,148,136,0.18) 0%, rgba(4,10,20,0.6) 100%)",
+            border: "1px solid rgba(20,184,166,0.3)",
+            boxShadow: "0 0 40px rgba(20,184,166,0.08)",
+          }}
+        >
+          <div>
+            <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: "#14b8a6" }}>
+              Updated April 2026
+            </p>
+            <p className="text-xl font-extrabold" style={{ color: "var(--text-primary)" }}>
+              Best Pickleball Paddles of 2026 — Tested &amp; Ranked
+            </p>
+            <p className="text-sm mt-1" style={{ color: "var(--text-muted)" }}>
+              80+ paddles tested. 6 categories. Every pick is unsponsored.
+            </p>
+          </div>
+          <span
+            className="flex-shrink-0 inline-flex items-center gap-2 font-bold text-sm px-6 py-3 rounded-xl text-white transition-all duration-200 group-hover:scale-[1.03]"
+            style={{ background: "linear-gradient(135deg, #0d9488, #14b8a6)", boxShadow: "0 0 24px rgba(20,184,166,0.35)" }}
+          >
+            See the List
+            <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" aria-hidden><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          </span>
+        </Link>
+      </section>
 
       {/* Drills App */}
       <PromoBar

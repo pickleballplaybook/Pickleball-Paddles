@@ -135,7 +135,7 @@ export default async function ReviewsPage() {
             className="inline-flex items-center gap-2 text-sm font-semibold text-red-600 hover:text-red-700 bg-red-50 border border-red-200 px-4 py-2.5 rounded-xl transition-all hover:bg-red-100"
           >
             <Youtube className="w-4 h-4" />
-            @pickleballplaybook on YouTube
+            @playbookreviews
           </a>
         </div>
 

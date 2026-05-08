@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Play, ExternalLink } from "lucide-react";
 import Image from "next/image";
+import { siteConfig } from "@/config/site";
 
 interface YouTubeEmbedProps {
   videoId: string;
@@ -30,12 +31,12 @@ export default function YouTubeEmbed({
           <p className="text-slate-400 text-sm max-w-xs mx-auto">
             We&apos;re working on a full video review for this paddle. Check back soon or{" "}
             <a
-              href="https://www.youtube.com/@pickleballplaybook"
+              href={siteConfig.youtubeChannelUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="text-brand-500 hover:text-brand-600 underline underline-offset-2 transition-colors"
             >
-              visit our YouTube channel
+              @playbookreviews
             </a>
             .
           </p>

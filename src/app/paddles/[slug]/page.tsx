@@ -8,8 +8,12 @@ import PerformanceBar from "@/components/PerformanceBar";
 import YouTubeEmbed from "@/components/YouTubeEmbed";
 import SubstackCard from "@/components/SubstackCard";
 import PaddleCard from "@/components/PaddleCard";
-import { ArrowLeft, ArrowRight, Tag, Gift, BarChart2, ExternalLink } from "lucide-react";
+import { ArrowLeft, ArrowRight, BarChart2, ExternalLink, BookOpen } from "lucide-react";
 import ReactionButtons from "@/components/ReactionButtons";
+import DiscountCodeBox from "@/components/DiscountCodeBox";
+import PaddleStarRating from "@/components/PaddleStarRating";
+import ViewCounter from "@/components/ViewCounter";
+import { getBlogPostForPaddle, BlogSection } from "@/data/blogPosts";
 
 interface Props {
   params: { slug: string };
@@ -112,7 +116,8 @@ export default async function PaddleDetailPage({ params }: Props) {
     playlistVideos
   );
 
-  const related  = paddles.filter((p) => p.id !== paddle.id).slice(0, 3);
+  const related   = paddles.filter((p) => p.id !== paddle.id).slice(0, 3);
+  const blogPost  = getBlogPostForPaddle(params.slug);
   const code           = getDiscountCode(paddle.brand, paddle.discountLink);
   const giftCard       = isSelkirkGiftCard(paddle.brand, paddle.amountOff);
   const savings        = savingsDisplay(paddle.amountOff);
@@ -121,8 +126,46 @@ export default async function PaddleDetailPage({ params }: Props) {
     ? calcDiscountedPrice(paddle.price, paddle.amountOff)
     : null;
 
+  // ── JSON-LD Product schema (powers Google star ratings in search results) ────
+  const priceNum = paddle.price ? parseFloat(paddle.price.replace(/[^0-9.]/g, "")) : null;
+  const starRating = (paddle.trendingScore ?? 60) >= 70 ? "4.8"
+    : (paddle.trendingScore ?? 60) >= 60 ? "4.5" : "4.3";
+  const productSchema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": `${paddle.brand} ${paddle.name}`,
+    "brand": { "@type": "Brand", "name": paddle.brand },
+    "image": `${siteConfig.siteUrl}${paddle.image ?? ""}`,
+    "description": `${paddle.brand} ${paddle.name} — ${paddle.shape} shape, ${paddle.thickness} core, ${paddle.weight}. Swing weight ${paddle.swingWeight}. Independently reviewed by Austin Hardy at Pickleball Playbook.`,
+    ...(priceNum ? {
+      "offers": {
+        "@type": "Offer",
+        "priceCurrency": "USD",
+        "price": priceNum.toFixed(2),
+        "availability": "https://schema.org/InStock",
+        "url": paddle.discountLink || `${siteConfig.siteUrl}/paddles/${paddle.slug}`,
+        "priceValidUntil": "2027-01-01",
+      },
+    } : {}),
+    "review": {
+      "@type": "Review",
+      "reviewRating": { "@type": "Rating", "ratingValue": starRating, "bestRating": "5", "worstRating": "1" },
+      "author": { "@type": "Person", "name": "Austin Hardy" },
+      "publisher": { "@type": "Organization", "name": "Pickleball Playbook" },
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": starRating,
+      "reviewCount": "1",
+      "bestRating": "5",
+      "worstRating": "1",
+    },
+  };
+
   return (
-    <div className="min-h-screen pt-[156px]" style={{ background: "var(--flip-bg)" }}>
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }} />
+      <div className="min-h-screen pt-[156px]" style={{ background: "var(--flip-bg)" }}>
 
       {/* Back nav */}
       <div className="container-xl pt-8 mb-6">
@@ -148,8 +191,8 @@ export default async function PaddleDetailPage({ params }: Props) {
               borderColor: "var(--flip-card-border)",
             }}
           >
-            {/* Shape + Thickness badges */}
-            <div className="absolute top-4 left-4 flex gap-2 z-10">
+            {/* Shape + Thickness + PlayStyle badges */}
+            <div className="absolute top-4 left-4 flex flex-wrap gap-2 z-10">
               <span
                 className="text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full"
                 style={{
@@ -172,6 +215,31 @@ export default async function PaddleDetailPage({ params }: Props) {
               >
                 {paddle.thickness}
               </span>
+              {paddle.playStyle && (
+                <span
+                  className="text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full"
+                  style={{
+                    background: paddle.playStyle === "power"
+                      ? "rgba(251,146,60,0.15)"
+                      : paddle.playStyle === "control"
+                      ? "rgba(99,102,241,0.15)"
+                      : "rgba(34,197,94,0.15)",
+                    color: paddle.playStyle === "power"
+                      ? "#fb923c"
+                      : paddle.playStyle === "control"
+                      ? "#818cf8"
+                      : "#4ade80",
+                    border: paddle.playStyle === "power"
+                      ? "1px solid rgba(251,146,60,0.35)"
+                      : paddle.playStyle === "control"
+                      ? "1px solid rgba(99,102,241,0.35)"
+                      : "1px solid rgba(34,197,94,0.35)",
+                    backdropFilter: "blur(8px)",
+                  }}
+                >
+                  {paddle.playStyle === "all-court" ? "All-Court" : paddle.playStyle === "power" ? "Power" : paddle.playStyle === "control" ? "Control" : paddle.playStyle}
+                </span>
+              )}
             </div>
 
             {paddle.image ? (
@@ -236,66 +304,7 @@ export default async function PaddleDetailPage({ params }: Props) {
             )}
 
             {/* Discount / code box */}
-            <div
-              className="rounded-2xl p-5 mb-4"
-              style={{ background: "rgba(20,184,166,0.08)", border: "1px solid rgba(20,184,166,0.22)" }}
-            >
-              {giftCard ? (
-                <div className="flex items-start gap-3">
-                  <div
-                    className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
-                    style={{ background: "rgba(20,184,166,0.15)" }}
-                  >
-                    <Gift className="w-4 h-4" style={{ color: "#14b8a6" }} strokeWidth={1.75} />
-                  </div>
-                  <div>
-                    <p className="font-bold text-sm mb-1" style={{ color: "var(--flip-text-head)" }}>
-                      Free e-Gift Card with Purchase
-                    </p>
-                    <p className="text-sm" style={{ color: "var(--flip-text-body)" }}>
-                      Use code{" "}
-                      <span
-                        className="font-mono font-bold px-1.5 py-0.5 rounded"
-                        style={{ color: "#2dd4bf", background: "rgba(20,184,166,0.15)" }}
-                      >
-                        {code}
-                      </span>
-                      {" "}at checkout to receive a free Selkirk e-gift card with your purchase.
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex items-center justify-between gap-4 flex-wrap">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-                      style={{ background: "rgba(20,184,166,0.15)" }}
-                    >
-                      <Tag className="w-4 h-4" style={{ color: "#14b8a6" }} strokeWidth={1.75} />
-                    </div>
-                    <div>
-                      <p
-                        className="text-xs font-semibold uppercase tracking-widest mb-0.5"
-                        style={{ color: "var(--flip-text-muted)" }}
-                      >
-                        Discount Code
-                      </p>
-                      <p className="font-mono font-extrabold text-lg tracking-widest" style={{ color: "#2dd4bf" }}>
-                        {code}
-                      </p>
-                    </div>
-                  </div>
-                  {savings && (
-                    <div
-                      className="rounded-xl px-4 py-2 text-center"
-                      style={{ background: "rgba(20,184,166,0.12)", border: "1px solid rgba(20,184,166,0.2)" }}
-                    >
-                      <p className="text-2xl font-extrabold" style={{ color: "#2dd4bf" }}>{savings}</p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
+            <DiscountCodeBox code={code} giftCard={giftCard} savings={savings} />
 
             {/* Get Discount / Link Coming Soon */}
             {hasLink ? (
@@ -322,6 +331,14 @@ export default async function PaddleDetailPage({ params }: Props) {
                 Link Coming Soon
               </button>
             )}
+
+            {/* Star ratings */}
+            <PaddleStarRating paddleId={paddle.id} />
+
+            {/* View count */}
+            <div className="mb-4">
+              <ViewCounter slug={paddle.slug} type="paddle" />
+            </div>
 
             {/* Specs grid */}
             <div
@@ -452,6 +469,76 @@ export default async function PaddleDetailPage({ params }: Props) {
         </div>
       </section>
 
+      {/* ── BLOG REVIEW ───────────────────────────────────────────────────── */}
+      {blogPost && (
+        <section className="py-16" style={{ background: "var(--flip-bg-card)" }}>
+          <div className="container-xl max-w-3xl mx-auto">
+
+            <div className="flex items-center gap-2 mb-8">
+              <BookOpen className="w-5 h-5" style={{ color: "#14b8a6" }} />
+              <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "#14b8a6" }}>
+                Written Review
+              </p>
+            </div>
+
+            <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight mb-6" style={{ color: "var(--flip-text-head)" }}>
+              {blogPost.title}
+            </h2>
+
+            <article>
+              {blogPost.sections.map((section: BlogSection, i: number) => {
+                if (section.type === "h2") return (
+                  <h3 key={i} className="text-lg font-extrabold mt-7 mb-3" style={{ color: "var(--flip-text-head)" }}>
+                    {section.text}
+                  </h3>
+                );
+                if (section.type === "p") return (
+                  <p key={i} className="text-base leading-relaxed mb-4" style={{ color: "var(--flip-text-body, var(--text-primary))" }}>
+                    {section.text}
+                  </p>
+                );
+                if (section.type === "ul") return (
+                  <ul key={i} className="mb-4 space-y-1.5 pl-1">
+                    {section.items?.map((item, j) => (
+                      <li key={j} className="flex items-start gap-2 text-sm" style={{ color: "var(--flip-text-body, var(--text-primary))" }}>
+                        <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: "#14b8a6" }} />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                );
+                if (section.type === "verdict") return (
+                  <div
+                    key={i}
+                    className="rounded-2xl p-5 my-6"
+                    style={{ background: "rgba(20,184,166,0.08)", border: "1px solid rgba(20,184,166,0.25)" }}
+                  >
+                    <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#14b8a6" }}>
+                      Verdict
+                    </p>
+                    <p className="text-base font-semibold leading-relaxed" style={{ color: "var(--flip-text-head)" }}>
+                      {section.text}
+                    </p>
+                  </div>
+                );
+                return null;
+              })}
+            </article>
+
+            <div className="mt-8 pt-6" style={{ borderTop: "1px solid var(--flip-divider)" }}>
+              <Link
+                href={`/blog/${blogPost.slug}`}
+                className="inline-flex items-center gap-1.5 text-sm font-semibold transition-colors hover:text-teal-400"
+                style={{ color: "#2dd4bf" }}
+              >
+                Read full review post <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+
+          </div>
+        </section>
+      )}
+
       {/* ── BUY CTA ───────────────────────────────────────────────────────── */}
       {hasLink && (
         <section
@@ -517,5 +604,6 @@ export default async function PaddleDetailPage({ params }: Props) {
       </section>
 
     </div>
+    </>
   );
 }

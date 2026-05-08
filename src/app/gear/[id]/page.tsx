@@ -3,6 +3,8 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { gearProducts } from "@/data/products";
+import YouTubeEmbed from "@/components/YouTubeEmbed";
+import ViewCounter from "@/components/ViewCounter";
 
 interface Props {
   params: { id: string };
@@ -95,9 +97,13 @@ export default function GearProductPage({ params }: Props) {
               </p>
             )}
 
-            <p className="text-base leading-relaxed mb-6" style={{ color: "var(--text-muted)" }}>
+            <p className="text-base leading-relaxed mb-4" style={{ color: "var(--text-muted)" }}>
               {product.subtitle}
             </p>
+
+            <div className="mb-6">
+              <ViewCounter slug={product.id} type="gear" />
+            </div>
 
             {product.features && (
               <pre
@@ -128,6 +134,17 @@ export default function GearProductPage({ params }: Props) {
 
           </div>
         </div>
+
+        {/* Video review */}
+        {product.videoId && (
+          <div className="mt-14">
+            <p className="text-xs font-bold uppercase tracking-widest mb-5" style={{ color: "#14b8a6" }}>
+              Video Review
+            </p>
+            <YouTubeEmbed videoId={product.videoId} title={`${product.brand} ${product.name} Review`} />
+          </div>
+        )}
+
       </div>
     </div>
   );

@@ -19,7 +19,7 @@ export const siteConfig = {
 
   // ── YouTube ─────────────────────────────────────────────────────────────────
   // Channel URL — shown in footer and reviews page
-  youtubeChannelUrl: "https://www.youtube.com/@pickleballplaybook",
+  youtubeChannelUrl: "https://www.youtube.com/channel/UCikz-D2j4_jMVYZrQuPin6A",
 
   // Paddle Reviews Playlist URL
   // REPLACE the placeholder below with your actual playlist URL when ready.
@@ -63,7 +63,7 @@ export const siteConfig = {
   trendingCount: 5,
 
   // ── Homepage — Latest Reviews ────────────────────────────────────────────────
-  latestReviewsCount: 4,
+  latestReviewsCount: 6,
 
   // ── Newsletter / Substack ────────────────────────────────────────────────────
   // Primary newsletter destination. Used by the popup and SubstackCard.
@@ -85,6 +85,6 @@ export const siteConfig = {
   },
 
   // ── SEO ─────────────────────────────────────────────────────────────────────
-  siteUrl: "https://pickleballplaybook.com",
+  siteUrl: "https://pickleballplaybook.app",
   twitterHandle: "@pickleballplaybook",
 };

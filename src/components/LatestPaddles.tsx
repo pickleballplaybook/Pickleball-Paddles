@@ -78,6 +78,25 @@ function PaddleCard({ paddle }: { paddle: Paddle }) {
         ) : (
           <div className="w-16 h-16 rounded-full bg-teal-500/10" />
         )}
+        {/* PlayStyle badge */}
+        {paddle.playStyle && (
+          <span
+            className="absolute bottom-3 left-3 z-20 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full"
+            style={{
+              background: paddle.playStyle === "power"
+                ? "rgba(251,146,60,0.18)" : paddle.playStyle === "control"
+                ? "rgba(99,102,241,0.18)" : "rgba(34,197,94,0.18)",
+              color: paddle.playStyle === "power" ? "#fb923c"
+                : paddle.playStyle === "control" ? "#818cf8" : "#4ade80",
+              border: paddle.playStyle === "power"
+                ? "1px solid rgba(251,146,60,0.35)" : paddle.playStyle === "control"
+                ? "1px solid rgba(99,102,241,0.35)" : "1px solid rgba(34,197,94,0.35)",
+              backdropFilter: "blur(6px)",
+            }}
+          >
+            {paddle.playStyle === "all-court" ? "All-Court" : paddle.playStyle === "power" ? "Power" : "Control"}
+          </span>
+        )}
       </div>
 
       {/* Content */}

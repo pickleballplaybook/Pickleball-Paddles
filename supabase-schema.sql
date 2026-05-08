@@ -42,3 +42,30 @@ create policy "anon can update reactions"
 create policy "anon can delete reactions"
   on public.reactions for delete
   to anon using (true);
+
+-- ── Paddle ratings table ───────────────────────────────────────────────────────
+
+create table if not exists public.paddle_ratings (
+  id         bigint generated always as identity primary key,
+  paddle_id  text        not null,
+  user_key   text        not null,
+  stars      smallint    not null check (stars between 1 and 5),
+  created_at timestamptz not null default now(),
+  constraint paddle_ratings_paddle_user_unique unique (paddle_id, user_key)
+);
+
+create index if not exists idx_paddle_ratings_paddle_id on public.paddle_ratings (paddle_id);
+
+alter table public.paddle_ratings enable row level security;
+
+create policy "anon can read paddle ratings"
+  on public.paddle_ratings for select
+  to anon using (true);
+
+create policy "anon can insert paddle ratings"
+  on public.paddle_ratings for insert
+  to anon with check (true);
+
+create policy "anon can update paddle ratings"
+  on public.paddle_ratings for update
+  to anon using (true) with check (true);

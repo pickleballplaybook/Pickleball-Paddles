@@ -11,6 +11,7 @@ export interface GearProduct {
   features?: string;
   bg: string;
   ctaText: string;
+  videoId?: string;
 }
 
 // ── All gear / affiliate products ─────────────────────────────────────────────
@@ -27,7 +28,8 @@ export const gearProducts: GearProduct[] = [
     imageAspect: "square",
     subtitle: "The best training partner. Hit more balls and improve faster — on your own schedule.",
     bg: "#163a6a",
-    ctaText: "Buy with Discount",
+    ctaText: "Get Discount",
+    videoId: "H7ylk_NQYUQ",
   },
   {
     id: "tennibot",
@@ -40,7 +42,7 @@ export const gearProducts: GearProduct[] = [
     imageAspect: "square",
     subtitle: "The smart ball machine built specifically for pickleball. Train smarter, play better.",
     bg: "#0f2437",
-    ctaText: "Buy with Discount",
+    ctaText: "Get Discount",
   },
   {
     id: "redmond",
@@ -53,7 +55,7 @@ export const gearProducts: GearProduct[] = [
     imageAspect: "square",
     subtitle: "Real salt electrolyte drink mix. Stay hydrated on and off the court.",
     bg: "#0f2a18",
-    ctaText: "Buy with Discount",
+    ctaText: "Get Discount",
   },
   {
     id: "slyce",
@@ -66,7 +68,7 @@ export const gearProducts: GearProduct[] = [
     imageAspect: "wide",
     subtitle: "Adjustable clamp-on paddle weights. Fine-tune your swing weight in seconds.",
     bg: "#1e1040",
-    ctaText: "Buy with Discount",
+    ctaText: "Get Discount",
   },
   {
     id: "vktry",
@@ -79,7 +81,7 @@ export const gearProducts: GearProduct[] = [
     imageAspect: "square",
     subtitle: "Carbon fiber insoles that boost performance and reduce fatigue on the court.",
     bg: "#1a0e00",
-    ctaText: "Buy with Discount",
+    ctaText: "Get Discount",
   },
   {
     id: "picklr",
@@ -158,7 +160,7 @@ export const gearProducts: GearProduct[] = [
     subtitle: "Court shoes built for natural movement. Designed specifically for the demands of pickleball.",
     features: "CUURT SHOES ARE:\n✓ Wide toe box (natural stability)\n✓ Zero drop (proper alignment)\n✓ Firm cushioning (court protection)\n✓ Mild arch-support (foot strengthening)\n\nCUURT SHOES ARE NOT:\n❌ Narrow fitting\n❌ Heavily cushioned\n❌ Heavy arch-supporting\n❌ Orthopedic/medical",
     bg: "#0f1e2e",
-    ctaText: "Buy with Discount",
+    ctaText: "Get Discount",
   },
   {
     id: "pickle-clips",
@@ -184,7 +186,7 @@ export const gearProducts: GearProduct[] = [
     imageAspect: "square",
     subtitle: "Engineered for comfort and control. The grip upgrade serious pickleball players swear by.",
     bg: "#1a0a0a",
-    ctaText: "Buy with Discount",
+    ctaText: "Get Discount",
   },
   {
     id: "academy",

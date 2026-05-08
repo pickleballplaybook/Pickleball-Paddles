@@ -38,7 +38,7 @@ export default function LatestReviews({ items }: LatestReviewsProps) {
               className="btn-secondary text-sm"
             >
               <Youtube className="w-4 h-4 text-red-500" />
-              YouTube Channel
+              @playbookreviews
             </a>
             <Link href="/reviews" className="btn-secondary text-sm">
               All Reviews <ArrowRight className="w-4 h-4" />
@@ -127,7 +127,7 @@ export default function LatestReviews({ items }: LatestReviewsProps) {
             className="btn-secondary justify-center"
           >
             <Youtube className="w-4 h-4 text-red-500" />
-            Visit YouTube Channel
+            @playbookreviews
           </a>
         </div>
       </div>

@@ -123,6 +123,22 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
                   >
                     {i + 1}
                   </span>
+                  {/* Paddle thumbnail */}
+                  <div
+                    className="w-12 h-12 rounded-xl flex-shrink-0 flex items-center justify-center overflow-hidden"
+                    style={{ background: "var(--flip-divider)" }}
+                  >
+                    {paddle.image ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={paddle.image}
+                        alt={paddle.name}
+                        className="w-full h-full object-contain p-1"
+                      />
+                    ) : (
+                      <div className="w-6 h-6 rounded-full bg-teal-500/20" />
+                    )}
+                  </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[11px] font-semibold uppercase tracking-wider truncate" style={{ color: "var(--flip-text-muted)" }}>
                       {paddle.brand}
@@ -130,6 +146,20 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
                     <p className="text-sm font-bold truncate group-hover:text-teal-500 transition-colors" style={{ color: "var(--flip-text-head)" }}>
                       {paddle.name}
                     </p>
+                    {paddle.playStyle && (
+                      <span
+                        className="inline-block text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full mt-0.5"
+                        style={{
+                          background: paddle.playStyle === "power"
+                            ? "rgba(251,146,60,0.15)" : paddle.playStyle === "control"
+                            ? "rgba(99,102,241,0.15)" : "rgba(34,197,94,0.15)",
+                          color: paddle.playStyle === "power" ? "#fb923c"
+                            : paddle.playStyle === "control" ? "#818cf8" : "#4ade80",
+                        }}
+                      >
+                        {paddle.playStyle === "all-court" ? "All-Court" : paddle.playStyle === "power" ? "Power" : "Control"}
+                      </span>
+                    )}
                   </div>
                   <span
                     className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-lg flex-shrink-0"

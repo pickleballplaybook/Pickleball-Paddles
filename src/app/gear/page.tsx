@@ -1,4 +1,4 @@
-import { ArrowRight, GraduationCap } from "lucide-react";
+import { Star, ArrowRight } from "lucide-react";
 import { Metadata } from "next";
 import Link from "next/link";
 import { gearProducts, GearProduct } from "@/data/products";
@@ -8,197 +8,199 @@ export const metadata: Metadata = {
   description: "Top pickleball gear, clothing, accessories, and equipment — handpicked for serious players.",
 };
 
-const titan = gearProducts.find((p) => p.id === "titan")!;
-const rest  = gearProducts.filter((p) => p.id !== "titan");
+const featured = gearProducts.find((p) => p.id === "titan")!;
+const rest = gearProducts.filter((p) => p.id !== "titan");
 
-// ── CTA button ────────────────────────────────────────────────────────────────
-function Cta({ href, text, large }: { href: string; text: string; large?: boolean }) {
+// ── Editor's Pick hero card ────────────────────────────────────────────────────
+function EditorPickCard({ p }: { p: GearProduct }) {
   return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer sponsored"
-      className={`inline-flex items-center gap-2 font-bold text-white rounded-2xl transition-all duration-200 active:scale-[0.97] self-start flex-shrink-0 ${large ? "text-base px-8 py-4" : "text-sm px-7 py-3.5"}`}
-      style={{
-        background: "linear-gradient(135deg,#0d9488,#14b8a6)",
-        boxShadow: "0 0 40px rgba(20,184,166,0.35), 0 4px 16px rgba(0,0,0,0.3)",
-      }}
-    >
-      {text}
-      <ArrowRight className={large ? "w-5 h-5" : "w-4 h-4"} strokeWidth={2.5} />
-    </a>
-  );
-}
-
-// ── Badge ─────────────────────────────────────────────────────────────────────
-function Badge({ text }: { text: string }) {
-  return (
-    <span
-      className="self-start inline-block text-[11px] font-bold uppercase tracking-[0.18em] px-3 py-1 rounded-full mb-5"
-      style={{
-        background: "rgba(20,184,166,0.15)",
-        color: "#2dd4bf",
-        border: "1px solid rgba(20,184,166,0.4)",
-        boxShadow: "0 0 12px rgba(20,184,166,0.15)",
-      }}
-    >
-      {text}
-    </span>
-  );
-}
-
-// ── Wide feature card ─────────────────────────────────────────────────────────
-// Fix: image column has EXPLICIT pixel heights (h-[320px] mobile, lg:h-[620px] desktop)
-// so the absolute-positioned img always has a defined parent height to fill.
-function WideCard({ p }: { p: GearProduct }) {
-  return (
-    <Link href={`/gear/${p.id}`} className="col-span-full block">
     <div
-      className="rounded-3xl overflow-hidden"
+      className="rounded-3xl overflow-hidden mb-12"
       style={{
-        background: p.bg,
-        border: "1px solid rgba(255,255,255,0.07)",
-        boxShadow: "0 32px 80px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)",
+        background: "var(--bg-card)",
+        border: "1px solid rgba(255,255,255,0.08)",
+        boxShadow: "0 20px 60px rgba(0,0,0,0.4)",
       }}
     >
-      <div className="flex flex-col lg:flex-row">
+      <div className="flex flex-col md:flex-row">
 
-        {/* Image — explicit heights ensure absolute fill always works */}
-        <div className="relative overflow-hidden flex-shrink-0 w-full lg:w-[62%] h-[320px] lg:h-[620px]">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={p.image}
-            alt={`${p.brand} ${p.name}`}
-            className="absolute inset-0 w-full h-full object-cover object-center"
-          />
-          {/* right-edge blend — desktop */}
+        {/* Image — white background */}
+        <div className="relative md:w-[42%] flex-shrink-0">
           <div
-            className="absolute inset-y-0 right-0 hidden lg:block pointer-events-none"
-            style={{ width: "220px", background: `linear-gradient(90deg,transparent 0%,${p.bg} 100%)` }}
-          />
-          {/* bottom-edge blend — mobile */}
+            className="absolute top-4 left-4 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-white"
+            style={{ background: "#f59e0b" }}
+          >
+            <Star className="w-3 h-3 fill-white" />
+            Editor&apos;s Pick
+          </div>
           <div
-            className="absolute inset-x-0 bottom-0 lg:hidden pointer-events-none"
-            style={{ height: "120px", background: `linear-gradient(180deg,transparent 0%,${p.bg} 100%)` }}
-          />
+            className="w-full bg-white flex items-center justify-center p-8"
+            style={{ minHeight: "300px", height: "100%" }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={p.image}
+              alt={`${p.brand} ${p.name}`}
+              className="w-full h-full object-contain"
+              style={{ maxHeight: "260px" }}
+            />
+          </div>
         </div>
 
         {/* Content */}
-        <div className="flex-1 flex flex-col justify-center px-8 py-10 lg:px-14 lg:py-16">
-          {p.badge && <Badge text={p.badge} />}
-
+        <div className="flex-1 p-8 md:p-12 flex flex-col justify-center">
           <p
-            className="font-bold uppercase mb-2"
-            style={{ fontSize: "0.6875rem", letterSpacing: "0.22em", color: "rgba(255,255,255,0.35)" }}
+            className="text-[11px] font-bold uppercase tracking-[0.25em] mb-2"
+            style={{ color: "rgba(255,255,255,0.38)" }}
           >
             {p.brand}
           </p>
+          <h2
+            className="text-2xl md:text-3xl font-extrabold mb-4 leading-tight"
+            style={{ color: "#2dd4bf" }}
+          >
+            {p.name}
+          </h2>
+          <p
+            className="text-base leading-relaxed mb-5"
+            style={{ color: "var(--text-muted)", maxWidth: "46ch" }}
+          >
+            {p.subtitle}
+          </p>
+          {p.price && p.price !== "Free" && (() => {
+            const priceNum = parseFloat(p.price!.replace(/[^0-9.]/g, ""));
+            const badgeNum = p.badge ? parseFloat(p.badge.replace(/[^0-9.]/g, "")) : 0;
+            const salePrice = badgeNum > 0 ? `$${(priceNum - badgeNum).toLocaleString("en-US", { minimumFractionDigits: 2 })}` : null;
+            return (
+              <div className="flex flex-wrap items-center gap-3 mb-6">
+                {salePrice ? (
+                  <>
+                    <span className="text-2xl font-extrabold" style={{ color: "#2dd4bf" }}>{salePrice}</span>
+                    <span className="text-base font-semibold line-through" style={{ color: "rgba(255,255,255,0.3)" }}>{p.price}</span>
+                  </>
+                ) : (
+                  <span className="text-2xl font-extrabold" style={{ color: "var(--text-primary)" }}>{p.price}</span>
+                )}
+                {p.badge && (
+                  <span
+                    className="text-xs font-bold px-3 py-1.5 rounded-full"
+                    style={{
+                      background: "rgba(34,197,94,0.15)",
+                      color: "#4ade80",
+                      border: "1px solid rgba(34,197,94,0.3)",
+                    }}
+                  >
+                    {p.badge}
+                  </span>
+                )}
+              </div>
+            );
+          })()}
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href={`/gear/${p.id}`}
+              className="inline-flex items-center gap-2 font-bold text-sm px-6 py-3 rounded-xl text-white transition-all duration-200 hover:scale-[1.02]"
+              style={{
+                background: "linear-gradient(135deg, #0d9488, #14b8a6)",
+                boxShadow: "0 0 24px rgba(20,184,166,0.35)",
+              }}
+            >
+              Read Full Review
+            </Link>
+            <a
+              href={p.link}
+              target="_blank"
+              rel="noopener noreferrer sponsored"
+              className="inline-flex items-center gap-2 font-bold text-sm px-6 py-3 rounded-xl transition-all duration-200 hover:scale-[1.02]"
+              style={{
+                border: "1.5px solid rgba(45,212,191,0.45)",
+                color: "#2dd4bf",
+              }}
+            >
+              Buy Now
+              <ArrowRight className="w-4 h-4" />
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
+// ── Grid card ──────────────────────────────────────────────────────────────────
+function GridCard({ p }: { p: GearProduct }) {
+  return (
+    <Link href={`/gear/${p.id}`} className="block group">
+      <div
+        className="rounded-2xl overflow-hidden h-full flex flex-col transition-all duration-200 group-hover:scale-[1.01]"
+        style={{
+          background: "var(--bg-card)",
+          border: "1px solid rgba(255,255,255,0.07)",
+          boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
+        }}
+      >
+        {/* White image area */}
+        <div
+          className="w-full bg-white flex items-center justify-center p-6"
+          style={{ aspectRatio: "4/3" }}
+        >
+          {p.imageAspect !== "none" && p.image ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={p.image}
+              alt={`${p.brand} ${p.name}`}
+              className="w-full h-full object-contain"
+              style={{ maxHeight: "170px" }}
+            />
+          ) : (
+            <div
+              className="w-14 h-14 rounded-full flex items-center justify-center"
+              style={{ background: "rgba(20,184,166,0.12)" }}
+            >
+              <span className="text-2xl">🎾</span>
+            </div>
+          )}
+        </div>
+
+        {/* Card body */}
+        <div className="p-5 flex flex-col flex-1">
+          {p.brand && (
+            <p
+              className="text-[10px] font-bold uppercase tracking-widest mb-1"
+              style={{ color: "rgba(255,255,255,0.32)" }}
+            >
+              {p.brand}
+            </p>
+          )}
           <h3
-            className="font-extrabold text-white tracking-tight leading-none mb-4"
-            style={{ fontSize: "clamp(1.75rem, 3vw, 2.75rem)" }}
+            className="text-sm font-extrabold leading-snug mb-3"
+            style={{ color: "var(--text-primary)" }}
           >
             {p.name}
           </h3>
 
-          {p.price && p.price !== "Free" && (
-            <p className="text-sm font-semibold mb-4" style={{ color: "rgba(255,255,255,0.38)" }}>
-              {p.price}
-            </p>
-          )}
-
-          <p className="text-base leading-relaxed mb-6" style={{ color: "rgba(255,255,255,0.62)", maxWidth: "34ch" }}>
-            {p.subtitle}
-          </p>
-
-          {p.features && (
-            <pre className="text-sm leading-relaxed mb-8 whitespace-pre-wrap font-sans" style={{ color: "rgba(255,255,255,0.70)", maxWidth: "36ch" }}>
-              {p.features}
-            </pre>
-          )}
-
-          <Cta href={p.link} text={p.ctaText} />
-        </div>
-      </div>
-    </div>
-    </Link>
-  );
-}
-
-// ── Square card ───────────────────────────────────────────────────────────────
-function SquareCard({ p }: { p: GearProduct }) {
-  return (
-    <Link href={`/gear/${p.id}`} className="block">
-    <div
-      className="rounded-2xl overflow-hidden flex flex-col h-full"
-      style={{
-        background: "var(--bg-card)",
-        border: "1px solid rgba(255,255,255,0.07)",
-        boxShadow: "0 16px 48px rgba(0,0,0,0.35)",
-      }}
-    >
-      {p.imageAspect === "square" && (
-        <div
-          className="w-full flex items-center justify-center flex-shrink-0 p-14"
-          style={{ background: p.bg, aspectRatio: "1/1" }}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={p.image}
-            alt={`${p.brand} ${p.name}`}
-            className="w-full h-full object-contain"
-            style={{ filter: "drop-shadow(0 16px 40px rgba(0,0,0,0.55))" }}
-          />
-        </div>
-      )}
-      {p.imageAspect === "none" && (
-        <div
-          className="w-full flex items-center justify-center flex-shrink-0"
-          style={{ background: p.bg, aspectRatio: "1/1" }}
-        >
-          <GraduationCap className="w-24 h-24" style={{ color: "#14b8a6", opacity: 0.65 }} strokeWidth={1.5} />
-        </div>
-      )}
-
-      <div className="p-8 flex flex-col flex-1">
-        <div className="flex items-start justify-between gap-2 mb-3">
-          <span className="text-[11px] font-bold uppercase tracking-widest" style={{ color: "#14b8a6" }}>
-            {p.brand}
-          </span>
-          {p.badge && (
+          <div className="mt-auto flex items-center justify-between gap-2">
             <span
-              className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full whitespace-nowrap flex-shrink-0"
-              style={{ background: "rgba(20,184,166,0.12)", color: "#2dd4bf", border: "1px solid rgba(20,184,166,0.3)" }}
+              className="text-base font-bold"
+              style={{ color: p.price === "Free" ? "#14b8a6" : "var(--text-primary)" }}
             >
-              {p.badge}
+              {p.price || ""}
             </span>
-          )}
-        </div>
-
-        <h3 className="text-xl font-extrabold leading-tight mb-2" style={{ color: "var(--text-primary)" }}>
-          {p.name}
-        </h3>
-        <p className="text-sm leading-relaxed mb-4" style={{ color: "var(--text-muted)" }}>
-          {p.subtitle}
-        </p>
-
-        {p.features && (
-          <pre className="text-xs leading-relaxed mb-6 whitespace-pre-wrap font-sans flex-1" style={{ color: "var(--text-muted)" }}>
-            {p.features}
-          </pre>
-        )}
-
-        <div className="flex items-center justify-between gap-3 mt-auto">
-          {p.price && p.price !== "Free" && (
-            <span className="text-base font-semibold" style={{ color: "var(--text-secondary)" }}>{p.price}</span>
-          )}
-          {p.price === "Free" && (
-            <span className="text-base font-bold" style={{ color: "#14b8a6" }}>Free</span>
-          )}
-          <Cta href={p.link} text={p.ctaText} />
+            {p.badge && (
+              <span
+                className="text-[10px] font-bold px-2.5 py-1 rounded-full whitespace-nowrap"
+                style={{
+                  background: "rgba(34,197,94,0.14)",
+                  color: "#4ade80",
+                  border: "1px solid rgba(34,197,94,0.28)",
+                }}
+              >
+                {p.badge}
+              </span>
+            )}
+          </div>
         </div>
       </div>
-    </div>
     </Link>
   );
 }
@@ -210,77 +212,27 @@ export default function GearPage() {
       <div className="container-xl py-16">
 
         {/* Header */}
-        <div className="mb-12">
-          <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#14b8a6" }}>Equipment</p>
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight" style={{ color: "var(--text-primary)" }}>Gear</h1>
-          <p className="mt-2 text-base" style={{ color: "var(--text-muted)" }}>
-            Top-rated gear, clothing, and accessories for serious pickleball players.
+        <div className="mb-10">
+          <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "#14b8a6" }}>
+            Equipment & Accessories
+          </p>
+          <h1
+            className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4"
+            style={{ color: "var(--text-primary)" }}
+          >
+            Best Pickleball Gear — Tested & Ranked
+          </h1>
+          <p className="text-lg max-w-2xl" style={{ color: "var(--text-muted)" }}>
+            Every product below has been personally tested and used in real play. We only recommend gear that makes a genuine difference on the court — no filler, no pay-to-rank.
           </p>
         </div>
 
-        {/* ── Titan hero ─────────────────────────────────────────────────────── */}
-        <Link href="/gear/titan" className="block mb-10">
-        <div
-          className="rounded-3xl overflow-hidden"
-          style={{
-            background: titan.bg,
-            border: "1px solid rgba(255,255,255,0.07)",
-            boxShadow: "0 32px 80px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)",
-          }}
-        >
-          <div className="flex flex-col lg:flex-row">
+        {/* Editor's Pick featured card */}
+        <EditorPickCard p={featured} />
 
-            {/* Image — centered object-contain since Titan is a square product photo */}
-            <div
-              className="flex-shrink-0 flex items-center justify-center relative w-full lg:w-1/2 h-[340px] lg:h-[640px]"
-              style={{ background: "rgba(255,255,255,0.03)" }}
-            >
-              <div
-                className="absolute inset-0 pointer-events-none"
-                style={{ background: "radial-gradient(ellipse 65% 60% at 50% 50%, rgba(20,184,166,0.12) 0%, transparent 70%)" }}
-              />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={titan.image}
-                alt={`${titan.brand} ${titan.name}`}
-                className="relative z-10 w-full h-full object-contain"
-                style={{
-                  maxWidth: "480px",
-                  maxHeight: "480px",
-                  padding: "2.5rem",
-                  filter: "drop-shadow(0 24px 64px rgba(0,0,0,0.65))",
-                }}
-              />
-            </div>
-
-            {/* Copy */}
-            <div className="flex-1 flex flex-col justify-center px-10 py-12 lg:px-16 lg:py-20">
-              {titan.badge && <Badge text={titan.badge} />}
-              <p className="font-bold uppercase mb-2" style={{ fontSize: "0.6875rem", letterSpacing: "0.22em", color: "rgba(255,255,255,0.35)" }}>
-                {titan.brand}
-              </p>
-              <h2
-                className="font-extrabold text-white tracking-tight leading-none mb-5"
-                style={{ fontSize: "clamp(2.5rem, 5vw, 3.75rem)" }}
-              >
-                {titan.name}
-              </h2>
-              <p className="text-lg leading-relaxed mb-10" style={{ color: "rgba(255,255,255,0.62)", maxWidth: "38ch" }}>
-                {titan.subtitle}
-              </p>
-              <Cta href={titan.link} text={titan.ctaText} large />
-            </div>
-          </div>
-        </div>
-        </Link>
-
-        {/* ── Product grid ───────────────────────────────────────────────────── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {rest.map((p) =>
-            p.imageAspect === "wide"
-              ? <WideCard key={p.id} p={p} />
-              : <SquareCard key={p.id} p={p} />
-          )}
+        {/* Product grid */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+          {rest.map((p) => <GridCard key={p.id} p={p} />)}
         </div>
 
       </div>

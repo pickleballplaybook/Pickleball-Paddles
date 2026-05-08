@@ -38,6 +38,7 @@ export const paddles: Paddle[] = [
     reviewUrl: "https://youtu.be/ffiit6IWsHo",
     addedAt: "2025-06-01",
     trendingScore: 62,
+    playStyle: "power",
   },
   {
     id: "2",
@@ -56,6 +57,7 @@ export const paddles: Paddle[] = [
     reviewUrl: "https://youtu.be/ffiit6IWsHo",
     addedAt: "2025-06-01",
     trendingScore: 60,
+    playStyle: "power",
   },
   {
     id: "3",
@@ -74,6 +76,7 @@ export const paddles: Paddle[] = [
     reviewUrl: "https://youtu.be/ffiit6IWsHo",
     addedAt: "2025-06-01",
     trendingScore: 58,
+    playStyle: "power",
   },
 
   // ── APL ────────────────────────────────────────────────────────────────────
@@ -94,6 +97,7 @@ export const paddles: Paddle[] = [
     reviewUrl: "https://youtube.com/shorts/79lOG4-HuqM",
     addedAt: "2025-06-01",
     trendingScore: 65,
+    playStyle: "power",
   },
   {
     id: "5",
@@ -112,6 +116,7 @@ export const paddles: Paddle[] = [
     reviewUrl: "https://youtube.com/shorts/79lOG4-HuqM",
     addedAt: "2025-06-01",
     trendingScore: 63,
+    playStyle: "control",
   },
 
   // ── Avoura ─────────────────────────────────────────────────────────────────
@@ -131,6 +136,7 @@ export const paddles: Paddle[] = [
     discountLink: "https://www.avourapickleball.com/PLAYBOOK",
     addedAt: "2025-06-01",
     trendingScore: 52,
+    playStyle: "all-court",
   },
 
   // ── Battle Paddles ─────────────────────────────────────────────────────────
@@ -151,6 +157,7 @@ export const paddles: Paddle[] = [
     reviewUrl: "https://youtu.be/9IdOGtzJoww",
     addedAt: "2025-06-01",
     trendingScore: 64,
+    playStyle: "control",
   },
 
   // ── Bread & Butter ─────────────────────────────────────────────────────────
@@ -170,6 +177,7 @@ export const paddles: Paddle[] = [
     discountLink: "https://breadbutterpickleballco.sjv.io/9VL5Le",
     addedAt: "2025-06-01",
     trendingScore: 70,
+    playStyle: "control",
   },
   {
     id: "9",
@@ -187,6 +195,7 @@ export const paddles: Paddle[] = [
     discountLink: "https://breadbutterpickleballco.sjv.io/9VL5Le",
     addedAt: "2025-06-01",
     trendingScore: 68,
+    playStyle: "control",
   },
   {
     id: "10",
@@ -204,6 +213,7 @@ export const paddles: Paddle[] = [
     discountLink: "https://breadbutterpickleballco.sjv.io/9VL5Le",
     addedAt: "2025-06-01",
     trendingScore: 56,
+    playStyle: "control",
   },
   {
     id: "11",
@@ -222,6 +232,7 @@ export const paddles: Paddle[] = [
     reviewUrl: "https://youtu.be/fEzgY0ZQGAU",
     addedAt: "2025-06-01",
     trendingScore: 72,
+    playStyle: "power",
   },
   {
     id: "12",
@@ -240,6 +251,7 @@ export const paddles: Paddle[] = [
     reviewUrl: "https://youtu.be/fEzgY0ZQGAU",
     addedAt: "2025-06-01",
     trendingScore: 66,
+    playStyle: "power",
   },
   {
     id: "13",
@@ -258,6 +270,7 @@ export const paddles: Paddle[] = [
     reviewUrl: "https://youtu.be/fEzgY0ZQGAU",
     addedAt: "2025-06-01",
     trendingScore: 54,
+    playStyle: "power",
   },
 
   // ── CRBN ───────────────────────────────────────────────────────────────────
@@ -277,6 +290,7 @@ export const paddles: Paddle[] = [
     discountLink: "https://www.crbnpickleball.com/discount/PLAYBOOK",
     addedAt: "2025-06-01",
     trendingScore: 71,
+    playStyle: "all-court",
   },
   {
     id: "15",
@@ -295,6 +309,7 @@ export const paddles: Paddle[] = [
     reviewUrl: "https://youtu.be/XLfM3Z3CKlU",
     addedAt: "2025-06-01",
     trendingScore: 72,
+    playStyle: "power",
   },
   {
     id: "16",
@@ -313,6 +328,7 @@ export const paddles: Paddle[] = [
     reviewUrl: "https://youtu.be/XLfM3Z3CKlU",
     addedAt: "2025-06-01",
     trendingScore: 55,
+    playStyle: "power",
   },
 
   // ── Engage ─────────────────────────────────────────────────────────────────
@@ -332,6 +348,7 @@ export const paddles: Paddle[] = [
     discountLink: "https://engagepickleball.com/?aff=601",
     addedAt: "2025-06-01",
     trendingScore: 60,
+    playStyle: "power",
   },
 
   // ── Enhance ────────────────────────────────────────────────────────────────
@@ -351,6 +368,7 @@ export const paddles: Paddle[] = [
     discountLink: "https://www.enhancepickleball.com/PLAYBOOK",
     addedAt: "2025-06-01",
     trendingScore: 61,
+    playStyle: "power",
   },
   {
     id: "20",
@@ -369,6 +387,7 @@ export const paddles: Paddle[] = [
     reviewUrl: "https://youtu.be/oggwg3PKrgY",
     addedAt: "2025-06-01",
     trendingScore: 65,
+    playStyle: "all-court",
   },
   {
     id: "21",
@@ -387,6 +406,7 @@ export const paddles: Paddle[] = [
     reviewUrl: "https://youtu.be/oggwg3PKrgY",
     addedAt: "2025-06-01",
     trendingScore: 55,
+    playStyle: "all-court",
   },
   {
     id: "68",
@@ -405,6 +425,7 @@ export const paddles: Paddle[] = [
     discountLink: "https://www.enhancepickleball.com/PLAYBOOK",
     addedAt: "2026-04-03",
     trendingScore: 70,
+    playStyle: "all-court",
   },
   {
     id: "22",
@@ -422,6 +443,7 @@ export const paddles: Paddle[] = [
     discountLink: "https://www.enhancepickleball.com/PLAYBOOK",
     addedAt: "2025-06-01",
     trendingScore: 66,
+    playStyle: "power",
   },
 
   // ── Friday ─────────────────────────────────────────────────────────────────
@@ -442,6 +464,7 @@ export const paddles: Paddle[] = [
     reviewUrl: "https://youtu.be/l6efRcEngHo",
     addedAt: "2025-06-01",
     trendingScore: 67,
+    playStyle: "power",
   },
   {
     id: "24",
@@ -460,6 +483,7 @@ export const paddles: Paddle[] = [
     reviewUrl: "https://youtu.be/O8555NozXPo",
     addedAt: "2025-06-01",
     trendingScore: 63,
+    playStyle: "control",
   },
   {
     id: "25",
@@ -478,6 +502,7 @@ export const paddles: Paddle[] = [
     reviewUrl: "https://youtu.be/O8555NozXPo",
     addedAt: "2025-06-01",
     trendingScore: 55,
+    playStyle: "control",
   },
 
   // ── Gearbox ────────────────────────────────────────────────────────────────
@@ -533,6 +558,7 @@ export const paddles: Paddle[] = [
     discountLink: "https://holbrookpickleball.com/?sca_ref=7538133.2fMoiC3Vz2&utm_source=7538133&utm_medium=austin-hardy&utm_campaign=172645&utm_term=Youtubers-/-Large-influencers",
     addedAt: "2025-06-01",
     trendingScore: 65,
+    playStyle: "all-court",
   },
   {
     id: "29",
@@ -550,6 +576,7 @@ export const paddles: Paddle[] = [
     discountLink: "https://holbrookpickleball.com/?sca_ref=7538133.2fMoiC3Vz2&utm_source=7538133&utm_medium=austin-hardy&utm_campaign=172645&utm_term=Youtubers-/-Large-influencers",
     addedAt: "2025-06-01",
     trendingScore: 67,
+    playStyle: "power",
   },
   {
     id: "30",
@@ -568,6 +595,7 @@ export const paddles: Paddle[] = [
     reviewUrl: "https://youtu.be/tIcA0rzaB_U",
     addedAt: "2025-06-01",
     trendingScore: 60,
+    playStyle: "all-court",
   },
   {
     id: "31",
@@ -586,6 +614,7 @@ export const paddles: Paddle[] = [
     reviewUrl: "https://youtu.be/tIcA0rzaB_U",
     addedAt: "2025-06-01",
     trendingScore: 65,
+    playStyle: "all-court",
   },
   {
     id: "32",
@@ -604,6 +633,7 @@ export const paddles: Paddle[] = [
     reviewUrl: "https://youtu.be/tIcA0rzaB_U",
     addedAt: "2025-06-01",
     trendingScore: 59,
+    playStyle: "all-court",
   },
   {
     id: "33",
@@ -622,6 +652,7 @@ export const paddles: Paddle[] = [
     reviewUrl: "https://youtu.be/tIcA0rzaB_U",
     addedAt: "2025-06-01",
     trendingScore: 62,
+    playStyle: "all-court",
   },
   {
     id: "34",
@@ -639,6 +670,7 @@ export const paddles: Paddle[] = [
     discountLink: "https://holbrookpickleball.com/?sca_ref=7538133.2fMoiC3Vz2&utm_source=7538133&utm_medium=austin-hardy&utm_campaign=172645&utm_term=Youtubers-/-Large-influencers",
     addedAt: "2025-06-01",
     trendingScore: 60,
+    playStyle: "control",
   },
   {
     id: "35",
@@ -676,6 +708,7 @@ export const paddles: Paddle[] = [
     reviewUrl: "https://youtu.be/gRU_Zwn2iwQ",
     addedAt: "2025-06-01",
     trendingScore: 68,
+    playStyle: "power",
   },
   {
     id: "37",
@@ -693,6 +726,7 @@ export const paddles: Paddle[] = [
     discountLink: "https://lockerroompickleball.com/search?q=Joola&options%5Bprefix%5D=last&sca_ref=8334840.yY4rLJi7oU9HDNHD",
     addedAt: "2025-06-01",
     trendingScore: 69,
+    playStyle: "power",
   },
 
   // ── Maverix ────────────────────────────────────────────────────────────────
@@ -729,6 +763,7 @@ export const paddles: Paddle[] = [
     discountLink: "https://www.maverixpickleball.com/discount/playbook",
     addedAt: "2025-06-01",
     trendingScore: 66,
+    playStyle: "control",
   },
 
   // ── Mint ───────────────────────────────────────────────────────────────────
@@ -749,6 +784,7 @@ export const paddles: Paddle[] = [
     reviewUrl: "https://youtu.be/JvXTRzAdNp8",
     addedAt: "2025-06-01",
     trendingScore: 79,
+    playStyle: "all-court",
   },
   {
     id: "41",
@@ -767,6 +803,7 @@ export const paddles: Paddle[] = [
     reviewUrl: "https://youtu.be/JvXTRzAdNp8",
     addedAt: "2025-06-01",
     trendingScore: 61,
+    playStyle: "control",
   },
   {
     id: "42",
@@ -785,6 +822,7 @@ export const paddles: Paddle[] = [
     reviewUrl: "https://youtu.be/JvXTRzAdNp8",
     addedAt: "2025-06-01",
     trendingScore: 78,
+    playStyle: "control",
   },
 
   // ── Nox ────────────────────────────────────────────────────────────────────
@@ -805,6 +843,7 @@ export const paddles: Paddle[] = [
     reviewUrl: "https://youtu.be/UQrRM5KPDsw",
     addedAt: "2025-06-01",
     trendingScore: 57,
+    playStyle: "all-court",
   },
   {
     id: "44",
@@ -823,6 +862,7 @@ export const paddles: Paddle[] = [
     reviewUrl: "https://youtu.be/UQrRM5KPDsw",
     addedAt: "2025-06-01",
     trendingScore: 63,
+    playStyle: "all-court",
   },
 
   // ── Ronbus ─────────────────────────────────────────────────────────────────
@@ -843,6 +883,7 @@ export const paddles: Paddle[] = [
     reviewUrl: "https://youtu.be/8Cnc0_BBXjc",
     addedAt: "2025-06-01",
     trendingScore: 64,
+    playStyle: "all-court",
   },
   {
     id: "47",
@@ -861,6 +902,7 @@ export const paddles: Paddle[] = [
     reviewUrl: "https://youtu.be/8Cnc0_BBXjc",
     addedAt: "2025-06-01",
     trendingScore: 53,
+    playStyle: "all-court",
   },
 
   // ── Selkirk ────────────────────────────────────────────────────────────────
@@ -897,6 +939,7 @@ export const paddles: Paddle[] = [
     discountLink: "https://www.selkirk.com/discount/inf-playbook",
     addedAt: "2025-06-01",
     trendingScore: 71,
+    playStyle: "power",
   },
   {
     // Note: "Slelkirk" typo in CSV corrected to "Selkirk"
@@ -915,6 +958,7 @@ export const paddles: Paddle[] = [
     discountLink: "https://www.selkirk.com/discount/inf-playbook",
     addedAt: "2025-06-01",
     trendingScore: 61,
+    playStyle: "control",
   },
   {
     // Note: "Slelkirk" typo in CSV corrected to "Selkirk"
@@ -933,6 +977,7 @@ export const paddles: Paddle[] = [
     discountLink: "https://www.selkirk.com/discount/inf-playbook",
     addedAt: "2025-06-01",
     trendingScore: 59,
+    playStyle: "control",
   },
   {
     id: "52",
@@ -950,6 +995,7 @@ export const paddles: Paddle[] = [
     discountLink: "https://lockerroompickleball.com/search?q=Selkirk&options%5Bprefix%5D=last&sca_ref=8334840.yY4rLJi7oU9HDNHD",
     addedAt: "2025-06-01",
     trendingScore: 68,
+    playStyle: "control",
   },
   {
     id: "53",
@@ -967,6 +1013,7 @@ export const paddles: Paddle[] = [
     discountLink: "https://lockerroompickleball.com/search?q=Selkirk&options%5Bprefix%5D=last&sca_ref=8334840.yY4rLJi7oU9HDNHD",
     addedAt: "2025-06-01",
     trendingScore: 67,
+    playStyle: "control",
   },
   {
     id: "54",
@@ -984,6 +1031,7 @@ export const paddles: Paddle[] = [
     discountLink: "https://www.selkirk.com/discount/inf-playbook",
     addedAt: "2025-06-01",
     trendingScore: 51,
+    playStyle: "power",
   },
   {
     id: "55",
@@ -1001,6 +1049,7 @@ export const paddles: Paddle[] = [
     discountLink: "https://www.selkirk.com/discount/inf-playbook",
     addedAt: "2025-06-01",
     trendingScore: 62,
+    playStyle: "power",
   },
   {
     id: "56",
@@ -1018,6 +1067,7 @@ export const paddles: Paddle[] = [
     discountLink: "https://www.selkirk.com/discount/inf-playbook",
     addedAt: "2025-06-01",
     trendingScore: 64,
+    playStyle: "control",
   },
   {
     id: "57",
@@ -1035,6 +1085,7 @@ export const paddles: Paddle[] = [
     discountLink: "https://www.selkirk.com/discount/inf-playbook",
     addedAt: "2025-06-01",
     trendingScore: 63,
+    playStyle: "all-court",
   },
   {
     id: "58",
@@ -1052,6 +1103,7 @@ export const paddles: Paddle[] = [
     discountLink: "https://www.selkirk.com/discount/inf-playbook",
     addedAt: "2025-06-01",
     trendingScore: 64,
+    playStyle: "control",
   },
   {
     id: "59",
@@ -1069,6 +1121,7 @@ export const paddles: Paddle[] = [
     discountLink: "https://www.selkirk.com/discount/inf-playbook",
     addedAt: "2025-06-01",
     trendingScore: 44,
+    playStyle: "control",
   },
 
   // ── SLK (Selkirk budget line) ──────────────────────────────────────────────
@@ -1122,6 +1175,7 @@ export const paddles: Paddle[] = [
     discountLink: "https://www.selkirk.com/discount/inf-playbook",
     addedAt: "2025-06-01",
     trendingScore: 71,
+    playStyle: "control",
   },
   {
     id: "63",
@@ -1139,6 +1193,7 @@ export const paddles: Paddle[] = [
     discountLink: "https://www.selkirk.com/discount/inf-playbook",
     addedAt: "2025-06-01",
     trendingScore: 63,
+    playStyle: "control",
   },
   {
     id: "64",
@@ -1156,6 +1211,7 @@ export const paddles: Paddle[] = [
     discountLink: "https://www.selkirk.com/discount/inf-playbook",
     addedAt: "2025-06-01",
     trendingScore: 63,
+    playStyle: "power",
   },
   {
     id: "65",
@@ -1192,6 +1248,7 @@ export const paddles: Paddle[] = [
     discountLink: "https://volair.com/discount/playbook",
     addedAt: "2025-06-01",
     trendingScore: 70,
+    playStyle: "control",
   },
   {
     id: "67",
@@ -1209,6 +1266,7 @@ export const paddles: Paddle[] = [
     discountLink: "https://volair.com/discount/playbook",
     addedAt: "2025-06-01",
     trendingScore: 62,
+    playStyle: "control",
   },
 
   // ── Kobo ───────────────────────────────────────────────────────────────────
@@ -1229,6 +1287,7 @@ export const paddles: Paddle[] = [
     manualVideoId: "l_MUwG28UII",
     addedAt: "2026-04-08",
     trendingScore: 70,
+    playStyle: "control",
   },
 
   // ── Head ───────────────────────────────────────────────────────────────────
@@ -1246,8 +1305,10 @@ export const paddles: Paddle[] = [
     amountOff: "15%",
     price: "$199.00",
     discountLink: "https://www.head.com/en_US/product/radical-pro15-2026-200145",
+    manualVideoId: "sVS9FtvTulg",
     addedAt: "2026-04-08",
     trendingScore: 68,
+    playStyle: "control",
   },
   {
     id: "70",
@@ -1263,8 +1324,10 @@ export const paddles: Paddle[] = [
     amountOff: "15%",
     price: "$199.00",
     discountLink: "https://www.head.com/en_US/product/radical-pro-ex15-2026-200135",
+    manualVideoId: "sVS9FtvTulg",
     addedAt: "2026-04-08",
     trendingScore: 68,
+    playStyle: "control",
   },
 
   // ── Gherkin ────────────────────────────────────────────────────────────────
@@ -1285,6 +1348,7 @@ export const paddles: Paddle[] = [
     manualVideoId: "gXAkwcVJ3uk",
     addedAt: "2026-04-09",
     trendingScore: 65,
+    playStyle: "power",
   },
 
   // ── Gruvn ──────────────────────────────────────────────────────────────────
@@ -1305,6 +1369,7 @@ export const paddles: Paddle[] = [
     manualVideoId: "fcbAhEtDvjo",
     addedAt: "2026-04-09",
     trendingScore: 63,
+    playStyle: "all-court",
   },
   {
     id: "73",
@@ -1323,6 +1388,7 @@ export const paddles: Paddle[] = [
     manualVideoId: "fcbAhEtDvjo",
     addedAt: "2026-04-09",
     trendingScore: 63,
+    playStyle: "all-court",
   },
 
   // ── Beyond Measure ─────────────────────────────────────────────────────────
@@ -1340,8 +1406,10 @@ export const paddles: Paddle[] = [
     amountOff: "10%",
     price: "$117.00",
     discountLink: "https://playbeyondmeasure.com/PLAYBOOK",
+    manualVideoId: "i3w8qGG574o",
     addedAt: "2026-04-09",
     trendingScore: 64,
+    playStyle: "all-court",
   },
   {
     id: "75",
@@ -1357,8 +1425,10 @@ export const paddles: Paddle[] = [
     amountOff: "10%",
     price: "$117.00",
     discountLink: "https://playbeyondmeasure.com/PLAYBOOK",
+    manualVideoId: "i3w8qGG574o",
     addedAt: "2026-04-09",
     trendingScore: 64,
+    playStyle: "all-court",
   },
 
   // ── Hudef ──────────────────────────────────────────────────────────────────
@@ -1378,6 +1448,7 @@ export const paddles: Paddle[] = [
     discountLink: "https://hudefsport.com?sca_ref=10944964.y9HgU7qs5s",
     addedAt: "2026-04-10",
     trendingScore: 64,
+    playStyle: "power",
   },
 
   // ── Selkirk ────────────────────────────────────────────────────────────────
@@ -1398,6 +1469,7 @@ export const paddles: Paddle[] = [
     manualVideoId: "GeVglhdjWQg",
     addedAt: "2026-04-13",
     trendingScore: 66,
+    playStyle: "power",
   },
   {
     id: "78",
@@ -1416,6 +1488,7 @@ export const paddles: Paddle[] = [
     manualVideoId: "VVMzgV-q9Wo",
     addedAt: "2026-04-13",
     trendingScore: 66,
+    playStyle: "power",
   },
 
   // ── Luzz ───────────────────────────────────────────────────────────────────
@@ -1436,6 +1509,7 @@ export const paddles: Paddle[] = [
     manualVideoId: "LYdP6v-anyc",
     addedAt: "2026-04-13",
     trendingScore: 60,
+    playStyle: "power",
   },
   {
     id: "80",
@@ -1451,8 +1525,10 @@ export const paddles: Paddle[] = [
     amountOff: "15%",
     price: "$109.00",
     discountLink: "https://luzzpickleball.com/playbook",
+    manualVideoId: "CyANMox81Is",
     addedAt: "2026-04-13",
     trendingScore: 60,
+    playStyle: "power",
   },
 
   // ── Flik ───────────────────────────────────────────────────────────────────
@@ -1470,8 +1546,10 @@ export const paddles: Paddle[] = [
     amountOff: "10%",
     price: "$190.00",
     discountLink: "https://flikpickleball.com/?ref=PLAYBOOK",
+    manualVideoId: "0TPukMyrCTQ",
     addedAt: "2026-04-16",
     trendingScore: 62,
+    playStyle: "all-court",
   },
   {
     id: "83",
@@ -1487,8 +1565,10 @@ export const paddles: Paddle[] = [
     amountOff: "10%",
     price: "$190.00",
     discountLink: "https://flikpickleball.com/?ref=PLAYBOOK",
+    manualVideoId: "0TPukMyrCTQ",
     addedAt: "2026-04-16",
     trendingScore: 62,
+    playStyle: "all-court",
   },
 
   // ── Honolulu ───────────────────────────────────────────────────────────────
@@ -1509,6 +1589,7 @@ export const paddles: Paddle[] = [
     manualVideoId: "B-CWUS78KTc",
     addedAt: "2026-04-16",
     trendingScore: 62,
+    playStyle: "power",
   },
 
   // ── RPM ────────────────────────────────────────────────────────────────────
@@ -1529,6 +1610,7 @@ export const paddles: Paddle[] = [
     manualVideoId: "6xff-1cCF30",
     addedAt: "2026-04-16",
     trendingScore: 62,
+    playStyle: "power",
   },
   {
     id: "86",
@@ -1547,6 +1629,7 @@ export const paddles: Paddle[] = [
     manualVideoId: "6xff-1cCF30",
     addedAt: "2026-04-16",
     trendingScore: 62,
+    playStyle: "power",
   },
   {
     id: "87",
@@ -1562,8 +1645,10 @@ export const paddles: Paddle[] = [
     amountOff: "10%",
     price: "$169.99",
     discountLink: "https://speeduppickle.com?sca_ref=10970377.9POTG6mvlL",
+    manualVideoId: "rmkPAroh2BM",
     addedAt: "2026-04-17",
     trendingScore: 50,
+    playStyle: "all-court",
   },
   {
     id: "88",
@@ -1579,8 +1664,10 @@ export const paddles: Paddle[] = [
     amountOff: "10%",
     price: "$169.99",
     discountLink: "https://speeduppickle.com?sca_ref=10970377.9POTG6mvlL",
+    manualVideoId: "rmkPAroh2BM",
     addedAt: "2026-04-17",
     trendingScore: 50,
+    playStyle: "all-court",
   },
   {
     id: "89",
@@ -1598,6 +1685,7 @@ export const paddles: Paddle[] = [
     discountLink: "https://gearboxsports.com/?rfsn=9036517.769a6c2",
     addedAt: "2026-04-28",
     trendingScore: 55,
+    playStyle: "power",
   },
   {
     id: "90",
@@ -1615,6 +1703,7 @@ export const paddles: Paddle[] = [
     discountLink: "https://gearboxsports.com/?rfsn=9036517.769a6c2",
     addedAt: "2026-04-28",
     trendingScore: 55,
+    playStyle: "power",
   },
   {
     id: "91",
@@ -1650,6 +1739,7 @@ export const paddles: Paddle[] = [
     manualVideoId: "gXAkwcVJ3uk",
     addedAt: "2026-04-28",
     trendingScore: 60,
+    playStyle: "power",
   },
   {
     id: "93",
@@ -1668,15 +1758,99 @@ export const paddles: Paddle[] = [
     manualVideoId: "gXAkwcVJ3uk",
     addedAt: "2026-04-28",
     trendingScore: 60,
+    playStyle: "all-court",
+  },
+
+  // ── 6.0 ───────────────────────────────────────────────────────────────────
+  {
+    id: "94",
+    slug: "6-0-coral-hybrid",
+    brand: "6.0",
+    name: "Coral",
+    shape: "Hybrid",
+    weight: "8.0 oz",
+    swingWeight: 110.59,
+    twistWeight: 6.62,
+    thickness: "16mm",
+    image: "/images/paddles/6.0-Coral-Hybrid-16mm.png",
+    amountOff: "10%",
+    price: "$200.00",
+    discountLink: "https://sixzeropickleball.us?sca_ref=11145669.B01d6tJmnqn5",
+    addedAt: "2026-05-04",
+    trendingScore: 55,
+    playStyle: "all-court",
+  },
+  {
+    id: "95",
+    slug: "6-0-coral-elongated",
+    brand: "6.0",
+    name: "Coral",
+    shape: "Elongated",
+    weight: "7.9 oz",
+    swingWeight: 112.62,
+    twistWeight: 6.06,
+    thickness: "16mm",
+    image: "/images/paddles/6.0-Coral-Elongated-16mm.png",
+    amountOff: "10%",
+    price: "$200.00",
+    discountLink: "https://sixzeropickleball.us?sca_ref=11145669.B01d6tJmnqn5",
+    addedAt: "2026-05-04",
+    trendingScore: 55,
+    playStyle: "all-court",
+  },
+
+  // ── Aireo ─────────────────────────────────────────────────────────────────
+  {
+    id: "96",
+    slug: "aireo-cyclone-elongated",
+    brand: "Aireo",
+    name: "Cyclone",
+    shape: "Elongated",
+    weight: "7.5 oz",
+    swingWeight: 112.04,
+    twistWeight: 6.18,
+    thickness: "16mm",
+    image: "/images/paddles/Aireo-Cyclone-NanoGraph-16mm.png",
+    amountOff: "10%",
+    price: "$199.00",
+    discountLink: "https://www.aireo-sports.com?sca_ref=11106871.iVssdtBF6PakUq4Q",
+    addedAt: "2026-05-04",
+    trendingScore: 55,
+    playStyle: "power",
+  },
+
+  // ── Gruvn (Muvn) ─────────────────────────────────────────────────────────
+  {
+    id: "97",
+    slug: "gruvn-muvn-16-hd-full-foam-hybrid",
+    brand: "Gruvn",
+    name: "Muvn 16-HD Full Foam",
+    shape: "Hybrid",
+    weight: "7.6 oz",
+    swingWeight: 108.10,
+    twistWeight: 6.14,
+    thickness: "16mm",
+    image: "/images/paddles/Muvn-16-HD-Full-Foam.png",
+    amountOff: "10%",
+    price: "$169.00",
+    discountLink: "https://gruvn.co?sca_ref=10975651.1PBYn4k30m7fDH",
+    addedAt: "2026-05-04",
+    trendingScore: 55,
+    playStyle: "control",
   },
 ];
 
 // Review dates — ISO publish dates for Latest Reviews sort (newest-first)
 // Set youtubeApiKey in site.ts to auto-fetch real dates; or fill in manually.
 export const reviewDates: Record<string, string> = {
-  fcbAhEtDvjo:   "2026-04-22",  // Gruvn Lazr (16hd + 16x)    ← newest
+  rmkPAroh2BM:   "2026-04-29",  // Speedup Tide 14L + 14H      ← newest
+  "LYdP6v-anyc": "2026-04-29",  // Luzz Inferno
+  "0TPukMyrCTQ": "2026-04-28",  // Flik F3 Triple Core
+  CyANMox81Is:   "2026-04-28",  // Luzz Cannon
+  i3w8qGG574o:   "2026-04-28",  // Beyond Measure Ronin
+  sVS9FtvTulg:   "2026-04-28",  // Head Radical Pro 15
+  fcbAhEtDvjo:   "2026-04-22",  // Gruvn Lazr (16hd + 16x)
   gXAkwcVJ3uk:   "2026-04-22",  // Gherkin Draco
-  "LYdP6v-anyc": "2026-04-22",  // Luzz Inferno
   "6xff-1cCF30": "2026-04-18",  // RPM Q2 Widebody + Elongated
   GeVglhdjWQg:   "2026-04-18",  // Selkirk Boomstik
   "B-CWUS78KTc": "2026-04-17",  // Honolulu J6CR
