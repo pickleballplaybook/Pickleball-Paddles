@@ -28,6 +28,7 @@ export async function pollChannel(conn: YoutubeConnection): Promise<{
   let matches = 0;
 
   const accessToken = await getValidAccessToken(conn);
+  debug.push(`[v2-token] first=${accessToken.slice(0,25)} last=${accessToken.slice(-10)} len=${accessToken.length}`);
   const supabase = getSupabaseAdmin();
 
   // Fetch all state up front - JS filtering is more reliable than .eq().eq().
