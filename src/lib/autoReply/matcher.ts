@@ -48,6 +48,8 @@ export async function findMatchingCampaign(
     .eq("is_active", true)
     .contains("platforms", [platform]);
 
+  console.log(`[matcher] platform=${platform} postId=${postId} text="${commentText.slice(0, 30)}" campaigns_returned=${campaigns?.length ?? "null"} err=${error?.message || "none"}`);
+
   if (error) {
     console.error("[findMatchingCampaign] query failed:", error);
     return null;
@@ -73,6 +75,7 @@ export async function findMatchingCampaign(
     return { campaign: c, matchedKeyword: hit };
   }
 
+  console.log(`[matcher] iterated ${campaigns.length} campaigns, no match. First campaign keywords=${JSON.stringify((campaigns[0] as CampaignRow)?.keywords)} target_mode=${(campaigns[0] as CampaignRow)?.target_mode} platforms=${JSON.stringify((campaigns[0] as CampaignRow)?.platforms)}`);
   return null;
 }
 
