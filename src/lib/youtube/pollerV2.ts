@@ -19,8 +19,10 @@ export async function pollChannel(conn: YoutubeConnection): Promise<{
   comments_found: number;
   matches: number;
   errors: string[];
+  debug: string[];
 }> {
   const errors: string[] = [];
+  const debug: string[] = [];
   let videos_checked = 0;
   let comments_found = 0;
   let matches = 0;
@@ -49,7 +51,7 @@ export async function pollChannel(conn: YoutubeConnection): Promise<{
   if (!videosRes.ok) {
     const txt = await videosRes.text();
     errors.push(`videos fetch failed: ${txt.slice(0, 200)}`);
-    return { videos_checked, comments_found, matches, errors };
+    return { videos_checked, comments_found, matches, errors, debug };
   }
   const videosData = (await videosRes.json()) as { items: Array<{ id: { videoId: string } }> };
   const videoIds = videosData.items.map((v) => v.id.videoId);
@@ -110,7 +112,7 @@ export async function pollChannel(conn: YoutubeConnection): Promise<{
           console.log(`[v2-skip] dedup hit for ${c.id}`);
           continue;
         }
-        const matched = await processComment(c, conn, accessToken, supabase);
+        const matched = await processComment(c, conn, accessToken, supabase, debug);
         if (matched) matches++;
         seenCommentIds.add(c.id);
       } catch (err: any) {
@@ -132,19 +134,22 @@ export async function pollChannel(conn: YoutubeConnection): Promise<{
     }
   }
 
-  return { videos_checked, comments_found, matches, errors };
+  return { videos_checked, comments_found, matches, errors, debug };
 }
 
 async function processComment(
   comment: YoutubeComment,
   conn: YoutubeConnection,
   accessToken: string,
-  supabase: ReturnType<typeof getSupabaseAdmin>
+  supabase: ReturnType<typeof getSupabaseAdmin>,
+  debug: string[]
 ): Promise<boolean> {
+  debug.push(`[v2-process] comment=${comment.id} text="${comment.text.slice(0, 50)}"`);
   const match = await findMatchingCampaign(supabase, {
     platform: "youtube",
     postId: comment.videoId,
     commentText: comment.text,
+    debug,
   });
 
   console.log(`[v2-process] comment=${comment.id} text="${comment.text.slice(0, 50)}" matched=${!!match}`);

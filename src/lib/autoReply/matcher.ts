@@ -36,9 +36,11 @@ export async function findMatchingCampaign(
     platform: Platform;
     postId: string;
     commentText: string;
+    debug?: string[];
   }
 ): Promise<{ campaign: CampaignRow; matchedKeyword: string } | null> {
-  const { platform, postId, commentText } = opts;
+  const { platform, postId, commentText, debug } = opts;
+  const log = (m: string) => { if (debug) debug.push(m); console.log(m); };
   const lowerText = commentText.toLowerCase();
   const now = new Date().toISOString();
 
@@ -48,7 +50,7 @@ export async function findMatchingCampaign(
     .eq("is_active", true)
     .contains("platforms", [platform]);
 
-  console.log(`[matcher] platform=${platform} postId=${postId} text="${commentText.slice(0, 30)}" campaigns_returned=${campaigns?.length ?? "null"} err=${error?.message || "none"}`);
+  log(`[matcher] platform=${platform} postId=${postId} text="${commentText.slice(0, 30)}" campaigns_returned=${campaigns?.length ?? "null"} err=${error?.message || "none"}`);
 
   if (error) {
     console.error("[findMatchingCampaign] query failed:", error);
@@ -59,23 +61,24 @@ export async function findMatchingCampaign(
 
   for (const c of campaigns as CampaignRow[]) {
     // Schedule window
-    if (c.starts_at && c.starts_at > now) continue;
-    if (c.ends_at && c.ends_at < now) continue;
+    if (c.starts_at && c.starts_at > now) { log(`[matcher] skip ${c.name}: starts_at future`); continue; }
+    if (c.ends_at && c.ends_at < now) { log(`[matcher] skip ${c.name}: ends_at past`); continue; }
 
     // Targeting
     if (c.target_mode === "specific") {
-      if (!c.target_post_ids?.includes(postId)) continue;
+      if (!c.target_post_ids?.includes(postId)) { log(`[matcher] skip ${c.name}: postId ${postId} not in target_post_ids ${JSON.stringify(c.target_post_ids)}`); continue; }
     }
 
     // Keywords - longest first so "sixzero coral" beats "coral"
     const sortedKeywords = [...c.keywords].sort((a, b) => b.length - a.length);
     const hit = sortedKeywords.find((kw) => lowerText.includes(kw.toLowerCase()));
-    if (!hit) continue;
+    if (!hit) { log(`[matcher] skip ${c.name}: no keyword in "${lowerText.slice(0,40)}" (kw=${JSON.stringify(c.keywords)})`); continue; }
 
+    log(`[matcher] MATCH ${c.name} keyword=${hit}`);
     return { campaign: c, matchedKeyword: hit };
   }
 
-  console.log(`[matcher] iterated ${campaigns.length} campaigns, no match. First campaign keywords=${JSON.stringify((campaigns[0] as CampaignRow)?.keywords)} target_mode=${(campaigns[0] as CampaignRow)?.target_mode} platforms=${JSON.stringify((campaigns[0] as CampaignRow)?.platforms)}`);
+  log(`[matcher] iterated ${campaigns.length} campaigns, no match. First campaign keywords=${JSON.stringify((campaigns[0] as CampaignRow)?.keywords)} target_mode=${(campaigns[0] as CampaignRow)?.target_mode} platforms=${JSON.stringify((campaigns[0] as CampaignRow)?.platforms)} target_post_ids=${JSON.stringify((campaigns[0] as CampaignRow)?.target_post_ids)}`);
   return null;
 }
 
