@@ -19,16 +19,13 @@ export async function pollChannel(conn: YoutubeConnection): Promise<{
   comments_found: number;
   matches: number;
   errors: string[];
-  debug: string[];
 }> {
   const errors: string[] = [];
-  const debug: string[] = [];
   let videos_checked = 0;
   let comments_found = 0;
   let matches = 0;
 
   const accessToken = await getValidAccessToken(conn);
-  debug.push(`[v2-token] account=${conn.account_name} channel=${conn.account_id} first=${accessToken.slice(0,25)} last=${accessToken.slice(-10)} len=${accessToken.length}`);
   const supabase = getSupabaseAdmin();
 
   // Fetch all state up front - JS filtering is more reliable than .eq().eq().
@@ -44,9 +41,6 @@ export async function pollChannel(conn: YoutubeConnection): Promise<{
     .eq("platform", "youtube");
   const allYtLogs = ytLogsRes.data;
   const seenCommentIds = new Set((allYtLogs || []).map((l) => l.comment_id));
-  debug.push(`[v2-logs] supabase_count=${ytLogsRes.count ?? "null"} data_len=${allYtLogs?.length ?? "null"} err=${ytLogsRes.error?.message || "none"} status=${ytLogsRes.status} url=${process.env.NEXT_PUBLIC_SUPABASE_URL}`);
-  debug.push(`[v2-logs] firstThree=${JSON.stringify((allYtLogs || []).slice(0, 3))}`);
-  debug.push(`[v2-logs] svc_key_first10=${process.env.SUPABASE_SERVICE_ROLE_KEY?.slice(0, 10) || "missing"}`);
 
   // Tiered poll: ALL hot videos (latest uploads, polled every minute)
   // PLUS a rotating slice of cold videos (older uploads, covered over 24h).
@@ -72,11 +66,11 @@ export async function pollChannel(conn: YoutubeConnection): Promise<{
 
   if (hotRes.error) {
     errors.push(`hot fetch failed: ${hotRes.error.message}`);
-    return { videos_checked, comments_found, matches, errors, debug };
+    return { videos_checked, comments_found, matches, errors };
   }
   if (coldRes.error) {
     errors.push(`cold fetch failed: ${coldRes.error.message}`);
-    return { videos_checked, comments_found, matches, errors, debug };
+    return { videos_checked, comments_found, matches, errors };
   }
 
   const hotIds = (hotRes.data || []).map((v) => v.video_id);
@@ -85,10 +79,9 @@ export async function pollChannel(conn: YoutubeConnection): Promise<{
 
   if (videoIds.length === 0) {
     errors.push("no videos in youtube_videos_cache - run /api/cron/yt-refresh-videos first");
-    return { videos_checked, comments_found, matches, errors, debug };
+    return { videos_checked, comments_found, matches, errors };
   }
 
-  debug.push(`[v2-cache] hot=${hotIds.length} cold=${coldIds.length} total=${videoIds.length}`);
 
   for (const videoId of videoIds) {
     videos_checked++;
@@ -110,8 +103,7 @@ export async function pollChannel(conn: YoutubeConnection): Promise<{
           comments_disabled: true,
           last_polled_at: new Date().toISOString(),
         }).eq("channel_id", conn.account_id).eq("video_id", videoId);
-        debug.push(`[v2-skip-disabled] ${videoId} marked comments_disabled`);
-      } else {
+            } else {
         errors.push(`video ${videoId} comments fetch failed: ${txt.slice(0, 100)}`);
       }
       continue;
@@ -146,17 +138,14 @@ export async function pollChannel(conn: YoutubeConnection): Promise<{
         newComments = comments.slice(0, idx);
       }
     }
-    debug.push(`[v2-result] vid=${videoId} fetched=${comments.length} new=${newComments.length} lastCommentId=${lastCommentId || "none"}`);
-    comments_found += newComments.length;
+      comments_found += newComments.length;
 
     for (const c of newComments.reverse()) {
       try {
         if (seenCommentIds.has(c.id)) {
-          debug.push(`[v2-skip] dedup hit for ${c.id}`);
-          continue;
+                  continue;
         }
-        debug.push(`[v2-enter] processing ${c.id}`);
-        const matched = await processComment(c, conn, accessToken, supabase, debug);
+              const matched = await processComment(c, conn, accessToken, supabase);
         if (matched) matches++;
         seenCommentIds.add(c.id);
       } catch (err: any) {
@@ -183,25 +172,21 @@ export async function pollChannel(conn: YoutubeConnection): Promise<{
     }).eq("channel_id", conn.account_id).eq("video_id", videoId);
   }
 
-  return { videos_checked, comments_found, matches, errors, debug };
+  return { videos_checked, comments_found, matches, errors };
 }
 
 async function processComment(
   comment: YoutubeComment,
   conn: YoutubeConnection,
   accessToken: string,
-  supabase: ReturnType<typeof getSupabaseAdmin>,
-  debug: string[]
+  supabase: ReturnType<typeof getSupabaseAdmin>
 ): Promise<boolean> {
-  debug.push(`[v2-process] comment=${comment.id} text="${comment.text.slice(0, 50)}"`);
   const match = await findMatchingCampaign(supabase, {
     platform: "youtube",
     postId: comment.videoId,
     commentText: comment.text,
-    debug,
   });
 
-  console.log(`[v2-process] comment=${comment.id} text="${comment.text.slice(0, 50)}" matched=${!!match}`);
 
   if (!match) {
     await supabase.from("auto_reply_logs").insert({

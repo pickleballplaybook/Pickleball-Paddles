@@ -107,7 +107,7 @@ export async function GET(req: NextRequest) {
           platform: "youtube",
           account_id: channel.id,
           account_name: channel.snippet.customUrl
-            ? `@${channel.snippet.customUrl}`
+            ? (channel.snippet.customUrl.startsWith("@") ? channel.snippet.customUrl : `@${channel.snippet.customUrl}`)
             : channel.snippet.title,
           page_id: null,
           access_token: tokens.access_token,
