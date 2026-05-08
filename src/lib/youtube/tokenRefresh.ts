@@ -45,7 +45,10 @@ export async function getValidAccessToken(conn: YoutubeConnection): Promise<stri
     access_token: string;
     expires_in: number;
     token_type: string;
+    scope?: string;
   };
+
+  console.log(`[tokenRefresh] conn=${conn.id} got token first=${data.access_token?.slice(0,25)} last=${data.access_token?.slice(-10)} len=${data.access_token?.length} scope=${data.scope || "none"}`);
 
   const newExpiresAt = new Date(Date.now() + data.expires_in * 1000).toISOString();
   const supabase = getSupabaseAdmin();
