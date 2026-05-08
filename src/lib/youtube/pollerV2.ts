@@ -50,7 +50,7 @@ export async function pollChannel(conn: YoutubeConnection): Promise<{
 
   // Tiered poll: ALL hot videos (latest uploads, polled every minute)
   // PLUS a rotating slice of cold videos (older uploads, covered over 24h).
-  const COLD_PER_POLL = 65; // ~65/min × 1440min = 93,600 polls/day - more than enough
+  const COLD_PER_POLL = 25; // ~65/min × 1440min = 93,600 polls/day - more than enough
                            // to cycle through all cold videos every day.
 
   const [hotRes, coldRes] = await Promise.all([
