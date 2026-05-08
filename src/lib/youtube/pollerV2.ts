@@ -42,7 +42,7 @@ export async function pollChannel(conn: YoutubeConnection): Promise<{
     .select("comment_id")
     .eq("platform", "youtube");
   const seenCommentIds = new Set((allYtLogs || []).map((l) => l.comment_id));
-  console.log(`[v2-logs] total_seen=${seenCommentIds.size}`);
+  debug.push(`[v2-logs] total_seen=${seenCommentIds.size}`);
 
   const videosRes = await fetch(
     `${YT_API}/search?part=id&channelId=${conn.account_id}&maxResults=${VIDEOS_PER_POLL}&order=date&type=video`,
@@ -103,15 +103,16 @@ export async function pollChannel(conn: YoutubeConnection): Promise<{
         newComments = comments.slice(0, idx);
       }
     }
-    console.log(`[v2-result] vid=${videoId} fetched=${comments.length} new=${newComments.length}`);
+    debug.push(`[v2-result] vid=${videoId} fetched=${comments.length} new=${newComments.length} lastCommentId=${lastCommentId || "none"}`);
     comments_found += newComments.length;
 
     for (const c of newComments.reverse()) {
       try {
         if (seenCommentIds.has(c.id)) {
-          console.log(`[v2-skip] dedup hit for ${c.id}`);
+          debug.push(`[v2-skip] dedup hit for ${c.id}`);
           continue;
         }
+        debug.push(`[v2-enter] processing ${c.id}`);
         const matched = await processComment(c, conn, accessToken, supabase, debug);
         if (matched) matches++;
         seenCommentIds.add(c.id);
