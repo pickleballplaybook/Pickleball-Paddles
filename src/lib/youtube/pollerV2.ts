@@ -3,9 +3,6 @@ import { getValidAccessToken, type YoutubeConnection } from "./tokenRefresh";
 import { findMatchingCampaign } from "@/lib/autoReply/matcher";
 
 const YT_API = "https://www.googleapis.com/youtube/v3";
-
-// Polling tunables. Conservative defaults to stay well under YouTube's
-// 10,000/day quota.
 const VIDEOS_PER_POLL = 5;
 const COMMENTS_PER_VIDEO = 20;
 
@@ -17,10 +14,6 @@ interface YoutubeComment {
   videoId: string;
 }
 
-/**
- * Poll a single YouTube channel for new comments.
- * Returns count of comments processed.
- */
 export async function pollChannel(conn: YoutubeConnection): Promise<{
   videos_checked: number;
   comments_found: number;
@@ -35,7 +28,13 @@ export async function pollChannel(conn: YoutubeConnection): Promise<{
   const accessToken = await getValidAccessToken(conn);
   const supabase = getSupabaseAdmin();
 
-  // Step 1: get the channel's recent uploads.
+  // Fetch ALL state rows ONCE up front - much cheaper than per-video query.
+  const { data: allStateRows, error: stateErr } = await supabase
+    .from("youtube_poll_state")
+    .select("channel_id, video_id, last_comment_id");
+  console.log(`[v2-rows] total_rows=${allStateRows?.length ?? 'null'} err=${stateErr?.message || 'null'} first=${JSON.stringify(allStateRows?.[0])}`);
+
+  // Fetch recent video IDs from YouTube.
   const videosRes = await fetch(
     `${YT_API}/search?part=id&channelId=${conn.account_id}&maxResults=${VIDEOS_PER_POLL}&order=date&type=video`,
     { headers: { Authorization: `Bearer ${accessToken}` } }
@@ -45,22 +44,18 @@ export async function pollChannel(conn: YoutubeConnection): Promise<{
     errors.push(`videos fetch failed: ${txt.slice(0, 200)}`);
     return { videos_checked, comments_found, matches, errors };
   }
-  const videosData = (await videosRes.json()) as {
-    items: Array<{ id: { videoId: string } }>;
-  };
+  const videosData = (await videosRes.json()) as { items: Array<{ id: { videoId: string } }> };
   const videoIds = videosData.items.map((v) => v.id.videoId);
 
-  // Step 2: for each video, get recent comments and process.
   for (const videoId of videoIds) {
     videos_checked++;
 
-    const { data: stateRows, error: stateErr } = await supabase
-      .from("youtube_poll_state")
-      .select("last_comment_id, channel_id, video_id");
-    console.log(`[v2-rows] total_rows=${stateRows?.length} sample=${JSON.stringify(stateRows?.slice(0, 2))}`);
-    const state = stateRows?.find(r => r.channel_id === conn.account_id && r.video_id === videoId);
-    console.log(`[poll-state] channel=${conn.account_id} video=${videoId} state=${JSON.stringify(state)} err=${stateErr?.message || 'null'}`);
-    const lastCommentId = state?.last_comment_id;
+    // In-memory state lookup (no second DB query needed).
+    const stateRow = allStateRows?.find(
+      (r) => r.channel_id === conn.account_id && r.video_id === videoId
+    );
+    const lastCommentId = stateRow?.last_comment_id;
+    console.log(`[v2-state] vid=${videoId} found=${!!stateRow} lastCommentId=${lastCommentId}`);
 
     const commentsRes = await fetch(
       `${YT_API}/commentThreads?part=snippet&videoId=${videoId}&maxResults=${COMMENTS_PER_VIDEO}&order=time`,
@@ -68,7 +63,6 @@ export async function pollChannel(conn: YoutubeConnection): Promise<{
     );
     if (!commentsRes.ok) {
       const txt = await commentsRes.text();
-      // Non-fatal; some videos disable comments.
       errors.push(`video ${videoId} comments fetch failed: ${txt.slice(0, 100)}`);
       continue;
     }
@@ -96,7 +90,6 @@ export async function pollChannel(conn: YoutubeConnection): Promise<{
       videoId,
     }));
 
-    // YouTube returns newest first. Process only ones newer than lastCommentId.
     let newComments: YoutubeComment[] = comments;
     if (lastCommentId) {
       const idx = comments.findIndex((c) => c.id === lastCommentId);
@@ -104,11 +97,9 @@ export async function pollChannel(conn: YoutubeConnection): Promise<{
         newComments = comments.slice(0, idx);
       }
     }
-console.log(`[poll] video=${videoId} stored_last=${lastCommentId} fetched_first=${comments[0]?.id} idx_match=${lastCommentId ? comments.findIndex(c => c.id === lastCommentId) : 'no_state'} new=${newComments.length}`);   
- comments_found += newComments.length;
-console.log(`[v2-state] ch="${conn.account_id}" vid="${videoId}" state=${JSON.stringify(state)} err=${stateErr?.message || 'null'}`);
+    console.log(`[v2-result] vid=${videoId} fetched=${comments.length} new=${newComments.length} lastCommentId=${lastCommentId}`);
+    comments_found += newComments.length;
 
-    // Process newest first - reverse so oldest gets the earliest reply.
     for (const c of newComments.reverse()) {
       try {
         const matched = await processComment(c, conn, accessToken);
@@ -118,7 +109,6 @@ console.log(`[v2-state] ch="${conn.account_id}" vid="${videoId}" state=${JSON.st
       }
     }
 
-    // Update poll state - mark the newest comment as last seen.
     if (comments.length > 0) {
       await supabase.from("youtube_poll_state").upsert(
         {
@@ -135,10 +125,6 @@ console.log(`[v2-state] ch="${conn.account_id}" vid="${videoId}" state=${JSON.st
   return { videos_checked, comments_found, matches, errors };
 }
 
-/**
- * Process one new YouTube comment - check if it matches any campaign,
- * post a reply if so, log the result.
- */
 async function processComment(
   comment: YoutubeComment,
   conn: YoutubeConnection,
@@ -146,7 +132,6 @@ async function processComment(
 ): Promise<boolean> {
   const supabase = getSupabaseAdmin();
 
-  // Dedup check - have we already processed this comment ID?
   const { data: existing } = await supabase
     .from("auto_reply_logs")
     .select("id")
@@ -155,14 +140,12 @@ async function processComment(
     .maybeSingle();
   if (existing) return false;
 
-  // Run matcher.
   const match = await findMatchingCampaign(supabase, {
     platform: "youtube",
     postId: comment.videoId,
     commentText: comment.text,
   });
   if (!match) {
-    // Log skipped (no match) but with reply_status="skipped" so we don't re-attempt.
     await supabase.from("auto_reply_logs").insert({
       platform: "youtube",
       comment_id: comment.id,
@@ -176,7 +159,6 @@ async function processComment(
     return false;
   }
 
-  // Post the reply.
   let replyStatus = "sent";
   let replyError: string | null = null;
   try {
@@ -213,10 +195,9 @@ async function processComment(
     matched_keyword: match.matchedKeyword,
     reply_status: replyStatus,
     reply_error: replyError,
-    dm_status: "skipped", // YouTube has no DMs
+    dm_status: "skipped",
     dm_error: "youtube_no_dm",
   });
 
   return replyStatus === "sent";
 }
-// cache-buster 1778248399
