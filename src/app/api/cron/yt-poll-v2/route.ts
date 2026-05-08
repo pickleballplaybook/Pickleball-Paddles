@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
-import { pollChannel } from "@/lib/youtube/poller";
+import { pollChannel } from "@/lib/youtube/pollerV2";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
