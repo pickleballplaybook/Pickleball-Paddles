@@ -28,13 +28,20 @@ export async function pollChannel(conn: YoutubeConnection): Promise<{
   const accessToken = await getValidAccessToken(conn);
   const supabase = getSupabaseAdmin();
 
-  // Fetch ALL state rows ONCE up front - much cheaper than per-video query.
+  // Fetch all state up front - JS filtering is more reliable than .eq().eq().
   const { data: allStateRows, error: stateErr } = await supabase
     .from("youtube_poll_state")
     .select("channel_id, video_id, last_comment_id");
-  console.log(`[v2-rows] total_rows=${allStateRows?.length ?? 'null'} err=${stateErr?.message || 'null'} first=${JSON.stringify(allStateRows?.[0])}`);
+  console.log(`[v2-rows] total_rows=${allStateRows?.length ?? "null"} err=${stateErr?.message || "null"}`);
 
-  // Fetch recent video IDs from YouTube.
+  // Same for dedup logs - fetch once.
+  const { data: allYtLogs } = await supabase
+    .from("auto_reply_logs")
+    .select("comment_id")
+    .eq("platform", "youtube");
+  const seenCommentIds = new Set((allYtLogs || []).map((l) => l.comment_id));
+  console.log(`[v2-logs] total_seen=${seenCommentIds.size}`);
+
   const videosRes = await fetch(
     `${YT_API}/search?part=id&channelId=${conn.account_id}&maxResults=${VIDEOS_PER_POLL}&order=date&type=video`,
     { headers: { Authorization: `Bearer ${accessToken}` } }
@@ -50,12 +57,10 @@ export async function pollChannel(conn: YoutubeConnection): Promise<{
   for (const videoId of videoIds) {
     videos_checked++;
 
-    // In-memory state lookup (no second DB query needed).
     const stateRow = allStateRows?.find(
       (r) => r.channel_id === conn.account_id && r.video_id === videoId
     );
     const lastCommentId = stateRow?.last_comment_id;
-    console.log(`[v2-state] vid=${videoId} found=${!!stateRow} lastCommentId=${lastCommentId}`);
 
     const commentsRes = await fetch(
       `${YT_API}/commentThreads?part=snippet&videoId=${videoId}&maxResults=${COMMENTS_PER_VIDEO}&order=time`,
@@ -68,7 +73,6 @@ export async function pollChannel(conn: YoutubeConnection): Promise<{
     }
     const commentsData = (await commentsRes.json()) as {
       items?: Array<{
-        id: string;
         snippet: {
           topLevelComment: {
             id: string;
@@ -97,14 +101,20 @@ export async function pollChannel(conn: YoutubeConnection): Promise<{
         newComments = comments.slice(0, idx);
       }
     }
-    console.log(`[v2-result] vid=${videoId} fetched=${comments.length} new=${newComments.length} lastCommentId=${lastCommentId}`);
+    console.log(`[v2-result] vid=${videoId} fetched=${comments.length} new=${newComments.length}`);
     comments_found += newComments.length;
 
     for (const c of newComments.reverse()) {
       try {
-        const matched = await processComment(c, conn, accessToken);
+        if (seenCommentIds.has(c.id)) {
+          console.log(`[v2-skip] dedup hit for ${c.id}`);
+          continue;
+        }
+        const matched = await processComment(c, conn, accessToken, supabase);
         if (matched) matches++;
+        seenCommentIds.add(c.id);
       } catch (err: any) {
+        console.log(`[v2-error] ${c.id} -> ${err.message}`);
         errors.push(`comment ${c.id} processing failed: ${err.message}`);
       }
     }
@@ -128,23 +138,17 @@ export async function pollChannel(conn: YoutubeConnection): Promise<{
 async function processComment(
   comment: YoutubeComment,
   conn: YoutubeConnection,
-  accessToken: string
+  accessToken: string,
+  supabase: ReturnType<typeof getSupabaseAdmin>
 ): Promise<boolean> {
-  const supabase = getSupabaseAdmin();
-
-  const { data: existing } = await supabase
-    .from("auto_reply_logs")
-    .select("id")
-    .eq("platform", "youtube")
-    .eq("comment_id", comment.id)
-    .maybeSingle();
-  if (existing) return false;
-
   const match = await findMatchingCampaign(supabase, {
     platform: "youtube",
     postId: comment.videoId,
     commentText: comment.text,
   });
+
+  console.log(`[v2-process] comment=${comment.id} text="${comment.text.slice(0, 50)}" matched=${!!match}`);
+
   if (!match) {
     await supabase.from("auto_reply_logs").insert({
       platform: "youtube",
