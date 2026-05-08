@@ -30,21 +30,15 @@ export function getMetaConfig() {
 /**
  * Permissions we request during OAuth.
  *
- * Instagram (via Facebook Login):
- *   - pages_show_list: list user's FB Pages
- *   - pages_read_engagement: read posts/comments on Page
- *   - pages_manage_metadata: subscribe Page to webhooks
- *   - pages_messaging: send Page DMs
- *   - instagram_basic: get IG account info
- *   - instagram_manage_comments: reply to IG comments
- *   - instagram_manage_messages: send IG DMs
- *   - business_management: required for Business-linked accounts
+ * Removed deprecated scopes (pages_manage_metadata, pages_messaging) which
+ * Meta no longer accepts as standalone permissions. Tradeoff:
+ *   - We can't auto-subscribe Pages to webhooks via API (do it manually in
+ *     the Meta dashboard for FB Pages instead).
+ *   - We can't send FB Page DMs (IG DMs still work fine).
  */
 export const META_OAUTH_SCOPES = [
   "pages_show_list",
   "pages_read_engagement",
-  "pages_manage_metadata",
-  "pages_messaging",
   "instagram_basic",
   "instagram_manage_comments",
   "instagram_manage_messages",
