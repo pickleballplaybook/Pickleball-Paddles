@@ -34,13 +34,11 @@ export async function pollChannel(conn: YoutubeConnection): Promise<{
     .select("channel_id, video_id, last_comment_id");
   console.log(`[v2-rows] total_rows=${allStateRows?.length ?? "null"} err=${stateErr?.message || "null"}`);
 
-  // Same for dedup logs - fetch once.
-  const ytLogsRes = await supabase
-    .from("auto_reply_logs")
-    .select("comment_id, platform, created_at", { count: "exact" })
-    .eq("platform", "youtube");
-  const allYtLogs = ytLogsRes.data;
-  const seenCommentIds = new Set((allYtLogs || []).map((l) => l.comment_id));
+  // Dedup: per-poll set, populated lazily as we process each video below.
+  // The real dedup is the per-video last_comment_id watermark in
+  // youtube_poll_state plus the unique index on auto_reply_logs(platform, comment_id).
+  // This Set just prevents double-processing within a single poll cycle.
+  const seenCommentIds = new Set<string>();
 
   // Tiered poll: ALL hot videos (latest uploads, polled every minute)
   // PLUS a rotating slice of cold videos (older uploads, covered over 24h).
