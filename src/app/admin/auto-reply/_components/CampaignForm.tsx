@@ -66,12 +66,36 @@ export function CampaignForm({
     setPostIdInput("");
   };
 
-  const handleSubmit = () => {
-    // Mock submission - just log for now
-    console.log("Form submitted:", form);
-    alert(
-      `Mock ${mode}:\n\n${JSON.stringify(form, null, 2)}\n\n(Backend will be wired in Step 3+)`
-    );
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const handleSubmit = async () => {
+    setSubmitError(null);
+    setSubmitting(true);
+    try {
+      const url =
+        mode === "create"
+          ? "/api/admin/auto-reply/campaigns"
+          : `/api/admin/auto-reply/campaigns/${initial?.id}`;
+      const method = mode === "create" ? "POST" : "PATCH";
+
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.error || `request failed: ${res.status}`);
+      }
+
+      // Redirect to list page on success
+      window.location.href = "/admin/auto-reply";
+    } catch (err: any) {
+      setSubmitError(err.message);
+      setSubmitting(false);
+    }
   };
 
   const ytEnabled = form.platforms.includes("youtube");
@@ -102,9 +126,14 @@ export function CampaignForm({
             </Link>
             <button
               onClick={handleSubmit}
-              className="rounded-md bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-stone-800"
+              disabled={submitting}
+              className="rounded-md bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-stone-800 disabled:opacity-50"
             >
-              {mode === "create" ? "Create campaign" : "Save changes"}
+              {submitting
+                ? "Saving..."
+                : mode === "create"
+                ? "Create campaign"
+                : "Save changes"}
             </button>
           </div>
         </div>
@@ -113,6 +142,11 @@ export function CampaignForm({
       <main className="mx-auto max-w-6xl px-6 py-8 grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8">
         {/* LEFT: form */}
         <div className="space-y-6">
+          {submitError && (
+            <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+              <strong>Couldn't save:</strong> {submitError}
+            </div>
+          )}
           <Section title="Basics">
             <Field label="Campaign name">
               <input

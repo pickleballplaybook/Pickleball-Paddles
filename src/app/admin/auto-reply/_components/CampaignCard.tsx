@@ -114,7 +114,7 @@ export function CampaignCard({
           </div>
           <div className="flex items-center gap-3">
             <Link
-              href={`/admin/auto-reply/${campaign.id}`}
+              href={`/admin/auto-reply/edit/${campaign.id}`}
               className="font-medium text-stone-700 hover:text-stone-900"
             >
               Edit

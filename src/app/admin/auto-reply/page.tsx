@@ -1,15 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { CampaignCard } from "./_components/CampaignCard";
 import { ConnectionStatus } from "./_components/ConnectionStatus";
-import { MOCK_CAMPAIGNS, MOCK_CONNECTIONS } from "./_components/mockData";
+import { MOCK_CONNECTIONS } from "./_components/mockData";
 import type { Campaign } from "./_components/types";
 
 export default function AutoReplyAdminPage() {
-  const [campaigns, setCampaigns] = useState<Campaign[]>(MOCK_CAMPAIGNS);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "active" | "paused">("all");
+
+  useEffect(() => {
+    fetch("/api/admin/auto-reply/campaigns")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.error) throw new Error(d.error);
+        setCampaigns(d.campaigns || []);
+      })
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false));
+  }, []);
 
   const filtered = campaigns.filter((c) => {
     if (filter === "active") return c.is_active;
@@ -17,15 +30,33 @@ export default function AutoReplyAdminPage() {
     return true;
   });
 
-  const toggleActive = (id: string) => {
+  const toggleActive = async (id: string) => {
+    const campaign = campaigns.find((c) => c.id === id);
+    if (!campaign) return;
+    const newActive = !campaign.is_active;
+
+    // Optimistic update
     setCampaigns((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, is_active: !c.is_active } : c))
+      prev.map((c) => (c.id === id ? { ...c, is_active: newActive } : c))
     );
+
+    const res = await fetch(`/api/admin/auto-reply/campaigns/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ is_active: newActive }),
+    });
+    if (!res.ok) {
+      // Revert on failure
+      setCampaigns((prev) =>
+        prev.map((c) => (c.id === id ? { ...c, is_active: !newActive } : c))
+      );
+      const data = await res.json().catch(() => ({}));
+      alert(`Failed to toggle: ${data?.error || res.statusText}`);
+    }
   };
 
   return (
     <div className="min-h-screen bg-stone-50 text-stone-900">
-      {/* Header */}
       <header className="border-b border-stone-200 bg-white">
         <div className="mx-auto max-w-6xl px-6 py-5 flex items-center justify-between">
           <div>
@@ -46,10 +77,14 @@ export default function AutoReplyAdminPage() {
       </header>
 
       <main className="mx-auto max-w-6xl px-6 py-8 space-y-8">
-        {/* Connection status row */}
         <ConnectionStatus connections={MOCK_CONNECTIONS} />
 
-        {/* Filter tabs */}
+        {error && (
+          <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+            <strong>Couldn't load campaigns:</strong> {error}
+          </div>
+        )}
+
         <div className="flex items-center justify-between">
           <div className="inline-flex rounded-md border border-stone-200 bg-white p-0.5">
             {(["all", "active", "paused"] as const).map((f) => (
@@ -81,20 +116,19 @@ export default function AutoReplyAdminPage() {
           </Link>
         </div>
 
-        {/* Campaign list */}
-        {filtered.length === 0 ? (
-          <div className="rounded-lg border-2 border-dashed border-stone-200 bg-white p-12 text-center">
-            <p className="text-stone-500 text-sm">
-              No campaigns yet. Create your first one to start auto-replying.
-            </p>
+        {loading ? (
+          <div className="text-stone-500 text-sm">Loading...</div>
+        ) : filtered.length === 0 ? (
+          <div className="rounded-lg border border-stone-200 bg-white p-12 text-center text-stone-500">
+            No campaigns yet. Click "New Campaign" to create one.
           </div>
         ) : (
-          <div className="grid gap-3">
-            {filtered.map((campaign) => (
+          <div className="space-y-3">
+            {filtered.map((c) => (
               <CampaignCard
-                key={campaign.id}
-                campaign={campaign}
-                onToggle={() => toggleActive(campaign.id)}
+                key={c.id}
+                campaign={c}
+                onToggle={() => toggleActive(c.id)}
               />
             ))}
           </div>
