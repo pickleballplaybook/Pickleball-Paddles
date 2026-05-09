@@ -129,14 +129,6 @@ export async function pollChannel(conn: YoutubeConnection): Promise<{
       videoId,
     }));
 
-    // TEMP DEBUG: log first 3 comments fetched per hot video to see what API returns
-    if (videoId === "PIrAY8ByL58") {
-      console.log(`[v2-debug-${videoId}] watermark=${lastCommentId || "(none)"} fetched_count=${comments.length}`);
-      for (const c of comments.slice(0, 5)) {
-        console.log(`[v2-debug-${videoId}] id=${c.id} author=${c.authorDisplayName} text=${c.text.slice(0, 50)}`);
-      }
-    }
-
     let newComments: YoutubeComment[] = comments;
     if (lastCommentId) {
       const idx = comments.findIndex((c) => c.id === lastCommentId);
