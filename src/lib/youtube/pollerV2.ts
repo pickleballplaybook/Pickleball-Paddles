@@ -187,7 +187,7 @@ async function processComment(
 
 
   if (!match) {
-    await supabase.from("auto_reply_logs").insert({
+    const { error: skipErr } = await supabase.from("auto_reply_logs").insert({
       platform: "youtube",
       comment_id: comment.id,
       post_id: comment.videoId,
@@ -197,6 +197,9 @@ async function processComment(
       reply_status: "skipped",
       reply_error: "no_keyword_match",
     });
+    if (skipErr) {
+      console.log(`[v2-skip-insert-err] ${comment.id} -> code=${(skipErr as any).code} msg=${skipErr.message}`);
+    }
     return false;
   }
 
@@ -225,7 +228,7 @@ async function processComment(
     replyError = err.message;
   }
 
-  await supabase.from("auto_reply_logs").insert({
+  const { error: matchErr } = await supabase.from("auto_reply_logs").insert({
     campaign_id: match.campaign.id,
     platform: "youtube",
     comment_id: comment.id,
@@ -239,6 +242,9 @@ async function processComment(
     dm_status: "skipped",
     dm_error: "youtube_no_dm",
   });
+  if (matchErr) {
+    console.log(`[v2-match-insert-err] ${comment.id} -> code=${(matchErr as any).code} msg=${matchErr.message} reply_status_was=${replyStatus}`);
+  }
 
   return replyStatus === "sent";
 }
