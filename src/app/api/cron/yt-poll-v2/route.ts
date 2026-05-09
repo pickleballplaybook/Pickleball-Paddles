@@ -43,6 +43,6 @@ export async function GET(req: NextRequest) {
     polled_at: new Date().toISOString(),
     connections_checked: connections?.length || 0,
     results,
-    code_version: "v2-canary-101203",
+    code_version: "v2-canary-dedup-fix",
   });
 }
