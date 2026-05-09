@@ -69,3 +69,31 @@ create policy "anon can insert paddle ratings"
 create policy "anon can update paddle ratings"
   on public.paddle_ratings for update
   to anon using (true) with check (true);
+
+-- ── Auto-matched YouTube reviews table ──────────────────────────────────────
+-- Populated by the daily /api/cron/sync-reviews cron job.
+-- Maps paddle slugs to YouTube video IDs discovered automatically.
+
+create table if not exists public.paddle_review_videos (
+  id           bigint generated always as identity primary key,
+  paddle_slug  text        not null,
+  video_id     text        not null,
+  video_title  text        not null default '',
+  video_url    text        not null default '',
+  published_at timestamptz,
+  matched_at   timestamptz not null default now(),
+  constraint paddle_review_videos_slug_video_unique unique (paddle_slug, video_id)
+);
+
+create index if not exists idx_prv_paddle_slug on public.paddle_review_videos (paddle_slug);
+create index if not exists idx_prv_video_id    on public.paddle_review_videos (video_id);
+
+alter table public.paddle_review_videos enable row level security;
+
+create policy "anon can read review videos"
+  on public.paddle_review_videos for select
+  to anon using (true);
+
+create policy "service role can manage review videos"
+  on public.paddle_review_videos for all
+  to service_role using (true) with check (true);

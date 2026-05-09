@@ -44,6 +44,7 @@ export const META_OAUTH_SCOPES = [
   "pages_read_engagement",
   "pages_manage_metadata",   // required to subscribe the Page to webhooks
   "pages_manage_engagement", // required to post FB comment replies
+  "pages_read_user_content", // implicit dependency of pages_manage_engagement
   "instagram_basic",
   "instagram_manage_comments",
   "instagram_manage_messages",
