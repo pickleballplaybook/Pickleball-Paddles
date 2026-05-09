@@ -14,17 +14,35 @@ export default function AutoReplyAdminPage() {
   const [filter, setFilter] = useState<"all" | "active" | "paused">("all");
 
   useEffect(() => {
+    const safeFetch = async (url: string) => {
+      try {
+        const r = await fetch(url);
+        if (!r.ok) return { error: `${r.status} ${r.statusText}` };
+        const ct = r.headers.get("content-type") || "";
+        if (!ct.includes("application/json")) {
+          return { error: `endpoint returned ${ct || "non-JSON"} (likely 404)` };
+        }
+        return await r.json();
+      } catch (e: any) {
+        return { error: e.message };
+      }
+    };
+
     Promise.all([
-      fetch("/api/admin/auto-reply/campaigns").then((r) => r.json()),
-      fetch("/api/admin/auto-reply/connections").then((r) => r.json()),
+      safeFetch("/api/admin/auto-reply/campaigns"),
+      safeFetch("/api/admin/auto-reply/connections"),
     ])
       .then(([campData, connData]) => {
-        if (campData.error) throw new Error(campData.error);
-        if (connData.error) throw new Error(connData.error);
-        setCampaigns(campData.campaigns || []);
-        setConnections(connData.connections || []);
+        if (campData.error) {
+          setError(`Couldn't load campaigns: ${campData.error}`);
+        } else {
+          setCampaigns(campData.campaigns || []);
+        }
+        if (!connData.error) {
+          setConnections(connData.connections || []);
+        }
+        // Connection load failure is non-fatal - just leave empty.
       })
-      .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   }, []);
 
