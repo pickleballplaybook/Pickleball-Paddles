@@ -185,24 +185,42 @@ async function processComment(
     commentText: comment.text,
   });
 
-
-  if (!match) {
-    const { error: skipErr } = await supabase.from("auto_reply_logs").insert({
+  // Try to claim the comment by inserting a "pending" row first.
+  // The unique index on (platform, comment_id) means this is our atomic dedup:
+  // if we've already processed this comment, the insert fails with 23505 and
+  // we bail out WITHOUT posting a duplicate reply to YouTube.
+  const { data: claimed, error: claimErr } = await supabase
+    .from("auto_reply_logs")
+    .insert({
+      campaign_id: match?.campaign.id ?? null,
       platform: "youtube",
       comment_id: comment.id,
       post_id: comment.videoId,
       commenter_id: comment.authorChannelId,
       commenter_username: comment.authorDisplayName,
       comment_text: comment.text,
-      reply_status: "skipped",
-      reply_error: "no_keyword_match",
-    });
-    if (skipErr) {
-      console.log(`[v2-skip-insert-err] ${comment.id} -> code=${(skipErr as any).code} msg=${skipErr.message}`);
+      matched_keyword: match?.matchedKeyword ?? null,
+      reply_status: match ? "pending" : "skipped",
+      reply_error: match ? null : "no_keyword_match",
+      dm_status: "skipped",
+      dm_error: "youtube_no_dm",
+    })
+    .select()
+    .single();
+
+  if (claimErr) {
+    if ((claimErr as any).code === "23505") {
+      // Already processed - silent dedup, this is the happy path
+      return false;
     }
+    console.log(`[v2-claim-err] ${comment.id} -> code=${(claimErr as any).code} msg=${claimErr.message}`);
     return false;
   }
 
+  // Not a keyword match - we logged the skip, we're done.
+  if (!match) return false;
+
+  // Post the reply to YouTube
   let replyStatus = "sent";
   let replyError: string | null = null;
   try {
@@ -228,22 +246,16 @@ async function processComment(
     replyError = err.message;
   }
 
-  const { error: matchErr } = await supabase.from("auto_reply_logs").insert({
-    campaign_id: match.campaign.id,
-    platform: "youtube",
-    comment_id: comment.id,
-    post_id: comment.videoId,
-    commenter_id: comment.authorChannelId,
-    commenter_username: comment.authorDisplayName,
-    comment_text: comment.text,
-    matched_keyword: match.matchedKeyword,
-    reply_status: replyStatus,
-    reply_error: replyError,
-    dm_status: "skipped",
-    dm_error: "youtube_no_dm",
-  });
-  if (matchErr) {
-    console.log(`[v2-match-insert-err] ${comment.id} -> code=${(matchErr as any).code} msg=${matchErr.message} reply_status_was=${replyStatus}`);
+  // Update the row with the actual reply result
+  const { error: updateErr } = await supabase
+    .from("auto_reply_logs")
+    .update({
+      reply_status: replyStatus,
+      reply_error: replyError,
+    })
+    .eq("id", claimed.id);
+  if (updateErr) {
+    console.log(`[v2-update-err] ${comment.id} -> ${updateErr.message}`);
   }
 
   return replyStatus === "sent";
