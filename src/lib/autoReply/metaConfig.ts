@@ -42,6 +42,8 @@ export function getMetaConfig() {
 export const META_OAUTH_SCOPES = [
   "pages_show_list",
   "pages_read_engagement",
+  "pages_manage_metadata",   // required to subscribe the Page to webhooks
+  "pages_manage_engagement", // required to post FB comment replies
   "instagram_basic",
   "instagram_manage_comments",
   "instagram_manage_messages",

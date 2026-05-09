@@ -441,6 +441,7 @@ export const paddles: Paddle[] = [
     amountOff: "$20",
     price: "$119.99",
     discountLink: "https://www.enhancepickleball.com/PLAYBOOK",
+    reviewUrl: "https://youtu.be/hLprDNd4Zxo",
     addedAt: "2025-06-01",
     trendingScore: 66,
     playStyle: "power",
@@ -1683,6 +1684,7 @@ export const paddles: Paddle[] = [
     amountOff: "10%",
     price: "$179.99",
     discountLink: "https://gearboxsports.com/?rfsn=9036517.769a6c2",
+    reviewUrl: "https://youtu.be/fo0he1vR2NM",
     addedAt: "2026-04-28",
     trendingScore: 55,
     playStyle: "power",
@@ -1701,6 +1703,7 @@ export const paddles: Paddle[] = [
     amountOff: "10%",
     price: "$179.99",
     discountLink: "https://gearboxsports.com/?rfsn=9036517.769a6c2",
+    reviewUrl: "https://youtu.be/fo0he1vR2NM",
     addedAt: "2026-04-28",
     trendingScore: 55,
     playStyle: "power",
@@ -1776,6 +1779,7 @@ export const paddles: Paddle[] = [
     amountOff: "10%",
     price: "$200.00",
     discountLink: "https://sixzeropickleball.us?sca_ref=11145669.B01d6tJmnqn5",
+    reviewUrl: "https://youtu.be/Z1e4mRHG2r8",
     addedAt: "2026-05-04",
     trendingScore: 55,
     playStyle: "all-court",
@@ -1794,6 +1798,7 @@ export const paddles: Paddle[] = [
     amountOff: "10%",
     price: "$200.00",
     discountLink: "https://sixzeropickleball.us?sca_ref=11145669.B01d6tJmnqn5",
+    reviewUrl: "https://youtu.be/Z1e4mRHG2r8",
     addedAt: "2026-05-04",
     trendingScore: 55,
     playStyle: "all-court",
@@ -1814,6 +1819,7 @@ export const paddles: Paddle[] = [
     amountOff: "10%",
     price: "$199.00",
     discountLink: "https://www.aireo-sports.com?sca_ref=11106871.iVssdtBF6PakUq4Q",
+    reviewUrl: "https://youtu.be/e6-jgFY4Et8",
     addedAt: "2026-05-04",
     trendingScore: 55,
     playStyle: "power",
@@ -1843,7 +1849,11 @@ export const paddles: Paddle[] = [
 // Review dates — ISO publish dates for Latest Reviews sort (newest-first)
 // Set youtubeApiKey in site.ts to auto-fetch real dates; or fill in manually.
 export const reviewDates: Record<string, string> = {
-  rmkPAroh2BM:   "2026-04-29",  // Speedup Tide 14L + 14H      ← newest
+  hLprDNd4Zxo:   "2026-05-09",  // Enhance Turbo MPP
+  Z1e4mRHG2r8:   "2026-05-09",  // SixZero Coral
+  "e6-jgFY4Et8": "2026-05-09",  // Aireo Cyclone
+  fo0he1vR2NM:   "2026-05-09",  // Gearbox GBX Power            ← newest
+  rmkPAroh2BM:   "2026-04-29",  // Speedup Tide 14L + 14H
   "LYdP6v-anyc": "2026-04-29",  // Luzz Inferno
   "0TPukMyrCTQ": "2026-04-28",  // Flik F3 Triple Core
   CyANMox81Is:   "2026-04-28",  // Luzz Cannon
