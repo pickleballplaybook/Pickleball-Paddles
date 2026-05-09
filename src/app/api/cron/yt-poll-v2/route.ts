@@ -6,8 +6,15 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
-  const secret = new URL(req.url).searchParams.get("secret");
-  if (secret !== process.env.CRON_SECRET) {
+  const querySecret = new URL(req.url).searchParams.get("secret");
+  const authHeader = req.headers.get("authorization");
+  const headerSecret = authHeader?.startsWith("Bearer ")
+    ? authHeader.slice(7)
+    : null;
+  if (
+    querySecret !== process.env.CRON_SECRET &&
+    headerSecret !== process.env.CRON_SECRET
+  ) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 

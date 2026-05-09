@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/yt-poll-v2",
+      "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/cron/yt-refresh-videos",
+      "schedule": "0 8 * * *"
+    }
+  ]
+}
