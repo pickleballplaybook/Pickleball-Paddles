@@ -4,21 +4,25 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { CampaignCard } from "./_components/CampaignCard";
 import { ConnectionStatus } from "./_components/ConnectionStatus";
-import { MOCK_CONNECTIONS } from "./_components/mockData";
 import type { Campaign } from "./_components/types";
 
 export default function AutoReplyAdminPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [connections, setConnections] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "active" | "paused">("all");
 
   useEffect(() => {
-    fetch("/api/admin/auto-reply/campaigns")
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.error) throw new Error(d.error);
-        setCampaigns(d.campaigns || []);
+    Promise.all([
+      fetch("/api/admin/auto-reply/campaigns").then((r) => r.json()),
+      fetch("/api/admin/auto-reply/connections").then((r) => r.json()),
+    ])
+      .then(([campData, connData]) => {
+        if (campData.error) throw new Error(campData.error);
+        if (connData.error) throw new Error(connData.error);
+        setCampaigns(campData.campaigns || []);
+        setConnections(connData.connections || []);
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
@@ -77,7 +81,7 @@ export default function AutoReplyAdminPage() {
       </header>
 
       <main className="mx-auto max-w-6xl px-6 py-8 space-y-8">
-        <ConnectionStatus connections={MOCK_CONNECTIONS} />
+        <ConnectionStatus connections={connections} />
 
         {error && (
           <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
