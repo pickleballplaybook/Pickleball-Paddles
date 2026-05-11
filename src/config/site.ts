@@ -35,18 +35,18 @@ export const siteConfig = {
   // The paddle (or series) featured in the top hero slot.
   // Swap the slug to change the featured paddle; update the series fields below
   // when promoting a multi-variant series.
-  hottestPaddleSlug: "11six24-vapor-power-2-hybrid",
+  hottestPaddleSlug: "honolulu-j2cr-crystal-blue-hybrid",
   hottestPaddleSeries: {
     // Display name shown as the headline (can be a series or single paddle name)
-    headline: "11SIX24 Power 2 Series",
-    subheadline: "One of the most talked-about paddles in pickleball right now.",
+    headline: "Honolulu Crystal Blue Series",
+    subheadline: "The Crystal Blue Endurance Surface lineup — three shapes, one mission: outlast and outplay.",
     bullets: [
-      "Elite power and pop",
-      "HexGrit surface that barely wears down — went from 2,100 to 2,090 RPMs after 100 games",
-      "One of the hottest paddles on the market",
+      "Crystal Blue Endurance Surface",
+      "J2CR Hybrid · J3CR Widebody · J6CR Elongated",
+      "All-court performance at $195",
     ],
     // Affiliate link for the SHOP NOW button — uses the paddle's discountLink if blank
-    seriesLink: "https://11six24.com/collections/power-2?sca_ref=10762081.CP7l7DxvM7",
+    seriesLink: "https://808pickle.com/products/j2cr-crystal-blue-endurance-surface%E2%84%A2-pre-order?variant=51746641445184",
   },
 
   // ── Homepage — Paddle of the Week ───────────────────────────────────────────
