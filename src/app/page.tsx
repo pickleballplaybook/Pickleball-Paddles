@@ -126,6 +126,36 @@ export default async function HomePage() {
 
       <LatestPaddles paddles={latestPaddles} />
 
+      {/* Drills App */}
+      <PromoBar
+        title="Pickleball Drills App"
+        subtitle="Start your free trial."
+        ctaText="Try It Free"
+        ctaHref="https://onelink.to/cyrk57"
+        icon={<Smartphone className="w-5 h-5" strokeWidth={2} />}
+        bg="#0c1a2e"
+      />
+      <div id="latest-reviews"><LatestReviews items={latestReviewItems} /></div>
+
+      <GearScroll />
+
+      {/* Rotating gear promo A */}
+      <PromoBar
+        title={`${promoA.brand} ${promoA.name}`}
+        subtitle={promoA.subtitle}
+        ctaText={promoA.ctaText}
+        ctaHref={promoA.link}
+        image={promoA.image || undefined}
+        imageAlt={`${promoA.brand} ${promoA.name}`}
+        badge={promoA.badge || undefined}
+        icon={!promoA.image ? <GraduationCap className="w-5 h-5" strokeWidth={2} /> : undefined}
+        bg={promoA.bg}
+      />
+
+      <div id="paddles"><HottestPaddle /></div>
+
+      <TrendingSection paddles={paddles} />
+
       {/* Best Paddles 2026 banner */}
       <section className="container-xl py-6">
         <Link
@@ -157,36 +187,6 @@ export default async function HomePage() {
           </span>
         </Link>
       </section>
-
-      {/* Drills App */}
-      <PromoBar
-        title="Pickleball Drills App"
-        subtitle="Start your free trial."
-        ctaText="Try It Free"
-        ctaHref="https://onelink.to/cyrk57"
-        icon={<Smartphone className="w-5 h-5" strokeWidth={2} />}
-        bg="#0c1a2e"
-      />
-      <div id="latest-reviews"><LatestReviews items={latestReviewItems} /></div>
-
-      <GearScroll />
-
-      {/* Rotating gear promo A */}
-      <PromoBar
-        title={`${promoA.brand} ${promoA.name}`}
-        subtitle={promoA.subtitle}
-        ctaText={promoA.ctaText}
-        ctaHref={promoA.link}
-        image={promoA.image || undefined}
-        imageAlt={`${promoA.brand} ${promoA.name}`}
-        badge={promoA.badge || undefined}
-        icon={!promoA.image ? <GraduationCap className="w-5 h-5" strokeWidth={2} /> : undefined}
-        bg={promoA.bg}
-      />
-
-      <div id="paddles"><HottestPaddle /></div>
-
-      <TrendingSection paddles={paddles} />
 
       {/* Rotating gear promo B */}
       <PromoBar

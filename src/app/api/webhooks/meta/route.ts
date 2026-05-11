@@ -145,7 +145,11 @@ function normalizeCommentEvent(
     };
   }
   // facebook
-  if (v.item !== "comment" || v.verb !== "add") return null;
+  // Regular post comments have item="comment" verb="add".
+  // Reel comments come through without item/verb but with comment_id + message.
+  // Filter out reactions explicitly; allow anything else with a comment payload.
+  if (v.item === "reaction") return null;
+  if (v.verb && v.verb !== "add") return null;
   if (!v.comment_id || !v.message) return null;
   return {
     platform: "facebook",
