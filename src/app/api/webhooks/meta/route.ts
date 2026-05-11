@@ -47,12 +47,6 @@ export async function POST(req: NextRequest) {
     return new NextResponse("invalid signature", { status: 403 });
   }
 
-  // TEMP: log object type to debug missing IG events
-  try {
-    const peek = JSON.parse(rawBody);
-    console.log("[meta webhook] obj:", peek.object, "fields:", (peek.entry?.[0]?.changes||[]).map((c:any)=>c.field).join(","));
-  } catch {}
-
   let payload: MetaWebhookPayload;
   try {
     payload = JSON.parse(rawBody);
@@ -137,8 +131,9 @@ function normalizeCommentEvent(
   v: any
 ): CommentEvent | null {
   if (platform === "instagram") {
-    console.log("[normalize IG]", { hasId: !!v?.id, hasText: !!v?.text, fromId: v?.from?.id, fromUsername: v?.from?.username, text: v?.text?.slice(0, 80) });
     if (!v?.id || !v?.text) return null;
+    // Ignore the IG account replying to itself (prevents auto-reply loop)
+    if (v.from?.id && v.from.id === entryId) return null;
     return {
       platform,
       pageOrIgAccountId: entryId,
