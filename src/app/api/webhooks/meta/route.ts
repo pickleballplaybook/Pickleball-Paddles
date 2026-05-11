@@ -137,6 +137,7 @@ function normalizeCommentEvent(
   v: any
 ): CommentEvent | null {
   if (platform === "instagram") {
+    console.log("[normalize IG]", { hasId: !!v?.id, hasText: !!v?.text, fromId: v?.from?.id, fromUsername: v?.from?.username, text: v?.text?.slice(0, 80) });
     if (!v?.id || !v?.text) return null;
     return {
       platform,
