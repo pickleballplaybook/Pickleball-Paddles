@@ -80,8 +80,8 @@ export function getTrendingPaddles(
       };
     })
     .sort((a, b) =>
-      b.weightedScore - a.weightedScore ||
       b.totalHearts   - a.totalHearts   ||
+      b.weightedScore - a.weightedScore ||
       (b.lastHeart ?? 0) - (a.lastHeart ?? 0)
     )
     .slice(0, count);
@@ -153,7 +153,7 @@ export function getRisingBrands(
 
   return Array.from(brandMap.entries())
     .map(([brand, data]) => ({ brand, ...data }))
-    .sort((a, b) => b.weightedScore - a.weightedScore || b.totalHearts - a.totalHearts)
+    .sort((a, b) => b.totalHearts - a.totalHearts || b.weightedScore - a.weightedScore)
     .slice(0, count);
 }
 

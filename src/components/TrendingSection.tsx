@@ -179,12 +179,10 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
                     {/* Stats + actions */}
                     <div className="flex items-center gap-2 flex-shrink-0">
                       {/* Views */}
-                      {views > 0 && (
-                        <span className="hidden sm:inline-flex items-center gap-1 text-[11px]" style={{ color: "var(--flip-text-muted)" }}>
-                          <Eye className="w-3 h-3" />
-                          {views >= 1000 ? `${(views / 1000).toFixed(1)}k` : views}
-                        </span>
-                      )}
+                      <span className="inline-flex items-center gap-1 text-[11px]" style={{ color: "var(--flip-text-muted)" }}>
+                        <Eye className="w-3 h-3" />
+                        {views >= 1000 ? `${(views / 1000).toFixed(1)}k` : views}
+                      </span>
                       {/* Hearts */}
                       {totalHearts > 0 && (
                         <span

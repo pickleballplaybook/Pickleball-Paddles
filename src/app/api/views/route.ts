@@ -1,6 +1,7 @@
 /**
- * GET  /api/views?slug=X&type=Y  → { count: N }
- * POST /api/views  { slug, type } → { count: N }
+ * GET  /api/views?slug=X&type=Y       → { count: N }
+ * GET  /api/views?slugs=a,b,c&type=Y  → { "a": N, "b": N, "c": N }
+ * POST /api/views  { slug, type }     → { count: N }
  */
 
 export const runtime = "nodejs";
@@ -10,9 +11,38 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabaseClient";
 
 export async function GET(req: NextRequest) {
-  const slug = req.nextUrl.searchParams.get("slug");
-  const type = req.nextUrl.searchParams.get("type") ?? "paddle";
+  const slug  = req.nextUrl.searchParams.get("slug");
+  const slugs = req.nextUrl.searchParams.get("slugs");
+  const type  = req.nextUrl.searchParams.get("type") ?? "paddle";
 
+  // Batch query: ?slugs=a,b,c
+  if (slugs) {
+    const slugList = slugs.split(",").filter(Boolean).slice(0, 50);
+    if (slugList.length === 0) {
+      return NextResponse.json({});
+    }
+
+    const { data, error } = await supabase
+      .from("page_views")
+      .select("slug")
+      .eq("page_type", type)
+      .in("slug", slugList);
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    // Count per slug
+    const counts: Record<string, number> = {};
+    for (const s of slugList) counts[s] = 0;
+    for (const row of data ?? []) {
+      counts[row.slug] = (counts[row.slug] ?? 0) + 1;
+    }
+
+    return NextResponse.json(counts);
+  }
+
+  // Single query: ?slug=X
   if (!slug) {
     return NextResponse.json({ error: "slug required" }, { status: 400 });
   }
