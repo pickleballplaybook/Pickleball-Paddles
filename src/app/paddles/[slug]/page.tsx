@@ -13,6 +13,7 @@ import PaddleCard from "@/components/PaddleCard";
 import PaddleDetailTabs from "@/components/PaddleDetailTabs";
 import WhoItsFor from "@/components/WhoItsFor";
 import StickyBottomBar from "@/components/StickyBottomBar";
+import { gearProducts } from "@/data/products";
 import { ArrowLeft, ArrowRight, BarChart2, ExternalLink, BookOpen, ChevronRight, User } from "lucide-react";
 import ReactionButtons from "@/components/ReactionButtons";
 import DiscountCodeBox from "@/components/DiscountCodeBox";
@@ -139,6 +140,11 @@ export default async function PaddleDetailPage({ params }: Props) {
     .slice(0, 4);
 
   const related = similar.length >= 3 ? similar : paddles.filter((p) => p.id !== paddle.id).slice(0, 4);
+
+  // Rotate gear products per paddle so each page shows different items
+  const gearPool = gearProducts.filter((g) => g.id !== "academy");
+  const gearOffset = parseInt(paddle.id, 10) || 0;
+  const featuredGear = Array.from({ length: 3 }, (_, i) => gearPool[(gearOffset + i) % gearPool.length]);
 
   // ── JSON-LD schemas ─────────────────────────────────────────────────────────
   const priceNum = paddle.price ? parseFloat(paddle.price.replace(/[^0-9.]/g, "")) : null;
@@ -356,7 +362,7 @@ export default async function PaddleDetailPage({ params }: Props) {
                   Tested by <span style={{ color: "#2dd4bf" }}>Austin Hardy</span>
                 </p>
                 <p className="text-xs" style={{ color: "var(--flip-text-muted)" }}>
-                  4.0+ player &middot; Independent reviewer
+                  5.5+ player &middot; Independent reviewer
                 </p>
               </div>
             </div>
@@ -388,30 +394,28 @@ export default async function PaddleDetailPage({ params }: Props) {
               className="rounded-2xl p-5 mb-5"
               style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}
             >
-              <div className="flex items-center justify-between mb-3">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: "var(--flip-text-muted)" }}>
-                    Retail Price
-                  </p>
-                  {paddle.price && (
-                    <div className="flex items-baseline gap-3">
-                      {discountedPrice ? (
-                        <>
-                          <span className="text-2xl font-semibold line-through" style={{ color: "var(--flip-text-muted)" }}>
-                            {paddle.price}
-                          </span>
-                          <span className="text-3xl font-extrabold" style={{ color: "#2dd4bf" }}>
-                            {discountedPrice}
-                          </span>
-                        </>
-                      ) : (
-                        <span className="text-3xl font-extrabold" style={{ color: "var(--flip-text-head)" }}>
+              <div className="mb-3">
+                <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: "var(--flip-text-muted)" }}>
+                  Retail Price
+                </p>
+                {paddle.price && (
+                  <div className="flex items-baseline gap-3 mb-4">
+                    {discountedPrice ? (
+                      <>
+                        <span className="text-2xl font-semibold line-through" style={{ color: "var(--flip-text-muted)" }}>
                           {paddle.price}
                         </span>
-                      )}
-                    </div>
-                  )}
-                </div>
+                        <span className="text-3xl font-extrabold" style={{ color: "#2dd4bf" }}>
+                          {discountedPrice}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-3xl font-extrabold" style={{ color: "var(--flip-text-head)" }}>
+                        {paddle.price}
+                      </span>
+                    )}
+                  </div>
+                )}
                 <DiscountCodeBox code={code} giftCard={giftCard} savings={savings} />
               </div>
 
@@ -666,6 +670,52 @@ export default async function PaddleDetailPage({ params }: Props) {
                 </Link>
               </div>
 
+              {/* Recommended Gear */}
+              <div
+                className="rounded-2xl p-5"
+                style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}
+              >
+                <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: "#14b8a6" }}>
+                  Recommended Gear
+                </p>
+                <div className="space-y-4">
+                  {featuredGear.map((gear) => (
+                    <a
+                      key={gear.id}
+                      href={gear.link}
+                      target="_blank"
+                      rel="noopener noreferrer sponsored"
+                      className="flex items-center gap-3 group"
+                    >
+                      {gear.image && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={gear.image}
+                          alt={gear.name}
+                          className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                          style={{ background: gear.bg }}
+                        />
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-semibold truncate group-hover:text-teal-400 transition-colors" style={{ color: "var(--flip-text-head)" }}>
+                          {gear.brand ? `${gear.brand} ` : ""}{gear.name}
+                        </p>
+                        <p className="text-xs" style={{ color: "var(--flip-text-muted)" }}>
+                          {gear.price}{gear.badge ? ` · ${gear.badge}` : ""}
+                        </p>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+                <Link
+                  href="/gear"
+                  className="inline-flex items-center gap-1 text-xs font-semibold mt-4 transition-colors hover:text-teal-400"
+                  style={{ color: "#2dd4bf" }}
+                >
+                  View all gear <ArrowRight className="w-3 h-3" />
+                </Link>
+              </div>
+
               {/* Newsletter */}
               <SubstackCard variant="inline" />
             </div>
@@ -701,6 +751,68 @@ export default async function PaddleDetailPage({ params }: Props) {
         </div>
       </section>
 
+      {/* ── FEATURED GEAR ──────────────────────────────────────────────── */}
+      <section className="py-16">
+        <div className="container-xl">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-2xl font-extrabold" style={{ color: "var(--flip-text-head)" }}>
+              Gear We Recommend
+            </h2>
+            <Link
+              href="/gear"
+              className="inline-flex items-center gap-1 text-sm font-semibold transition-colors hover:text-teal-400"
+              style={{ color: "#2dd4bf" }}
+            >
+              All Gear <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+            {featuredGear.map((gear) => (
+              <a
+                key={gear.id}
+                href={gear.link}
+                target="_blank"
+                rel="noopener noreferrer sponsored"
+                className="group rounded-2xl overflow-hidden transition-all hover:scale-[1.02]"
+                style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}
+              >
+                {gear.image && (
+                  <div className="aspect-[16/10] relative overflow-hidden" style={{ background: gear.bg }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={gear.image}
+                      alt={gear.name}
+                      className="w-full h-full object-contain p-4"
+                    />
+                    {gear.badge && (
+                      <span
+                        className="absolute top-3 left-3 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full text-white"
+                        style={{ background: "#14b8a6" }}
+                      >
+                        {gear.badge}
+                      </span>
+                    )}
+                  </div>
+                )}
+                <div className="p-4">
+                  <p className="text-sm font-bold group-hover:text-teal-400 transition-colors" style={{ color: "var(--flip-text-head)" }}>
+                    {gear.brand ? `${gear.brand} ` : ""}{gear.name}
+                  </p>
+                  <p className="text-xs mt-1 line-clamp-2" style={{ color: "var(--flip-text-muted)" }}>
+                    {gear.subtitle}
+                  </p>
+                  {gear.price && (
+                    <p className="text-sm font-bold mt-2" style={{ color: "#2dd4bf" }}>
+                      {gear.price}
+                    </p>
+                  )}
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── HOW IT COMPARES ───────────────────────────────────────────────── */}
       <section className="py-16">
         <div className="container-xl">
@@ -720,40 +832,96 @@ export default async function PaddleDetailPage({ params }: Props) {
 
       {/* ── FEEL (tab: feel) ──────────────────────────────────────────────── */}
       <section id="feel" className="py-16" style={{ background: "var(--flip-bg-card)" }}>
-        <div className="container-xl max-w-3xl mx-auto">
-          <h2 className="text-xs font-bold uppercase tracking-widest mb-6" style={{ color: "var(--flip-text-muted)" }}>
+        <div className="container-xl max-w-4xl mx-auto">
+          <h2 className="text-2xl font-extrabold mb-8" style={{ color: "var(--flip-text-head)" }}>
             Playing Feel
           </h2>
           <div
-            className="rounded-2xl p-6"
+            className="rounded-2xl overflow-hidden"
             style={{ background: "var(--flip-bg)", border: "1px solid var(--flip-card-border)" }}
           >
-            {paddle.description ? (
-              <p className="text-sm leading-relaxed mb-4" style={{ color: "var(--flip-text-body)" }}>
-                {paddle.description}
-              </p>
-            ) : (
-              <p className="text-sm leading-relaxed mb-4" style={{ color: "var(--flip-text-body)" }}>
-                The {paddle.brand} {paddle.name} is a {paddle.thickness} {paddle.shape.toLowerCase()} paddle
-                weighing {paddle.weight}{paddle.swingWeight > 0 ? ` with a swing weight of ${paddle.swingWeight}` : ""}{paddle.twistWeight > 0 ? ` and twist weight of ${paddle.twistWeight}` : ""}.
-                {paddle.playStyle === "power" && " Expect a firm, powerful feel with pop on drives and serves."}
-                {paddle.playStyle === "control" && " Expect a soft, controlled feel that shines at the kitchen line."}
-                {paddle.playStyle === "all-court" && " Expect a balanced feel that handles dinks, drives, and everything in between."}
-                {paddle.playStyle === "spin" && " Expect a textured surface with heavy bite on the ball."}
-              </p>
-            )}
-            {paddle.playStyle && (
-              <div className="pt-4 border-t" style={{ borderColor: "var(--flip-divider)" }}>
-                <p className="text-xs font-semibold uppercase tracking-widest mb-2"
-                   style={{ color: "var(--flip-text-muted)" }}>Best for</p>
-                <span
-                  className="inline-flex items-center px-4 py-2 rounded-xl text-sm font-bold"
-                  style={{ background: "rgba(20,184,166,0.12)", color: "#2dd4bf", border: "1px solid rgba(20,184,166,0.2)" }}
-                >
-                  {STYLE_LABELS[paddle.playStyle] ?? paddle.playStyle}
-                </span>
+            <div className="grid grid-cols-1 md:grid-cols-2">
+              {/* Left — paddle image + play style badge */}
+              <div
+                className="relative flex items-center justify-center p-8"
+                style={{ background: "var(--flip-bg-card)" }}
+              >
+                {paddle.image && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={paddle.image}
+                    alt={`${paddle.brand} ${paddle.name} feel`}
+                    className="w-full max-w-[220px] h-auto object-contain"
+                  />
+                )}
+                {paddle.playStyle && (
+                  <span
+                    className="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs font-bold uppercase tracking-wider px-4 py-1.5 rounded-full"
+                    style={{
+                      background: "rgba(20,184,166,0.15)",
+                      color: "#2dd4bf",
+                      border: "1px solid rgba(20,184,166,0.3)",
+                      backdropFilter: "blur(8px)",
+                    }}
+                  >
+                    {STYLE_LABELS[paddle.playStyle] ?? paddle.playStyle}
+                  </span>
+                )}
               </div>
-            )}
+
+              {/* Right — feel description + mini spec bars */}
+              <div className="p-6 md:p-8 space-y-5">
+                {paddle.description ? (
+                  <p className="text-sm leading-relaxed" style={{ color: "var(--flip-text-body)" }}>
+                    {paddle.description}
+                  </p>
+                ) : (
+                  <p className="text-sm leading-relaxed" style={{ color: "var(--flip-text-body)" }}>
+                    The {paddle.brand} {paddle.name} is a {paddle.thickness} {paddle.shape.toLowerCase()} paddle
+                    weighing {paddle.weight}{paddle.swingWeight > 0 ? ` with a swing weight of ${paddle.swingWeight}` : ""}{paddle.twistWeight > 0 ? ` and twist weight of ${paddle.twistWeight}` : ""}.
+                    {paddle.playStyle === "power" && " Expect a firm, powerful feel with pop on drives and serves. The higher swing weight delivers momentum through contact, rewarding full swings."}
+                    {paddle.playStyle === "control" && " Expect a soft, controlled feel that shines at the kitchen line. Dinks and resets feel plush, with excellent touch on drop shots."}
+                    {paddle.playStyle === "all-court" && " Expect a balanced feel that handles dinks, drives, and everything in between. Neither too stiff nor too soft — it adapts to your game."}
+                    {paddle.playStyle === "spin" && " Expect a textured surface with heavy bite on the ball. Topspin drives and angled dinks are where this paddle excels."}
+                  </p>
+                )}
+
+                {/* Mini spec summary */}
+                <div className="space-y-3 pt-3 border-t" style={{ borderColor: "var(--flip-divider)" }}>
+                  {paddle.swingWeight > 0 && (
+                    <SpecBar
+                      label="Swing Weight"
+                      value={paddle.swingWeight}
+                      min={catalog.swingWeight.min}
+                      max={catalog.swingWeight.max}
+                      avg={catalog.swingWeight.avg}
+                    />
+                  )}
+                  {paddle.twistWeight > 0 && (
+                    <SpecBar
+                      label="Twist Weight"
+                      value={paddle.twistWeight}
+                      min={catalog.twistWeight.min}
+                      max={catalog.twistWeight.max}
+                      avg={catalog.twistWeight.avg}
+                    />
+                  )}
+                </div>
+
+                {/* Key feel attributes */}
+                <div className="flex flex-wrap gap-2 pt-2">
+                  <span className="text-xs font-semibold px-3 py-1.5 rounded-full" style={{ background: "var(--flip-bg-card)", color: "var(--flip-text-head)", border: "1px solid var(--flip-card-border)" }}>
+                    {paddle.thickness} Core
+                  </span>
+                  <span className="text-xs font-semibold px-3 py-1.5 rounded-full" style={{ background: "var(--flip-bg-card)", color: "var(--flip-text-head)", border: "1px solid var(--flip-card-border)" }}>
+                    {paddle.shape}
+                  </span>
+                  <span className="text-xs font-semibold px-3 py-1.5 rounded-full" style={{ background: "var(--flip-bg-card)", color: "var(--flip-text-head)", border: "1px solid var(--flip-card-border)" }}>
+                    {paddle.weight}
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
