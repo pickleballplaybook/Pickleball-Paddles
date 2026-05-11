@@ -366,7 +366,7 @@ export const paddles: Paddle[] = [
     discountLink: "https://engagepickleball.com/?aff=601",
     addedAt: "2026-05-11",
     trendingScore: 50,
-    playStyle: "control",
+    playStyle: "all-court",
   },
 
   // ── Enhance ────────────────────────────────────────────────────────────────
