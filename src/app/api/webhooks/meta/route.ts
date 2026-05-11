@@ -106,7 +106,8 @@ async function processPayload(payload: MetaWebhookPayload) {
 
   for (const entry of payload.entry || []) {
     for (const change of entry.changes || []) {
-      if (change.field !== "comments") continue;
+      // IG sends field="comments", FB Page sends field="feed"
+      if (change.field !== "comments" && change.field !== "feed") continue;
       const v = change.value || {};
       const evt = normalizeCommentEvent(platform, entry.id, v);
       if (!evt) continue;
