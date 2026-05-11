@@ -101,23 +101,23 @@ export default function PaddleStarRating({ paddleId }: Props) {
       </div>
 
       {/* Summary */}
-      {summary.count > 0 && (
-        <div className="flex items-center gap-2">
-          <Star className="w-4 h-4" style={{ fill: "#facc15", color: "#facc15" }} strokeWidth={0} />
-          <span className="font-extrabold text-sm" style={{ color: "var(--flip-text-head)" }}>
-            {summary.average.toFixed(1)}
-          </span>
-          <span className="text-sm" style={{ color: "var(--flip-text-muted)" }}>
-            ({summary.count} {summary.count === 1 ? "rating" : "ratings"})
-          </span>
-        </div>
-      )}
-
-      {summary.count === 0 && (
-        <p className="text-xs" style={{ color: "var(--flip-text-muted)" }}>
-          Be the first to rate this paddle
-        </p>
-      )}
+      <div className="flex items-center gap-2">
+        {(summary.count > 0 || summary.userRating) ? (
+          <>
+            <Star className="w-4 h-4" style={{ fill: "#facc15", color: "#facc15" }} strokeWidth={0} />
+            <span className="font-extrabold text-sm" style={{ color: "var(--flip-text-head)" }}>
+              {summary.average > 0 ? summary.average.toFixed(1) : (summary.userRating ?? 0).toFixed(1)}
+            </span>
+            <span className="text-sm" style={{ color: "var(--flip-text-muted)" }}>
+              ({summary.count} {summary.count === 1 ? "review" : "reviews"})
+            </span>
+          </>
+        ) : (
+          <p className="text-xs" style={{ color: "var(--flip-text-muted)" }}>
+            Be the first to review this paddle
+          </p>
+        )}
+      </div>
     </div>
   );
 }
