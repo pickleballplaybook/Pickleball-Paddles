@@ -47,6 +47,8 @@ export async function POST(req: NextRequest) {
     return new NextResponse("invalid signature", { status: 403 });
   }
 
+  console.log("[meta webhook] RAW:", rawBody.slice(0, 500));
+
   let payload: MetaWebhookPayload;
   try {
     payload = JSON.parse(rawBody);
