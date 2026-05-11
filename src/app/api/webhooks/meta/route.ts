@@ -47,8 +47,6 @@ export async function POST(req: NextRequest) {
     return new NextResponse("invalid signature", { status: 403 });
   }
 
-  console.log("[meta webhook] RAW:", rawBody.slice(0, 500));
-
   let payload: MetaWebhookPayload;
   try {
     payload = JSON.parse(rawBody);
@@ -165,7 +163,6 @@ function normalizeCommentEvent(
 }
 
 async function handleComment(evt: CommentEvent) {
-  console.log("[handleComment] ENTER", { platform: evt.platform, postId: evt.postId, commentText: evt.commentText, commenterId: evt.commenterId });
   const supabase = getSupabaseAdmin();
 
   const match = await findMatchingCampaign(supabase, {
@@ -174,7 +171,6 @@ async function handleComment(evt: CommentEvent) {
     commentText: evt.commentText,
   });
 
-  console.log("[handleComment] match?", { matched: !!match, name: match?.campaign?.name, keyword: match?.matchedKeyword });
   if (!match) return;
 
   const { campaign, matchedKeyword } = match;
