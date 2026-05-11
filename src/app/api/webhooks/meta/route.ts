@@ -47,6 +47,12 @@ export async function POST(req: NextRequest) {
     return new NextResponse("invalid signature", { status: 403 });
   }
 
+  // TEMP: log object type to debug missing IG events
+  try {
+    const peek = JSON.parse(rawBody);
+    console.log("[meta webhook] obj:", peek.object, "fields:", (peek.entry?.[0]?.changes||[]).map((c:any)=>c.field).join(","));
+  } catch {}
+
   let payload: MetaWebhookPayload;
   try {
     payload = JSON.parse(rawBody);
