@@ -150,6 +150,9 @@ function normalizeCommentEvent(
   if (v.item === "reaction") return null;
   if (v.verb && v.verb !== "add") return null;
   if (!v.comment_id || !v.message) return null;
+  // Ignore the page replying to itself (otherwise our own auto-reply triggers
+  // another auto-reply, causing a loop).
+  if (v.from?.id && v.from.id === entryId) return null;
   return {
     platform: "facebook",
     pageOrIgAccountId: entryId,
