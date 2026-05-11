@@ -133,13 +133,71 @@ export default async function PaddleDetailPage({ params }: Props) {
 
   const catalog = getCatalogStats();
 
-  // Similar paddles: same play style or shape, different paddle
-  const similar = paddles
-    .filter((p) => p.id !== paddle.id && (p.playStyle === paddle.playStyle || p.shape === paddle.shape))
-    .sort((a, b) => (b.trendingScore ?? 0) - (a.trendingScore ?? 0))
-    .slice(0, 4);
+  // ── Smart similarity scoring ─────────────────────────────────────────────
+  // Score each paddle by how similar it is across multiple dimensions.
+  // Higher score = more similar. Each paddle page gets a unique comparison set.
+  const priceVal = paddle.price ? parseFloat(paddle.price.replace(/[^0-9.]/g, "")) : 0;
+  const scored = paddles
+    .filter((p) => p.id !== paddle.id)
+    .map((p) => {
+      let score = 0;
 
-  const related = similar.length >= 3 ? similar : paddles.filter((p) => p.id !== paddle.id).slice(0, 4);
+      // Same play style (strong signal)
+      if (p.playStyle && p.playStyle === paddle.playStyle) score += 30;
+
+      // Same shape
+      if (p.shape === paddle.shape) score += 15;
+
+      // Same thickness
+      if (p.thickness === paddle.thickness) score += 10;
+
+      // Similar price range (within $50)
+      const pPrice = p.price ? parseFloat(p.price.replace(/[^0-9.]/g, "")) : 0;
+      if (priceVal > 0 && pPrice > 0) {
+        const diff = Math.abs(priceVal - pPrice);
+        if (diff <= 20) score += 20;
+        else if (diff <= 50) score += 12;
+        else if (diff <= 80) score += 5;
+      }
+
+      // Similar swing weight (within 5)
+      if (paddle.swingWeight > 0 && p.swingWeight > 0) {
+        const swDiff = Math.abs(paddle.swingWeight - p.swingWeight);
+        if (swDiff <= 3) score += 15;
+        else if (swDiff <= 6) score += 8;
+        else if (swDiff <= 10) score += 3;
+      }
+
+      // Similar twist weight (within 0.5)
+      if (paddle.twistWeight > 0 && p.twistWeight > 0) {
+        const twDiff = Math.abs(paddle.twistWeight - p.twistWeight);
+        if (twDiff <= 0.3) score += 10;
+        else if (twDiff <= 0.6) score += 5;
+      }
+
+      // Same brand gets a small bonus (variants are comparable)
+      if (p.brand === paddle.brand) score += 5;
+
+      // Prefer paddles with images
+      if (p.image) score += 2;
+
+      // Tiebreak by trending score
+      score += (p.trendingScore ?? 0) / 100;
+
+      return { paddle: p, score };
+    })
+    .sort((a, b) => b.score - a.score);
+
+  // Pick top 4, but ensure brand diversity (max 2 from same brand)
+  const related: typeof paddles = [];
+  const brandCount: Record<string, number> = {};
+  for (const { paddle: p } of scored) {
+    if (related.length >= 4) break;
+    const bc = brandCount[p.brand] ?? 0;
+    if (bc >= 2) continue;
+    related.push(p);
+    brandCount[p.brand] = bc + 1;
+  }
 
   // Rotate gear products per paddle so each page shows different items
   const gearPool = gearProducts.filter((g) => g.id !== "academy");
