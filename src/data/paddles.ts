@@ -364,6 +364,7 @@ export const paddles: Paddle[] = [
     amountOff: "10%",
     price: "$259.99",
     discountLink: "https://engagepickleball.com/?aff=601",
+    manualVideoId: "ZmxCypU71w4",
     addedAt: "2026-05-11",
     trendingScore: 50,
     playStyle: "all-court",
@@ -1867,6 +1868,7 @@ export const paddles: Paddle[] = [
 // Review dates — ISO publish dates for Latest Reviews sort (newest-first)
 // Set youtubeApiKey in site.ts to auto-fetch real dates; or fill in manually.
 export const reviewDates: Record<string, string> = {
+  ZmxCypU71w4:   "2026-05-11",  // Engage X2
   hLprDNd4Zxo:   "2026-05-09",  // Enhance Turbo MPP
   Z1e4mRHG2r8:   "2026-05-09",  // SixZero Coral
   "e6-jgFY4Et8": "2026-05-09",  // Aireo Cyclone
