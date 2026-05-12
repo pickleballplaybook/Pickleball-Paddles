@@ -17,6 +17,7 @@ import { gearProducts } from "@/data/products";
 import { ArrowLeft, ArrowRight, BarChart2, ExternalLink, BookOpen, ChevronRight, User } from "lucide-react";
 import ReactionButtons from "@/components/ReactionButtons";
 import DiscountCodeBox from "@/components/DiscountCodeBox";
+import CompactPromoCode from "@/components/CompactPromoCode";
 import PaddleStarRating from "@/components/PaddleStarRating";
 import ViewCounter from "@/components/ViewCounter";
 import { getBlogPostForPaddle, BlogSection } from "@/data/blogPosts";
@@ -302,19 +303,13 @@ export default async function PaddleDetailPage({ params }: Props) {
       <nav className="container-xl pt-3 pb-2 md:pt-6 md:pb-4" aria-label="Breadcrumb">
         <ol className="flex items-center gap-1.5 text-[11px] md:text-xs font-semibold uppercase tracking-wider flex-wrap">
           <li>
-            <Link href="/paddles" className="transition-colors hover:text-brand-400" style={{ color: "var(--flip-text-muted)" }}>
-              Paddles
-            </Link>
+            <Link href="/paddles" className="transition-colors hover:text-brand-400" style={{ color: "var(--flip-text-muted)" }}>Paddles</Link>
           </li>
           {paddle.playStyle && (
             <>
               <ChevronRight className="w-3 h-3" style={{ color: "var(--flip-text-muted)" }} />
               <li>
-                <Link
-                  href={`/paddles?playStyle=${paddle.playStyle}`}
-                  className="transition-colors hover:text-brand-400"
-                  style={{ color: "var(--flip-text-muted)" }}
-                >
+                <Link href={`/paddles?playStyle=${paddle.playStyle}`} className="transition-colors hover:text-brand-400" style={{ color: "var(--flip-text-muted)" }}>
                   {STYLE_LABELS[paddle.playStyle] ?? paddle.playStyle}
                 </Link>
               </li>
@@ -327,145 +322,73 @@ export default async function PaddleDetailPage({ params }: Props) {
 
       {/* ── HERO ──────────────────────────────────────────────────────────── */}
       <section className="container-xl pb-6 md:pb-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 lg:gap-16 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-16 items-start">
 
-          {/* Left — image (shorter on mobile) */}
+          {/* Left — image */}
           <div
-            className="relative rounded-2xl md:rounded-3xl aspect-[4/3] md:aspect-square flex flex-col items-center justify-center border"
-            style={{
-              background: "var(--flip-bg-card)",
-              borderColor: "var(--flip-card-border)",
-            }}
+            className="relative rounded-2xl md:rounded-3xl aspect-[3/4] md:aspect-square flex items-center justify-center border overflow-hidden"
+            style={{ background: "var(--flip-bg-card)", borderColor: "var(--flip-card-border)" }}
           >
-            {/* Badges */}
-            <div className="absolute top-3 left-3 md:top-4 md:left-4 flex flex-wrap gap-1.5 md:gap-2 z-10">
-              <span
-                className="text-[10px] md:text-xs font-bold uppercase tracking-wider px-2 md:px-3 py-1 md:py-1.5 rounded-full"
-                style={{
-                  background: "rgba(20,184,166,0.15)",
-                  color: "#2dd4bf",
-                  border: "1px solid rgba(20,184,166,0.3)",
-                }}
-              >
-                {paddle.shape}
-              </span>
-              <span
-                className="text-[10px] md:text-xs font-bold uppercase tracking-wider px-2 md:px-3 py-1 md:py-1.5 rounded-full"
-                style={{
-                  background: "rgba(20,184,166,0.15)",
-                  color: "#2dd4bf",
-                  border: "1px solid rgba(20,184,166,0.3)",
-                }}
-              >
-                {paddle.thickness}
+            <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 z-10">
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full" style={{ background: "rgba(20,184,166,0.15)", color: "#2dd4bf", border: "1px solid rgba(20,184,166,0.3)" }}>
+                {paddle.shape} &middot; {paddle.thickness}
               </span>
             </div>
-
             {paddle.image ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={paddle.image} alt={`${paddle.brand} ${paddle.name} ${paddle.shape} ${paddle.thickness} pickleball paddle`} className="w-full h-full object-contain p-6 md:p-10" />
+              <img src={paddle.image} alt={`${paddle.brand} ${paddle.name}`} className="w-full h-full object-contain p-8 md:p-10" />
             ) : (
-              <>
-                <svg viewBox="0 0 120 160" fill="none" className="w-24 h-auto mb-3 opacity-20" aria-hidden="true">
-                  <rect x="5" y="5" width="110" height="115" rx="55" fill="#14b8a6" />
-                  <rect x="45" y="116" width="30" height="40" rx="15" fill="#0d9488" />
-                </svg>
-                <p className="text-sm font-medium" style={{ color: "var(--flip-text-muted)" }}>Image coming soon</p>
-              </>
-            )}
-            {paddle.badge && (
-              <span className="mt-2 badge badge-amber text-xs px-2.5 py-0.5">{paddle.badge}</span>
+              <p className="text-sm font-medium" style={{ color: "var(--flip-text-muted)" }}>Image coming soon</p>
             )}
           </div>
 
-          {/* Right — info panel */}
+          {/* Right — info */}
           <div>
-
-            {/* Title — compact on mobile */}
-            <h1
-              className="text-2xl md:text-4xl lg:text-5xl font-extrabold tracking-tight leading-[1.08] mb-1"
-              style={{ color: "var(--flip-text-head)" }}
-            >
+            <h1 className="text-2xl md:text-4xl lg:text-5xl font-extrabold tracking-tight leading-[1.08] mb-3" style={{ color: "var(--flip-text-head)" }}>
               {paddle.brand} {paddle.name} {paddle.thickness} Review
             </h1>
 
-            {paddle.tagline && (
-              <p className="text-sm md:text-lg font-light mb-3" style={{ color: "var(--flip-text-body)" }}>
-                {paddle.tagline}
-              </p>
-            )}
-
-            {/* Star ratings */}
+            {/* Star rating */}
             <PaddleStarRating paddleId={paddle.id} />
 
-            {/* Reactions + views row */}
-            <div className="flex items-center gap-3 mb-4 flex-wrap">
+            {/* Reactions + views */}
+            <div className="flex items-center gap-3 mb-5 flex-wrap">
               <ReactionButtons paddleId={paddle.id} />
-              <span className="text-sm" style={{ color: "var(--flip-text-muted)" }}>|</span>
+              <span style={{ color: "var(--flip-text-muted)" }}>|</span>
               <ViewCounter slug={paddle.slug} type="paddle" />
             </div>
 
-            {/* Price + discount card */}
-            <div
-              className="rounded-2xl p-4 md:p-5 mb-4"
-              style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}
-            >
-              {/* Price left, promo code right */}
-              <div className="flex items-start justify-between gap-4 mb-4">
+            {/* ── Price card ──────────────────────────────────────────── */}
+            <div className="rounded-2xl p-4 md:p-5 mb-4" style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}>
+
+              <div className="flex items-start justify-between gap-3 mb-4">
                 <div>
-                  <p className="text-[10px] md:text-xs font-bold uppercase tracking-widest mb-1" style={{ color: "var(--flip-text-muted)" }}>
-                    Retail Price
-                  </p>
-                  {paddle.price && (
-                    <div className="flex items-baseline gap-2">
-                      {discountedPrice ? (
-                        <>
-                          <span className="text-lg md:text-2xl font-extrabold" style={{ color: "var(--flip-text-head)" }}>
-                            {paddle.price}
-                          </span>
-                        </>
-                      ) : (
-                        <span className="text-2xl md:text-3xl font-extrabold" style={{ color: "var(--flip-text-head)" }}>
-                          {paddle.price}
-                        </span>
-                      )}
-                    </div>
-                  )}
+                  <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "var(--flip-text-muted)" }}>Retail Price</p>
+                  <p className="text-2xl md:text-3xl font-extrabold" style={{ color: "var(--flip-text-head)" }}>{paddle.price ?? "TBD"}</p>
                 </div>
-                {/* Compact promo code */}
                 {savings && (
-                  <div className="text-right flex-shrink-0">
-                    <p className="text-[10px] md:text-xs font-bold uppercase tracking-widest mb-1" style={{ color: "var(--flip-text-muted)" }}>
-                      Promo Code
-                    </p>
-                    <DiscountCodeBox code={code} giftCard={giftCard} savings={savings} />
+                  <div className="flex-shrink-0">
+                    <p className="text-[10px] font-bold uppercase tracking-widest mb-1 text-right" style={{ color: "var(--flip-text-muted)" }}>Promo Code</p>
+                    <CompactPromoCode code={code} savings={savings} />
                   </div>
                 )}
               </div>
-              {!savings && <DiscountCodeBox code={code} giftCard={giftCard} savings={savings} />}
 
-              {/* Apply Discount / Buy button */}
+              {giftCard && <DiscountCodeBox code={code} giftCard={giftCard} savings={savings} />}
+
               {hasLink ? (
                 <a
                   href={paddle.discountLink}
                   target="_blank"
                   rel="noopener noreferrer sponsored"
-                  className="flex items-center justify-between w-full font-bold text-sm md:text-base py-3.5 md:py-4 px-5 rounded-2xl transition-all duration-200 active:scale-[0.98]"
+                  className="flex items-center justify-between w-full font-bold text-sm md:text-base py-3.5 px-5 rounded-xl transition-all active:scale-[0.98]"
                   style={{ background: "var(--flip-bg)", color: "var(--flip-text-head)", border: "1px solid var(--flip-card-border)" }}
                 >
                   Buy at {paddle.brand}
                   <ArrowRight className="w-4 h-4" />
                 </a>
               ) : (
-                <button
-                  disabled
-                  className="flex items-center justify-center gap-2 w-full font-bold text-sm py-3.5 rounded-2xl cursor-not-allowed"
-                  style={{
-                    background: "var(--flip-bg)",
-                    color: "var(--flip-text-muted)",
-                    border: "1px solid var(--flip-card-border)",
-                  }}
-                >
+                <button disabled className="flex items-center justify-center w-full font-bold text-sm py-3.5 rounded-xl cursor-not-allowed" style={{ background: "var(--flip-bg)", color: "var(--flip-text-muted)", border: "1px solid var(--flip-card-border)" }}>
                   Link Coming Soon
                 </button>
               )}
@@ -474,16 +397,12 @@ export default async function PaddleDetailPage({ params }: Props) {
               </p>
             </div>
 
-            {/* Save + Compare row */}
+            {/* Save | Compare */}
             <div className="grid grid-cols-2 gap-3">
-              <div className="flex items-center justify-center">
-                <ReactionButtons paddleId={paddle.id} />
-              </div>
-              <Link
-                href={`/compare?paddles=${paddle.slug}`}
-                className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold border transition-colors hover:border-brand-400"
-                style={{ borderColor: "var(--flip-card-border)", color: "var(--flip-text-head)" }}
-              >
+              <Link href="/saved" className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold border" style={{ borderColor: "var(--flip-card-border)", color: "var(--flip-text-head)" }}>
+                Save
+              </Link>
+              <Link href={`/compare?paddles=${paddle.slug}`} className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold border" style={{ borderColor: "var(--flip-card-border)", color: "var(--flip-text-head)" }}>
                 Compare
               </Link>
             </div>
