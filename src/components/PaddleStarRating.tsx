@@ -5,6 +5,8 @@ import { Star } from "lucide-react";
 
 interface Props {
   paddleId: string;
+  /** Baseline rating to show when no community ratings exist (Austin's review) */
+  baselineRating?: number;
 }
 
 interface RatingSummary {
@@ -17,10 +19,11 @@ function getStorageKey(paddleId: string) {
   return `paddle_rating_${paddleId}`;
 }
 
-export default function PaddleStarRating({ paddleId }: Props) {
+export default function PaddleStarRating({ paddleId, baselineRating = 4.5 }: Props) {
   const [summary, setSummary] = useState<RatingSummary>({ average: 0, count: 0, userRating: null });
   const [hovered, setHovered] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem(getStorageKey(paddleId));
@@ -29,16 +32,22 @@ export default function PaddleStarRating({ paddleId }: Props) {
     fetch(`/api/paddle-ratings?paddleId=${encodeURIComponent(paddleId)}`)
       .then((r) => r.json())
       .then((data) => {
-        setSummary({ average: data.average ?? 0, count: data.count ?? 0, userRating });
+        const apiCount = data.count ?? 0;
+        const apiAvg = data.average ?? 0;
+        setSummary({ average: apiAvg, count: apiCount, userRating });
+        setLoaded(true);
       })
-      .catch(() => {});
+      .catch(() => {
+        // API failed — use baseline
+        setSummary({ average: 0, count: 0, userRating });
+        setLoaded(true);
+      });
   }, [paddleId]);
 
   async function handleRate(stars: number) {
     if (submitting) return;
     setSubmitting(true);
 
-    // Optimistically update UI and persist locally right away
     localStorage.setItem(getStorageKey(paddleId), String(stars));
     setSummary((prev) => ({
       average: prev.count === 0 ? stars : prev.average,
@@ -61,6 +70,16 @@ export default function PaddleStarRating({ paddleId }: Props) {
   }
 
   const displayStars = hovered || summary.userRating || 0;
+
+  // Always show at least 1 review (Austin's baseline) even if API returns 0
+  const displayCount = summary.userRating
+    ? Math.max(summary.count, 1)
+    : Math.max(summary.count, 1); // baseline = Austin's review
+  const displayAvg = summary.average > 0
+    ? summary.average
+    : summary.userRating
+    ? summary.userRating
+    : baselineRating;
 
   return (
     <div
@@ -100,31 +119,16 @@ export default function PaddleStarRating({ paddleId }: Props) {
         </span>
       </div>
 
-      {/* Summary */}
-      {(() => {
-        // Ensure count is at least 1 when the user has rated locally
-        const displayCount = summary.userRating ? Math.max(summary.count, 1) : summary.count;
-        const displayAvg = summary.average > 0 ? summary.average : (summary.userRating ?? 0);
-        return (
-          <div className="flex items-center gap-2">
-            {(displayCount > 0 || summary.userRating) ? (
-              <>
-                <Star className="w-4 h-4" style={{ fill: "#facc15", color: "#facc15" }} strokeWidth={0} />
-                <span className="font-extrabold text-sm" style={{ color: "var(--flip-text-head)" }}>
-                  {displayAvg.toFixed(1)}
-                </span>
-                <span className="text-sm" style={{ color: "var(--flip-text-muted)" }}>
-                  ({displayCount} {displayCount === 1 ? "review" : "reviews"})
-                </span>
-              </>
-            ) : (
-              <p className="text-xs" style={{ color: "var(--flip-text-muted)" }}>
-                Be the first to review this paddle
-              </p>
-            )}
-          </div>
-        );
-      })()}
+      {/* Summary — always show at least Austin's review */}
+      <div className="flex items-center gap-2">
+        <Star className="w-4 h-4" style={{ fill: "#facc15", color: "#facc15" }} strokeWidth={0} />
+        <span className="font-extrabold text-sm" style={{ color: "var(--flip-text-head)" }}>
+          {displayAvg.toFixed(1)}
+        </span>
+        <span className="text-sm" style={{ color: "var(--flip-text-muted)" }}>
+          ({displayCount} {displayCount === 1 ? "review" : "reviews"})
+        </span>
+      </div>
     </div>
   );
 }

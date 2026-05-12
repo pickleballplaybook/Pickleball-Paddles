@@ -443,7 +443,7 @@ export default async function PaddleDetailPage({ params }: Props) {
 
             {/* Star ratings + views */}
             <div className="flex items-center gap-4 mb-4 flex-wrap">
-              <PaddleStarRating paddleId={paddle.id} />
+              <PaddleStarRating paddleId={paddle.id} baselineRating={parseFloat(starRating)} />
               <ViewCounter slug={paddle.slug} type="paddle" />
             </div>
 
