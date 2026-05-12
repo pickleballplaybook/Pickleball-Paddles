@@ -17,10 +17,14 @@ export default function PaddleDetailTabs() {
   const barRef = useRef<HTMLDivElement>(null);
   const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
-  // Scroll active tab into view on mobile
+  // Scroll active tab into view within the tab bar (horizontal only, never scroll the page)
   useEffect(() => {
     const btn = tabRefs.current[active];
-    if (btn) btn.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+    const bar = barRef.current;
+    if (btn && bar) {
+      const left = btn.offsetLeft - bar.offsetWidth / 2 + btn.offsetWidth / 2;
+      bar.scrollTo({ left, behavior: "smooth" });
+    }
   }, [active]);
 
   // Intersection observer: highlight tab when its section scrolls into view
