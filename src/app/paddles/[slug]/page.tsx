@@ -686,8 +686,8 @@ export default async function PaddleDetailPage({ params }: Props) {
               </div>
             </div>
 
-            {/* Sidebar — sticky */}
-            <div className="space-y-6 lg:sticky lg:top-[140px] self-start">
+            {/* Sidebar — sticky, hidden on mobile (price already in hero) */}
+            <div className="hidden lg:block space-y-6 lg:sticky lg:top-[140px] self-start">
               {/* Price card */}
               <div
                 className="rounded-2xl p-5"
@@ -706,7 +706,7 @@ export default async function PaddleDetailPage({ params }: Props) {
                     className="flex items-center justify-center gap-2 w-full font-bold text-sm py-3 rounded-xl text-white mt-3 transition-all active:scale-[0.98]"
                     style={{ background: "#14b8a6" }}
                   >
-                    Buy Now <ExternalLink className="w-3.5 h-3.5" />
+                    Apply Discount <ExternalLink className="w-3.5 h-3.5" />
                   </a>
                 )}
               </div>
