@@ -17,7 +17,6 @@ import { gearProducts } from "@/data/products";
 import { ArrowLeft, ArrowRight, BarChart2, ExternalLink, BookOpen, ChevronRight, User } from "lucide-react";
 import ReactionButtons from "@/components/ReactionButtons";
 import DiscountCodeBox from "@/components/DiscountCodeBox";
-import CompactPromoCode from "@/components/CompactPromoCode";
 import PaddleStarRating from "@/components/PaddleStarRating";
 import ViewCounter from "@/components/ViewCounter";
 import { getBlogPostForPaddle, BlogSection } from "@/data/blogPosts";
@@ -297,19 +296,25 @@ export default async function PaddleDetailPage({ params }: Props) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
 
-      <div className="min-h-screen pt-[100px] md:pt-[140px] pb-20" style={{ background: "var(--flip-bg)" }}>
+      <div className="min-h-screen pt-[156px] pb-16" style={{ background: "var(--flip-bg)" }}>
 
       {/* ── BREADCRUMBS ─────────────────────────────────────────────────── */}
-      <nav className="container-xl pt-3 pb-2 md:pt-6 md:pb-4" aria-label="Breadcrumb">
-        <ol className="flex items-center gap-1.5 text-[11px] md:text-xs font-semibold uppercase tracking-wider flex-wrap">
+      <nav className="container-xl pt-6 pb-4" aria-label="Breadcrumb">
+        <ol className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider flex-wrap">
           <li>
-            <Link href="/paddles" className="transition-colors hover:text-brand-400" style={{ color: "var(--flip-text-muted)" }}>Paddles</Link>
+            <Link href="/paddles" className="transition-colors hover:text-brand-400" style={{ color: "var(--flip-text-muted)" }}>
+              Paddles
+            </Link>
           </li>
           {paddle.playStyle && (
             <>
               <ChevronRight className="w-3 h-3" style={{ color: "var(--flip-text-muted)" }} />
               <li>
-                <Link href={`/paddles?playStyle=${paddle.playStyle}`} className="transition-colors hover:text-brand-400" style={{ color: "var(--flip-text-muted)" }}>
+                <Link
+                  href={`/paddles?playStyle=${paddle.playStyle}`}
+                  className="transition-colors hover:text-brand-400"
+                  style={{ color: "var(--flip-text-muted)" }}
+                >
                   {STYLE_LABELS[paddle.playStyle] ?? paddle.playStyle}
                 </Link>
               </li>
@@ -321,90 +326,206 @@ export default async function PaddleDetailPage({ params }: Props) {
       </nav>
 
       {/* ── HERO ──────────────────────────────────────────────────────────── */}
-      <section className="container-xl pb-6 md:pb-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-16 items-start">
+      <section className="container-xl pb-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
 
           {/* Left — image */}
           <div
-            className="relative rounded-2xl md:rounded-3xl aspect-[3/4] md:aspect-square flex items-center justify-center border overflow-hidden"
-            style={{ background: "var(--flip-bg-card)", borderColor: "var(--flip-card-border)" }}
+            className="relative rounded-3xl aspect-square flex flex-col items-center justify-center border"
+            style={{
+              background: "var(--flip-bg-card)",
+              borderColor: "var(--flip-card-border)",
+            }}
           >
-            <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 z-10">
-              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full" style={{ background: "rgba(20,184,166,0.15)", color: "#2dd4bf", border: "1px solid rgba(20,184,166,0.3)" }}>
-                {paddle.shape} &middot; {paddle.thickness}
+            {/* Shape + Thickness + PlayStyle badges */}
+            <div className="absolute top-4 left-4 flex flex-wrap gap-2 z-10">
+              <span
+                className="text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full"
+                style={{
+                  background: "rgba(20,184,166,0.15)",
+                  color: "#2dd4bf",
+                  border: "1px solid rgba(20,184,166,0.3)",
+                  backdropFilter: "blur(8px)",
+                }}
+              >
+                {paddle.shape}
               </span>
+              <span
+                className="text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full"
+                style={{
+                  background: "rgba(20,184,166,0.15)",
+                  color: "#2dd4bf",
+                  border: "1px solid rgba(20,184,166,0.3)",
+                  backdropFilter: "blur(8px)",
+                }}
+              >
+                {paddle.thickness}
+              </span>
+              {paddle.playStyle && (
+                <span
+                  className="text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full"
+                  style={{
+                    background: paddle.playStyle === "power"
+                      ? "rgba(251,146,60,0.15)"
+                      : paddle.playStyle === "control"
+                      ? "rgba(99,102,241,0.15)"
+                      : "rgba(34,197,94,0.15)",
+                    color: paddle.playStyle === "power"
+                      ? "#fb923c"
+                      : paddle.playStyle === "control"
+                      ? "#818cf8"
+                      : "#4ade80",
+                    border: paddle.playStyle === "power"
+                      ? "1px solid rgba(251,146,60,0.35)"
+                      : paddle.playStyle === "control"
+                      ? "1px solid rgba(99,102,241,0.35)"
+                      : "1px solid rgba(34,197,94,0.35)",
+                    backdropFilter: "blur(8px)",
+                  }}
+                >
+                  {STYLE_LABELS[paddle.playStyle] ?? paddle.playStyle}
+                </span>
+              )}
             </div>
+
             {paddle.image ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={paddle.image} alt={`${paddle.brand} ${paddle.name}`} className="w-full h-full object-contain p-8 md:p-10" />
+              <img src={paddle.image} alt={`${paddle.brand} ${paddle.name} ${paddle.shape} ${paddle.thickness} pickleball paddle`} className="w-full h-full object-contain p-10" />
             ) : (
-              <p className="text-sm font-medium" style={{ color: "var(--flip-text-muted)" }}>Image coming soon</p>
+              <>
+                <svg viewBox="0 0 120 160" fill="none" className="w-32 h-auto mb-4 opacity-20" aria-hidden="true">
+                  <rect x="5" y="5" width="110" height="115" rx="55" fill="#14b8a6" />
+                  <rect x="45" y="116" width="30" height="40" rx="15" fill="#0d9488" />
+                </svg>
+                <p className="text-sm font-medium" style={{ color: "var(--flip-text-muted)" }}>
+                  Image coming soon
+                </p>
+              </>
+            )}
+            {paddle.badge && (
+              <span className="mt-4 badge badge-amber text-sm px-3 py-1">{paddle.badge}</span>
             )}
           </div>
 
-          {/* Right — info */}
-          <div>
-            <h1 className="text-2xl md:text-4xl lg:text-5xl font-extrabold tracking-tight leading-[1.08] mb-3" style={{ color: "var(--flip-text-head)" }}>
-              {paddle.brand} {paddle.name} {paddle.thickness} Review
+          {/* Right — info panel */}
+          <div className="lg:pt-2">
+
+            {/* Reviewer line */}
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-9 h-9 rounded-full flex items-center justify-center" style={{ background: "rgba(20,184,166,0.15)" }}>
+                <User className="w-4 h-4" style={{ color: "#14b8a6" }} />
+              </div>
+              <div>
+                <p className="text-sm font-semibold" style={{ color: "var(--flip-text-head)" }}>
+                  Tested by <span style={{ color: "#2dd4bf" }}>Austin Hardy</span>
+                </p>
+                <p className="text-xs" style={{ color: "var(--flip-text-muted)" }}>
+                  5.5+ player &middot; Independent reviewer
+                </p>
+              </div>
+            </div>
+
+            <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#14b8a6" }}>
+              {paddle.brand}
+            </p>
+            <h1
+              className="text-4xl md:text-5xl font-extrabold tracking-tight leading-[1.05] mb-1"
+              style={{ color: "var(--flip-text-head)" }}
+            >
+              {paddle.name} {paddle.thickness} Pickleball Paddle Review
             </h1>
 
-            {/* Star rating */}
-            <PaddleStarRating paddleId={paddle.id} />
+            {paddle.tagline && (
+              <p className="text-lg font-light mb-4" style={{ color: "var(--flip-text-body)" }}>
+                {paddle.tagline}
+              </p>
+            )}
 
-            {/* Reactions + views */}
-            <div className="flex items-center gap-3 mb-5 flex-wrap">
-              <ReactionButtons paddleId={paddle.id} />
-              <span style={{ color: "var(--flip-text-muted)" }}>|</span>
+            {/* Star ratings + views */}
+            <div className="flex items-center gap-4 mb-4 flex-wrap">
+              <PaddleStarRating paddleId={paddle.id} />
               <ViewCounter slug={paddle.slug} type="paddle" />
             </div>
 
-            {/* ── Price card ──────────────────────────────────────────── */}
-            <div className="rounded-2xl p-4 md:p-5 mb-4" style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}>
-
-              <div className="flex items-start justify-between gap-3 mb-4">
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "var(--flip-text-muted)" }}>Retail Price</p>
-                  <p className="text-2xl md:text-3xl font-extrabold" style={{ color: "var(--flip-text-head)" }}>{paddle.price ?? "TBD"}</p>
-                </div>
-                {savings && (
-                  <div className="flex-shrink-0">
-                    <p className="text-[10px] font-bold uppercase tracking-widest mb-1 text-right" style={{ color: "var(--flip-text-muted)" }}>Promo Code</p>
-                    <CompactPromoCode code={code} savings={savings} />
+            {/* Price + discount box */}
+            <div
+              className="rounded-2xl p-5 mb-5"
+              style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}
+            >
+              <div className="mb-3">
+                <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: "var(--flip-text-muted)" }}>
+                  Retail Price
+                </p>
+                {paddle.price && (
+                  <div className="flex items-baseline gap-3 mb-4">
+                    {discountedPrice ? (
+                      <>
+                        <span className="text-2xl font-semibold line-through" style={{ color: "var(--flip-text-muted)" }}>
+                          {paddle.price}
+                        </span>
+                        <span className="text-3xl font-extrabold" style={{ color: "#2dd4bf" }}>
+                          {discountedPrice}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-3xl font-extrabold" style={{ color: "var(--flip-text-head)" }}>
+                        {paddle.price}
+                      </span>
+                    )}
                   </div>
                 )}
+                <DiscountCodeBox code={code} giftCard={giftCard} savings={savings} />
               </div>
 
-              {giftCard && <DiscountCodeBox code={code} giftCard={giftCard} savings={savings} />}
-
+              {/* Buy button */}
               {hasLink ? (
                 <a
                   href={paddle.discountLink}
                   target="_blank"
                   rel="noopener noreferrer sponsored"
-                  className="flex items-center justify-between w-full font-bold text-sm md:text-base py-3.5 px-5 rounded-xl transition-all active:scale-[0.98]"
-                  style={{ background: "var(--flip-bg)", color: "var(--flip-text-head)", border: "1px solid var(--flip-card-border)" }}
+                  className="flex items-center justify-center gap-2 w-full font-bold text-base py-4 rounded-2xl text-white transition-all duration-200 active:scale-[0.98]"
+                  style={{ background: "#14b8a6" }}
                 >
                   Buy at {paddle.brand}
-                  <ArrowRight className="w-4 h-4" />
+                  <ExternalLink className="w-4 h-4" strokeWidth={2.5} />
                 </a>
               ) : (
-                <button disabled className="flex items-center justify-center w-full font-bold text-sm py-3.5 rounded-xl cursor-not-allowed" style={{ background: "var(--flip-bg)", color: "var(--flip-text-muted)", border: "1px solid var(--flip-card-border)" }}>
+                <button
+                  disabled
+                  className="flex items-center justify-center gap-2 w-full font-bold text-base py-4 rounded-2xl cursor-not-allowed"
+                  style={{
+                    background: "var(--flip-bg-card)",
+                    color: "var(--flip-text-muted)",
+                    border: "1px solid var(--flip-card-border)",
+                  }}
+                >
                   Link Coming Soon
                 </button>
               )}
-              <p className="text-[10px] mt-2 text-center" style={{ color: "var(--flip-text-muted)" }}>
+              <p className="text-[11px] mt-2 text-center" style={{ color: "var(--flip-text-muted)" }}>
                 Affiliate links. We may earn a commission — it never affects our ratings.
               </p>
             </div>
 
-            {/* Save | Compare */}
-            <div className="grid grid-cols-2 gap-3">
-              <Link href="/saved" className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold border" style={{ borderColor: "var(--flip-card-border)", color: "var(--flip-text-head)" }}>
-                Save
-              </Link>
-              <Link href={`/compare?paddles=${paddle.slug}`} className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold border" style={{ borderColor: "var(--flip-card-border)", color: "var(--flip-text-head)" }}>
+            {/* Action row */}
+            <div className="flex items-center gap-3 flex-wrap">
+              <ReactionButtons paddleId={paddle.id} />
+              <Link
+                href={`/compare?paddles=${paddle.slug}`}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold border transition-colors hover:border-brand-400"
+                style={{ borderColor: "var(--flip-card-border)", color: "var(--flip-text-head)" }}
+              >
                 Compare
               </Link>
+              {videoId && (
+                <button
+                  onClick={undefined}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold border transition-colors"
+                  style={{ borderColor: "var(--flip-card-border)", color: "var(--flip-text-head)" }}
+                >
+                  Watch Review
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -585,7 +706,7 @@ export default async function PaddleDetailPage({ params }: Props) {
                     className="flex items-center justify-center gap-2 w-full font-bold text-sm py-3 rounded-xl text-white mt-3 transition-all active:scale-[0.98]"
                     style={{ background: "#14b8a6" }}
                   >
-                    Apply Discount <ExternalLink className="w-3.5 h-3.5" />
+                    Buy Now <ExternalLink className="w-3.5 h-3.5" />
                   </a>
                 )}
               </div>
