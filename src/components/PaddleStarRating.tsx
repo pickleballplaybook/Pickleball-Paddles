@@ -5,8 +5,6 @@ import { Star } from "lucide-react";
 
 interface Props {
   paddleId: string;
-  /** Baseline rating to show when no community ratings exist (Austin's review) */
-  baselineRating?: number;
 }
 
 interface RatingSummary {
@@ -19,11 +17,10 @@ function getStorageKey(paddleId: string) {
   return `paddle_rating_${paddleId}`;
 }
 
-export default function PaddleStarRating({ paddleId, baselineRating = 4.5 }: Props) {
+export default function PaddleStarRating({ paddleId }: Props) {
   const [summary, setSummary] = useState<RatingSummary>({ average: 0, count: 0, userRating: null });
   const [hovered, setHovered] = useState(0);
   const [submitting, setSubmitting] = useState(false);
-  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem(getStorageKey(paddleId));
@@ -32,16 +29,9 @@ export default function PaddleStarRating({ paddleId, baselineRating = 4.5 }: Pro
     fetch(`/api/paddle-ratings?paddleId=${encodeURIComponent(paddleId)}`)
       .then((r) => r.json())
       .then((data) => {
-        const apiCount = data.count ?? 0;
-        const apiAvg = data.average ?? 0;
-        setSummary({ average: apiAvg, count: apiCount, userRating });
-        setLoaded(true);
+        setSummary({ average: data.average ?? 0, count: data.count ?? 0, userRating });
       })
-      .catch(() => {
-        // API failed — use baseline
-        setSummary({ average: 0, count: 0, userRating });
-        setLoaded(true);
-      });
+      .catch(() => {});
   }, [paddleId]);
 
   async function handleRate(stars: number) {
@@ -70,16 +60,6 @@ export default function PaddleStarRating({ paddleId, baselineRating = 4.5 }: Pro
   }
 
   const displayStars = hovered || summary.userRating || 0;
-
-  // Always show at least 1 review (Austin's baseline) even if API returns 0
-  const displayCount = summary.userRating
-    ? Math.max(summary.count, 1)
-    : Math.max(summary.count, 1); // baseline = Austin's review
-  const displayAvg = summary.average > 0
-    ? summary.average
-    : summary.userRating
-    ? summary.userRating
-    : baselineRating;
 
   return (
     <div
@@ -119,16 +99,22 @@ export default function PaddleStarRating({ paddleId, baselineRating = 4.5 }: Pro
         </span>
       </div>
 
-      {/* Summary — always show at least Austin's review */}
-      <div className="flex items-center gap-2">
-        <Star className="w-4 h-4" style={{ fill: "#facc15", color: "#facc15" }} strokeWidth={0} />
-        <span className="font-extrabold text-sm" style={{ color: "var(--flip-text-head)" }}>
-          {displayAvg.toFixed(1)}
-        </span>
-        <span className="text-sm" style={{ color: "var(--flip-text-muted)" }}>
-          ({displayCount} {displayCount === 1 ? "review" : "reviews"})
-        </span>
-      </div>
+      {/* Summary */}
+      {summary.count > 0 || summary.userRating ? (
+        <div className="flex items-center gap-2">
+          <Star className="w-4 h-4" style={{ fill: "#facc15", color: "#facc15" }} strokeWidth={0} />
+          <span className="font-extrabold text-sm" style={{ color: "var(--flip-text-head)" }}>
+            {(summary.average > 0 ? summary.average : (summary.userRating ?? 0)).toFixed(1)}
+          </span>
+          <span className="text-sm" style={{ color: "var(--flip-text-muted)" }}>
+            ({Math.max(summary.count, summary.userRating ? 1 : 0)} {Math.max(summary.count, summary.userRating ? 1 : 0) === 1 ? "review" : "reviews"})
+          </span>
+        </div>
+      ) : (
+        <p className="text-xs" style={{ color: "var(--flip-text-muted)" }}>
+          Be the first to review this paddle
+        </p>
+      )}
     </div>
   );
 }
