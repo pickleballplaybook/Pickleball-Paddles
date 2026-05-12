@@ -25,7 +25,13 @@ export async function GET(req: NextRequest) {
     ? data.reduce((sum, r) => sum + r.stars, 0) / count
     : 0;
 
-  return NextResponse.json({ average, count }, { headers: { "Cache-Control": "no-store" } });
+  return NextResponse.json({ average, count }, {
+    headers: {
+      "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+      "CDN-Cache-Control": "no-store",
+      "Vercel-CDN-Cache-Control": "no-store",
+    },
+  });
 }
 
 // POST /api/paddle-ratings  { paddleId, stars }
