@@ -124,6 +124,8 @@ export default async function HomePage() {
     <>
       <Hero />
 
+      <div id="paddles"><HottestPaddle /></div>
+
       <LatestPaddles paddles={latestPaddles} />
 
       {/* Drills App */}
@@ -151,8 +153,6 @@ export default async function HomePage() {
         icon={!promoA.image ? <GraduationCap className="w-5 h-5" strokeWidth={2} /> : undefined}
         bg={promoA.bg}
       />
-
-      <div id="paddles"><HottestPaddle /></div>
 
       <TrendingSection paddles={paddles} />
 
