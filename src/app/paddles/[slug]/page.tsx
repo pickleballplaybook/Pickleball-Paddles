@@ -626,7 +626,7 @@ export default async function PaddleDetailPage({ params }: Props) {
                   How this paddle compares to {paddles.length}+ paddles in our database.
                 </p>
 
-                {paddle.swingWeight > 0 && (
+                {paddle.swingWeight > 0 ? (
                   <SpecBar
                     label="Swing Weight"
                     value={paddle.swingWeight}
@@ -634,8 +634,13 @@ export default async function PaddleDetailPage({ params }: Props) {
                     max={catalog.swingWeight.max}
                     avg={catalog.swingWeight.avg}
                   />
+                ) : (
+                  <div className="flex items-center justify-between py-4">
+                    <span className="text-sm font-semibold" style={{ color: "var(--flip-text-head)" }}>Swing Weight</span>
+                    <span className="text-sm font-bold" style={{ color: "var(--flip-text-muted)" }}>TBD</span>
+                  </div>
                 )}
-                {paddle.twistWeight > 0 && (
+                {paddle.twistWeight > 0 ? (
                   <SpecBar
                     label="Twist Weight"
                     value={paddle.twistWeight}
@@ -643,6 +648,11 @@ export default async function PaddleDetailPage({ params }: Props) {
                     max={catalog.twistWeight.max}
                     avg={catalog.twistWeight.avg}
                   />
+                ) : (
+                  <div className="flex items-center justify-between py-4">
+                    <span className="text-sm font-semibold" style={{ color: "var(--flip-text-head)" }}>Twist Weight</span>
+                    <span className="text-sm font-bold" style={{ color: "var(--flip-text-muted)" }}>TBD</span>
+                  </div>
                 )}
                 {parseFloat(paddle.weight) > 0 && (
                   <SpecBar
@@ -653,6 +663,22 @@ export default async function PaddleDetailPage({ params }: Props) {
                     max={catalog.weight.max}
                     avg={catalog.weight.avg}
                   />
+                )}
+
+                {/* Play style */}
+                {paddle.playStyle && (
+                  <div className="flex items-center justify-between pt-4 mt-2 border-t" style={{ borderColor: "var(--flip-divider)" }}>
+                    <span className="text-sm font-semibold" style={{ color: "var(--flip-text-head)" }}>Play Style</span>
+                    <span
+                      className="text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full"
+                      style={{
+                        background: paddle.playStyle === "power" ? "rgba(251,146,60,0.15)" : paddle.playStyle === "control" ? "rgba(99,102,241,0.15)" : "rgba(34,197,94,0.15)",
+                        color: paddle.playStyle === "power" ? "#fb923c" : paddle.playStyle === "control" ? "#818cf8" : "#4ade80",
+                      }}
+                    >
+                      {STYLE_LABELS[paddle.playStyle] ?? paddle.playStyle}
+                    </span>
+                  </div>
                 )}
               </div>
 
