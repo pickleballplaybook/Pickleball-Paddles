@@ -46,7 +46,7 @@ export const siteConfig = {
       "All-court performance at $195",
     ],
     // Affiliate link for the SHOP NOW button — uses the paddle's discountLink if blank
-    seriesLink: "https://808pickle.com/products/j2cr-crystal-blue-endurance-surface%E2%84%A2-pre-order?variant=51746641445184",
+    seriesLink: "https://808pickle.com/products/j2cr-crystal-blue-endurance-surface%E2%84%A2-pre-order?variant=51746641445184&discount=PLAYBOOK",
   },
 
   // ── Homepage — Paddle of the Week ───────────────────────────────────────────
