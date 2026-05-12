@@ -27,11 +27,18 @@ export default function PaddleStarRating({ paddleId }: Props) {
     const userRating = stored ? parseInt(stored, 10) : null;
 
     fetch(`/api/paddle-ratings?paddleId=${encodeURIComponent(paddleId)}&_t=${Date.now()}`, { cache: "no-store" })
-      .then((r) => r.json())
-      .then((data) => {
-        setSummary({ average: data.average ?? 0, count: data.count ?? 0, userRating });
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
       })
-      .catch(() => {});
+      .then((data) => {
+        if (typeof data.count === "number") {
+          setSummary({ average: data.average ?? 0, count: data.count, userRating });
+        }
+      })
+      .catch((err) => {
+        console.error("[PaddleStarRating] fetch failed:", err);
+      });
   }, [paddleId]);
 
   async function handleRate(stars: number) {
