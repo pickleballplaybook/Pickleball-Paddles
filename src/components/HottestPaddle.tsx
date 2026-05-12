@@ -218,48 +218,6 @@ export default function HottestPaddle() {
               })}
             </div>
 
-            {/* Floating spec chips */}
-            {paddle && (
-              <div className="absolute bottom-4 right-0 flex flex-col gap-2 items-end">
-                <div
-                  className="px-3 py-1.5 rounded-xl text-[11px] font-bold"
-                  style={{
-                    background: "rgba(0,0,0,0.55)",
-                    border: "1px solid rgba(20,184,166,0.35)",
-                    color: "#2dd4bf",
-                    backdropFilter: "blur(12px)",
-                  }}
-                >
-                  {paddle.thickness} Core
-                </div>
-                {paddle.swingWeight > 0 && (
-                  <div className="flex gap-2">
-                    <div
-                      className="px-3 py-1.5 rounded-xl text-[11px] font-bold"
-                      style={{
-                        background: "rgba(0,0,0,0.55)",
-                        border: "1px solid rgba(255,255,255,0.12)",
-                        color: "rgba(255,255,255,0.8)",
-                        backdropFilter: "blur(12px)",
-                      }}
-                    >
-                      SW {paddle.swingWeight}
-                    </div>
-                    <div
-                      className="px-3 py-1.5 rounded-xl text-[11px] font-bold"
-                      style={{
-                        background: "rgba(0,0,0,0.55)",
-                        border: "1px solid rgba(255,255,255,0.12)",
-                        color: "rgba(255,255,255,0.8)",
-                        backdropFilter: "blur(12px)",
-                      }}
-                    >
-                      TW {paddle.twistWeight}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
           </div>
         </div>
       </div>
