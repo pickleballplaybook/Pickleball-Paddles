@@ -58,7 +58,7 @@ export default function StickyBottomBar({ name, brand, price, discountLink, slug
               className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-bold text-white transition-all active:scale-[0.97]"
               style={{ background: "#14b8a6" }}
             >
-              Buy at {brand} <ExternalLink className="w-3.5 h-3.5" />
+              Apply Discount <ExternalLink className="w-3.5 h-3.5" />
             </a>
           ) : (
             <span
