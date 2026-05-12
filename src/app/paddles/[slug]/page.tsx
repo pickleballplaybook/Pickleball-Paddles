@@ -486,7 +486,7 @@ export default async function PaddleDetailPage({ params }: Props) {
                   className="flex items-center justify-center gap-2 w-full font-bold text-base py-4 rounded-2xl text-white transition-all duration-200 active:scale-[0.98]"
                   style={{ background: "#14b8a6" }}
                 >
-                  Buy at {paddle.brand}
+                  Buy with Discount
                   <ExternalLink className="w-4 h-4" strokeWidth={2.5} />
                 </a>
               ) : (

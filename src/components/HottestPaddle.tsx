@@ -143,7 +143,7 @@ export default function HottestPaddle() {
                   letterSpacing: "0.05em",
                 }}
               >
-                SHOP NOW
+                BUY WITH DISCOUNT
                 <ArrowRight className="w-4 h-4" strokeWidth={2.5} />
               </a>
               <Link
