@@ -4,6 +4,12 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabaseClient";
 
+const NO_CACHE = {
+  "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+  "CDN-Cache-Control": "no-store",
+  "Vercel-CDN-Cache-Control": "no-store",
+};
+
 // GET /api/paddle-ratings?paddleId=xxx
 export async function GET(req: NextRequest) {
   const paddleId = req.nextUrl.searchParams.get("paddleId");
@@ -13,8 +19,9 @@ export async function GET(req: NextRequest) {
 
   const { data, error } = await supabase
     .from("paddle_ratings")
-    .select("stars")
-    .eq("paddle_id", paddleId);
+    .select("stars, comment, created_at")
+    .eq("paddle_id", paddleId)
+    .order("created_at", { ascending: false });
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -25,34 +32,33 @@ export async function GET(req: NextRequest) {
     ? data.reduce((sum, r) => sum + r.stars, 0) / count
     : 0;
 
-  return NextResponse.json({ average, count }, {
-    headers: {
-      "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
-      "CDN-Cache-Control": "no-store",
-      "Vercel-CDN-Cache-Control": "no-store",
-    },
-  });
+  // Return reviews that have comments
+  const reviews = (data ?? [])
+    .filter((r) => r.comment && r.comment.trim())
+    .map((r) => ({ stars: r.stars, comment: r.comment, date: r.created_at }));
+
+  return NextResponse.json({ average, count, reviews }, { headers: NO_CACHE });
 }
 
-// POST /api/paddle-ratings  { paddleId, stars }
+// POST /api/paddle-ratings  { paddleId, stars, userKey, comment? }
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { paddleId, stars } = body;
+  const { paddleId, stars, userKey, comment } = body;
 
-  if (!paddleId || typeof stars !== "number" || stars < 1 || stars > 5) {
+  if (!paddleId || typeof stars !== "number" || stars < 1 || stars > 5 || !userKey) {
     return NextResponse.json({ error: "Invalid input" }, { status: 400 });
   }
 
-  // Use IP + user-agent as anonymous identifier (no auth required)
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-  const ua = req.headers.get("user-agent") ?? "";
-  const userKey = Buffer.from(`${ip}|${ua}`).toString("base64").slice(0, 64);
-
-  // Upsert: one rating per user per paddle
+  // Upsert: one rating per userKey per paddle
   const { error } = await supabase
     .from("paddle_ratings")
     .upsert(
-      { paddle_id: paddleId, user_key: userKey, stars },
+      {
+        paddle_id: paddleId,
+        user_key: userKey.slice(0, 64),
+        stars,
+        comment: (comment ?? "").slice(0, 500),
+      },
       { onConflict: "paddle_id,user_key" }
     );
 
@@ -63,13 +69,18 @@ export async function POST(req: NextRequest) {
   // Return updated summary
   const { data } = await supabase
     .from("paddle_ratings")
-    .select("stars")
-    .eq("paddle_id", paddleId);
+    .select("stars, comment, created_at")
+    .eq("paddle_id", paddleId)
+    .order("created_at", { ascending: false });
 
   const count = data?.length ?? 0;
   const average = count > 0
     ? data!.reduce((sum, r) => sum + r.stars, 0) / count
     : 0;
 
-  return NextResponse.json({ average, count });
+  const reviews = (data ?? [])
+    .filter((r) => r.comment && r.comment.trim())
+    .map((r) => ({ stars: r.stars, comment: r.comment, date: r.created_at }));
+
+  return NextResponse.json({ average, count, reviews }, { headers: NO_CACHE });
 }
