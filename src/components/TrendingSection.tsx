@@ -62,6 +62,28 @@ function useViewCounts(slugs: string[]) {
 
 // ── Main export (client component) ────────────────────────────────────────────
 
+// ── Fetch all paddle rating counts ────────────────────────────────────────────
+function useRatingCounts(paddleIds: string[]) {
+  const [ratings, setRatings] = useState<Record<string, { count: number; average: number }>>({});
+  useEffect(() => {
+    if (paddleIds.length === 0) return;
+    // Fetch ratings for all paddles in parallel (batch of individual calls)
+    Promise.all(
+      paddleIds.map((id) =>
+        fetch(`/api/paddle-ratings?paddleId=${id}&_t=${Date.now()}`, { cache: "no-store" })
+          .then((r) => r.json())
+          .then((data) => ({ id, count: data.count ?? 0, average: data.average ?? 0 }))
+          .catch(() => ({ id, count: 0, average: 0 }))
+      )
+    ).then((results) => {
+      const map: Record<string, { count: number; average: number }> = {};
+      for (const r of results) map[r.id] = { count: r.count, average: r.average };
+      setRatings(map);
+    });
+  }, [paddleIds.join(",")]); // eslint-disable-line react-hooks/exhaustive-deps
+  return ratings;
+}
+
 export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
   const [heartRecords, setHeartRecords] = useState<HeartRecord[]>([]);
 
@@ -83,20 +105,47 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
     return () => window.removeEventListener("hearts-updated", fetchHearts);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Fetch star ratings for all paddles
+  const allPaddleIds = paddles.map((p) => p.id);
+  const ratingCounts = useRatingCounts(allPaddleIds);
+
   const hasHearts = heartRecords.length > 0;
+  const hasRatings = Object.values(ratingCounts).some((r) => r.count > 0);
 
   const allTrending = getTrendingPaddles(paddles, heartRecords, paddles.length);
   const allBrands   = getRisingBrands(paddles, heartRecords, paddles.length);
 
-  const trending = hasHearts
-    ? allTrending.filter((t) => t.totalHearts > 0).slice(0, 6)
-    : allTrending.slice(0, 6);
+  // Re-sort trending by hearts + star rating count combined
+  const trendingSorted = allTrending
+    .map((t) => ({
+      ...t,
+      ratingCount: ratingCounts[t.paddle.id]?.count ?? 0,
+      ratingAvg: ratingCounts[t.paddle.id]?.average ?? 0,
+      // Combined engagement score: hearts + rating count
+      engagement: t.totalHearts + (ratingCounts[t.paddle.id]?.count ?? 0),
+    }))
+    .sort((a, b) => b.engagement - a.engagement || b.totalHearts - a.totalHearts)
+    .filter((t) => (hasHearts || hasRatings) ? t.engagement > 0 : true)
+    .slice(0, 6);
 
-  const brands = hasHearts
-    ? allBrands.filter((b) => b.totalHearts > 0).slice(0, 6)
-    : allBrands.slice(0, 6);
+  // Re-sort brands by total hearts + total rating counts
+  const brandRatings = new Map<string, number>();
+  for (const p of paddles) {
+    const rc = ratingCounts[p.id]?.count ?? 0;
+    brandRatings.set(p.brand, (brandRatings.get(p.brand) ?? 0) + rc);
+  }
 
-  const trendingSlugs = trending.map((t) => t.paddle.slug);
+  const brandsSorted = allBrands
+    .map((b) => ({
+      ...b,
+      totalRatings: brandRatings.get(b.brand) ?? 0,
+      engagement: b.totalHearts + (brandRatings.get(b.brand) ?? 0),
+    }))
+    .sort((a, b) => b.engagement - a.engagement || b.totalHearts - a.totalHearts)
+    .filter((b) => (hasHearts || hasRatings) ? b.engagement > 0 : true)
+    .slice(0, 6);
+
+  const trendingSlugs = trendingSorted.map((t) => t.paddle.slug);
   const viewCounts = useViewCounts(trendingSlugs);
 
   return (
@@ -134,12 +183,12 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
             title="Trending Paddles"
             subtitle="Ranked by views and engagement"
           >
-            {trending.length === 0 ? (
+            {trendingSorted.length === 0 ? (
               <p className="text-sm" style={{ color: "var(--flip-text-muted)" }}>
                 Heart paddles you like to see them appear here.
               </p>
             ) : (
-              trending.map(({ paddle, totalHearts }, i) => {
+              trendingSorted.map(({ paddle, totalHearts, ratingCount, ratingAvg }, i) => {
                 const hasLink = !!paddle.discountLink?.trim();
                 const code = getCode(paddle.brand, paddle.discountLink);
                 const views = viewCounts[paddle.slug] ?? 0;
@@ -183,6 +232,13 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
                         <Eye className="w-3 h-3" />
                         {views >= 1000 ? `${(views / 1000).toFixed(1)}k` : views}
                       </span>
+                      {/* Stars */}
+                      {ratingCount > 0 && (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-bold px-1.5 py-0.5 rounded-md" style={{ background: "rgba(250,204,21,0.12)", color: "#facc15" }}>
+                          <Star className="w-3 h-3" fill="currentColor" strokeWidth={0} />
+                          {ratingAvg.toFixed(1)}
+                        </span>
+                      )}
                       {/* Hearts */}
                       {totalHearts > 0 && (
                         <span
@@ -228,12 +284,12 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
             title="Rising Brands"
             subtitle="Brands ranked by total engagement"
           >
-            {brands.length === 0 ? (
+            {brandsSorted.length === 0 ? (
               <p className="text-sm" style={{ color: "var(--flip-text-muted)" }}>
                 Heart paddles you like to see top brands here.
               </p>
             ) : (
-              brands.map(({ brand, totalHearts, paddleCount, topSlug }) => (
+              brandsSorted.map(({ brand, totalHearts, paddleCount, topSlug, totalRatings }) => (
                 <Link
                   key={brand}
                   href={`/paddles/${topSlug}`}
