@@ -1105,9 +1105,13 @@ export default async function PaddleDetailPage({ params }: Props) {
       {/* ── DISCUSSION (tab: discussion) ──────────────────────────────── */}
       <section id="discussion" className="py-16">
         <div className="container-xl max-w-3xl mx-auto">
-          <h2 className="text-2xl font-extrabold mb-4" style={{ color: "var(--flip-text-head)" }}>
+          <h2 className="text-2xl font-extrabold mb-6" style={{ color: "var(--flip-text-head)" }}>
             Discussion
           </h2>
+
+          {/* Community reviews portal target */}
+          <div id="community-reviews" className="mb-6" />
+
           <div
             className="rounded-2xl p-6 text-center"
             style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}
