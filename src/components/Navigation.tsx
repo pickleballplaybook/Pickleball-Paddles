@@ -12,7 +12,6 @@ import PaddleQuiz from "@/components/PaddleQuiz";
 const navLinks = [
   { label: "Paddles",     href: "/paddles" },
   { label: "Best Paddles", href: "/best-pickleball-paddles" },
-  { label: "Series",      href: "/series" },
   { label: "Reviews",     href: "/reviews" },
   { label: "Compare",     href: "/compare" },
   { label: "Gear",        href: "/gear"    },
