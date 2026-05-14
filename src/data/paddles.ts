@@ -1624,7 +1624,7 @@ export const paddles: Paddle[] = [
     image: "/images/paddles/J2CR-Crystal-Blue-Endurance-Surface-16mm.png",
     amountOff: "10%",
     price: "$195.00",
-    discountLink: "https://808pickle.com/discount/PLAYBOOK?redirect=/products/j2cr-crystal-blue-endurance-surface%E2%84%A2-pre-order%3Fvariant%3D51746641445184",
+    discountLink: "https://lockerroompickleball.com/discount/PLAYBOOK?redirect=/collections/pickleball-paddles/products/j2cr-crystal-blue-endurance-surface%3Fvariant%3D47151745302659%26sca_ref%3D8334840.yY4rLJi7oU9HDNHD",
     addedAt: "2026-05-11",
     trendingScore: 50,
     playStyle: "all-court",
