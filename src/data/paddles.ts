@@ -1917,11 +1917,33 @@ export const paddles: Paddle[] = [
     trendingScore: 55,
     playStyle: "control",
   },
+
+  // ── Rebl ──────────────────────────────────────────────────────────────────
+  {
+    id: "102",
+    slug: "rebl-alliance-hybrid",
+    brand: "Rebl",
+    name: "Alliance",
+    shape: "Hybrid",
+    weight: "8.4 oz",
+    swingWeight: 119.22,
+    twistWeight: 6.68,
+    thickness: "16mm",
+    image: "/images/paddles/Reble-Alliance-Hybrid-16mm.png",
+    amountOff: "$50",
+    price: "$200.06",
+    discountLink: "https://reblalliance.lovable.app/",
+    manualVideoId: "VOoscbHplro",
+    addedAt: "2026-05-14",
+    trendingScore: 50,
+    playStyle: "power",
+  },
 ];
 
 // Review dates — ISO publish dates for Latest Reviews sort (newest-first)
 // Set youtubeApiKey in site.ts to auto-fetch real dates; or fill in manually.
 export const reviewDates: Record<string, string> = {
+  VOoscbHplro:   "2026-05-14",  // Rebl Alliance
   ZmxCypU71w4:   "2026-05-11",  // Engage X2
   hLprDNd4Zxo:   "2026-05-09",  // Enhance Turbo MPP
   Z1e4mRHG2r8:   "2026-05-09",  // SixZero Coral
