@@ -46,6 +46,9 @@ export interface Paddle {
   budgetCategory?: BudgetCategory;
   sweetSpot?: "large" | "medium" | "small";
 
+  // ── Series / family grouping ──────────────────────────────────────────────
+  seriesSlug?: string;    // paddles with same seriesSlug are shown together on /series/[slug]
+
   // ── Catalog metadata ──────────────────────────────────────────────────────
   addedAt: string;        // ISO date — powers "Just Added"
   trendingScore: number;  // 0–100 — powers "What's Trending"

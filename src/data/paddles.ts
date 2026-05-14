@@ -39,6 +39,7 @@ export const paddles: Paddle[] = [
     addedAt: "2025-06-01",
     trendingScore: 62,
     playStyle: "power",
+    seriesSlug: "11six24-power-2",
   },
   {
     id: "2",
@@ -58,6 +59,7 @@ export const paddles: Paddle[] = [
     addedAt: "2025-06-01",
     trendingScore: 60,
     playStyle: "power",
+    seriesSlug: "11six24-power-2",
   },
   {
     id: "3",
@@ -77,6 +79,7 @@ export const paddles: Paddle[] = [
     addedAt: "2025-06-01",
     trendingScore: 58,
     playStyle: "power",
+    seriesSlug: "11six24-power-2",
   },
 
   // ── APL ────────────────────────────────────────────────────────────────────
@@ -233,6 +236,7 @@ export const paddles: Paddle[] = [
     addedAt: "2025-06-01",
     trendingScore: 72,
     playStyle: "power",
+    seriesSlug: "bread-butter-loco",
   },
   {
     id: "12",
@@ -252,6 +256,7 @@ export const paddles: Paddle[] = [
     addedAt: "2025-06-01",
     trendingScore: 66,
     playStyle: "power",
+    seriesSlug: "bread-butter-loco",
   },
   {
     id: "13",
@@ -271,6 +276,7 @@ export const paddles: Paddle[] = [
     addedAt: "2025-06-01",
     trendingScore: 54,
     playStyle: "power",
+    seriesSlug: "bread-butter-loco",
   },
 
   // ── CRBN ───────────────────────────────────────────────────────────────────
@@ -407,6 +413,7 @@ export const paddles: Paddle[] = [
     addedAt: "2025-06-01",
     trendingScore: 65,
     playStyle: "all-court",
+    seriesSlug: "enhance-turbo-epp",
   },
   {
     id: "21",
@@ -426,6 +433,7 @@ export const paddles: Paddle[] = [
     addedAt: "2025-06-01",
     trendingScore: 55,
     playStyle: "all-court",
+    seriesSlug: "enhance-turbo-epp",
   },
   {
     id: "68",
@@ -445,6 +453,7 @@ export const paddles: Paddle[] = [
     addedAt: "2026-04-03",
     trendingScore: 70,
     playStyle: "all-court",
+    seriesSlug: "enhance-turbo-epp",
   },
   {
     id: "22",
@@ -504,6 +513,7 @@ export const paddles: Paddle[] = [
     addedAt: "2025-06-01",
     trendingScore: 63,
     playStyle: "control",
+    seriesSlug: "friday-aura",
   },
   {
     id: "25",
@@ -523,6 +533,7 @@ export const paddles: Paddle[] = [
     addedAt: "2025-06-01",
     trendingScore: 55,
     playStyle: "control",
+    seriesSlug: "friday-aura",
   },
 
   // ── Gearbox ────────────────────────────────────────────────────────────────
@@ -616,6 +627,7 @@ export const paddles: Paddle[] = [
     addedAt: "2025-06-01",
     trendingScore: 60,
     playStyle: "all-court",
+    seriesSlug: "holbrook-fuze",
   },
   {
     id: "31",
@@ -635,6 +647,7 @@ export const paddles: Paddle[] = [
     addedAt: "2025-06-01",
     trendingScore: 65,
     playStyle: "all-court",
+    seriesSlug: "holbrook-fuze",
   },
   {
     id: "32",
@@ -654,6 +667,7 @@ export const paddles: Paddle[] = [
     addedAt: "2025-06-01",
     trendingScore: 59,
     playStyle: "all-court",
+    seriesSlug: "holbrook-fuze",
   },
   {
     id: "33",
@@ -673,6 +687,7 @@ export const paddles: Paddle[] = [
     addedAt: "2025-06-01",
     trendingScore: 62,
     playStyle: "all-court",
+    seriesSlug: "holbrook-fuze",
   },
   {
     id: "34",
@@ -1329,6 +1344,7 @@ export const paddles: Paddle[] = [
     addedAt: "2026-04-08",
     trendingScore: 68,
     playStyle: "control",
+    seriesSlug: "head-radical",
   },
   {
     id: "70",
@@ -1348,6 +1364,7 @@ export const paddles: Paddle[] = [
     addedAt: "2026-04-08",
     trendingScore: 68,
     playStyle: "control",
+    seriesSlug: "head-radical",
   },
 
   // ── Gherkin ────────────────────────────────────────────────────────────────
@@ -1369,6 +1386,7 @@ export const paddles: Paddle[] = [
     addedAt: "2026-04-09",
     trendingScore: 65,
     playStyle: "power",
+    seriesSlug: "gherkin-draco",
   },
 
   // ── Gruvn ──────────────────────────────────────────────────────────────────
@@ -1430,6 +1448,7 @@ export const paddles: Paddle[] = [
     addedAt: "2026-04-09",
     trendingScore: 64,
     playStyle: "all-court",
+    seriesSlug: "beyond-measure-ronin",
   },
   {
     id: "75",
@@ -1449,6 +1468,7 @@ export const paddles: Paddle[] = [
     addedAt: "2026-04-09",
     trendingScore: 64,
     playStyle: "all-court",
+    seriesSlug: "beyond-measure-ronin",
   },
 
   // ── Hudef ──────────────────────────────────────────────────────────────────
@@ -1570,6 +1590,7 @@ export const paddles: Paddle[] = [
     addedAt: "2026-04-16",
     trendingScore: 62,
     playStyle: "all-court",
+    seriesSlug: "flik-f3-triple-core",
   },
   {
     id: "83",
@@ -1589,6 +1610,7 @@ export const paddles: Paddle[] = [
     addedAt: "2026-04-16",
     trendingScore: 62,
     playStyle: "all-court",
+    seriesSlug: "flik-f3-triple-core",
   },
 
   // ── Honolulu ───────────────────────────────────────────────────────────────
@@ -1629,6 +1651,7 @@ export const paddles: Paddle[] = [
     addedAt: "2026-05-11",
     trendingScore: 50,
     playStyle: "all-court",
+    seriesSlug: "honolulu-crystal-blue",
   },
   {
     id: "100",
@@ -1648,6 +1671,7 @@ export const paddles: Paddle[] = [
     addedAt: "2026-05-11",
     trendingScore: 50,
     playStyle: "all-court",
+    seriesSlug: "honolulu-crystal-blue",
   },
   {
     id: "101",
@@ -1667,6 +1691,7 @@ export const paddles: Paddle[] = [
     addedAt: "2026-05-11",
     trendingScore: 50,
     playStyle: "all-court",
+    seriesSlug: "honolulu-crystal-blue",
   },
 
   // ── RPM ────────────────────────────────────────────────────────────────────
@@ -1688,6 +1713,7 @@ export const paddles: Paddle[] = [
     addedAt: "2026-04-16",
     trendingScore: 62,
     playStyle: "power",
+    seriesSlug: "rpm-q2",
   },
   {
     id: "86",
@@ -1707,6 +1733,7 @@ export const paddles: Paddle[] = [
     addedAt: "2026-04-16",
     trendingScore: 62,
     playStyle: "power",
+    seriesSlug: "rpm-q2",
   },
   {
     id: "87",
@@ -1764,6 +1791,7 @@ export const paddles: Paddle[] = [
     addedAt: "2026-04-28",
     trendingScore: 55,
     playStyle: "power",
+    seriesSlug: "gearbox-gbx-power",
   },
   {
     id: "90",
@@ -1783,6 +1811,7 @@ export const paddles: Paddle[] = [
     addedAt: "2026-04-28",
     trendingScore: 55,
     playStyle: "power",
+    seriesSlug: "gearbox-gbx-power",
   },
   {
     id: "91",
@@ -1819,6 +1848,7 @@ export const paddles: Paddle[] = [
     addedAt: "2026-04-28",
     trendingScore: 60,
     playStyle: "power",
+    seriesSlug: "gherkin-draco",
   },
   {
     id: "93",
@@ -1838,6 +1868,7 @@ export const paddles: Paddle[] = [
     addedAt: "2026-04-28",
     trendingScore: 60,
     playStyle: "all-court",
+    seriesSlug: "gherkin-draco",
   },
 
   // ── 6.0 ───────────────────────────────────────────────────────────────────
@@ -1859,6 +1890,7 @@ export const paddles: Paddle[] = [
     addedAt: "2026-05-04",
     trendingScore: 55,
     playStyle: "all-court",
+    seriesSlug: "6-0-coral",
   },
   {
     id: "95",
@@ -1878,6 +1910,7 @@ export const paddles: Paddle[] = [
     addedAt: "2026-05-04",
     trendingScore: 55,
     playStyle: "all-court",
+    seriesSlug: "6-0-coral",
   },
 
   // ── Aireo ─────────────────────────────────────────────────────────────────

@@ -526,6 +526,15 @@ export default async function PaddleDetailPage({ params }: Props) {
                   Watch Review
                 </button>
               )}
+              {paddle.seriesSlug && (
+                <Link
+                  href={`/series/${paddle.seriesSlug}`}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-colors"
+                  style={{ background: "rgba(20,184,166,0.12)", color: "#2dd4bf", border: "1px solid rgba(20,184,166,0.2)" }}
+                >
+                  View All Shapes <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              )}
             </div>
           </div>
         </div>
