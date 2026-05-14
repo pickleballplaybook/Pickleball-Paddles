@@ -1625,6 +1625,7 @@ export const paddles: Paddle[] = [
     amountOff: "15%",
     price: "$195.00",
     discountLink: "https://lockerroompickleball.com/discount/PLAYBOOK?redirect=/collections/pickleball-paddles/products/j2cr-crystal-blue-endurance-surface%3Fvariant%3D47151745302659%26sca_ref%3D8334840.yY4rLJi7oU9HDNHD",
+    manualVideoId: "npb1mJrEakM",
     addedAt: "2026-05-11",
     trendingScore: 50,
     playStyle: "all-court",
@@ -1643,6 +1644,7 @@ export const paddles: Paddle[] = [
     amountOff: "10%",
     price: "$195.00",
     discountLink: "https://808pickle.com/discount/PLAYBOOK?redirect=/products/j3cr-crystal-blue%E2%84%A2-endurance-surface%E2%84%A2",
+    manualVideoId: "npb1mJrEakM",
     addedAt: "2026-05-11",
     trendingScore: 50,
     playStyle: "all-court",
@@ -1661,6 +1663,7 @@ export const paddles: Paddle[] = [
     amountOff: "10%",
     price: "$195.00",
     discountLink: "https://808pickle.com/discount/PLAYBOOK?redirect=/products/j6cr-crystal-blue-endurance-surface%E2%84%A2-pre-order",
+    manualVideoId: "npb1mJrEakM",
     addedAt: "2026-05-11",
     trendingScore: 50,
     playStyle: "all-court",
@@ -1812,7 +1815,7 @@ export const paddles: Paddle[] = [
     amountOff: "10%",
     price: "$179.99",
     discountLink: "https://www.gherkinusa.com/discount/PLAYBOOK?redirect=/%3Fsca_ref%3D10967552.q1z8WlPL8s",
-    manualVideoId: "gXAkwcVJ3uk",
+    manualVideoId: "8Rf2xj5Rr2o",
     addedAt: "2026-04-28",
     trendingScore: 60,
     playStyle: "power",
@@ -1831,7 +1834,7 @@ export const paddles: Paddle[] = [
     amountOff: "10%",
     price: "$179.99",
     discountLink: "https://www.gherkinusa.com/discount/PLAYBOOK?redirect=/%3Fsca_ref%3D10967552.q1z8WlPL8s",
-    manualVideoId: "gXAkwcVJ3uk",
+    manualVideoId: "8Rf2xj5Rr2o",
     addedAt: "2026-04-28",
     trendingScore: 60,
     playStyle: "all-court",
@@ -1943,7 +1946,9 @@ export const paddles: Paddle[] = [
 // Review dates — ISO publish dates for Latest Reviews sort (newest-first)
 // Set youtubeApiKey in site.ts to auto-fetch real dates; or fill in manually.
 export const reviewDates: Record<string, string> = {
-  VOoscbHplro:   "2026-05-14",  // Rebl Alliance
+  npb1mJrEakM:   "2026-05-14",  // Honolulu Crystal Blue Endurance (J2CR, J3CR, J6CR)
+  VOoscbHplro:   "2026-05-13",  // Rebl Alliance
+  "8Rf2xj5Rr2o": "2026-05-12",  // Gherkin Draco Elongated + Widebody
   ZmxCypU71w4:   "2026-05-11",  // Engage X2
   hLprDNd4Zxo:   "2026-05-09",  // Enhance Turbo MPP
   Z1e4mRHG2r8:   "2026-05-09",  // SixZero Coral
