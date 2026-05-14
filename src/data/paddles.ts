@@ -1410,6 +1410,7 @@ export const paddles: Paddle[] = [
     addedAt: "2026-04-09",
     trendingScore: 63,
     playStyle: "all-court",
+    seriesSlug: "gruvn-lazr",
   },
   {
     id: "73",
@@ -1429,6 +1430,7 @@ export const paddles: Paddle[] = [
     addedAt: "2026-04-09",
     trendingScore: 63,
     playStyle: "all-court",
+    seriesSlug: "gruvn-lazr",
   },
 
   // ── Beyond Measure ─────────────────────────────────────────────────────────
@@ -1755,6 +1757,7 @@ export const paddles: Paddle[] = [
     addedAt: "2026-04-17",
     trendingScore: 50,
     playStyle: "all-court",
+    seriesSlug: "speedup-tide",
   },
   {
     id: "88",
@@ -1774,6 +1777,7 @@ export const paddles: Paddle[] = [
     addedAt: "2026-04-17",
     trendingScore: 50,
     playStyle: "all-court",
+    seriesSlug: "speedup-tide",
   },
   {
     id: "89",
