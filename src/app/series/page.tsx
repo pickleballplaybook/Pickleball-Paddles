@@ -37,7 +37,7 @@ function getAllSeries(): Series[] {
       const title = commonWords.length > 0
         ? `${brand} ${commonWords.join(" ")}`
         : `${brand} ${names[0]}`;
-      const shapes = [...new Set(arr.map((p) => p.shape))];
+      const shapes = Array.from(new Set(arr.map((p) => p.shape)));
       return { slug, brand, title, paddles: arr, shapes };
     })
     .sort((a, b) => b.paddles.length - a.paddles.length || a.brand.localeCompare(b.brand));
