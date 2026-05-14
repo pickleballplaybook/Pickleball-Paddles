@@ -1974,6 +1974,26 @@ export const paddles: Paddle[] = [
     trendingScore: 50,
     playStyle: "power",
   },
+
+  // ── Thrive ─────────────────────────────────────────────────────────────────
+  {
+    id: "103",
+    slug: "thrive-ignite-pro-series-hybrid",
+    brand: "Thrive",
+    name: "Ignite Pro Series",
+    shape: "Hybrid",
+    weight: "8.0 oz",
+    swingWeight: 111.16,
+    twistWeight: 6.44,
+    thickness: "15.5mm",
+    image: "/images/paddles/Thrive-Ignite-Hybrid-15.5mm.png",
+    amountOff: "10%",
+    price: "$219.99",
+    discountLink: "https://thrivepb.com/discount/PLAYBOOK?redirect=/%3Fsca_ref%3D11226925.N8ui0Ppn9Vnb8DM",
+    addedAt: "2026-05-14",
+    trendingScore: 50,
+    playStyle: "power",
+  },
 ];
 
 // Review dates — ISO publish dates for Latest Reviews sort (newest-first)
