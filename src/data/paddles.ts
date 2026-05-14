@@ -879,6 +879,7 @@ export const paddles: Paddle[] = [
     addedAt: "2025-06-01",
     trendingScore: 57,
     playStyle: "all-court",
+    seriesSlug: "nox-x-foam",
   },
   {
     id: "44",
@@ -898,6 +899,7 @@ export const paddles: Paddle[] = [
     addedAt: "2025-06-01",
     trendingScore: 63,
     playStyle: "all-court",
+    seriesSlug: "nox-x-foam",
   },
 
   // ── Ronbus ─────────────────────────────────────────────────────────────────
@@ -1646,7 +1648,7 @@ export const paddles: Paddle[] = [
     image: "/images/paddles/J2CR-Crystal-Blue-Endurance-Surface-16mm.png",
     amountOff: "15%",
     price: "$195.00",
-    discountLink: "https://lockerroompickleball.com/discount/PLAYBOOK?redirect=/collections/pickleball-paddles/products/j2cr-crystal-blue-endurance-surface%3Fvariant%3D47151745302659%26sca_ref%3D8334840.yY4rLJi7oU9HDNHD",
+    discountLink: "https://808pickle.com/discount/PLAYBOOK?redirect=/products/j2cr-crystal-blue-endurance-surface%E2%84%A2-pre-order",
     manualVideoId: "npb1mJrEakM",
     addedAt: "2026-05-11",
     trendingScore: 50,
