@@ -81,8 +81,15 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
   const hasDiscount = !!paddle.discountLink?.trim() && paddle.amountOff && paddle.amountOff !== "$0";
   const weightNum = parseFloat(paddle.weight) || 0;
   const playLabel = paddle.playStyle
-    ? paddle.playStyle.charAt(0).toUpperCase() + paddle.playStyle.slice(1)
+    ? paddle.playStyle === "all-court" ? "All-Court" : paddle.playStyle.charAt(0).toUpperCase() + paddle.playStyle.slice(1)
     : paddle.shape;
+  const playColors = {
+    power:     { bg: "rgba(239,68,68,0.2)",  border: "rgba(239,68,68,0.4)",  text: "#f87171" },
+    control:   { bg: "rgba(74,222,128,0.2)", border: "rgba(74,222,128,0.4)", text: "#4ade80" },
+    "all-court": { bg: "rgba(250,204,21,0.2)", border: "rgba(250,204,21,0.4)", text: "#facc15" },
+    spin:      { bg: "rgba(251,146,60,0.2)", border: "rgba(251,146,60,0.4)", text: "#fb923c" },
+  };
+  const pc = playColors[paddle.playStyle as keyof typeof playColors] ?? { bg: "rgba(20,184,166,0.2)", border: "rgba(20,184,166,0.4)", text: "#2dd4bf" };
 
   return (
     <div
@@ -129,9 +136,9 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
           <span
             className="text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full"
             style={{
-              background: "rgba(20,184,166,0.2)",
-              border: "1px solid rgba(20,184,166,0.4)",
-              color: "#2dd4bf",
+              background: pc.bg,
+              border: `1px solid ${pc.border}`,
+              color: pc.text,
               backdropFilter: "blur(8px)",
             }}
           >
