@@ -28,7 +28,7 @@ function generateBuyIf(p: Paddle): string[] {
 
   // Swing weight
   if (sw > 0) {
-    if (sw >= 115) bullets.push(`High swing weight (${sw}) gives you serious plow-through power`);
+    if (sw >= 118) bullets.push(`High swing weight (${sw}) gives you serious plow-through power`);
     else if (sw >= 108) bullets.push(`Moderate swing weight (${sw}) offers a good balance of power and maneuverability`);
     else bullets.push(`Low swing weight (${sw}) means fast hands at the kitchen`);
   }
@@ -59,7 +59,7 @@ function generateSkipIf(p: Paddle): string[] {
 
   // Swing weight trade-offs
   if (sw > 0) {
-    if (sw >= 115) bullets.push("You need fast hand speed at the net — this is a heavy swinger");
+    if (sw >= 118) bullets.push("You need fast hand speed at the net — this is a heavy swinger");
     else if (sw < 105) bullets.push("You want more power and plow-through on drives");
   }
 
