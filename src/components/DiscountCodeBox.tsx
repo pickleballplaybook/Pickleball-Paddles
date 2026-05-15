@@ -34,10 +34,10 @@ export default function DiscountCodeBox({ code, giftCard, savings }: Props) {
           </div>
           <div className="flex-1">
             <p className="font-bold text-sm mb-2" style={{ color: "var(--flip-text-head)" }}>
-              Free e-Gift Card with Purchase
+              Free Store Credit with Purchase
             </p>
             <p className="text-sm mb-3" style={{ color: "var(--flip-text-body)" }}>
-              Use code below at checkout to receive a free Selkirk e-gift card with your purchase.
+              Use code below at checkout to receive free Selkirk store credit with your purchase.
             </p>
             <button
               onClick={handleCopy}
