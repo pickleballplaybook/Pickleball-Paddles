@@ -1,11 +1,23 @@
 import Link from "next/link";
-import Image from "next/image";
 import { ArrowRight, Eye, Play, Youtube } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { ReviewGroup } from "@/types";
+import { paddles } from "@/data/paddles";
 
 interface LatestReviewsProps {
   items: ReviewGroup[];
+}
+
+// Check if a review group's paddles share a seriesSlug
+function getSeriesLink(group: ReviewGroup): string | null {
+  const slugs = group.paddles.map((p) => {
+    const paddle = paddles.find((pd) => pd.slug === p.slug);
+    return paddle?.seriesSlug;
+  }).filter(Boolean);
+  if (slugs.length >= 2 && slugs.every((s) => s === slugs[0])) {
+    return `/series/${slugs[0]}`;
+  }
+  return null;
 }
 
 export default function LatestReviews({ items }: LatestReviewsProps) {
@@ -49,11 +61,13 @@ export default function LatestReviews({ items }: LatestReviewsProps) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {items.map((group) => {
             const thumbnail = `https://img.youtube.com/vi/${group.videoId}/hqdefault.jpg`;
+            const seriesLink = getSeriesLink(group);
+            const href = seriesLink ?? `/paddles/${group.primarySlug}`;
 
             return (
               <Link
                 key={group.videoId}
-                href={`/paddles/${group.primarySlug}`}
+                href={href}
                 className="card group overflow-hidden flex flex-col"
               >
                 {/* Thumbnail */}
@@ -61,12 +75,11 @@ export default function LatestReviews({ items }: LatestReviewsProps) {
                   className="relative aspect-video overflow-hidden rounded-t-2xl"
                   style={{ background: "var(--bg-alt)" }}
                 >
-                  <Image
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
                     src={thumbnail}
                     alt={group.title}
-                    fill
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-slate-900/20 group-hover:bg-slate-900/10 transition-colors" />
                   <div className="absolute inset-0 flex items-center justify-center">
