@@ -1,6 +1,7 @@
 "use client";
 
 import { siteConfig } from "@/config/site";
+import { getPaddleCountLabel } from "@/lib/catalogStats";
 
 export default function Hero() {
   return (
@@ -132,7 +133,7 @@ export default function Hero() {
             {/* Credential stats */}
             <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-4">
               {[
-                { num: "80+", label: "Paddles Reviewed" },
+                { num: getPaddleCountLabel(), label: "Paddles Reviewed" },
                 { num: "30+", label: "Video Reviews" },
                 { num: "12+", label: "Years Coaching" },
               ].map(({ num, label }) => (

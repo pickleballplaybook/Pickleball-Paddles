@@ -2,6 +2,7 @@ import { paddles, getJustAdded, getLatestPaddles, reviewDates } from "@/data/pad
 import { gearProducts } from "@/data/products";
 import { getReviewGroups } from "@/lib/youtube";
 import { siteConfig } from "@/config/site";
+import { getPaddleCountLabel } from "@/lib/catalogStats";
 import { Paddle, ReviewGroup } from "@/types";
 import { Smartphone, GraduationCap } from "lucide-react";
 
@@ -175,7 +176,7 @@ export default async function HomePage() {
               Best Pickleball Paddles of 2026 — Tested &amp; Ranked
             </p>
             <p className="text-sm mt-1" style={{ color: "var(--text-muted)" }}>
-              80+ paddles tested. 6 categories. Every pick is unsponsored.
+              {getPaddleCountLabel()} paddles tested. 6 categories. Every pick is unsponsored.
             </p>
           </div>
           <span

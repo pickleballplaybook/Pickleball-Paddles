@@ -3,15 +3,16 @@ import Link from "next/link";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { getPaddleBySlug } from "@/data/paddles";
 import { siteConfig } from "@/config/site";
+import { getPaddleCountLabel } from "@/lib/catalogStats";
 
 export const metadata: Metadata = {
   title: "Best Pickleball Paddles of 2026 — Tested & Ranked | Pickleball Playbook",
   description:
-    "We tested 80+ pickleball paddles on a real court in 2026 and ranked the best by category — power, control, all-court, value, and beginners. Every pick is unsponsored.",
+    "We tested 100+ pickleball paddles on a real court in 2026 and ranked the best by category — power, control, all-court, value, and beginners. Every pick is unsponsored.",
   openGraph: {
     title: "Best Pickleball Paddles of 2026 — Tested & Ranked",
     description:
-      "80+ paddles tested. Ranked by a PPR-certified pro player with 12+ years coaching. Find the best paddle for your game.",
+      "100+ paddles tested. Ranked by a PPR-certified pro player with 12+ years coaching. Find the best paddle for your game.",
     url: `${siteConfig.siteUrl}/best-pickleball-paddles`,
   },
 };
@@ -137,13 +138,13 @@ export default function BestPaddlesPage() {
               Best Pickleball Paddles of 2026
             </h1>
             <p className="text-lg leading-relaxed mb-6" style={{ color: "var(--text-muted)" }}>
-              We&apos;ve tested over 80 paddles on a real court — measuring swing weight, twist weight, and static
+              We&apos;ve tested over 100 paddles on a real court — measuring swing weight, twist weight, and static
               weight before hitting a single ball. Here are the best picks by category, ranked by a pro player with
               12+ years of coaching experience. Every review is unsponsored.
             </p>
             {/* Trust signals */}
             <div className="flex flex-wrap gap-4">
-              {["80+ Paddles Tested", "Unsponsored Reviews", "Lab-Measured Specs", "Updated April 2026"].map((t) => (
+              {[`${getPaddleCountLabel()} Paddles Tested`, "Unsponsored Reviews", "Lab-Measured Specs", "Updated April 2026"].map((t) => (
                 <div key={t} className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 flex-shrink-0" style={{ color: "#14b8a6" }} />
                   <span className="text-sm font-medium" style={{ color: "var(--text-muted)" }}>{t}</span>
@@ -332,7 +333,7 @@ export default function BestPaddlesPage() {
           {/* ── CTA ───────────────────────────────────────────────────────── */}
           <div className="mt-20 flex flex-col items-center text-center gap-5">
             <p className="text-base" style={{ color: "var(--text-muted)" }}>
-              Want to explore all 80+ paddles in our database?
+              Want to explore all {getPaddleCountLabel()} paddles in our database?
             </p>
             <Link
               href="/paddles"
