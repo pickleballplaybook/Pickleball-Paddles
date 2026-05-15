@@ -38,138 +38,190 @@ function useRatingCounts(paddleIds: string[]) {
   return ratings;
 }
 
-// ── Card component (screenshot-optimized) ────────────────────────────────────
+// ── Stat bar ranges (from actual paddle database) ────────────────────────────
 
-function TrendingCard({ paddle, rank, code }: { paddle: Paddle; rank: number; code: string }) {
+const RANGES = {
+  weight:      { min: 7.2, max: 9.2, unit: "oz" },
+  swingWeight: { min: 95,  max: 125, unit: "" },
+  twistWeight: { min: 4.5, max: 7.5, unit: "" },
+};
+
+function normalize(value: number, min: number, max: number): number {
+  if (max === min) return 0.5;
+  return Math.max(0, Math.min(1, (value - min) / (max - min)));
+}
+
+function StatBar({ label, value, displayValue, min, max, color }: {
+  label: string; value: number; displayValue: string; min: number; max: number; color: string;
+}) {
+  const pct = normalize(value, min, max) * 100;
+  return (
+    <div className="flex items-center gap-3">
+      <span className="text-[11px] font-bold uppercase tracking-wide w-[72px] text-right flex-shrink-0" style={{ color: "rgba(148,195,215,0.6)" }}>
+        {label}
+      </span>
+      <div className="flex-1 h-2.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
+        <div
+          className="h-full rounded-full transition-all duration-500"
+          style={{ width: `${pct}%`, background: color }}
+        />
+      </div>
+      <span className="text-xs font-bold font-mono w-[52px] flex-shrink-0" style={{ color: "rgba(255,255,255,0.7)" }}>
+        {displayValue}
+      </span>
+    </div>
+  );
+}
+
+// ── Card component (1:1 square, screenshot-optimized for Instagram) ──────────
+
+function TrendingCard({ paddle, rank, code, totalCards }: {
+  paddle: Paddle; rank: number; code: string; totalCards: number;
+}) {
   const hasDiscount = !!paddle.discountLink?.trim() && paddle.amountOff && paddle.amountOff !== "$0";
+  const weightNum = parseFloat(paddle.weight) || 0;
+  const playLabel = paddle.playStyle
+    ? paddle.playStyle.charAt(0).toUpperCase() + paddle.playStyle.slice(1)
+    : paddle.shape;
 
   return (
     <div
-      className="relative flex-shrink-0 w-full flex flex-col md:flex-row items-center gap-6 md:gap-10 p-8 md:p-10 rounded-3xl overflow-hidden snap-center"
+      className="relative flex-shrink-0 snap-center rounded-3xl overflow-hidden"
       style={{
+        width: "min(100vw - 32px, 600px)",
+        aspectRatio: "1 / 1",
         background: "linear-gradient(160deg, #0a1628 0%, #0c1e35 35%, #0d2a3a 60%, #081820 100%)",
-        minHeight: "480px",
       }}
     >
       {/* Rank badge */}
       <div
-        className="absolute top-5 left-5 w-14 h-14 rounded-full flex items-center justify-center z-10"
+        className="absolute top-4 left-4 w-12 h-12 rounded-full flex items-center justify-center z-10"
         style={{ background: "rgba(20,184,166,0.25)", border: "2px solid rgba(20,184,166,0.5)" }}
       >
-        <span className="text-xl font-extrabold text-white">#{rank}</span>
+        <span className="text-lg font-extrabold text-white">#{rank}</span>
       </div>
 
       {/* Header branding */}
-      <div className="absolute top-5 left-0 right-0 text-center pointer-events-none">
-        <p className="text-xs font-bold uppercase tracking-[0.3em] text-white/50">
+      <div className="absolute top-4 left-0 right-0 text-center pointer-events-none z-10">
+        <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/50">
           Playbook Reviews
         </p>
       </div>
 
-      {/* Paddle image */}
-      <div className="flex-shrink-0 flex items-center justify-center w-full md:w-[45%] pt-6">
+      {/* ── Top half: paddle image with play style label ────────────────── */}
+      <div className="absolute inset-x-0 top-0 h-[52%] flex items-center justify-center">
+        {/* Subtle radial glow */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: "radial-gradient(ellipse at center 60%, rgba(20,184,166,0.06) 0%, transparent 60%)" }}
+        />
         {paddle.image && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={paddle.image}
             alt={`${paddle.brand} ${paddle.name}`}
-            className="max-h-[320px] w-auto object-contain"
-            style={{ filter: "drop-shadow(0 12px 32px rgba(0,0,0,0.5))" }}
+            className="relative z-[1] max-h-[80%] w-auto object-contain"
+            style={{ filter: "drop-shadow(0 10px 28px rgba(0,0,0,0.5))" }}
           />
         )}
+        {/* Play style badge on the image */}
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-[2]">
+          <span
+            className="text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full"
+            style={{
+              background: "rgba(20,184,166,0.2)",
+              border: "1px solid rgba(20,184,166,0.4)",
+              color: "#2dd4bf",
+              backdropFilter: "blur(8px)",
+            }}
+          >
+            {playLabel}
+          </span>
+        </div>
       </div>
 
-      {/* Specs panel */}
-      <div className="flex-1 min-w-0">
+      {/* ── Bottom half: specs panel ────────────────────────────────────── */}
+      <div className="absolute inset-x-0 bottom-0 h-[48%] flex flex-col justify-center px-6 pb-10 pt-2">
         <div
-          className="rounded-2xl p-6"
-          style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+          className="rounded-2xl p-5 flex flex-col gap-3"
+          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
         >
-          <p
-            className="text-[11px] font-bold uppercase tracking-[0.2em] mb-1"
-            style={{ color: "rgba(148,195,215,0.7)" }}
-          >
-            {paddle.brand}
-          </p>
-          <h2 className="text-2xl md:text-3xl font-extrabold text-white mb-2">
-            {paddle.name} {paddle.thickness}
-          </h2>
-          <p className="text-sm mb-3" style={{ color: "rgba(148,195,215,0.6)" }}>
-            {paddle.shape} · {paddle.thickness}
-          </p>
-          <p className="text-base font-semibold text-white/80 mb-5">
-            {paddle.weight}
-            {paddle.swingWeight ? ` · SW ${paddle.swingWeight}` : ""}
-            {paddle.twistWeight ? ` · TW ${paddle.twistWeight}` : ""}
-          </p>
+          {/* Brand + name */}
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: "rgba(148,195,215,0.6)" }}>
+              {paddle.brand}
+            </p>
+            <h2 className="text-xl font-extrabold text-white leading-tight">
+              {paddle.name} {paddle.thickness}
+            </h2>
+            <p className="text-xs mt-0.5" style={{ color: "rgba(148,195,215,0.5)" }}>
+              {paddle.shape} · {paddle.thickness}
+            </p>
+          </div>
 
-          {/* Stat pills */}
-          <div className="flex flex-wrap gap-2 mb-5">
-            {paddle.playStyle && (
-              <span
-                className="text-xs font-bold px-3 py-1.5 rounded-lg"
-                style={{ background: "rgba(148,195,215,0.12)", color: "rgba(148,195,215,0.85)", border: "1px solid rgba(148,195,215,0.2)" }}
-              >
-                {paddle.playStyle.charAt(0).toUpperCase() + paddle.playStyle.slice(1)}
-              </span>
+          {/* Stat bars */}
+          <div className="flex flex-col gap-2">
+            <StatBar
+              label="Weight"
+              value={weightNum}
+              displayValue={paddle.weight}
+              min={RANGES.weight.min}
+              max={RANGES.weight.max}
+              color="#94a3b8"
+            />
+            {paddle.swingWeight > 0 && (
+              <StatBar
+                label="Swing Wt"
+                value={paddle.swingWeight}
+                displayValue={paddle.swingWeight.toFixed(1)}
+                min={RANGES.swingWeight.min}
+                max={RANGES.swingWeight.max}
+                color="#14b8a6"
+              />
             )}
-            {paddle.swingWeight >= 118 && (
-              <span
-                className="text-xs font-bold px-3 py-1.5 rounded-lg"
-                style={{ background: "rgba(239,68,68,0.12)", color: "#f87171", border: "1px solid rgba(239,68,68,0.25)" }}
-              >
-                High Power
-              </span>
-            )}
-            {paddle.twistWeight >= 6.5 && (
-              <span
-                className="text-xs font-bold px-3 py-1.5 rounded-lg"
-                style={{ background: "rgba(250,204,21,0.12)", color: "#fbbf24", border: "1px solid rgba(250,204,21,0.25)" }}
-              >
-                Great Stability
-              </span>
+            {paddle.twistWeight > 0 && (
+              <StatBar
+                label="Twist Wt"
+                value={paddle.twistWeight}
+                displayValue={paddle.twistWeight.toFixed(2)}
+                min={RANGES.twistWeight.min}
+                max={RANGES.twistWeight.max}
+                color="#f59e0b"
+              />
             )}
           </div>
 
           {/* Discount code */}
           {hasDiscount && (
             <div
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl"
-              style={{ background: "rgba(20,184,166,0.12)", border: "1px solid rgba(20,184,166,0.3)" }}
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg self-start"
+              style={{ background: "rgba(20,184,166,0.1)", border: "1px solid rgba(20,184,166,0.25)" }}
             >
-              <span className="text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>Code:</span>
-              <span className="text-sm font-extrabold font-mono" style={{ color: "#2dd4bf" }}>
-                {code}
-              </span>
-              {paddle.amountOff && (
-                <span className="text-xs font-bold ml-1" style={{ color: "rgba(255,255,255,0.4)" }}>
-                  ({paddle.amountOff} off)
-                </span>
-              )}
+              <span className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>Code:</span>
+              <span className="text-xs font-extrabold font-mono" style={{ color: "#2dd4bf" }}>{code}</span>
+              <span className="text-[10px] font-bold" style={{ color: "rgba(255,255,255,0.35)" }}>({paddle.amountOff} off)</span>
             </div>
           )}
         </div>
       </div>
 
       {/* Footer branding */}
-      <div className="absolute bottom-4 left-6 right-6 flex items-center justify-between pointer-events-none">
-        <p className="text-xs font-semibold" style={{ color: "rgba(148,195,215,0.4)" }}>
+      <div className="absolute bottom-3 left-5 right-5 flex items-center justify-between pointer-events-none z-10">
+        <p className="text-[10px] font-semibold" style={{ color: "rgba(148,195,215,0.35)" }}>
           Playbook Reviews
         </p>
-        <p className="text-xs font-medium" style={{ color: "rgba(148,195,215,0.35)" }}>
+        <p className="text-[10px] font-medium" style={{ color: "rgba(148,195,215,0.3)" }}>
           pickleballplaybook.app
         </p>
       </div>
 
-      {/* Dot indicators (visual only, for screenshot aesthetics) */}
-      <div className="absolute bottom-4 left-0 right-0 flex items-center justify-center gap-1.5 pointer-events-none">
-        {Array.from({ length: 10 }).map((_, i) => (
+      {/* Dot indicators */}
+      <div className="absolute bottom-3 left-0 right-0 flex items-center justify-center gap-1 pointer-events-none z-10">
+        {Array.from({ length: totalCards }).map((_, i) => (
           <div
             key={i}
             className="w-1.5 h-1.5 rounded-full"
-            style={{
-              background: i === rank - 1 ? "#14b8a6" : "rgba(255,255,255,0.2)",
-            }}
+            style={{ background: i === rank - 1 ? "#14b8a6" : "rgba(255,255,255,0.15)" }}
           />
         ))}
       </div>
@@ -229,7 +281,7 @@ export default function TrendingPage() {
 
   return (
     <div className="min-h-screen pt-[156px] pb-20" style={{ background: "#060e1a" }}>
-      <div className="container-xl">
+      <div className="max-w-[640px] mx-auto px-4">
 
         {/* Header */}
         <div className="mb-10 text-center">
@@ -269,10 +321,11 @@ export default function TrendingPage() {
 
           <div
             ref={scrollRef}
-            className="flex gap-6 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4"
+            className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide"
             style={{ scrollbarWidth: "none" }}
             onScroll={(e) => {
               const el = e.currentTarget;
+              if (top10.length === 0) return;
               const cardWidth = el.scrollWidth / top10.length;
               const idx = Math.round(el.scrollLeft / cardWidth);
               setCurrentIndex(idx);
@@ -284,6 +337,7 @@ export default function TrendingPage() {
                 paddle={paddle}
                 rank={i + 1}
                 code={getCode(paddle.brand, paddle.discountLink)}
+                totalCards={top10.length}
               />
             ))}
           </div>
@@ -310,7 +364,7 @@ export default function TrendingPage() {
             Full Rankings
           </h2>
           <div className="flex flex-col gap-3">
-            {top10.map(({ paddle, totalHearts, engagement }, i) => {
+            {top10.map(({ paddle }, i) => {
               const hasLink = !!paddle.discountLink?.trim();
               return (
                 <div
