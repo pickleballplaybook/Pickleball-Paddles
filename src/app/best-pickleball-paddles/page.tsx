@@ -19,42 +19,125 @@ export const metadata: Metadata = {
 };
 
 // ── Editorial picks ────────────────────────────────────────────────────────────
-const PICKS = [
+interface Pick {
+  slug: string;
+  category: string;
+  anchor: string;
+  accent: string;
+  why: string;
+  runnerUps?: { slug: string; why: string }[];
+}
+
+const PICKS: Pick[] = [
   {
-    slug: "11six24-vapor-power-2-hybrid",
+    slug: "honolulu-j2cr-crystal-blue-hybrid",
     category: "Best Overall",
+    anchor: "best-overall",
     accent: "#f59e0b",
-    why: "The Vapor Power 2 checks every box — explosive power off the baseline, a HexGrit surface that holds its spin RPMs over hundreds of games, and spec consistency that makes it easy to fit into any play style. If we had to put one paddle in every player's hands right now, this would be near the top of the list.",
+    why: "The Honolulu Crystal Blue Endurance Surface series is the complete package. The J2CR Hybrid leads the line with a SW of 109.61, TW of 6.57, and an Endurance Surface face that maintains its spin generation long after other paddles degrade. Three shapes cover every preference. At $195 with 15% off using PLAYBOOK, the series offers genuine quality at an honest price. This is what a best-overall paddle looks like in 2026.",
+    runnerUps: [],
   },
   {
-    slug: "bread-and-butter-loco-elongated",
-    category: "Best for Power Players",
+    slug: "honolulu-j6cr-crystal-blue-elongated",
+    category: "Best for Spin",
+    anchor: "best-spin",
+    accent: "#f97316",
+    why: "The Honolulu J6CR Crystal Blue with Endurance Surface is the spin king. The textured face generates RPMs that stay consistent over time — something most paddles can't claim. The elongated shape and 16mm core give you the leverage and dwell time to maximize spin on serves, drives, and dinks. If spin is your primary weapon, this is the paddle to reach for.",
+    runnerUps: [
+      {
+        slug: "11six24-vapor-power-2-hybrid",
+        why: "The Vapor Power 2's HexGrit surface is one of the best for spin generation. SW 113.77 with TW 6.73 gives you the stability and power to put heavy topspin on every drive.",
+      },
+      {
+        slug: "thrive-ignite-pro-series-hybrid",
+        why: "The Thrive Ignite Pro Series brings a textured 15.5mm face that grabs the ball exceptionally well. At $219.99 with 10% off, it's a spin-forward paddle with enough control for all-court play.",
+      },
+    ],
+  },
+  {
+    slug: "friday-aura-pro-elongated",
+    category: "Best for Power",
+    anchor: "best-power",
     accent: "#ef4444",
-    why: "One of the highest swing-weight paddles we've tested. The Loco Elongated generates serious pace with minimal effort — the extended shape stretches your reach at the baseline and the live 16mm core keeps pop high without going dead. This is the paddle for players who want to dictate every rally from the back of the court.",
+    why: "The Friday Aura Pro earns the power pick with a SW of 116.33 at just $169 — one of the best power-per-dollar ratios in our database. The 16mm core keeps enough touch for kitchen transitions, but this paddle's strength is on drives, serves, and putaways from the transition zone. The elongated shape gives you leverage and reach to dictate rallies.",
+    runnerUps: [
+      {
+        slug: "gherkin-draco-widebody",
+        why: "The Draco Widebody is the forgiving power option — SW 105.94 with TW 6.74 means you get a big sweet spot and excellent stability while still playing with a power-classified paddle. Great for players who want to hit hard but value consistency.",
+      },
+      {
+        slug: "bread-and-butter-loco-elongated",
+        why: "SW 118.20 on the Loco Elongated is elite driving territory. This is the paddle for players who want to impose pace on every rally from the back of the court. At $199 with 10% off, the B&B name carries serious competitive credibility.",
+      },
+    ],
   },
   {
     slug: "friday-aura-elongated",
     category: "Best for Control",
+    anchor: "best-control",
     accent: "#818cf8",
     why: "The Friday Aura is built for players who win with placement, not pace. The 16mm core is exceptionally soft off the face — dwell time is among the best we've tested at this price — and the elongated shape gives you extra reach without sacrificing feel at the kitchen. Resets, dinks, and third-shot drops all feel locked in. At $129 with $10 off, it's one of the most honest value plays in the control category.",
+    runnerUps: [
+      {
+        slug: "mint-mon-ami-elongated",
+        why: "The Mon Ami's 18mm core delivers a SW of 123.47 — but the extra-thick foam absorbs pace so effectively that it's a true control weapon. Resets feel effortless, and the elongated shape gives you reach at the NVZ. A unique paddle for touch-first players.",
+      },
+      {
+        slug: "gruvn-lazr-16hd-hybrid",
+        why: "The Lazr-16hd Full Foam Hybrid at SW 107.07 is the kitchen specialist. Quick, maneuverable, and soft off the face — it rewards players who build points through consistency and placement rather than power.",
+      },
+    ],
   },
   {
     slug: "gruvn-lazr-16hd-hybrid",
     category: "Best All-Court",
+    anchor: "best-all-court",
     accent: "#14b8a6",
-    why: "The Lazr-16hd earns the all-court pick because it genuinely doesn't ask you to compromise. The full-foam 16mm core keeps touch and kitchen feel dialed in while still generating real pop off the baseline. The hybrid shape sits between elongated and widebody — a bigger sweet spot without losing reach. At swing weight 107 it maneuvers quickly enough for fast hands at the net, and the 10% discount makes it easy to justify.",
+    why: "The Lazr-16hd Full Foam earns the all-court pick because it genuinely doesn't ask you to compromise. The full-foam 16mm core keeps touch and kitchen feel dialed in while still generating real pop off the baseline. The hybrid shape sits between elongated and widebody — a bigger sweet spot without losing reach. At SW 107 it maneuvers quickly enough for fast hands at the net, and the 10% discount makes it easy to justify.",
+    runnerUps: [
+      {
+        slug: "honolulu-j2cr-crystal-blue-hybrid",
+        why: "The J2CR Crystal Blue Endurance Surface Hybrid combines SW 109.61, TW 6.57, and a long-lasting face texture into one of the most well-rounded all-court paddles available. Three shape options in the series means every player can find their fit.",
+      },
+      {
+        slug: "6-0-coral-hybrid",
+        why: "The SixZero Coral Hybrid at SW 110.59 with TW 6.62 delivers balanced performance at $200. Nothing extreme, nothing lacking — just honest all-court play with good stability and a comfortable feel.",
+      },
+    ],
   },
   {
-    slug: "enhance-banger-elongated",
+    slug: "enhance-turbo-mpp-elongated",
     category: "Best Value",
+    anchor: "best-value",
     accent: "#4ade80",
-    why: "Under $80 after discount, the Banger punches well above its price tag. Solid construction, real pop, and a performance ceiling that competes with paddles in the $150 range. If you're not sure how much to spend, start here — you won't be disappointed.",
+    why: "The Enhance Turbo MPP delivers a SW of 116.06 at $119.99 — and with code PLAYBOOK, you're paying under $100 for a power elongated that competes with paddles at twice the price. That spec-to-dollar ratio is hard to beat anywhere in pickleball right now. If you want real power without the real price tag, this is it.",
+    runnerUps: [
+      {
+        slug: "ronbus-quanta-r3-elongated",
+        why: "The Quanta R3 at SW 115.40 for $119.99 ($99.99 with PLAYBOOK) is a spec anomaly — elongated power paddle performance at a budget price. Ronbus consistently over-delivers on value.",
+      },
+      {
+        slug: "ronbus-quanta-r4-hybrid",
+        why: "The Quanta R4 Hybrid at SW 105 is the maneuverable value option — a soft, kitchen-friendly paddle at under $100 with PLAYBOOK. For NVZ-oriented players on a budget, this is a no-brainer.",
+      },
+    ],
   },
   {
-    slug: "bread-and-butter-fat-boy-widebody",
+    slug: "selkirk-boomstik-elongated",
     category: "Best for Beginners",
+    anchor: "best-beginners",
     accent: "#c084fc",
-    why: "The widebody shape gives you the largest sweet spot of any paddle in this list — ideal for players still building consistent form. The lower swing weight (109.52) makes it fast and easy to maneuver, and the 16mm core forgives mishits far better than thinner alternatives.",
+    why: "The Selkirk Boomstik might seem like an unusual beginner pick at SW 120.09, but that's exactly the point — beginners who start with a paddle that generates natural power don't have to over-swing to keep up. The TW of 6.84 is among the highest for any elongated, meaning off-center hits are far more forgiving. Add Selkirk's premium build quality and you have a paddle that grows with the player.",
+    runnerUps: [
+      {
+        slug: "nox-jc6-elongated",
+        why: "The Nox JC6 at SW 114.68 with X-Foam technology provides a soft, forgiving feel that's great for developing touch. European build quality and a well-balanced all-court design make it an excellent paddle to learn on.",
+      },
+      {
+        slug: "flik-f3-triple-core-elongated",
+        why: "The Flik F3 Triple Core's unique three-layer construction gives it a versatile feel — soft enough for learning touch shots, responsive enough for developing a drive game. At $190 with 10% off, it's a smart first serious paddle.",
+      },
+    ],
   },
 ];
 
@@ -62,7 +145,7 @@ const PICKS = [
 const FAQ = [
   {
     q: "What is the best pickleball paddle for beginners?",
-    a: "For beginners, look for a widebody shape (larger sweet spot), a 16mm core (more forgiving on mishits), and a lower swing weight (easier to maneuver). Our top beginner pick is the Bread & Butter Fat Boy Widebody — big sweet spot, great feel, and a core that rewards players who are still developing consistency.",
+    a: "For beginners, look for a paddle with a forgiving sweet spot and solid build quality. Our top beginner pick is the Selkirk Boomstik — the high TW of 6.84 forgives off-center hits, the SW of 120.09 generates natural power without over-swinging, and Selkirk's build quality ensures it lasts. The Nox JC6 and Flik F3 Triple Core are also excellent starter paddles.",
   },
   {
     q: "Should I get a 13mm or 16mm paddle?",
@@ -74,7 +157,7 @@ const FAQ = [
   },
   {
     q: "How much should I spend on a pickleball paddle?",
-    a: "Good paddles start around $80 and top out near $300. The sweet spot for performance-to-dollar ratio is $130–$200. That said, our best value pick — the Enhance Banger — comes in under $80 after discount and plays like a $150 paddle. Don't overspend until you know what specs you prefer.",
+    a: "Good paddles start around $100 and top out near $300. The sweet spot for performance-to-dollar ratio is $130–$200. That said, our best value pick — the Enhance Turbo MPP — comes in under $100 after discount with a SW of 116.06 that competes with paddles at twice the price. Don't overspend until you know what specs you prefer.",
   },
   {
     q: "What is swing weight and why does it matter?",
@@ -114,11 +197,6 @@ const faqSchema = {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function BestPaddlesPage() {
-  const picks = PICKS.map((pick) => ({
-    ...pick,
-    paddle: getPaddleBySlug(pick.slug),
-  })).filter((p) => !!p.paddle);
-
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(listSchema) }} />
@@ -130,7 +208,7 @@ export default function BestPaddlesPage() {
           {/* ── Hero ──────────────────────────────────────────────────────── */}
           <div className="mb-12 max-w-3xl">
             <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "#14b8a6" }}>
-              Editor&apos;s Picks · Updated April 2026
+              Editor&apos;s Picks · Updated May 2026
             </p>
             <h1
               className="text-4xl md:text-5xl font-extrabold tracking-tight mb-5"
@@ -145,7 +223,7 @@ export default function BestPaddlesPage() {
             </p>
             {/* Trust signals */}
             <div className="flex flex-wrap gap-4">
-              {[`${getPaddleCountLabel()} Paddles Tested`, "Unsponsored Reviews", "Lab-Measured Specs", "Updated April 2026"].map((t) => (
+              {[`${getPaddleCountLabel()} Paddles Tested`, "Unsponsored Reviews", "Lab-Measured Specs", "Updated May 2026"].map((t) => (
                 <div key={t} className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 flex-shrink-0" style={{ color: "#14b8a6" }} />
                   <span className="text-sm font-medium" style={{ color: "var(--text-muted)" }}>{t}</span>
@@ -166,8 +244,8 @@ export default function BestPaddlesPage() {
           >
             {PICKS.map((p) => (
               <a
-                key={p.slug}
-                href={`#${p.slug}`}
+                key={p.anchor}
+                href={`#${p.anchor}`}
                 className="text-sm font-semibold px-4 py-2 rounded-xl transition-all hover:scale-[1.02]"
                 style={{
                   background: "var(--bg-card)",
@@ -182,23 +260,29 @@ export default function BestPaddlesPage() {
 
           {/* ── Picks ─────────────────────────────────────────────────────── */}
           <div className="flex flex-col gap-16">
-            {picks.map(({ paddle, category, accent, why, slug }) => {
+            {PICKS.map((pick) => {
+              const paddle = getPaddleBySlug(pick.slug);
               if (!paddle) return null;
               const priceNum = paddle.price ? parseFloat(paddle.price.replace(/[^0-9.]/g, "")) : null;
+
+              const runnerUpPaddles = (pick.runnerUps ?? [])
+                .map((ru) => ({ ...ru, paddle: getPaddleBySlug(ru.slug) }))
+                .filter((ru) => !!ru.paddle);
+
               return (
-                <div key={slug} id={slug} className="scroll-mt-40">
+                <div key={pick.anchor} id={pick.anchor} className="scroll-mt-40">
                   {/* Section label */}
                   <div className="flex items-center gap-3 mb-5">
                     <span
                       className="text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-full"
-                      style={{ background: `${accent}20`, color: accent, border: `1px solid ${accent}50` }}
+                      style={{ background: `${pick.accent}20`, color: pick.accent, border: `1px solid ${pick.accent}50` }}
                     >
-                      {category}
+                      {pick.category}
                     </span>
                     <div className="h-px flex-1" style={{ background: "rgba(255,255,255,0.07)" }} />
                   </div>
 
-                  {/* Card */}
+                  {/* Main pick card */}
                   <div
                     className="rounded-3xl overflow-hidden"
                     style={{
@@ -245,16 +329,16 @@ export default function BestPaddlesPage() {
                           className="text-base leading-relaxed mb-7"
                           style={{ color: "var(--text-muted)", maxWidth: "52ch" }}
                         >
-                          {why}
+                          {pick.why}
                         </p>
 
                         {/* Spec pills */}
                         <div className="flex flex-wrap gap-2 mb-7">
                           {[
-                            `SW ${paddle.swingWeight}`,
-                            `TW ${paddle.twistWeight}`,
+                            paddle.swingWeight ? `SW ${paddle.swingWeight}` : null,
+                            paddle.twistWeight ? `TW ${paddle.twistWeight}` : null,
                             paddle.weight,
-                          ].map((s) => (
+                          ].filter(Boolean).map((s) => (
                             <span
                               key={s}
                               className="text-xs font-bold px-3 py-1.5 rounded-full font-mono"
@@ -271,7 +355,7 @@ export default function BestPaddlesPage() {
 
                         <div className="flex flex-wrap gap-3">
                           <Link
-                            href={`/paddles/${slug}`}
+                            href={`/paddles/${pick.slug}`}
                             className="inline-flex items-center gap-2 font-bold text-sm px-6 py-3 rounded-xl text-white transition-all duration-200 hover:scale-[1.02]"
                             style={{
                               background: "linear-gradient(135deg, #0d9488, #14b8a6)",
@@ -299,6 +383,70 @@ export default function BestPaddlesPage() {
                       </div>
                     </div>
                   </div>
+
+                  {/* Runner-ups */}
+                  {runnerUpPaddles.length > 0 && (
+                    <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {runnerUpPaddles.map(({ slug: ruSlug, why: ruWhy, paddle: ruPaddle }, i) => {
+                        if (!ruPaddle) return null;
+                        const ruPrice = ruPaddle.price ? parseFloat(ruPaddle.price.replace(/[^0-9.]/g, "")) : null;
+                        return (
+                          <div
+                            key={ruSlug}
+                            className="rounded-2xl p-6 flex gap-5"
+                            style={{
+                              background: "var(--bg-card)",
+                              border: "1px solid rgba(255,255,255,0.06)",
+                            }}
+                          >
+                            {/* Thumbnail */}
+                            <div
+                              className="w-20 h-20 flex-shrink-0 rounded-xl flex items-center justify-center"
+                              style={{ background: "var(--bg-alt)" }}
+                            >
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={ruPaddle.image ?? ""}
+                                alt={`${ruPaddle.brand} ${ruPaddle.name}`}
+                                className="w-full h-full object-contain p-1.5"
+                                style={{ filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.3))" }}
+                              />
+                            </div>
+
+                            {/* Info */}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span
+                                  className="text-[10px] font-bold uppercase tracking-widest"
+                                  style={{ color: pick.accent }}
+                                >
+                                  Runner-Up {i + 1}
+                                </span>
+                              </div>
+                              <p className="text-sm font-bold mb-0.5" style={{ color: "var(--text-primary)" }}>
+                                {ruPaddle.brand} {ruPaddle.name}
+                              </p>
+                              <p className="text-xs mb-2" style={{ color: "rgba(255,255,255,0.35)" }}>
+                                {ruPaddle.shape} · {ruPaddle.thickness}
+                                {ruPrice ? ` · $${ruPrice.toFixed(2)}` : ""}
+                                {ruPaddle.amountOff && ruPaddle.amountOff !== "$0" ? ` (${ruPaddle.amountOff} off)` : ""}
+                              </p>
+                              <p className="text-xs leading-relaxed mb-3" style={{ color: "var(--text-muted)" }}>
+                                {ruWhy}
+                              </p>
+                              <Link
+                                href={`/paddles/${ruSlug}`}
+                                className="inline-flex items-center gap-1 text-xs font-semibold transition-colors"
+                                style={{ color: "#14b8a6" }}
+                              >
+                                View Paddle <ArrowRight className="w-3 h-3" />
+                              </Link>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               );
             })}

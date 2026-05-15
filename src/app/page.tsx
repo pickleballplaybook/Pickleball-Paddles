@@ -179,7 +179,7 @@ export default async function HomePage() {
         >
           <div>
             <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: "#14b8a6" }}>
-              Updated April 2026
+              Updated May 2026
             </p>
             <p className="text-xl font-extrabold" style={{ color: "var(--text-primary)" }}>
               Best Pickleball Paddles of 2026 — Tested &amp; Ranked
