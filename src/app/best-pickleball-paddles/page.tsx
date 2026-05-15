@@ -21,6 +21,7 @@ export const metadata: Metadata = {
 // ── Editorial picks ────────────────────────────────────────────────────────────
 interface Pick {
   slug: string;
+  seriesSlugs?: string[]; // when set, show all paddles in a series layout
   category: string;
   anchor: string;
   accent: string;
@@ -31,10 +32,15 @@ interface Pick {
 const PICKS: Pick[] = [
   {
     slug: "honolulu-j2cr-crystal-blue-hybrid",
+    seriesSlugs: [
+      "honolulu-j2cr-crystal-blue-hybrid",
+      "honolulu-j3cr-crystal-blue-widebody",
+      "honolulu-j6cr-crystal-blue-elongated",
+    ],
     category: "Best Overall",
     anchor: "best-overall",
     accent: "#f59e0b",
-    why: "The Honolulu Crystal Blue Endurance Surface series is the complete package. The J2CR Hybrid leads the line with a SW of 109.61, TW of 6.57, and an Endurance Surface face that maintains its spin generation long after other paddles degrade. Three shapes cover every preference. At $195 with 15% off using PLAYBOOK, the series offers genuine quality at an honest price. This is what a best-overall paddle looks like in 2026.",
+    why: "The Honolulu Crystal Blue Endurance Surface series is the complete package. The J2CR Hybrid leads the line with a SW of 109.61, TW of 6.57, and an Endurance Surface face that maintains its spin generation long after other paddles degrade. Three shapes cover every preference. At $195 with 10–15% off using PLAYBOOK, the series offers genuine quality at an honest price. This is what a best-overall paddle looks like in 2026.",
     runnerUps: [],
   },
   {
@@ -83,8 +89,8 @@ const PICKS: Pick[] = [
         why: "The Mon Ami's 18mm core delivers a SW of 123.47 — but the extra-thick foam absorbs pace so effectively that it's a true control weapon. Resets feel effortless, and the elongated shape gives you reach at the NVZ. A unique paddle for touch-first players.",
       },
       {
-        slug: "gruvn-lazr-16hd-hybrid",
-        why: "The Lazr-16hd Full Foam Hybrid at SW 107.07 is the kitchen specialist. Quick, maneuverable, and soft off the face — it rewards players who build points through consistency and placement rather than power.",
+        slug: "gruvn-muvn-16-hd-full-foam-hybrid",
+        why: "The Muvn 16hd Full Foam Hybrid is the kitchen specialist. Quick, maneuverable, and soft off the face — the full-foam construction rewards players who build points through consistency and placement rather than power.",
       },
     ],
   },
@@ -117,8 +123,8 @@ const PICKS: Pick[] = [
         why: "The Quanta R3 at SW 115.40 for $119.99 ($99.99 with PLAYBOOK) is a spec anomaly — elongated power paddle performance at a budget price. Ronbus consistently over-delivers on value.",
       },
       {
-        slug: "ronbus-quanta-r4-hybrid",
-        why: "The Quanta R4 Hybrid at SW 105 is the maneuverable value option — a soft, kitchen-friendly paddle at under $100 with PLAYBOOK. For NVZ-oriented players on a budget, this is a no-brainer.",
+        slug: "beyond-measure-ronin-hybrid",
+        why: "The Ronin Hybrid at SW 115.65 for $117 ($105 with PLAYBOOK) delivers all-court specs that match paddles at $200+. Great stability with TW 6.36 and a balanced feel that works everywhere on the court.",
       },
     ],
   },
@@ -264,6 +270,9 @@ export default function BestPaddlesPage() {
               const paddle = getPaddleBySlug(pick.slug);
               if (!paddle) return null;
               const priceNum = paddle.price ? parseFloat(paddle.price.replace(/[^0-9.]/g, "")) : null;
+              const seriesPaddles = pick.seriesSlugs
+                ? pick.seriesSlugs.map(getPaddleBySlug).filter(Boolean)
+                : null;
 
               const runnerUpPaddles = (pick.runnerUps ?? [])
                 .map((ru) => ({ ...ru, paddle: getPaddleBySlug(ru.slug) }))
@@ -292,18 +301,55 @@ export default function BestPaddlesPage() {
                     }}
                   >
                     <div className="flex flex-col md:flex-row">
-                      {/* Image */}
+                      {/* Image — series layout or single */}
                       <div
                         className="md:w-[38%] flex-shrink-0 flex items-center justify-center p-10"
                         style={{ background: "var(--bg-alt)", minHeight: "280px" }}
                       >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={paddle.image ?? ""}
-                          alt={`${paddle.brand} ${paddle.name}`}
-                          className="w-full h-full object-contain"
-                          style={{ maxHeight: "220px", filter: "drop-shadow(0 8px 24px rgba(0,0,0,0.4))" }}
-                        />
+                        {seriesPaddles && seriesPaddles.length > 1 ? (
+                          <div className="flex items-end gap-[-10px]" style={{ perspective: "800px" }}>
+                            {seriesPaddles.map((sp, si) => {
+                              if (!sp) return null;
+                              const translateY = si === 1 ? -12 : 0;
+                              const rotate = si === 0 ? 5 : si === 2 ? -5 : 0;
+                              return (
+                                <Link
+                                  key={sp.slug}
+                                  href={`/paddles/${sp.slug}`}
+                                  className="relative group transition-transform duration-300 hover:scale-105 hover:z-10"
+                                  style={{
+                                    transform: `translateY(${translateY}px) rotate(${rotate}deg)`,
+                                    marginLeft: si > 0 ? "-16px" : "0",
+                                    zIndex: si === 1 ? 3 : 1,
+                                  }}
+                                >
+                                  <div className="flex flex-col items-center" style={{ width: "110px" }}>
+                                    {sp.image && (
+                                      // eslint-disable-next-line @next/next/no-img-element
+                                      <img
+                                        src={sp.image}
+                                        alt={`${sp.brand} ${sp.name}`}
+                                        className="w-full h-auto object-contain"
+                                        style={{ maxHeight: "180px", filter: "drop-shadow(0 6px 16px rgba(0,0,0,0.4))" }}
+                                      />
+                                    )}
+                                    <p className="text-[10px] font-bold text-center mt-1.5 truncate w-full" style={{ color: "rgba(255,255,255,0.6)" }}>
+                                      {sp.shape}
+                                    </p>
+                                  </div>
+                                </Link>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={paddle.image ?? ""}
+                            alt={`${paddle.brand} ${paddle.name}`}
+                            className="w-full h-full object-contain"
+                            style={{ maxHeight: "220px", filter: "drop-shadow(0 8px 24px rgba(0,0,0,0.4))" }}
+                          />
+                        )}
                       </div>
 
                       {/* Content */}
@@ -318,10 +364,12 @@ export default function BestPaddlesPage() {
                           className="text-2xl font-extrabold mb-1"
                           style={{ color: "var(--text-primary)" }}
                         >
-                          {paddle.name}
+                          {seriesPaddles ? "Crystal Blue Endurance Surface" : paddle.name}
                         </h2>
                         <p className="text-sm mb-5" style={{ color: "rgba(255,255,255,0.38)" }}>
-                          {paddle.shape} · {paddle.thickness}
+                          {seriesPaddles
+                            ? `${seriesPaddles.map((sp) => sp!.shape).join(", ")} · ${paddle.thickness}`
+                            : `${paddle.shape} · ${paddle.thickness}`}
                           {priceNum ? ` · $${priceNum.toFixed(2)}` : ""}
                           {paddle.amountOff && paddle.amountOff !== "$0" ? ` (${paddle.amountOff} off)` : ""}
                         </p>
@@ -355,14 +403,14 @@ export default function BestPaddlesPage() {
 
                         <div className="flex flex-wrap gap-3">
                           <Link
-                            href={`/paddles/${pick.slug}`}
+                            href={seriesPaddles ? `/series/${paddle.seriesSlug ?? pick.slug}` : `/paddles/${pick.slug}`}
                             className="inline-flex items-center gap-2 font-bold text-sm px-6 py-3 rounded-xl text-white transition-all duration-200 hover:scale-[1.02]"
                             style={{
                               background: "linear-gradient(135deg, #0d9488, #14b8a6)",
                               boxShadow: "0 0 24px rgba(20,184,166,0.3)",
                             }}
                           >
-                            Full Review
+                            {seriesPaddles ? "View Series" : "Full Review"}
                             <ArrowRight className="w-4 h-4" />
                           </Link>
                           {paddle.discountLink && (
