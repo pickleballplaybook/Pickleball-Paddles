@@ -29,7 +29,7 @@ function generateBuyIf(p: Paddle): string[] {
   // Swing weight
   if (sw > 0) {
     if (sw >= 118) bullets.push(`High swing weight (${sw}) gives you serious plow-through power`);
-    else if (sw >= 108) bullets.push(`Moderate swing weight (${sw}) offers a good balance of power and maneuverability`);
+    else if (sw >= 112) bullets.push(`Medium swing weight (${sw}) offers a good balance of power and maneuverability`);
     else bullets.push(`Low swing weight (${sw}) means fast hands at the kitchen`);
   }
 
@@ -40,8 +40,8 @@ function generateBuyIf(p: Paddle): string[] {
     bullets.push("You want a snappier, more responsive 14mm core");
 
   // Twist weight
-  if (tw > 0 && tw >= 6.5)
-    bullets.push(`High twist weight (${tw}) keeps off-center shots stable`);
+  if (tw > 0 && tw >= 5.75)
+    bullets.push(`Good twist weight (${tw}) keeps off-center shots stable`);
 
   return bullets.slice(0, 4);
 }
@@ -60,11 +60,11 @@ function generateSkipIf(p: Paddle): string[] {
   // Swing weight trade-offs
   if (sw > 0) {
     if (sw >= 118) bullets.push("You need fast hand speed at the net — this is a heavy swinger");
-    else if (sw < 105) bullets.push("You want more power and plow-through on drives");
+    else if (sw < 112) bullets.push("You want more power and plow-through on drives");
   }
 
   // Twist weight trade-offs
-  if (tw > 0 && tw < 6)
+  if (tw > 0 && tw < 5.75)
     bullets.push(`Low twist weight (${tw}) means off-center hits lose more pace`);
 
   // Thickness trade-offs
