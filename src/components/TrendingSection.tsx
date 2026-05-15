@@ -84,8 +84,20 @@ function useRatingCounts(paddleIds: string[]) {
   return ratings;
 }
 
+type TimeRange = "7d" | "30d";
+
+function filterByTimeRange<T extends { createdAt: Date | string | number }>(
+  records: T[],
+  range: TimeRange,
+): T[] {
+  const days = range === "7d" ? 7 : 30;
+  const cutoff = Date.now() - days * 86400000;
+  return records.filter((r) => new Date(r.createdAt).getTime() >= cutoff);
+}
+
 export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
   const [heartRecords, setHeartRecords] = useState<HeartRecord[]>([]);
+  const [timeRange, setTimeRange] = useState<TimeRange>("30d");
 
   async function fetchHearts() {
     try {
@@ -105,15 +117,17 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
     return () => window.removeEventListener("hearts-updated", fetchHearts);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const filteredHearts = filterByTimeRange(heartRecords, timeRange);
+
   // Fetch star ratings for all paddles
   const allPaddleIds = paddles.map((p) => p.id);
   const ratingCounts = useRatingCounts(allPaddleIds);
 
-  const hasHearts = heartRecords.length > 0;
+  const hasHearts = filteredHearts.length > 0;
   const hasRatings = Object.values(ratingCounts).some((r) => r.count > 0);
 
-  const allTrending = getTrendingPaddles(paddles, heartRecords, paddles.length);
-  const allBrands   = getRisingBrands(paddles, heartRecords, paddles.length);
+  const allTrending = getTrendingPaddles(paddles, filteredHearts, paddles.length);
+  const allBrands   = getRisingBrands(paddles, filteredHearts, paddles.length);
 
   // Re-sort trending by hearts + star rating count combined
   const trendingSorted = allTrending
@@ -126,7 +140,7 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
     }))
     .sort((a, b) => b.engagement - a.engagement || b.totalHearts - a.totalHearts)
     .filter((t) => (hasHearts || hasRatings) ? t.engagement > 0 : true)
-    .slice(0, 6);
+    .slice(0, 10);
 
   // Re-sort brands by total hearts + total rating counts
   const brandRatings = new Map<string, number>();
@@ -159,19 +173,41 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
             <div>
               <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight" style={{ color: "var(--flip-text-head)" }}>
-                Trending Pickleball Paddles
+                Top 10 Trending Paddles
               </h2>
               <p className="mt-2 text-base" style={{ color: "var(--flip-text-muted)" }}>
                 What players are actually paying attention to right now
               </p>
             </div>
-            <Link
-              href="/paddles"
-              className="self-start sm:self-auto inline-flex items-center gap-1.5 text-sm font-semibold transition-colors whitespace-nowrap hover:text-brand-400"
-              style={{ color: "#2dd4bf" }}
-            >
-              Browse all paddles <ArrowRight className="w-4 h-4" />
-            </Link>
+            <div className="flex items-center gap-3 self-start sm:self-auto">
+              {/* Time range toggle */}
+              <div
+                className="inline-flex rounded-xl p-0.5"
+                style={{ background: "var(--flip-divider)", border: "1px solid var(--flip-card-border)" }}
+              >
+                {(["7d", "30d"] as const).map((r) => (
+                  <button
+                    key={r}
+                    onClick={() => setTimeRange(r)}
+                    className="text-xs font-bold px-3.5 py-1.5 rounded-[10px] transition-all"
+                    style={
+                      timeRange === r
+                        ? { background: "#14b8a6", color: "#fff" }
+                        : { color: "var(--flip-text-muted)" }
+                    }
+                  >
+                    {r === "7d" ? "7 Days" : "30 Days"}
+                  </button>
+                ))}
+              </div>
+              <Link
+                href="/trending"
+                className="inline-flex items-center gap-1.5 text-sm font-semibold transition-colors whitespace-nowrap hover:text-brand-400"
+                style={{ color: "#2dd4bf" }}
+              >
+                View All <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
           </div>
         </div>
 
@@ -181,7 +217,7 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
           <ColumnCard
             icon={<TrendingUp className="w-4 h-4" style={{ color: "#14b8a6" }} strokeWidth={2} />}
             title="Trending Paddles"
-            subtitle="Ranked by views and engagement"
+            subtitle={`Top 10 by engagement — last ${timeRange === "7d" ? "7 days" : "30 days"}`}
           >
             {trendingSorted.length === 0 ? (
               <p className="text-sm" style={{ color: "var(--flip-text-muted)" }}>
