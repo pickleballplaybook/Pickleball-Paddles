@@ -4,6 +4,7 @@ import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { getPaddleBySlug } from "@/data/paddles";
 import { siteConfig } from "@/config/site";
 import { getPaddleCountLabel } from "@/lib/catalogStats";
+import YouTubeEmbed from "@/components/YouTubeEmbed";
 
 export const metadata: Metadata = {
   title: "Best Pickleball Paddles of 2026 — Tested & Ranked | Pickleball Playbook",
@@ -151,6 +152,11 @@ export default function BestPaddlesPage() {
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* ── Featured video ─────────────────────────────────────────── */}
+          <div className="mb-16 max-w-3xl">
+            <YouTubeEmbed videoId="kOONExGr-s0" title="Best Pickleball Paddle of 2026" />
           </div>
 
           {/* ── Jump links ────────────────────────────────────────────────── */}

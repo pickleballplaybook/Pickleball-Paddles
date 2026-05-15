@@ -138,7 +138,16 @@ export default async function HomePage() {
         icon={<Smartphone className="w-5 h-5" strokeWidth={2} />}
         bg="#0c1a2e"
       />
-      <div id="latest-reviews"><LatestReviews items={latestReviewItems} /></div>
+      <div id="latest-reviews">
+        <LatestReviews
+          items={latestReviewItems}
+          featuredVideo={{
+            videoId: "kOONExGr-s0",
+            title: "Best Pickleball Paddle of 2026",
+            href: "/best-pickleball-paddles",
+          }}
+        />
+      </div>
 
       <GearScroll />
 

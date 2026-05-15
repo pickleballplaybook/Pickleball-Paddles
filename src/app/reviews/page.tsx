@@ -139,6 +139,16 @@ export default async function ReviewsPage() {
           </a>
         </div>
 
+        {/* ── Featured video ────────────────────────────────────────── */}
+        <div className="mb-14">
+          <p className="text-xs font-bold text-brand-500 uppercase tracking-widest mb-3">
+            Featured
+          </p>
+          <div className="max-w-3xl">
+            <YouTubeEmbed videoId="kOONExGr-s0" title="Best Pickleball Paddle of 2026" />
+          </div>
+        </div>
+
         {/* Review grid with interleaved promos */}
         <ReviewGrid items={chunkA} />
 
