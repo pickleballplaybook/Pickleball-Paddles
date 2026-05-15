@@ -110,7 +110,7 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
 
       {/* Header branding */}
       <div className="absolute top-4 left-0 right-0 text-center pointer-events-none z-10">
-        <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/50">
+        <p className="text-xs font-extrabold uppercase tracking-[0.3em] text-white/70">
           Playbook Reviews
         </p>
       </div>
@@ -214,11 +214,11 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
 
       {/* Footer branding */}
       <div className="absolute bottom-3 left-5 right-5 flex items-center justify-between pointer-events-none z-10">
-        <p className="text-[10px] font-semibold" style={{ color: "rgba(148,195,215,0.35)" }}>
+        <p className="text-[11px] font-bold" style={{ color: "rgba(148,195,215,0.55)" }}>
           Playbook Reviews
         </p>
-        <p className="text-[10px] font-medium" style={{ color: "rgba(148,195,215,0.3)" }}>
-          pickleballplaybook.app
+        <p className="text-[11px] font-semibold" style={{ color: "rgba(148,195,215,0.5)" }}>
+          playbookpaddles.com
         </p>
       </div>
 
