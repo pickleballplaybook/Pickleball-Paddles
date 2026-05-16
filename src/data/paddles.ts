@@ -1648,7 +1648,7 @@ export const paddles: Paddle[] = [
     twistWeight: 6.57,
     thickness: "16mm",
     image: "/images/paddles/J2CR-Crystal-Blue-Endurance-Surface-16mm.png",
-    amountOff: "15%",
+    amountOff: "10%",
     price: "$195.00",
     discountLink: "https://808pickle.com/discount/PLAYBOOK?redirect=/products/j2cr-crystal-blue-endurance-surface%E2%84%A2-pre-order",
     manualVideoId: "npb1mJrEakM",
