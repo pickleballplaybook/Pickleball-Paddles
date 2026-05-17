@@ -458,44 +458,56 @@ export default async function PaddleDetailPage({ params }: Props) {
               <ReactionButtons paddleId={paddle.id} />
             </div>
 
-            {/* Price + discount box */}
+            {/* Price + promo code box */}
             <div
               className="rounded-2xl p-5 mb-5"
               style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}
             >
-              <div className="mb-3">
-                <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: "var(--flip-text-muted)" }}>
-                  Retail Price
-                </p>
-                {paddle.price && (
-                  <div className="flex items-baseline gap-3 mb-4">
-                    {discountedPrice ? (
-                      <>
-                        <span className="text-2xl font-semibold line-through" style={{ color: "var(--flip-text-muted)" }}>
+              {/* Price row with code on the right */}
+              <div className="flex items-start justify-between gap-4 mb-4">
+                {/* Left: price */}
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest font-mono mb-1" style={{ color: "var(--flip-text-muted)" }}>
+                    Retail Price
+                  </p>
+                  {paddle.price && (
+                    <div className="flex items-baseline gap-2">
+                      {discountedPrice ? (
+                        <>
+                          <span className="text-3xl font-extrabold" style={{ color: "#2dd4bf" }}>
+                            {discountedPrice}
+                          </span>
+                          <span className="text-lg font-semibold line-through" style={{ color: "var(--flip-text-muted)" }}>
+                            {paddle.price}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-3xl font-extrabold" style={{ color: "var(--flip-text-head)" }}>
                           {paddle.price}
                         </span>
-                        <span className="text-3xl font-extrabold" style={{ color: "#2dd4bf" }}>
-                          {discountedPrice}
-                        </span>
-                      </>
-                    ) : (
-                      <span className="text-3xl font-extrabold" style={{ color: "var(--flip-text-head)" }}>
-                        {paddle.price}
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Right: promo code */}
+                <div className="text-right flex-shrink-0">
+                  <p className="text-xs font-bold uppercase tracking-widest font-mono mb-1" style={{ color: "var(--flip-text-muted)" }}>
+                    Promo Code
+                  </p>
+                  {noCode ? (
+                    <div
+                      className="inline-flex items-center px-3 py-2 rounded-lg"
+                      style={{ border: "2px dashed rgba(148,195,215,0.25)", background: "rgba(148,195,215,0.04)" }}
+                    >
+                      <span className="font-mono font-bold text-sm tracking-wide" style={{ color: "rgba(148,195,215,0.5)" }}>
+                        No Code Use Link
                       </span>
-                    )}
-                  </div>
-                )}
-                {!noCode && <DiscountCodeBox code={code} giftCard={giftCard} savings={savings} />}
-                {noCode && hasLink && (
-                  <div
-                    className="flex items-center justify-between px-4 py-3 rounded-xl mb-4"
-                    style={{ border: "2px dashed rgba(148,195,215,0.25)", background: "rgba(148,195,215,0.04)" }}
-                  >
-                    <span className="font-mono font-bold text-sm tracking-wide" style={{ color: "rgba(148,195,215,0.6)" }}>
-                      No Code &middot; Use Link
-                    </span>
-                  </div>
-                )}
+                    </div>
+                  ) : (
+                    <DiscountCodeBox code={code} giftCard={giftCard} savings={savings} compact />
+                  )}
+                </div>
               </div>
 
               {/* Buy button */}
@@ -504,11 +516,11 @@ export default async function PaddleDetailPage({ params }: Props) {
                   href={paddle.discountLink}
                   target="_blank"
                   rel="noopener noreferrer sponsored"
-                  className="flex items-center justify-center gap-2 w-full font-bold text-base py-4 rounded-2xl text-white transition-all duration-200 active:scale-[0.98]"
-                  style={{ background: "#14b8a6" }}
+                  className="flex items-center justify-between w-full font-bold text-base py-4 px-6 rounded-2xl transition-all duration-200 active:scale-[0.98]"
+                  style={{ background: "var(--flip-bg)", border: "1px solid var(--flip-card-border)", color: "var(--flip-text-head)" }}
                 >
-                  {noCode ? `Buy at ${paddle.brand}` : "Buy with Discount"}
-                  <ExternalLink className="w-4 h-4" strokeWidth={2.5} />
+                  {noCode ? `Buy at ${paddle.brand}` : `Buy with Discount`}
+                  <ArrowRight className="w-5 h-5" />
                 </a>
               ) : (
                 <button

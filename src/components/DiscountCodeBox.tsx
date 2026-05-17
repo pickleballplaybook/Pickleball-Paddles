@@ -7,9 +7,10 @@ interface Props {
   code: string;
   giftCard?: boolean;
   savings?: string;
+  compact?: boolean;
 }
 
-export default function DiscountCodeBox({ code, giftCard, savings }: Props) {
+export default function DiscountCodeBox({ code, giftCard, savings, compact }: Props) {
   const [copied, setCopied] = useState(false);
 
   function handleCopy() {
@@ -17,6 +18,30 @@ export default function DiscountCodeBox({ code, giftCard, savings }: Props) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     });
+  }
+
+  if (compact) {
+    return (
+      <button
+        onClick={handleCopy}
+        className="inline-flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-150 active:scale-[0.98]"
+        style={{
+          border: "2px dashed rgba(45,212,191,0.5)",
+          background: "rgba(20,184,166,0.06)",
+        }}
+      >
+        <span className="font-mono font-extrabold text-sm tracking-widest" style={{ color: "#2dd4bf" }}>
+          {code}
+        </span>
+        <span className="text-[10px] font-semibold" style={{ color: copied ? "#4ade80" : "#94a3b8" }}>
+          {copied ? (
+            <><Check className="w-3.5 h-3.5 inline" strokeWidth={2.5} /> Copied</>
+          ) : (
+            <><Copy className="w-3.5 h-3.5 inline" strokeWidth={2} /> Copy</>
+          )}
+        </span>
+      </button>
+    );
   }
 
   if (giftCard) {
