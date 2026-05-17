@@ -51,8 +51,12 @@ function getDiscountCode(brand: string, discountLink?: string): string {
   return siteConfig.discountCode;
 }
 
-function isSelkirkGiftCard(brand: string, amountOff: string): boolean {
-  return (brand === "Selkirk" || brand === "SLK") && (amountOff === "$0" || amountOff === "" || !amountOff);
+function isSelkirkGiftCard(brand: string, amountOff: string, discountLink?: string): boolean {
+  // Only show gift card treatment for Selkirk paddles linked to selkirk.com (not third-party affiliates)
+  if (!(brand === "Selkirk" || brand === "SLK")) return false;
+  if (!(amountOff === "$0" || amountOff === "" || !amountOff)) return false;
+  if (discountLink?.includes("lockerroompickleball.com")) return false;
+  return true;
 }
 
 function savingsDisplay(amountOff: string): string {
@@ -124,7 +128,7 @@ export default async function PaddleDetailPage({ params }: Props) {
 
   const blogPost       = getBlogPostForPaddle(params.slug);
   const code           = getDiscountCode(paddle.brand, paddle.discountLink);
-  const giftCard       = isSelkirkGiftCard(paddle.brand, paddle.amountOff);
+  const giftCard       = isSelkirkGiftCard(paddle.brand, paddle.amountOff, paddle.discountLink);
   const savings        = savingsDisplay(paddle.amountOff);
   const hasLink        = !!paddle.discountLink?.trim();
   // No code applies when there's no discount AND it's not a Selkirk gift card
