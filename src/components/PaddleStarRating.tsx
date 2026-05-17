@@ -117,16 +117,10 @@ export default function PaddleStarRating({ paddleId }: Props) {
 
   return (
     <>
-      {/* ── Compact rating box (hero) ─────────────────────────── */}
-      <div
-        className="rounded-2xl p-5 mb-4"
-        style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}
-      >
-        <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "var(--flip-text-muted)" }}>
-          Rating
-        </p>
-
-        <div className="flex items-center gap-1 mb-3">
+      {/* ── Inline rating row ─────────────────────────── */}
+      <div>
+        {/* Stars row */}
+        <div className="flex items-center gap-0.5">
           {[1, 2, 3, 4, 5].map((star) => (
             <button
               key={star}
@@ -138,25 +132,47 @@ export default function PaddleStarRating({ paddleId }: Props) {
               aria-label={`Rate ${star} star${star > 1 ? "s" : ""}`}
             >
               <Star
-                className="w-7 h-7"
+                className="w-5 h-5"
                 strokeWidth={1.5}
                 style={{
                   fill: star <= displayStars ? "#facc15" : "none",
                   color: star <= displayStars ? "#facc15" : "var(--flip-text-muted)",
-                  opacity: star <= displayStars ? 1 : 0.35,
+                  opacity: star <= displayStars ? 1 : 0.3,
                   transition: "fill 0.1s, color 0.1s, opacity 0.1s",
                 }}
               />
             </button>
           ))}
-          <span className="ml-1 text-sm font-medium" style={{ color: "var(--flip-text-muted)" }}>
-            {summary.userRating ? "Your rating" : "Rate this paddle"}
-          </span>
+
+          {/* Summary inline */}
+          {summary.count > 0 || summary.userRating ? (
+            <div className="flex items-center gap-1.5 ml-2">
+              <span className="font-extrabold text-sm" style={{ color: "var(--flip-text-head)" }}>
+                {(summary.average > 0 ? summary.average : (summary.userRating ?? 0)).toFixed(1)}
+              </span>
+              <span className="text-xs" style={{ color: "var(--flip-text-muted)" }}>
+                ({Math.max(summary.count, summary.userRating ? 1 : 0)} {Math.max(summary.count, summary.userRating ? 1 : 0) === 1 ? "review" : "reviews"})
+              </span>
+              {reviewCount > 0 && (
+                <a
+                  href="#discussion"
+                  className="text-xs font-semibold ml-1 transition-colors hover:text-teal-400"
+                  style={{ color: "#2dd4bf" }}
+                >
+                  Read reviews &darr;
+                </a>
+              )}
+            </div>
+          ) : (
+            <span className="ml-2 text-xs" style={{ color: "var(--flip-text-muted)" }}>
+              {summary.userRating ? "Your rating" : "Rate this paddle"}
+            </span>
+          )}
         </div>
 
-        {/* Comment box */}
+        {/* Comment box (expands below when clicked) */}
         {showCommentBox && (
-          <div className="mb-4 space-y-2">
+          <div className="mt-3 space-y-2">
             <textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
@@ -186,34 +202,6 @@ export default function PaddleStarRating({ paddleId }: Props) {
             </div>
           </div>
         )}
-
-        {/* Summary line */}
-        <div className="flex items-center gap-2 flex-wrap">
-          {summary.count > 0 || summary.userRating ? (
-            <>
-              <Star className="w-4 h-4" style={{ fill: "#facc15", color: "#facc15" }} strokeWidth={0} />
-              <span className="font-extrabold text-sm" style={{ color: "var(--flip-text-head)" }}>
-                {(summary.average > 0 ? summary.average : (summary.userRating ?? 0)).toFixed(1)}
-              </span>
-              <span className="text-sm" style={{ color: "var(--flip-text-muted)" }}>
-                ({Math.max(summary.count, summary.userRating ? 1 : 0)} {Math.max(summary.count, summary.userRating ? 1 : 0) === 1 ? "review" : "reviews"})
-              </span>
-              {reviewCount > 0 && (
-                <a
-                  href="#discussion"
-                  className="text-xs font-semibold ml-1 transition-colors hover:text-teal-400"
-                  style={{ color: "#2dd4bf" }}
-                >
-                  Read reviews &darr;
-                </a>
-              )}
-            </>
-          ) : (
-            <p className="text-xs" style={{ color: "var(--flip-text-muted)" }}>
-              Be the first to review this paddle
-            </p>
-          )}
-        </div>
       </div>
 
       {/* ── Written reviews portal — rendered into #community-reviews via effect ── */}

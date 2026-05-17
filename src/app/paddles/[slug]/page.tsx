@@ -454,7 +454,7 @@ export default async function PaddleDetailPage({ params }: Props) {
             </div>
 
             {/* Hearts / reactions */}
-            <div className="mb-4">
+            <div className="mb-5">
               <ReactionButtons paddleId={paddle.id} />
             </div>
 
