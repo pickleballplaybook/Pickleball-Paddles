@@ -1509,7 +1509,7 @@ export const paddles: Paddle[] = [
     image: "/images/paddles/Boomstik-Elongated-16mm.png",
     amountOff: "$0",
     price: "$333.00",
-    discountLink: "https://www.selkirk.com/discount/inf-playbook?redirect=/products/selkirk-labs-project-boomstik%3Fvariant%3D45593878626406",
+    discountLink: "https://lockerroompickleball.com/products/labs-project-boomstik?sca_ref=8334840.yY4rLJi7oU9HDNHD",
     manualVideoId: "GeVglhdjWQg",
     addedAt: "2026-04-13",
     trendingScore: 66,
