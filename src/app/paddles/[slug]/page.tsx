@@ -127,6 +127,8 @@ export default async function PaddleDetailPage({ params }: Props) {
   const giftCard       = isSelkirkGiftCard(paddle.brand, paddle.amountOff);
   const savings        = savingsDisplay(paddle.amountOff);
   const hasLink        = !!paddle.discountLink?.trim();
+  // No code applies when there's no discount AND it's not a Selkirk gift card
+  const noCode         = (!paddle.amountOff || paddle.amountOff === "$0" || paddle.amountOff === "") && !giftCard;
   const discountedPrice = paddle.price && paddle.amountOff
     ? calcDiscountedPrice(paddle.price, paddle.amountOff)
     : null;
@@ -442,9 +444,14 @@ export default async function PaddleDetailPage({ params }: Props) {
             )}
 
             {/* Star ratings + views */}
-            <div className="flex items-center gap-4 mb-4 flex-wrap">
+            <div className="flex items-center gap-4 mb-2 flex-wrap">
               <PaddleStarRating paddleId={paddle.id} />
               <ViewCounter slug={paddle.slug} type="paddle" />
+            </div>
+
+            {/* Hearts / reactions */}
+            <div className="mb-4">
+              <ReactionButtons paddleId={paddle.id} />
             </div>
 
             {/* Price + discount box */}
@@ -474,7 +481,17 @@ export default async function PaddleDetailPage({ params }: Props) {
                     )}
                   </div>
                 )}
-                <DiscountCodeBox code={code} giftCard={giftCard} savings={savings} />
+                {!noCode && <DiscountCodeBox code={code} giftCard={giftCard} savings={savings} />}
+                {noCode && hasLink && (
+                  <div
+                    className="flex items-center justify-between px-4 py-3 rounded-xl mb-4"
+                    style={{ border: "2px dashed rgba(148,195,215,0.25)", background: "rgba(148,195,215,0.04)" }}
+                  >
+                    <span className="font-mono font-bold text-sm tracking-wide" style={{ color: "rgba(148,195,215,0.6)" }}>
+                      No Code &middot; Use Link
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Buy button */}
@@ -486,7 +503,7 @@ export default async function PaddleDetailPage({ params }: Props) {
                   className="flex items-center justify-center gap-2 w-full font-bold text-base py-4 rounded-2xl text-white transition-all duration-200 active:scale-[0.98]"
                   style={{ background: "#14b8a6" }}
                 >
-                  Buy with Discount
+                  {noCode ? `Buy at ${paddle.brand}` : "Buy with Discount"}
                   <ExternalLink className="w-4 h-4" strokeWidth={2.5} />
                 </a>
               ) : (
@@ -509,7 +526,6 @@ export default async function PaddleDetailPage({ params }: Props) {
 
             {/* Action row */}
             <div className="flex items-center gap-3 flex-wrap">
-              <ReactionButtons paddleId={paddle.id} />
               <Link
                 href={`/compare?paddles=${paddle.slug}`}
                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold border transition-colors hover:border-brand-400"
@@ -732,7 +748,7 @@ export default async function PaddleDetailPage({ params }: Props) {
                 <p className="text-3xl font-extrabold mb-3" style={{ color: "var(--flip-text-head)" }}>
                   {discountedPrice ?? paddle.price ?? "TBD"}
                 </p>
-                <DiscountCodeBox code={code} giftCard={giftCard} savings={savings} />
+                {!noCode && <DiscountCodeBox code={code} giftCard={giftCard} savings={savings} />}
                 {hasLink && (
                   <a
                     href={paddle.discountLink}
@@ -741,7 +757,7 @@ export default async function PaddleDetailPage({ params }: Props) {
                     className="flex items-center justify-center gap-2 w-full font-bold text-sm py-3 rounded-xl text-white mt-3 transition-all active:scale-[0.98]"
                     style={{ background: "#14b8a6" }}
                   >
-                    Apply Discount <ExternalLink className="w-3.5 h-3.5" />
+                    {noCode ? `Buy at ${paddle.brand}` : "Apply Discount"} <ExternalLink className="w-3.5 h-3.5" />
                   </a>
                 )}
               </div>
@@ -828,7 +844,9 @@ export default async function PaddleDetailPage({ params }: Props) {
               style={{ background: "rgba(20,184,166,0.06)", border: "1px solid rgba(20,184,166,0.15)" }}
             >
               <p className="text-sm font-semibold" style={{ color: "var(--flip-text-head)" }}>
-                Ready to buy? Use code <strong style={{ color: "#2dd4bf" }}>{code}</strong> for a discount.
+                {noCode
+                  ? "Ready to buy? Use our link to support Playbook Reviews."
+                  : <>Ready to buy? Use code <strong style={{ color: "#2dd4bf" }}>{code}</strong> for a discount.</>}
               </p>
               <a
                 href={paddle.discountLink}
