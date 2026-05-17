@@ -516,10 +516,10 @@ export default async function PaddleDetailPage({ params }: Props) {
                   href={paddle.discountLink}
                   target="_blank"
                   rel="noopener noreferrer sponsored"
-                  className="flex items-center justify-between w-full font-bold text-base py-4 px-6 rounded-2xl transition-all duration-200 active:scale-[0.98]"
-                  style={{ background: "var(--flip-bg)", border: "1px solid var(--flip-card-border)", color: "var(--flip-text-head)" }}
+                  className="flex items-center justify-between w-full font-bold text-base py-4 px-6 rounded-2xl text-white transition-all duration-200 active:scale-[0.98]"
+                  style={{ background: "#14b8a6" }}
                 >
-                  {noCode ? `Buy at ${paddle.brand}` : `Buy with Discount`}
+                  {noCode ? "Buy Now" : `Buy with Discount`}
                   <ArrowRight className="w-5 h-5" />
                 </a>
               ) : (
