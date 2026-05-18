@@ -2086,8 +2086,8 @@ export const paddles: Paddle[] = [
 // Review dates — ISO publish dates for Latest Reviews sort (newest-first)
 // Set youtubeApiKey in site.ts to auto-fetch real dates; or fill in manually.
 export const reviewDates: Record<string, string> = {
-  "il6Z4hPh-jY": "2026-05-18",  // Joysent Gearfoam Max
   tLtBiz9bNWc:   "2026-05-18",  // Thrive Ignite Pro Series
+  "il6Z4hPh-jY": "2026-05-17",  // Joysent Gearfoam Max
   npb1mJrEakM:   "2026-05-14",  // Honolulu Crystal Blue Endurance (J2CR, J3CR, J6CR)
   VOoscbHplro:   "2026-05-13",  // Rebl Alliance
   "8Rf2xj5Rr2o": "2026-05-12",  // Gherkin Draco Elongated + Widebody
