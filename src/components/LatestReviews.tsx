@@ -88,7 +88,7 @@ export default function LatestReviews({ items, featuredVideo }: LatestReviewsPro
                     <Play className="w-5 h-5 text-slate-900 ml-0.5" strokeWidth={0} fill="currentColor" />
                   </div>
                 </div>
-                <div className="absolute top-3 left-3">
+                <div className="absolute bottom-3 right-3">
                   <span className="text-[10px] font-bold uppercase tracking-widest bg-brand-500 text-white px-2.5 py-1 rounded-full shadow-md">
                     Featured
                   </span>
