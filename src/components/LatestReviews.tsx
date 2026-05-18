@@ -65,58 +65,54 @@ export default function LatestReviews({ items, featuredVideo }: LatestReviewsPro
           </div>
         </div>
 
-        {/* Featured video — full width hero card */}
-        {featuredVideo && (
-          <Link
-            href={featuredVideo.href}
-            className="card group overflow-hidden flex flex-col sm:flex-row mb-8 ring-2 ring-brand-500/30"
-          >
-            <div
-              className="relative sm:w-[60%] aspect-video sm:aspect-auto overflow-hidden rounded-t-2xl sm:rounded-t-none sm:rounded-l-2xl"
-              style={{ background: "var(--bg-alt)", minHeight: "220px" }}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {/* Featured video — spans 2 columns */}
+          {featuredVideo && (
+            <Link
+              href={featuredVideo.href}
+              className="card group overflow-hidden flex flex-col sm:col-span-2 ring-2 ring-brand-500/30"
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={`https://img.youtube.com/vi/${featuredVideo.videoId}/hqdefault.jpg`}
-                alt={featuredVideo.title}
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-slate-900/20 group-hover:bg-slate-900/10 transition-colors" />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg transition-transform duration-200 group-hover:scale-110">
-                  <Play className="w-6 h-6 text-slate-900 ml-0.5" strokeWidth={0} fill="currentColor" />
+              <div
+                className="relative aspect-video overflow-hidden rounded-t-2xl"
+                style={{ background: "var(--bg-alt)" }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`https://img.youtube.com/vi/${featuredVideo.videoId}/maxresdefault.jpg`}
+                  alt={featuredVideo.title}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-slate-900/20 group-hover:bg-slate-900/10 transition-colors" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg transition-transform duration-200 group-hover:scale-110">
+                    <Play className="w-5 h-5 text-slate-900 ml-0.5" strokeWidth={0} fill="currentColor" />
+                  </div>
+                </div>
+                <div className="absolute top-3 left-3">
+                  <span className="text-[10px] font-bold uppercase tracking-widest bg-brand-500 text-white px-2.5 py-1 rounded-full shadow-md">
+                    Featured
+                  </span>
                 </div>
               </div>
-              <div className="absolute top-3 left-3">
-                <span className="text-[10px] font-bold uppercase tracking-widest bg-brand-500 text-white px-2.5 py-1 rounded-full shadow-md">
-                  Featured
-                </span>
-              </div>
-            </div>
-            <div className="p-6 sm:w-[40%] flex flex-col justify-center gap-2">
-              <p className="text-xs font-bold text-brand-500 uppercase tracking-widest">
-                Editor&apos;s Pick
-              </p>
-              <h3
-                className="text-xl font-extrabold group-hover:text-brand-500 transition-colors leading-snug"
-                style={{ color: "var(--text-primary)" }}
-              >
-                {featuredVideo.title}
-              </h3>
-              <p className="text-sm mt-1" style={{ color: "var(--text-muted)" }}>
-                Watch our comprehensive breakdown of the best pickleball paddles to buy right now.
-              </p>
-              <div className="flex items-center mt-2">
-                <p className="text-sm font-semibold flex items-center gap-1.5 text-brand-500">
-                  <Play className="w-4 h-4" strokeWidth={2} />
-                  Watch now
+              <div className="p-5 flex flex-col gap-1 flex-1">
+                <p className="text-[11px] font-bold text-brand-500 uppercase tracking-widest">
+                  Editor&apos;s Pick
                 </p>
+                <h3
+                  className="text-lg font-extrabold group-hover:text-brand-500 transition-colors leading-snug"
+                  style={{ color: "var(--text-primary)" }}
+                >
+                  {featuredVideo.title}
+                </h3>
+                <div className="flex items-center mt-auto pt-2">
+                  <p className="text-sm font-semibold flex items-center gap-1.5 text-brand-500">
+                    <Play className="w-3.5 h-3.5" strokeWidth={2} />
+                    Watch now
+                  </p>
+                </div>
               </div>
-            </div>
-          </Link>
-        )}
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            </Link>
+          )}
           {items.map((group) => {
             const thumbnail = `https://img.youtube.com/vi/${group.videoId}/hqdefault.jpg`;
             const seriesLink = getSeriesLink(group);
