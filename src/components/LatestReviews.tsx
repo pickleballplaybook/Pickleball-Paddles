@@ -121,9 +121,9 @@ export default function LatestReviews({ items, featuredVideo }: LatestReviewsPro
                 const sLink = getSeriesLink(group);
                 const href = sLink ?? `/paddles/${group.primarySlug}`;
                 return (
-                  <Link key={group.videoId} href={href} className="card group overflow-hidden flex flex-row flex-1">
+                  <Link key={group.videoId} href={href} className="card group overflow-hidden flex flex-col flex-1">
                     <div
-                      className="relative w-[45%] flex-shrink-0 overflow-hidden rounded-l-2xl"
+                      className="relative aspect-video overflow-hidden rounded-t-2xl"
                       style={{ background: "var(--bg-alt)" }}
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -139,17 +139,17 @@ export default function LatestReviews({ items, featuredVideo }: LatestReviewsPro
                         </div>
                       </div>
                     </div>
-                    <div className="p-3 flex flex-col gap-0.5 flex-1 min-w-0 justify-center">
+                    <div className="p-3 flex flex-col gap-0.5 flex-1 min-w-0">
                       <p className="text-[10px] font-bold text-brand-500 uppercase tracking-widest">
                         {group.brand}
                       </p>
                       <h3
-                        className="text-sm font-bold line-clamp-2 group-hover:text-brand-500 transition-colors leading-snug"
+                        className="text-xs font-bold line-clamp-2 group-hover:text-brand-500 transition-colors leading-snug"
                         style={{ color: "var(--text-primary)" }}
                       >
                         {group.title}
                       </h3>
-                      <p className="text-[10px] mt-auto" style={{ color: "var(--text-muted)" }}>
+                      <p className="text-[10px] mt-auto pt-1" style={{ color: "var(--text-muted)" }}>
                         <Play className="w-3 h-3 inline mr-0.5" strokeWidth={2} />
                         Watch full review
                       </p>
