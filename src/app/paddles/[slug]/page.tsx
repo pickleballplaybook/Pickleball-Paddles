@@ -535,7 +535,15 @@ export default async function PaddleDetailPage({ params }: Props) {
                   Link Coming Soon
                 </button>
               )}
-              <p className="text-[11px] mt-2 text-center" style={{ color: "var(--flip-text-muted)" }}>
+              {hasLink && (
+                <p className="text-xs mt-3 text-center" style={{ color: "var(--flip-text-muted)" }}>
+                  {noCode
+                    ? <>Click link to <strong style={{ color: "#2dd4bf" }}>support Playbook Reviews</strong></>
+                    : <>Use code <strong style={{ color: "#2dd4bf" }}>{code}</strong> &middot; <span style={{ color: "rgba(148,195,215,0.5)" }}>Click link to support us</span></>
+                  }
+                </p>
+              )}
+              <p className="text-[11px] mt-1.5 text-center" style={{ color: "rgba(148,195,215,0.35)" }}>
                 Affiliate links. We may earn a commission — it never affects our ratings.
               </p>
             </div>
