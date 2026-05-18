@@ -129,17 +129,32 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
   const allTrending = getTrendingPaddles(paddles, filteredHearts, paddles.length);
   const allBrands   = getRisingBrands(paddles, filteredHearts, paddles.length);
 
-  // Re-sort trending by hearts + star rating count combined
+  // Fetch views for all paddles that have any engagement signal
+  const candidateSlugs = allTrending
+    .filter((t) => t.totalHearts > 0 || (ratingCounts[t.paddle.id]?.count ?? 0) > 0)
+    .map((t) => t.paddle.slug);
+  // Always include top paddles by trendingScore as fallback
+  const fallbackSlugs = paddles
+    .sort((a, b) => b.trendingScore - a.trendingScore)
+    .slice(0, 20)
+    .map((p) => p.slug);
+  const allViewSlugs = Array.from(new Set([...candidateSlugs, ...fallbackSlugs])).slice(0, 50);
+  const viewCounts = useViewCounts(allViewSlugs);
+
+  const hasViews = Object.values(viewCounts).some((v) => v > 0);
+
+  // Re-sort trending by hearts + star rating count + views combined
   const trendingSorted = allTrending
     .map((t) => ({
       ...t,
       ratingCount: ratingCounts[t.paddle.id]?.count ?? 0,
       ratingAvg: ratingCounts[t.paddle.id]?.average ?? 0,
-      // Combined engagement score: hearts + rating count
-      engagement: t.totalHearts + (ratingCounts[t.paddle.id]?.count ?? 0),
+      views: viewCounts[t.paddle.slug] ?? 0,
+      // Combined engagement score: hearts + rating count + views (views weighted less)
+      engagement: t.totalHearts + (ratingCounts[t.paddle.id]?.count ?? 0) + Math.floor((viewCounts[t.paddle.slug] ?? 0) / 10),
     }))
     .sort((a, b) => b.engagement - a.engagement || b.totalHearts - a.totalHearts)
-    .filter((t) => (hasHearts || hasRatings) ? t.engagement > 0 : true)
+    .filter((t) => (hasHearts || hasRatings || hasViews) ? t.engagement > 0 : true)
     .slice(0, 10);
 
   // Re-sort brands by total hearts + total rating counts
@@ -158,9 +173,6 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
     .sort((a, b) => b.engagement - a.engagement || b.totalHearts - a.totalHearts)
     .filter((b) => (hasHearts || hasRatings) ? b.engagement > 0 : true)
     .slice(0, 6);
-
-  const trendingSlugs = trendingSorted.map((t) => t.paddle.slug);
-  const viewCounts = useViewCounts(trendingSlugs);
 
   return (
     <section id="trending" className="section-y" style={{ background: "var(--flip-bg)" }}>
