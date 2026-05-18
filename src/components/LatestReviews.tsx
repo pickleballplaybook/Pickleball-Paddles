@@ -65,12 +65,13 @@ export default function LatestReviews({ items, featuredVideo }: LatestReviewsPro
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {/* Featured video — spans 2 columns */}
-          {featuredVideo && (
+        {/* Top row: featured (2/3) + first 2 reviews stacked (1/3) */}
+        {featuredVideo && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
+            {/* Featured — takes 2/3 */}
             <Link
               href={featuredVideo.href}
-              className="card group overflow-hidden flex flex-col sm:col-span-2 ring-2 ring-brand-500/30"
+              className="card group overflow-hidden flex flex-col lg:col-span-2 ring-2 ring-brand-500/30"
             >
               <div
                 className="relative aspect-video overflow-hidden rounded-t-2xl"
@@ -112,8 +113,57 @@ export default function LatestReviews({ items, featuredVideo }: LatestReviewsPro
                 </div>
               </div>
             </Link>
-          )}
-          {items.map((group) => {
+
+            {/* First 2 reviews stacked — takes 1/3 */}
+            <div className="flex flex-col gap-5">
+              {items.slice(0, 2).map((group) => {
+                const thumbnail = `https://img.youtube.com/vi/${group.videoId}/hqdefault.jpg`;
+                const sLink = getSeriesLink(group);
+                const href = sLink ?? `/paddles/${group.primarySlug}`;
+                return (
+                  <Link key={group.videoId} href={href} className="card group overflow-hidden flex flex-row flex-1">
+                    <div
+                      className="relative w-[45%] flex-shrink-0 overflow-hidden rounded-l-2xl"
+                      style={{ background: "var(--bg-alt)" }}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={thumbnail}
+                        alt={group.title}
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-slate-900/20 group-hover:bg-slate-900/10 transition-colors" />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-9 h-9 bg-white rounded-full flex items-center justify-center shadow-md transition-transform duration-200 group-hover:scale-110">
+                          <Play className="w-3.5 h-3.5 text-slate-900 ml-0.5" strokeWidth={0} fill="currentColor" />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-3 flex flex-col gap-0.5 flex-1 min-w-0 justify-center">
+                      <p className="text-[10px] font-bold text-brand-500 uppercase tracking-widest">
+                        {group.brand}
+                      </p>
+                      <h3
+                        className="text-sm font-bold line-clamp-2 group-hover:text-brand-500 transition-colors leading-snug"
+                        style={{ color: "var(--text-primary)" }}
+                      >
+                        {group.title}
+                      </h3>
+                      <p className="text-[10px] mt-auto" style={{ color: "var(--text-muted)" }}>
+                        <Play className="w-3 h-3 inline mr-0.5" strokeWidth={2} />
+                        Watch full review
+                      </p>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Remaining reviews in 4-col grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {(featuredVideo ? items.slice(2) : items).map((group) => {
             const thumbnail = `https://img.youtube.com/vi/${group.videoId}/hqdefault.jpg`;
             const seriesLink = getSeriesLink(group);
             const href = seriesLink ?? `/paddles/${group.primarySlug}`;
