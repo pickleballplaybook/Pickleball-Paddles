@@ -1830,6 +1830,7 @@ export const paddles: Paddle[] = [
     twistWeight: 5.78,
     thickness: "14mm",
     image: "/images/paddles/Joysent-Gearfoam-Max-14mm.png",
+    reviewUrl: "https://youtu.be/il6Z4hPh-jY",
     amountOff: "10%",
     price: "$129.99",
     discountLink: "https://www.joysentsport.com/discount/PLAYBOOK?redirect=/%3Fsca_ref%3D10987962.CoGSrAtoYA3",
@@ -2072,6 +2073,7 @@ export const paddles: Paddle[] = [
     twistWeight: 6.44,
     thickness: "15.5mm",
     image: "/images/paddles/Thrive-Ignite-Hybrid-15.5mm.png",
+    reviewUrl: "https://youtu.be/tLtBiz9bNWc",
     amountOff: "10%",
     price: "$219.99",
     discountLink: "https://thrivepb.com/discount/PLAYBOOK?redirect=/%3Fsca_ref%3D11226925.N8ui0Ppn9Vnb8DM",
@@ -2084,6 +2086,8 @@ export const paddles: Paddle[] = [
 // Review dates — ISO publish dates for Latest Reviews sort (newest-first)
 // Set youtubeApiKey in site.ts to auto-fetch real dates; or fill in manually.
 export const reviewDates: Record<string, string> = {
+  "il6Z4hPh-jY": "2026-05-18",  // Joysent Gearfoam Max
+  tLtBiz9bNWc:   "2026-05-18",  // Thrive Ignite Pro Series
   npb1mJrEakM:   "2026-05-14",  // Honolulu Crystal Blue Endurance (J2CR, J3CR, J6CR)
   VOoscbHplro:   "2026-05-13",  // Rebl Alliance
   "8Rf2xj5Rr2o": "2026-05-12",  // Gherkin Draco Elongated + Widebody
