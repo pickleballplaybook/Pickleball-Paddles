@@ -125,19 +125,6 @@ export default async function HomePage() {
     <>
       <Hero />
 
-      <div id="paddles"><HottestPaddle /></div>
-
-      <LatestPaddles paddles={latestPaddles} />
-
-      {/* Drills App */}
-      <PromoBar
-        title="Pickleball Drills App"
-        subtitle="Start your free trial."
-        ctaText="Try It Free"
-        ctaHref="https://onelink.to/cyrk57"
-        icon={<Smartphone className="w-5 h-5" strokeWidth={2} />}
-        bg="#0c1a2e"
-      />
       <div id="latest-reviews">
         <LatestReviews
           items={latestReviewItems}
@@ -148,6 +135,22 @@ export default async function HomePage() {
           }}
         />
       </div>
+
+      <div id="paddles"><HottestPaddle /></div>
+
+      <LatestPaddles paddles={latestPaddles} />
+
+      <TrendingSection paddles={paddles} />
+
+      {/* Drills App */}
+      <PromoBar
+        title="Pickleball Drills App"
+        subtitle="Start your free trial."
+        ctaText="Try It Free"
+        ctaHref="https://onelink.to/cyrk57"
+        icon={<Smartphone className="w-5 h-5" strokeWidth={2} />}
+        bg="#0c1a2e"
+      />
 
       <GearScroll />
 
@@ -163,8 +166,6 @@ export default async function HomePage() {
         icon={!promoA.image ? <GraduationCap className="w-5 h-5" strokeWidth={2} /> : undefined}
         bg={promoA.bg}
       />
-
-      <TrendingSection paddles={paddles} />
 
       {/* Best Paddles 2026 banner */}
       <section className="container-xl py-6">
