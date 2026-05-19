@@ -35,9 +35,29 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const paddle = getPaddleBySlug(params.slug);
   if (!paddle) return {};
   const code = getDiscountCode(paddle.brand, paddle.discountLink);
+  const url = `${siteConfig.siteUrl}/paddles/${paddle.slug}`;
+  const title = `${paddle.brand} ${paddle.name} ${paddle.thickness} Review | Pickleball Playbook`;
+  const description = `${paddle.brand} ${paddle.name} pickleball paddle review — ${paddle.shape} shape, ${paddle.thickness} core, ${paddle.weight}, Swing Weight ${paddle.swingWeight}. Specs, who it's for, video review & discount code ${code}.`;
+  const imageUrl = paddle.image ? `${siteConfig.siteUrl}${paddle.image}` : undefined;
+
   return {
-    title: `${paddle.brand} ${paddle.name} ${paddle.thickness} Review | Pickleball Playbook`,
-    description: `${paddle.brand} ${paddle.name} pickleball paddle review — ${paddle.shape} shape, ${paddle.thickness} core, ${paddle.weight}, Swing Weight ${paddle.swingWeight}. Specs, who it's for, video review & discount code ${code}.`,
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      title: `${paddle.brand} ${paddle.name} ${paddle.thickness} Review`,
+      description,
+      url,
+      type: "article",
+      siteName: siteConfig.name,
+      ...(imageUrl ? { images: [{ url: imageUrl, alt: `${paddle.brand} ${paddle.name} ${paddle.shape} ${paddle.thickness} pickleball paddle` }] } : {}),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${paddle.brand} ${paddle.name} Review`,
+      description: `${paddle.shape} ${paddle.thickness} — ${paddle.weight}${paddle.swingWeight ? `, SW ${paddle.swingWeight}` : ""}. Use code ${code} for discount.`,
+      ...(imageUrl ? { images: [imageUrl] } : {}),
+    },
   };
 }
 
@@ -215,6 +235,12 @@ export default async function PaddleDetailPage({ params }: Props) {
   const starRating = (paddle.trendingScore ?? 60) >= 70 ? "4.8"
     : (paddle.trendingScore ?? 60) >= 60 ? "4.5" : "4.3";
 
+  const reviewSummary = blogPost
+    ? (blogPost.sections.find((s) => s.type === "verdict")?.text
+      ?? blogPost.sections.find((s) => s.type === "p")?.text
+      ?? "")
+    : `The ${paddle.brand} ${paddle.name} is a ${paddle.shape.toLowerCase()} ${paddle.thickness} paddle${paddle.swingWeight ? ` with a swing weight of ${paddle.swingWeight}` : ""}.`;
+
   const productSchema = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -230,13 +256,16 @@ export default async function PaddleDetailPage({ params }: Props) {
         "availability": "https://schema.org/InStock",
         "url": paddle.discountLink || `${siteConfig.siteUrl}/paddles/${paddle.slug}`,
         "priceValidUntil": "2027-01-01",
+        "seller": { "@type": "Organization", "name": paddle.brand },
       },
     } : {}),
     "review": {
       "@type": "Review",
       "reviewRating": { "@type": "Rating", "ratingValue": starRating, "bestRating": "5", "worstRating": "1" },
-      "author": { "@type": "Person", "name": "Austin Hardy" },
-      "publisher": { "@type": "Organization", "name": "Pickleball Playbook" },
+      "author": { "@type": "Person", "name": "Austin Hardy", "url": siteConfig.siteUrl },
+      "publisher": { "@type": "Organization", "name": "Pickleball Playbook", "url": siteConfig.siteUrl },
+      "datePublished": paddle.addedAt,
+      "reviewBody": reviewSummary,
     },
     "aggregateRating": {
       "@type": "AggregateRating",
@@ -245,6 +274,24 @@ export default async function PaddleDetailPage({ params }: Props) {
       "bestRating": "5",
       "worstRating": "1",
     },
+  };
+
+  const articleSchema = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": `${paddle.brand} ${paddle.name} ${paddle.thickness} Pickleball Paddle Review`,
+    "description": `In-depth review of the ${paddle.brand} ${paddle.name} — ${paddle.shape} shape, ${paddle.thickness} core. Specs, performance, and discount code.`,
+    "image": paddle.image ? `${siteConfig.siteUrl}${paddle.image}` : undefined,
+    "datePublished": paddle.addedAt,
+    "dateModified": new Date().toISOString().split("T")[0],
+    "author": { "@type": "Person", "name": "Austin Hardy", "url": siteConfig.siteUrl },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Pickleball Playbook",
+      "url": siteConfig.siteUrl,
+      "logo": { "@type": "ImageObject", "url": `${siteConfig.siteUrl}/images/Logo.svg` },
+    },
+    "mainEntityOfPage": { "@type": "WebPage", "@id": `${siteConfig.siteUrl}/paddles/${paddle.slug}` },
   };
 
   const breadcrumbSchema = {
@@ -293,12 +340,53 @@ export default async function PaddleDetailPage({ params }: Props) {
             : `Check Pickleball Playbook for the latest deals on the ${paddle.brand} ${paddle.name}.`,
         },
       },
+      {
+        "@type": "Question",
+        "name": `What is the twist weight of the ${paddle.brand} ${paddle.name}?`,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": paddle.twistWeight > 0
+            ? `The ${paddle.brand} ${paddle.name} has a twist weight of ${paddle.twistWeight}. ${paddle.twistWeight >= 6.5 ? "This is above average, providing excellent off-center stability." : paddle.twistWeight >= 5.8 ? "This is in the mid range, offering solid stability." : "This is on the lower end — center hits are rewarded, but off-center shots will be less forgiving."}`
+            : `Twist weight data for the ${paddle.brand} ${paddle.name} is not yet available.`,
+        },
+      },
+      {
+        "@type": "Question",
+        "name": `How heavy is the ${paddle.brand} ${paddle.name}?`,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": paddle.weight
+            ? `The ${paddle.brand} ${paddle.name} weighs ${paddle.weight}. ${parseFloat(paddle.weight) >= 8.2 ? "This is on the heavier side, contributing to more power and stability." : parseFloat(paddle.weight) <= 7.7 ? "This is a lightweight paddle, ideal for players who want fast hand speed." : "This is a standard weight that suits most players."}`
+            : `Weight data for the ${paddle.brand} ${paddle.name} is not yet available.`,
+        },
+      },
+      {
+        "@type": "Question",
+        "name": `Is the ${paddle.brand} ${paddle.name} good for beginners?`,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": paddle.playStyle === "control"
+            ? `Yes, the ${paddle.brand} ${paddle.name} is a good option for beginners. Its control-oriented design is forgiving and helps develop consistent shot placement.`
+            : paddle.playStyle === "all-court"
+            ? `Yes, the ${paddle.brand} ${paddle.name} works well for beginners. Its all-court design provides a balanced feel that adapts to any play style as you develop your game.`
+            : `The ${paddle.brand} ${paddle.name} is a ${paddle.playStyle}-oriented paddle that may be better suited for intermediate to advanced players. Beginners may want to start with an all-court or control paddle.`,
+        },
+      },
+      {
+        "@type": "Question",
+        "name": `What shape is the ${paddle.brand} ${paddle.name}?`,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": `The ${paddle.brand} ${paddle.name} is a ${paddle.shape.toLowerCase()} shape paddle with a ${paddle.thickness} core. ${paddle.shape === "Elongated" ? "Elongated paddles provide extra reach and leverage for drives." : paddle.shape === "Widebody" ? "Widebody paddles offer a larger sweet spot and more forgiveness on off-center hits." : "Hybrid paddles balance reach and sweet spot size for versatile all-court play."}`,
+        },
+      },
     ],
   };
 
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
 

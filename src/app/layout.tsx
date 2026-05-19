@@ -73,6 +73,33 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable}>
       <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "Pickleball Playbook",
+            "url": siteConfig.siteUrl,
+            "logo": `${siteConfig.siteUrl}/images/Logo.svg`,
+            "description": "Independent pickleball paddle reviews, lab-measured specs, and exclusive discount codes. Every review is unsponsored.",
+            "sameAs": [siteConfig.youtubeChannelUrl],
+            "founder": { "@type": "Person", "name": "Austin Hardy" },
+          }) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "name": "Pickleball Playbook",
+            "url": siteConfig.siteUrl,
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": `${siteConfig.siteUrl}/paddles?q={search_term_string}`,
+              "query-input": "required name=search_term_string",
+            },
+          }) }}
+        />
         <script dangerouslySetInnerHTML={{ __html: `(function(){try{var s=localStorage.getItem('ppb_theme');if(s==='dark'||(!s&&window.matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');}}catch(e){}})();` }} />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black" />
