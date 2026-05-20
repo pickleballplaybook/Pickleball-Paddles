@@ -1,6 +1,7 @@
 import { MetadataRoute } from "next";
 import { paddles } from "@/data/paddles";
 import { blogPosts } from "@/data/blogPosts";
+import { brands } from "@/data/brands";
 import { siteConfig } from "@/config/site";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -51,6 +52,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${siteConfig.siteUrl}/series`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
     { url: `${siteConfig.siteUrl}/gear`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
     { url: `${siteConfig.siteUrl}/trending`, lastModified: now, changeFrequency: "daily", priority: 0.7 },
+    { url: `${siteConfig.siteUrl}/brands`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
   ];
 
   // All paddle pages
@@ -78,5 +80,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  return [...staticPages, ...paddlePages, ...blogPages, ...seriesPages, ...weeklyPages];
+  // Brand pages
+  const brandPages: MetadataRoute.Sitemap = brands.map((b) => ({
+    url: `${siteConfig.siteUrl}/brands/${b.slug}`,
+    lastModified: now,
+    changeFrequency: "weekly" as const,
+    priority: 0.75,
+  }));
+
+  return [...staticPages, ...paddlePages, ...blogPages, ...seriesPages, ...brandPages, ...weeklyPages];
 }

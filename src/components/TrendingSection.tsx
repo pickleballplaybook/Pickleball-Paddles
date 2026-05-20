@@ -7,6 +7,7 @@ import { Paddle } from "@/types";
 import { getTrendingPaddles, getRisingBrands, HeartRecord } from "@/lib/trending";
 import { siteConfig } from "@/config/site";
 import { supabase } from "@/lib/supabaseClient";
+import { getBrandByName } from "@/data/brands";
 
 // ── Subcomponent ──────────────────────────────────────────────────────────────
 
@@ -359,14 +360,15 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
                 </p>
               ) : (
                 brandsSorted.map(({ brand, totalHearts, paddleCount, topSlug }, i) => {
-                  const topPaddle = paddles.find((p) => p.slug === topSlug);
+                  const brandData = getBrandByName(brand);
                   const brandViews = paddles
                     .filter((p) => p.brand === brand)
                     .reduce((sum, p) => sum + (viewCounts[p.slug] ?? 0), 0);
+                  const href = brandData ? `/brands/${brandData.slug}` : `/paddles/${topSlug}`;
                   return (
                     <Link
                       key={brand}
-                      href={`/paddles/${topSlug}`}
+                      href={href}
                       className="flex items-center gap-3 rounded-xl p-2.5 transition-colors hover:bg-[var(--flip-divider)] group"
                       style={{ border: "1px solid var(--flip-card-border)" }}
                     >
@@ -377,9 +379,9 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
                         className="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center overflow-hidden"
                         style={{ background: "var(--flip-divider)" }}
                       >
-                        {topPaddle?.image ? (
+                        {brandData?.logo ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={topPaddle.image} alt={brand} className="w-full h-full object-contain p-1" />
+                          <img src={brandData.logo} alt={brand} className="w-full h-full object-contain p-1.5" />
                         ) : (
                           <div className="w-6 h-6 rounded-full bg-teal-500/20" />
                         )}
