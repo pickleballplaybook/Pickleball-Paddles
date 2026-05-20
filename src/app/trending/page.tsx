@@ -251,6 +251,7 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
 
 export default function TrendingPage() {
   const [heartRecords, setHeartRecords] = useState<HeartRecord[]>([]);
+  const [heartsLoaded, setHeartsLoaded] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
@@ -261,27 +262,26 @@ export default function TrendingPage() {
         if (data) {
           setHeartRecords(data.map((row) => ({ paddleId: row.paddle_id, createdAt: row.created_at })));
         }
+        setHeartsLoaded(true);
       });
   }, []);
 
-  const allPaddleIds = paddles.map((p) => p.id);
-  const ratingCounts = useRatingCounts(allPaddleIds);
-
-  // Fetch views for candidate paddles (same as homepage TrendingSection)
+  // Only fetch ratings for top candidates (not all 116+ paddles)
   const allTrending = getTrendingPaddles(paddles, heartRecords, paddles.length);
-  const candidateSlugs = allTrending
-    .filter((t) => t.totalHearts > 0 || (ratingCounts[t.paddle.id]?.count ?? 0) > 0)
-    .map((t) => t.paddle.slug);
-  const fallbackSlugs = paddles
-    .sort((a, b) => b.trendingScore - a.trendingScore)
-    .slice(0, 20)
-    .map((p) => p.slug);
-  const allViewSlugs = Array.from(new Set([...candidateSlugs, ...fallbackSlugs])).slice(0, 50);
-  const viewCounts = useViewCounts(allViewSlugs);
+  const heartedIds = new Set(heartRecords.map((h) => h.paddleId));
+  const topByScore = [...paddles].sort((a, b) => b.trendingScore - a.trendingScore).slice(0, 20);
+  const candidateIds = Array.from(new Set([...Array.from(heartedIds), ...topByScore.map((p) => p.id)])).slice(0, 30);
+  const ratingCounts = useRatingCounts(candidateIds);
+
+  const candidateSlugs = candidateIds
+    .map((id) => paddles.find((p) => p.id === id)?.slug)
+    .filter(Boolean) as string[];
+  const viewCounts = useViewCounts(candidateSlugs);
 
   const hasHearts = heartRecords.length > 0;
   const hasRatings = Object.values(ratingCounts).some((r) => r.count > 0);
   const hasViews = Object.values(viewCounts).some((v) => v > 0);
+  const dataReady = heartsLoaded && (hasViews || (!hasHearts && !hasRatings));
 
   // Same scoring as homepage: hearts + ratings + views/10
   const top10 = allTrending
@@ -292,7 +292,6 @@ export default function TrendingPage() {
     .sort((a, b) => b.engagement - a.engagement || b.totalHearts - a.totalHearts)
     .filter((t) => (hasHearts || hasRatings || hasViews) ? t.engagement > 0 : true)
     .slice(0, 10);
-
 
   return (
     <div className="min-h-screen pt-[156px] pb-20" style={{ background: "#060e1a" }}>
@@ -314,8 +313,13 @@ export default function TrendingPage() {
           </p>
         </div>
 
-        {/* Single card display */}
-        {top10.length > 0 && (
+        {/* Single card display — wait for data to avoid order jumps */}
+        {!dataReady && (
+          <div className="flex items-center justify-center py-20">
+            <div className="w-8 h-8 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
+          </div>
+        )}
+        {dataReady && top10.length > 0 && (
           <>
             <div className="relative">
               {/* Nav buttons */}
@@ -362,7 +366,7 @@ export default function TrendingPage() {
         )}
 
         {/* List view for quick reference */}
-        <div className="mt-16">
+        {dataReady && <div className="mt-16">
           <h2 className="text-2xl font-extrabold mb-6" style={{ color: "#fff" }}>
             Full Rankings
           </h2>
@@ -408,7 +412,7 @@ export default function TrendingPage() {
               );
             })}
           </div>
-        </div>
+        </div>}
 
       </div>
     </div>
