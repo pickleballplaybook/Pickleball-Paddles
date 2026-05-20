@@ -5,6 +5,8 @@ import { paddles } from "@/data/paddles";
 import { siteConfig } from "@/config/site";
 import { ArrowRight, ExternalLink, ChevronRight } from "lucide-react";
 import type { Paddle } from "@/types";
+import { extractYouTubeId } from "@/lib/youtube";
+import YouTubeEmbed from "@/components/YouTubeEmbed";
 
 interface Props {
   params: { slug: string };
@@ -127,6 +129,31 @@ export default function SeriesPage({ params }: Props) {
           {" "}at checkout.
         </p>
       </section>
+
+      {/* Video review — show if any paddle in the series has a review */}
+      {(() => {
+        const videoIds = new Set<string>();
+        for (const p of sorted) {
+          if (p.reviewUrl) {
+            const id = extractYouTubeId(p.reviewUrl);
+            if (id) videoIds.add(id);
+          }
+          if (p.manualVideoId) videoIds.add(p.manualVideoId);
+        }
+        const uniqueIds = Array.from(videoIds);
+        if (uniqueIds.length === 0) return null;
+        return (
+          <section className="container-xl pb-10">
+            <div className="max-w-3xl">
+              {uniqueIds.map((vid) => (
+                <div key={vid} className="mb-4">
+                  <YouTubeEmbed videoId={vid} title={`${series.title} Review`} />
+                </div>
+              ))}
+            </div>
+          </section>
+        );
+      })()}
 
       {/* Shape cards */}
       <section className="container-xl">
