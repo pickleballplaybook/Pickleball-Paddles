@@ -21,7 +21,7 @@ export function getMetaConfig() {
   if (!verifyToken) throw new Error("META_WEBHOOK_VERIFY_TOKEN is not set");
   if (!baseUrl) {
     throw new Error(
-      "NEXT_PUBLIC_SITE_URL is not set (e.g. https://pickleballplaybook.app)"
+      "NEXT_PUBLIC_SITE_URL is not set (e.g. https://playbookpaddles.com)"
     );
   }
 

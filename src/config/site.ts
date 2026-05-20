@@ -85,6 +85,6 @@ export const siteConfig = {
   },
 
   // ── SEO ─────────────────────────────────────────────────────────────────────
-  siteUrl: "https://pickleballplaybook.app",
+  siteUrl: "https://playbookpaddles.com",
   twitterHandle: "@pickleballplaybook",
 };
