@@ -18,20 +18,31 @@ export function generateStaticParams() {
 export function generateMetadata({ params }: Props): Metadata {
   const post = getBlogPostBySlug(params.slug);
   if (!post) return {};
+  const url = `${siteConfig.siteUrl}/blog/${post.slug}`;
+  const imageUrl = post.thumbnail
+    ? `${siteConfig.siteUrl}${post.thumbnail}`
+    : post.videoId
+    ? `https://img.youtube.com/vi/${post.videoId}/hqdefault.jpg`
+    : undefined;
   return {
     title: post.title,
     description: post.metaDescription,
+    alternates: { canonical: url },
     openGraph: {
       title: post.title,
       description: post.metaDescription,
       type: "article",
       publishedTime: post.publishDate,
-      url: `${siteConfig.siteUrl}/blog/${post.slug}`,
-      images: post.thumbnail
-        ? [{ url: `${siteConfig.siteUrl}${post.thumbnail}` }]
-        : post.videoId
-        ? [{ url: `https://img.youtube.com/vi/${post.videoId}/hqdefault.jpg` }]
-        : [],
+      authors: ["Austin Hardy"],
+      url,
+      siteName: siteConfig.name,
+      ...(imageUrl ? { images: [{ url: imageUrl, alt: `${post.brand} ${post.paddleName} review` }] } : {}),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.metaDescription,
+      ...(imageUrl ? { images: [imageUrl] } : {}),
     },
   };
 }
@@ -105,7 +116,29 @@ export default function BlogPostPage({ params }: Props) {
   const isSelkirk = post.brand === "Selkirk" || post.brand === "SLK";
   const discountCode = isSelkirk ? "INF-PLAYBOOK" : "PLAYBOOK";
 
+  const verdict = post.sections.find((s) => s.type === "verdict")?.text ?? post.excerpt;
+  const articleSchema = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": post.title,
+    "description": post.metaDescription,
+    "datePublished": post.publishDate,
+    "dateModified": post.publishDate,
+    "author": { "@type": "Person", "name": "Austin Hardy", "url": siteConfig.siteUrl },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Pickleball Playbook",
+      "url": siteConfig.siteUrl,
+      "logo": { "@type": "ImageObject", "url": `${siteConfig.siteUrl}/images/Logo.svg` },
+    },
+    "mainEntityOfPage": { "@type": "WebPage", "@id": `${siteConfig.siteUrl}/blog/${post.slug}` },
+    "image": post.thumbnail ? `${siteConfig.siteUrl}${post.thumbnail}` : undefined,
+    "articleBody": verdict,
+  };
+
   return (
+    <>
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
     <div className="min-h-screen pt-[156px]" style={{ background: "var(--bg-page)" }}>
       <div className="container-xl py-16">
 
@@ -260,5 +293,6 @@ export default function BlogPostPage({ params }: Props) {
         </div>
       </div>
     </div>
+    </>
   );
 }

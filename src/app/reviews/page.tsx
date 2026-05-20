@@ -11,8 +11,16 @@ import { gearProducts } from "@/data/products";
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "YouTube Reviews",
-  description: `Watch full video reviews for every pickleball paddle listed on ${siteConfig.name}.`,
+  title: "Pickleball Paddle Video Reviews — Full In-Depth Reviews | Pickleball Playbook",
+  description: `Watch full in-depth video reviews for 100+ pickleball paddles. Every paddle tested on court with lab-measured specs. Subscribe to @playbookreviews for new reviews weekly.`,
+  alternates: { canonical: `${siteConfig.siteUrl}/reviews` },
+  openGraph: {
+    title: "Pickleball Paddle Video Reviews",
+    description: "Full in-depth video reviews for every paddle in our database. Tested on court by Austin Hardy.",
+    url: `${siteConfig.siteUrl}/reviews`,
+    type: "website",
+    siteName: siteConfig.name,
+  },
 };
 
 // Same hourly seed as homepage — slices [3,4] so reviews never duplicate homepage [0,1,2]

@@ -9,12 +9,20 @@ import YouTubeEmbed from "@/components/YouTubeEmbed";
 export const metadata: Metadata = {
   title: "Best Pickleball Paddles of 2026 — Tested & Ranked | Pickleball Playbook",
   description:
-    "We tested 100+ pickleball paddles on a real court in 2026 and ranked the best by category — power, control, all-court, value, and beginners. Every pick is unsponsored.",
+    "We tested 100+ pickleball paddles on a real court in 2026 and ranked the best by category — power, control, all-court, spin, value, and beginners. Every pick is unsponsored.",
+  alternates: { canonical: `${siteConfig.siteUrl}/best-pickleball-paddles` },
   openGraph: {
     title: "Best Pickleball Paddles of 2026 — Tested & Ranked",
     description:
       "100+ paddles tested. Ranked by a PPR-certified pro player with 12+ years coaching. Find the best paddle for your game.",
     url: `${siteConfig.siteUrl}/best-pickleball-paddles`,
+    type: "website",
+    siteName: siteConfig.name,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Best Pickleball Paddles of 2026 — Tested & Ranked",
+    description: "100+ paddles tested and ranked. Power, control, all-court, spin, value, and beginner picks.",
   },
 };
 

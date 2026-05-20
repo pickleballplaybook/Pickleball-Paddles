@@ -17,7 +17,28 @@ import PromoBar       from "@/components/PromoBar";
 import GearScroll        from "@/components/GearScroll";
 import NewsletterSignup  from "@/components/NewsletterSignup";
 
+import { Metadata } from "next";
+
 export const revalidate = 3600;
+
+export const metadata: Metadata = {
+  title: "Pickleball Playbook — Best Paddle Reviews, Specs & Discount Codes (2026)",
+  description:
+    "Independent pickleball paddle reviews with lab-measured specs — swing weight, twist weight, and static weight on every paddle. Compare 100+ paddles, watch video reviews, and save with exclusive discount codes. Updated weekly.",
+  alternates: { canonical: siteConfig.siteUrl },
+  openGraph: {
+    title: "Pickleball Playbook — Best Paddle Reviews & Discount Codes",
+    description: "100+ paddles tested on court. Lab-measured specs, video reviews, and exclusive discount codes. Find your perfect paddle.",
+    url: siteConfig.siteUrl,
+    type: "website",
+    siteName: siteConfig.name,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Pickleball Playbook — Paddle Reviews & Deals",
+    description: "100+ paddles tested. Lab-measured specs. Exclusive discount codes.",
+  },
+};
 
 // ── Seeded daily shuffle ───────────────────────────────────────────────────────
 // Seeded shuffle keyed to the current UTC hour — changes every hour.

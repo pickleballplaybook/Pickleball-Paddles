@@ -7,6 +7,14 @@ import { siteConfig } from "@/config/site";
 export const metadata: Metadata = {
   title: "Pickleball Paddle Reviews Blog | Pickleball Playbook",
   description: `In-depth pickleball paddle reviews, specs breakdowns, and buying guides from ${siteConfig.name}. Find the best paddle for your game.`,
+  alternates: { canonical: `${siteConfig.siteUrl}/blog` },
+  openGraph: {
+    title: "Pickleball Paddle Reviews Blog",
+    description: "In-depth written reviews for every paddle we test. Specs, who it's for, and honest verdicts.",
+    url: `${siteConfig.siteUrl}/blog`,
+    type: "website",
+    siteName: siteConfig.name,
+  },
 };
 
 function formatDate(dateStr: string): string {
