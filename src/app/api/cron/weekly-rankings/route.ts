@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { paddles } from "@/data/paddles";
+import { submitToIndexNow } from "@/lib/indexnow";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -120,6 +121,13 @@ export async function GET(req: NextRequest) {
     // ── 6. Revalidate pages ──────────────────────────────────────────────
     revalidatePath("/best-pickleball-paddles/weekly");
     revalidatePath(`/best-pickleball-paddles/weekly/${weekDate}`);
+
+    // ── 7. Notify search engines via IndexNow ────────────────────────────
+    await submitToIndexNow([
+      "https://playbookpaddles.com/best-pickleball-paddles",
+      "https://playbookpaddles.com/best-pickleball-paddles/weekly",
+      `https://playbookpaddles.com/best-pickleball-paddles/weekly/${weekDate}`,
+    ]);
 
     return NextResponse.json({
       ok: true,
