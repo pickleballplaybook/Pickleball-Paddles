@@ -22,22 +22,18 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({});
     }
 
-    const { data, error } = await supabase
-      .from("page_views")
-      .select("slug")
-      .eq("page_type", type)
-      .in("slug", slugList);
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    // Count per slug
+    // Use individual count queries to avoid Supabase row limit truncation
     const counts: Record<string, number> = {};
-    for (const s of slugList) counts[s] = 0;
-    for (const row of data ?? []) {
-      counts[row.slug] = (counts[row.slug] ?? 0) + 1;
-    }
+    await Promise.all(
+      slugList.map(async (s) => {
+        const { count, error } = await supabase
+          .from("page_views")
+          .select("*", { count: "exact", head: true })
+          .eq("slug", s)
+          .eq("page_type", type);
+        counts[s] = error ? 0 : (count ?? 0);
+      })
+    );
 
     return NextResponse.json(counts);
   }
