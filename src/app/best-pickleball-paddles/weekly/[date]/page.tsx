@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, ArrowUp, ArrowDown, Sparkles, Heart, Star, Eye, ExternalLink } from "lucide-react";
-import { getPaddleBySlug, paddles } from "@/data/paddles";
+import { ArrowRight, ArrowUp, ArrowDown, Heart, Star, Eye, ExternalLink } from "lucide-react";
+import { getPaddleBySlug } from "@/data/paddles";
 import { siteConfig } from "@/config/site";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { generateNarrative, formatWeekDate, RankedPaddle } from "@/lib/weeklyNarrative";
@@ -28,6 +28,7 @@ function getCode(brand: string, discountLink?: string): string {
 
 async function getWeeklyRankings(weekDate: string): Promise<RankedPaddle[] | null> {
   try {
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) return null;
     const supabase = getSupabaseAdmin();
     const { data, error } = await supabase
       .from("weekly_rankings")
@@ -60,6 +61,7 @@ async function getWeeklyRankings(weekDate: string): Promise<RankedPaddle[] | nul
 
 export async function generateStaticParams() {
   try {
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) return [];
     const supabase = getSupabaseAdmin();
     const { data } = await supabase
       .from("weekly_rankings")
@@ -112,7 +114,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default async function WeeklyRankingPage({ params }: Props) {
-  const rankings = await getWeeklyRankings(params.date);
+  let rankings: RankedPaddle[] | null = null;
+  try {
+    rankings = await getWeeklyRankings(params.date);
+  } catch {
+    // Supabase error — fall through to notFound
+  }
   if (!rankings || rankings.length === 0) notFound();
 
   const dateFormatted = formatWeekDate(params.date);
