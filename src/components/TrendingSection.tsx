@@ -120,28 +120,23 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
 
   const filteredHearts = filterByTimeRange(heartRecords, timeRange);
 
-  // Fetch star ratings for all paddles
-  const allPaddleIds = paddles.map((p) => p.id);
-  const ratingCounts = useRatingCounts(allPaddleIds);
-
-  const hasHearts = filteredHearts.length > 0;
-  const hasRatings = Object.values(ratingCounts).some((r) => r.count > 0);
-
   const allTrending = getTrendingPaddles(paddles, filteredHearts, paddles.length);
   const allBrands   = getRisingBrands(paddles, filteredHearts, paddles.length);
 
-  // Fetch views for all paddles that have any engagement signal
-  const candidateSlugs = allTrending
-    .filter((t) => t.totalHearts > 0 || (ratingCounts[t.paddle.id]?.count ?? 0) > 0)
-    .map((t) => t.paddle.slug);
-  // Always include top paddles by trendingScore as fallback
-  const fallbackSlugs = paddles
-    .sort((a, b) => b.trendingScore - a.trendingScore)
-    .slice(0, 20)
-    .map((p) => p.slug);
-  const allViewSlugs = Array.from(new Set([...candidateSlugs, ...fallbackSlugs])).slice(0, 50);
-  const viewCounts = useViewCounts(allViewSlugs);
+  // Only fetch ratings for top candidates (not all 116+ paddles)
+  const heartedIds = new Set(filteredHearts.map((h) => h.paddleId));
+  const topByScore = [...paddles].sort((a, b) => b.trendingScore - a.trendingScore).slice(0, 20);
+  const candidateIds = Array.from(new Set([...Array.from(heartedIds), ...topByScore.map((p) => p.id)])).slice(0, 30);
+  const ratingCounts = useRatingCounts(candidateIds);
 
+  // Fetch views for the same candidates
+  const candidateSlugs = candidateIds
+    .map((id) => paddles.find((p) => p.id === id)?.slug)
+    .filter(Boolean) as string[];
+  const viewCounts = useViewCounts(candidateSlugs);
+
+  const hasHearts = filteredHearts.length > 0;
+  const hasRatings = Object.values(ratingCounts).some((r) => r.count > 0);
   const hasViews = Object.values(viewCounts).some((v) => v > 0);
 
   // Re-sort trending by hearts + star rating count + views combined
@@ -405,6 +400,17 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
             </div>
           </div>
 
+        </div>
+
+        {/* View All button */}
+        <div className="flex items-center justify-center mt-8">
+          <Link
+            href="/trending"
+            className="inline-flex items-center gap-2 font-bold text-sm px-8 py-3 rounded-xl text-white transition-all hover:scale-[1.02]"
+            style={{ background: "#14b8a6" }}
+          >
+            View All Trending Paddles <ArrowRight className="w-4 h-4" />
+          </Link>
         </div>
       </div>
     </section>
