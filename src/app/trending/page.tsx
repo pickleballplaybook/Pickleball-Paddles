@@ -93,7 +93,7 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
 
   return (
     <div
-      className="relative flex-shrink-0 snap-center rounded-3xl overflow-hidden"
+      className="relative flex-shrink-0 snap-start rounded-3xl overflow-hidden"
       style={{
         width: "min(100vw - 32px, 600px)",
         aspectRatio: "1 / 1",
@@ -271,20 +271,50 @@ export default function TrendingPage() {
     .filter((t) => (hasHearts || hasRatings) ? t.engagement > 0 : true)
     .slice(0, 10);
 
-  function scrollTo(index: number) {
+  function scrollTo(index: number, behavior: ScrollBehavior = "smooth") {
     const clamped = Math.max(0, Math.min(index, top10.length - 1));
     setCurrentIndex(clamped);
     if (scrollRef.current) {
       const children = scrollRef.current.children;
       if (children[clamped]) {
         (children[clamped] as HTMLElement).scrollIntoView({
-          behavior: "smooth",
+          behavior,
           block: "nearest",
           inline: "center",
         });
       }
     }
   }
+
+  // Ensure carousel starts at #1 on mount
+  useEffect(() => {
+    if (top10.length > 0 && scrollRef.current) {
+      scrollRef.current.scrollLeft = 0;
+      setCurrentIndex(0);
+    }
+  }, [top10.length]);
+
+  // Auto-scroll every 10 seconds
+  useEffect(() => {
+    if (top10.length <= 1) return;
+    const timer = setInterval(() => {
+      setCurrentIndex((prev) => {
+        const next = prev >= top10.length - 1 ? 0 : prev + 1;
+        if (scrollRef.current) {
+          const children = scrollRef.current.children;
+          if (children[next]) {
+            (children[next] as HTMLElement).scrollIntoView({
+              behavior: "smooth",
+              block: "nearest",
+              inline: "center",
+            });
+          }
+        }
+        return next;
+      });
+    }, 10000);
+    return () => clearInterval(timer);
+  }, [top10.length]);
 
   return (
     <div className="min-h-screen pt-[156px] pb-20" style={{ background: "#060e1a" }}>
