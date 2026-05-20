@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { paddles } from "@/data/paddles";
 import { Paddle } from "@/types";
@@ -105,7 +105,7 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
 
   return (
     <div
-      className="relative flex-shrink-0 snap-start rounded-3xl overflow-hidden w-full min-w-full"
+      className="relative rounded-3xl overflow-hidden"
       style={{
         aspectRatio: "1 / 1",
         background: "linear-gradient(160deg, #0a1628 0%, #0c1e35 35%, #0d2a3a 60%, #081820 100%)",
@@ -252,7 +252,6 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
 export default function TrendingPage() {
   const [heartRecords, setHeartRecords] = useState<HeartRecord[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     supabase
@@ -294,20 +293,6 @@ export default function TrendingPage() {
     .filter((t) => (hasHearts || hasRatings || hasViews) ? t.engagement > 0 : true)
     .slice(0, 10);
 
-  function scrollTo(index: number) {
-    const clamped = Math.max(0, Math.min(index, top10.length - 1));
-    setCurrentIndex(clamped);
-    if (scrollRef.current) {
-      const children = scrollRef.current.children;
-      if (children[clamped]) {
-        (children[clamped] as HTMLElement).scrollIntoView({
-          behavior: "smooth",
-          block: "nearest",
-          inline: "start",
-        });
-      }
-    }
-  }
 
   return (
     <div className="min-h-screen pt-[156px] pb-20" style={{ background: "#060e1a" }}>
@@ -329,64 +314,52 @@ export default function TrendingPage() {
           </p>
         </div>
 
-        {/* Carousel */}
-        <div className="relative">
-          {/* Nav buttons */}
-          <button
-            onClick={() => scrollTo(currentIndex - 1)}
-            disabled={currentIndex === 0}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 z-20 w-10 h-10 rounded-full flex items-center justify-center transition-all disabled:opacity-20"
-            style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)" }}
-          >
-            <ChevronLeft className="w-5 h-5 text-white" />
-          </button>
-          <button
-            onClick={() => scrollTo(currentIndex + 1)}
-            disabled={currentIndex >= top10.length - 1}
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-2 z-20 w-10 h-10 rounded-full flex items-center justify-center transition-all disabled:opacity-20"
-            style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)" }}
-          >
-            <ChevronRight className="w-5 h-5 text-white" />
-          </button>
+        {/* Single card display */}
+        {top10.length > 0 && (
+          <>
+            <div className="relative">
+              {/* Nav buttons */}
+              <button
+                onClick={() => setCurrentIndex((p) => Math.max(0, p - 1))}
+                disabled={currentIndex === 0}
+                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 z-20 w-10 h-10 rounded-full flex items-center justify-center transition-all disabled:opacity-20"
+                style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)" }}
+              >
+                <ChevronLeft className="w-5 h-5 text-white" />
+              </button>
+              <button
+                onClick={() => setCurrentIndex((p) => Math.min(top10.length - 1, p + 1))}
+                disabled={currentIndex >= top10.length - 1}
+                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-2 z-20 w-10 h-10 rounded-full flex items-center justify-center transition-all disabled:opacity-20"
+                style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)" }}
+              >
+                <ChevronRight className="w-5 h-5 text-white" />
+              </button>
 
-          <div
-            ref={scrollRef}
-            className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
-            style={{ scrollbarWidth: "none" }}
-            onScroll={(e) => {
-              const el = e.currentTarget;
-              if (top10.length === 0) return;
-              const cardWidth = el.scrollWidth / top10.length;
-              const idx = Math.round(el.scrollLeft / cardWidth);
-              setCurrentIndex(idx);
-            }}
-          >
-            {top10.map(({ paddle }, i) => (
               <TrendingCard
-                key={paddle.id}
-                paddle={paddle}
-                rank={i + 1}
-                code={getCode(paddle.brand, paddle.discountLink)}
+                paddle={top10[currentIndex].paddle}
+                rank={currentIndex + 1}
+                code={getCode(top10[currentIndex].paddle.brand, top10[currentIndex].paddle.discountLink)}
                 totalCards={top10.length}
               />
-            ))}
-          </div>
-        </div>
+            </div>
 
-        {/* Dot navigation */}
-        <div className="flex items-center justify-center gap-2 mt-6">
-          {top10.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => scrollTo(i)}
-              className="w-2.5 h-2.5 rounded-full transition-all"
-              style={{
-                background: i === currentIndex ? "#14b8a6" : "rgba(255,255,255,0.2)",
-                transform: i === currentIndex ? "scale(1.3)" : "scale(1)",
-              }}
-            />
-          ))}
-        </div>
+            {/* Dot navigation */}
+            <div className="flex items-center justify-center gap-2 mt-6">
+              {top10.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setCurrentIndex(i)}
+                  className="w-2.5 h-2.5 rounded-full transition-all"
+                  style={{
+                    background: i === currentIndex ? "#14b8a6" : "rgba(255,255,255,0.2)",
+                    transform: i === currentIndex ? "scale(1.3)" : "scale(1)",
+                  }}
+                />
+              ))}
+            </div>
+          </>
+        )}
 
         {/* List view for quick reference */}
         <div className="mt-16">
