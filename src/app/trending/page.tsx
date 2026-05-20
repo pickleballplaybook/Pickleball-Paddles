@@ -93,9 +93,8 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
 
   return (
     <div
-      className="relative flex-shrink-0 snap-start rounded-3xl overflow-hidden"
+      className="relative flex-shrink-0 snap-start rounded-3xl overflow-hidden w-full min-w-full"
       style={{
-        width: "min(100vw - 32px, 600px)",
         aspectRatio: "1 / 1",
         background: "linear-gradient(160deg, #0a1628 0%, #0c1e35 35%, #0d2a3a 60%, #081820 100%)",
       }}
@@ -358,7 +357,7 @@ export default function TrendingPage() {
 
           <div
             ref={scrollRef}
-            className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+            className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
             style={{ scrollbarWidth: "none" }}
             onScroll={(e) => {
               const el = e.currentTarget;
