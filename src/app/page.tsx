@@ -157,11 +157,11 @@ export default async function HomePage() {
         />
       </div>
 
+      <TrendingSection paddles={paddles} />
+
       <div id="paddles"><HottestPaddle /></div>
 
       <LatestPaddles paddles={latestPaddles} />
-
-      <TrendingSection paddles={paddles} />
 
       {/* Drills App */}
       <PromoBar

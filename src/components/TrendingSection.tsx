@@ -174,25 +174,32 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
     .filter((b) => (hasHearts || hasRatings) ? b.engagement > 0 : true)
     .slice(0, 6);
 
+  // Build "Highest Rated" list — sorted by average rating then count
+  const highestRated = allTrending
+    .map((t) => ({
+      ...t,
+      ratingCount: ratingCounts[t.paddle.id]?.count ?? 0,
+      ratingAvg: ratingCounts[t.paddle.id]?.average ?? 0,
+    }))
+    .filter((t) => t.ratingCount >= 1)
+    .sort((a, b) => b.ratingAvg - a.ratingAvg || b.ratingCount - a.ratingCount)
+    .slice(0, 6);
+
   return (
     <section id="trending" className="section-y" style={{ background: "var(--flip-bg)" }}>
       <div className="container-xl">
 
         <div className="mb-10">
-          <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#14b8a6" }}>
-            Market Pulse
-          </p>
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
             <div>
               <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight" style={{ color: "var(--flip-text-head)" }}>
-                Top 10 Trending Paddles
+                Trending Pickleball Paddles
               </h2>
               <p className="mt-2 text-base" style={{ color: "var(--flip-text-muted)" }}>
                 What players are actually paying attention to right now
               </p>
             </div>
             <div className="flex items-center gap-3 self-start sm:self-auto">
-              {/* Time range toggle */}
               <div
                 className="inline-flex rounded-xl p-0.5"
                 style={{ background: "var(--flip-divider)", border: "1px solid var(--flip-card-border)" }}
@@ -212,49 +219,106 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
                   </button>
                 ))}
               </div>
-              <Link
-                href="/trending"
-                className="inline-flex items-center gap-1.5 text-sm font-semibold transition-colors whitespace-nowrap hover:text-brand-400"
-                style={{ color: "#2dd4bf" }}
-              >
-                View All <ArrowRight className="w-4 h-4" />
-              </Link>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
 
           {/* ── Trending Paddles ─────────────────────────────────────────── */}
-          <ColumnCard
-            icon={<TrendingUp className="w-4 h-4" style={{ color: "#14b8a6" }} strokeWidth={2} />}
-            title="Trending Paddles"
-            subtitle={`Top 10 by engagement — last ${timeRange === "7d" ? "7 days" : "30 days"}`}
-          >
-            {trendingSorted.length === 0 ? (
-              <p className="text-sm" style={{ color: "var(--flip-text-muted)" }}>
-                Heart paddles you like to see them appear here.
-              </p>
-            ) : (
-              trendingSorted.map(({ paddle, totalHearts, ratingCount, ratingAvg }, i) => {
-                const hasLink = !!paddle.discountLink?.trim();
-                const code = getCode(paddle.brand, paddle.discountLink);
-                const views = viewCounts[paddle.slug] ?? 0;
-                return (
-                  <div
-                    key={paddle.id}
-                    className="flex items-center gap-3 rounded-xl p-2 -mx-2 transition-colors hover:bg-[var(--flip-divider)]"
-                  >
-                    <span
-                      className="w-7 h-7 rounded-lg flex items-center justify-center text-[11px] font-extrabold flex-shrink-0"
-                      style={{ background: "var(--flip-divider)", color: "var(--flip-text-muted)" }}
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <TrendingUp className="w-4 h-4" style={{ color: "#14b8a6" }} strokeWidth={2} />
+              <p className="font-extrabold text-base" style={{ color: "var(--flip-text-head)" }}>Trending Paddles</p>
+            </div>
+            <div className="flex flex-col gap-1">
+              {trendingSorted.length === 0 ? (
+                <p className="text-sm" style={{ color: "var(--flip-text-muted)" }}>
+                  Heart paddles you like to see them appear here.
+                </p>
+              ) : (
+                trendingSorted.slice(0, 6).map(({ paddle, totalHearts }, i) => {
+                  const hasLink = !!paddle.discountLink?.trim();
+                  const code = getCode(paddle.brand, paddle.discountLink);
+                  const views = viewCounts[paddle.slug] ?? 0;
+                  return (
+                    <div
+                      key={paddle.id}
+                      className="flex items-center gap-3 rounded-xl p-2.5 transition-colors hover:bg-[var(--flip-divider)]"
+                      style={{ border: "1px solid var(--flip-card-border)" }}
                     >
+                      <span className="text-sm font-extrabold w-5 text-center flex-shrink-0" style={{ color: "var(--flip-text-muted)" }}>
+                        {i + 1}
+                      </span>
+                      <Link
+                        href={`/paddles/${paddle.slug}`}
+                        className="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center overflow-hidden"
+                        style={{ background: "var(--flip-divider)" }}
+                      >
+                        {paddle.image ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={paddle.image} alt={paddle.name} className="w-full h-full object-contain p-1" />
+                        ) : (
+                          <div className="w-6 h-6 rounded-full bg-teal-500/20" />
+                        )}
+                      </Link>
+                      <Link href={`/paddles/${paddle.slug}`} className="flex-1 min-w-0 group">
+                        <p className="text-sm font-bold truncate group-hover:text-teal-500 transition-colors" style={{ color: "var(--flip-text-head)" }}>
+                          {paddle.name} {paddle.thickness}
+                        </p>
+                        <p className="text-[11px] truncate" style={{ color: "var(--flip-text-muted)" }}>
+                          {paddle.brand}
+                        </p>
+                      </Link>
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        <span className="inline-flex items-center gap-1 text-[11px]" style={{ color: "var(--flip-text-muted)" }}>
+                          <Eye className="w-3 h-3" />
+                          {views >= 1000 ? `${(views / 1000).toFixed(1)}k` : views}
+                        </span>
+                        {hasLink && (
+                          <a
+                            href={paddle.discountLink}
+                            target="_blank"
+                            rel="noopener noreferrer sponsored"
+                            className="hidden sm:inline-flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-lg text-white transition-all hover:scale-105"
+                            style={{ background: "#14b8a6" }}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            Buy <ArrowRight className="w-3 h-3" />
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+
+          {/* ── Highest Rated ────────────────────────────────────────────── */}
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <Star className="w-4 h-4" style={{ color: "#14b8a6" }} strokeWidth={2} />
+              <p className="font-extrabold text-base" style={{ color: "var(--flip-text-head)" }}>Highest Rated</p>
+            </div>
+            <div className="flex flex-col gap-1">
+              {highestRated.length === 0 ? (
+                <p className="text-sm" style={{ color: "var(--flip-text-muted)" }}>
+                  Rate paddles to see top-rated ones here.
+                </p>
+              ) : (
+                highestRated.map(({ paddle, ratingCount, ratingAvg }, i) => (
+                  <Link
+                    key={paddle.id}
+                    href={`/paddles/${paddle.slug}`}
+                    className="flex items-center gap-3 rounded-xl p-2.5 transition-colors hover:bg-[var(--flip-divider)] group"
+                    style={{ border: "1px solid var(--flip-card-border)" }}
+                  >
+                    <span className="text-sm font-extrabold w-5 text-center flex-shrink-0" style={{ color: "var(--flip-text-muted)" }}>
                       {i + 1}
                     </span>
-                    {/* Thumbnail */}
-                    <Link
-                      href={`/paddles/${paddle.slug}`}
-                      className="w-11 h-11 rounded-xl flex-shrink-0 flex items-center justify-center overflow-hidden"
+                    <div
+                      className="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center overflow-hidden"
                       style={{ background: "var(--flip-divider)" }}
                     >
                       {paddle.image ? (
@@ -263,112 +327,81 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
                       ) : (
                         <div className="w-6 h-6 rounded-full bg-teal-500/20" />
                       )}
-                    </Link>
-                    {/* Info */}
-                    <Link href={`/paddles/${paddle.slug}`} className="flex-1 min-w-0 group">
+                    </div>
+                    <div className="flex-1 min-w-0">
                       <p className="text-sm font-bold truncate group-hover:text-teal-500 transition-colors" style={{ color: "var(--flip-text-head)" }}>
-                        {paddle.name}
+                        {paddle.name} {paddle.thickness}
                       </p>
                       <p className="text-[11px] truncate" style={{ color: "var(--flip-text-muted)" }}>
                         {paddle.brand}
                       </p>
-                    </Link>
-                    {/* Stats + actions */}
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      {/* Views */}
-                      <span className="inline-flex items-center gap-1 text-[11px]" style={{ color: "var(--flip-text-muted)" }}>
-                        <Eye className="w-3 h-3" />
-                        {views >= 1000 ? `${(views / 1000).toFixed(1)}k` : views}
-                      </span>
-                      {/* Stars */}
-                      {ratingCount > 0 && (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-bold px-1.5 py-0.5 rounded-md" style={{ background: "rgba(250,204,21,0.12)", color: "#facc15" }}>
-                          <Star className="w-3 h-3" fill="currentColor" strokeWidth={0} />
-                          {ratingAvg.toFixed(1)}
-                        </span>
-                      )}
-                      {/* Hearts */}
-                      {totalHearts > 0 && (
-                        <span
-                          className="inline-flex items-center gap-1 text-[11px] font-bold px-1.5 py-0.5 rounded-md"
-                          style={{ background: "rgba(239,68,68,0.10)", color: "#f87171" }}
-                        >
-                          <Heart className="w-3 h-3" fill="currentColor" />
-                          {totalHearts}
-                        </span>
-                      )}
-                      {/* Code badge */}
-                      {hasLink && (
-                        <span
-                          className="hidden sm:inline-flex text-[10px] font-bold font-mono px-1.5 py-0.5 rounded-md"
-                          style={{ background: "rgba(20,184,166,0.12)", color: "#2dd4bf", border: "1px solid rgba(20,184,166,0.25)" }}
-                        >
-                          {code}
-                        </span>
-                      )}
-                      {/* Buy button */}
-                      {hasLink && (
-                        <a
-                          href={paddle.discountLink}
-                          target="_blank"
-                          rel="noopener noreferrer sponsored"
-                          className="hidden sm:inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-lg text-white transition-all hover:scale-105 active:scale-95"
-                          style={{ background: "#14b8a6" }}
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          Buy <ArrowRight className="w-3 h-3" />
-                        </a>
-                      )}
                     </div>
-                  </div>
-                );
-              })
-            )}
-          </ColumnCard>
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold flex-shrink-0" style={{ color: "#facc15" }}>
+                      <Star className="w-3 h-3" fill="currentColor" strokeWidth={0} />
+                      {ratingAvg.toFixed(1)} ({ratingCount})
+                    </span>
+                  </Link>
+                ))
+              )}
+            </div>
+          </div>
 
           {/* ── Rising Brands ────────────────────────────────────────────── */}
-          <ColumnCard
-            icon={<Star className="w-4 h-4" style={{ color: "#14b8a6" }} strokeWidth={2} />}
-            title="Rising Brands"
-            subtitle="Brands ranked by total engagement"
-          >
-            {brandsSorted.length === 0 ? (
-              <p className="text-sm" style={{ color: "var(--flip-text-muted)" }}>
-                Heart paddles you like to see top brands here.
-              </p>
-            ) : (
-              brandsSorted.map(({ brand, totalHearts, paddleCount, topSlug, totalRatings }) => (
-                <Link
-                  key={brand}
-                  href={`/paddles/${topSlug}`}
-                  className="flex items-center justify-between gap-3 group rounded-xl p-2 -mx-2 transition-colors hover:bg-[var(--flip-divider)]"
-                >
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold truncate group-hover:text-teal-500 transition-colors" style={{ color: "var(--flip-text-head)" }}>
-                      {brand}
-                    </p>
-                    <p className="text-xs truncate" style={{ color: "var(--flip-text-muted)" }}>
-                      {paddleCount} paddle{paddleCount !== 1 ? "s" : ""}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <span
-                      className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-lg"
-                      style={
-                        totalHearts > 0
-                          ? { background: "rgba(239,68,68,0.10)", color: "#f87171", border: "1px solid rgba(239,68,68,0.20)" }
-                          : { background: "var(--flip-divider)", color: "var(--flip-text-muted)" }
-                      }
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <Heart className="w-4 h-4" style={{ color: "#14b8a6" }} strokeWidth={2} />
+              <p className="font-extrabold text-base" style={{ color: "var(--flip-text-head)" }}>Rising Brands</p>
+            </div>
+            <div className="flex flex-col gap-1">
+              {brandsSorted.length === 0 ? (
+                <p className="text-sm" style={{ color: "var(--flip-text-muted)" }}>
+                  Heart paddles you like to see top brands here.
+                </p>
+              ) : (
+                brandsSorted.map(({ brand, totalHearts, paddleCount, topSlug }, i) => {
+                  const topPaddle = paddles.find((p) => p.slug === topSlug);
+                  const brandViews = paddles
+                    .filter((p) => p.brand === brand)
+                    .reduce((sum, p) => sum + (viewCounts[p.slug] ?? 0), 0);
+                  return (
+                    <Link
+                      key={brand}
+                      href={`/paddles/${topSlug}`}
+                      className="flex items-center gap-3 rounded-xl p-2.5 transition-colors hover:bg-[var(--flip-divider)] group"
+                      style={{ border: "1px solid var(--flip-card-border)" }}
                     >
-                      <Heart className="w-3 h-3" fill={totalHearts > 0 ? "currentColor" : "none"} />
-                      {totalHearts}
-                    </span>
-                    <ArrowRight className="w-3.5 h-3.5 transition-colors group-hover:text-teal-500" style={{ color: "var(--flip-text-faint)" }} />
-                  </div>
-                </Link>
-              ))
-            )}
-          </ColumnCard>
+                      <span className="text-sm font-extrabold w-5 text-center flex-shrink-0" style={{ color: "var(--flip-text-muted)" }}>
+                        {i + 1}
+                      </span>
+                      <div
+                        className="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center overflow-hidden"
+                        style={{ background: "var(--flip-divider)" }}
+                      >
+                        {topPaddle?.image ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={topPaddle.image} alt={brand} className="w-full h-full object-contain p-1" />
+                        ) : (
+                          <div className="w-6 h-6 rounded-full bg-teal-500/20" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold truncate group-hover:text-teal-500 transition-colors" style={{ color: "var(--flip-text-head)" }}>
+                          {brand}
+                        </p>
+                        <p className="text-[11px] truncate" style={{ color: "var(--flip-text-muted)" }}>
+                          {paddleCount} paddle{paddleCount !== 1 ? "s" : ""}
+                        </p>
+                      </div>
+                      <span className="inline-flex items-center gap-1 text-[11px] flex-shrink-0" style={{ color: "var(--flip-text-muted)" }}>
+                        <Eye className="w-3 h-3" />
+                        {brandViews >= 1000 ? `${(brandViews / 1000).toFixed(1)}k` : brandViews}
+                      </span>
+                    </Link>
+                  );
+                })
+              )}
+            </div>
+          </div>
 
         </div>
       </div>

@@ -38,6 +38,18 @@ function useRatingCounts(paddleIds: string[]) {
   return ratings;
 }
 
+function useViewCounts(slugs: string[]) {
+  const [views, setViews] = useState<Record<string, number>>({});
+  useEffect(() => {
+    if (slugs.length === 0) return;
+    fetch(`/api/views?slugs=${slugs.join(",")}`)
+      .then((r) => r.json())
+      .then((data) => { if (data && typeof data === "object") setViews(data); })
+      .catch(() => {});
+  }, [slugs.join(",")]); // eslint-disable-line react-hooks/exhaustive-deps
+  return views;
+}
+
 // ── Stat bar ranges (from actual paddle database) ────────────────────────────
 
 const RANGES = {
@@ -256,64 +268,46 @@ export default function TrendingPage() {
   const allPaddleIds = paddles.map((p) => p.id);
   const ratingCounts = useRatingCounts(allPaddleIds);
 
+  // Fetch views for candidate paddles (same as homepage TrendingSection)
   const allTrending = getTrendingPaddles(paddles, heartRecords, paddles.length);
+  const candidateSlugs = allTrending
+    .filter((t) => t.totalHearts > 0 || (ratingCounts[t.paddle.id]?.count ?? 0) > 0)
+    .map((t) => t.paddle.slug);
+  const fallbackSlugs = paddles
+    .sort((a, b) => b.trendingScore - a.trendingScore)
+    .slice(0, 20)
+    .map((p) => p.slug);
+  const allViewSlugs = Array.from(new Set([...candidateSlugs, ...fallbackSlugs])).slice(0, 50);
+  const viewCounts = useViewCounts(allViewSlugs);
 
   const hasHearts = heartRecords.length > 0;
   const hasRatings = Object.values(ratingCounts).some((r) => r.count > 0);
+  const hasViews = Object.values(viewCounts).some((v) => v > 0);
 
+  // Same scoring as homepage: hearts + ratings + views/10
   const top10 = allTrending
     .map((t) => ({
       ...t,
-      engagement: t.totalHearts + (ratingCounts[t.paddle.id]?.count ?? 0),
+      engagement: t.totalHearts + (ratingCounts[t.paddle.id]?.count ?? 0) + Math.floor((viewCounts[t.paddle.slug] ?? 0) / 10),
     }))
     .sort((a, b) => b.engagement - a.engagement || b.totalHearts - a.totalHearts)
-    .filter((t) => (hasHearts || hasRatings) ? t.engagement > 0 : true)
+    .filter((t) => (hasHearts || hasRatings || hasViews) ? t.engagement > 0 : true)
     .slice(0, 10);
 
-  function scrollTo(index: number, behavior: ScrollBehavior = "smooth") {
+  function scrollTo(index: number) {
     const clamped = Math.max(0, Math.min(index, top10.length - 1));
     setCurrentIndex(clamped);
     if (scrollRef.current) {
       const children = scrollRef.current.children;
       if (children[clamped]) {
         (children[clamped] as HTMLElement).scrollIntoView({
-          behavior,
+          behavior: "smooth",
           block: "nearest",
-          inline: "center",
+          inline: "start",
         });
       }
     }
   }
-
-  // Ensure carousel starts at #1 on mount
-  useEffect(() => {
-    if (top10.length > 0 && scrollRef.current) {
-      scrollRef.current.scrollLeft = 0;
-      setCurrentIndex(0);
-    }
-  }, [top10.length]);
-
-  // Auto-scroll every 10 seconds
-  useEffect(() => {
-    if (top10.length <= 1) return;
-    const timer = setInterval(() => {
-      setCurrentIndex((prev) => {
-        const next = prev >= top10.length - 1 ? 0 : prev + 1;
-        if (scrollRef.current) {
-          const children = scrollRef.current.children;
-          if (children[next]) {
-            (children[next] as HTMLElement).scrollIntoView({
-              behavior: "smooth",
-              block: "nearest",
-              inline: "center",
-            });
-          }
-        }
-        return next;
-      });
-    }, 10000);
-    return () => clearInterval(timer);
-  }, [top10.length]);
 
   return (
     <div className="min-h-screen pt-[156px] pb-20" style={{ background: "#060e1a" }}>
