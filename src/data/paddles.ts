@@ -1648,7 +1648,7 @@ export const paddles: Paddle[] = [
     twistWeight: 6.84,
     thickness: "16mm",
     image: "/images/paddles/Boomstik-Elongated-16mm.png",
-    amountOff: "$0",
+    amountOff: "15%",
     price: "$332.99",
     discountLink: "https://lockerroompickleball.com/products/labs-project-boomstik?sca_ref=8334840.yY4rLJi7oU9HDNHD",
     manualVideoId: "GeVglhdjWQg",
