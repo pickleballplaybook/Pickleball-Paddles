@@ -257,28 +257,6 @@ export default function GearProductPage({ params }: Props) {
             </div>
           </div>
 
-          {/* Why Players Choose This — social proof / key benefits */}
-          {product.specs && product.specs.length > 0 && (
-            <div className="mt-14 max-w-3xl">
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                {product.specs.slice(0, 6).map((spec) => (
-                  <div
-                    key={spec.label}
-                    className="rounded-2xl p-4 text-center"
-                    style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.08)" }}
-                  >
-                    <p className="text-lg font-extrabold mb-1" style={{ color: "#2dd4bf" }}>
-                      {spec.value}
-                    </p>
-                    <p className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
-                      {spec.label}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
           {/* Austin's Take */}
           {product.description && (
             <div className="mt-14 max-w-3xl">
