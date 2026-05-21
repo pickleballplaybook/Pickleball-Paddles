@@ -87,6 +87,20 @@ function getCode(brand: string, discountLink?: string): string {
   return siteConfig.discountCode;
 }
 
+function calcDiscountedPrice(price: string, amountOff: string): string | null {
+  if (!price || !amountOff || amountOff === "$0" || amountOff === "") return null;
+  const base = parseFloat(price.replace(/[^0-9.]/g, ""));
+  if (isNaN(base) || base <= 0) return null;
+  let discounted: number;
+  if (amountOff.endsWith("%")) {
+    discounted = base * (1 - parseFloat(amountOff) / 100);
+  } else {
+    discounted = base - parseFloat(amountOff.replace(/[^0-9.]/g, ""));
+  }
+  if (discounted <= 0) return null;
+  return `$${discounted.toFixed(2)}`;
+}
+
 const SHAPE_ORDER: Record<string, number> = { Hybrid: 1, Elongated: 2, Widebody: 3 };
 
 // ── Page ──────────────────────────────────────────────────────────────────────
@@ -207,16 +221,27 @@ export default function SeriesPage({ params }: Props) {
 
                 {/* Price + Buy */}
                 <div className="mt-auto">
-                  {paddle.price && (
-                    <p className="text-2xl font-extrabold mb-3" style={{ color: "var(--flip-text-head)" }}>
-                      {paddle.price}
-                      {paddle.amountOff && paddle.amountOff !== "$0" && paddle.amountOff !== "" && (
-                        <span className="text-sm font-bold ml-2" style={{ color: "#2dd4bf" }}>
-                          {paddle.amountOff} off
-                        </span>
-                      )}
-                    </p>
-                  )}
+                  {paddle.price && (() => {
+                    const discounted = paddle.amountOff ? calcDiscountedPrice(paddle.price, paddle.amountOff) : null;
+                    return (
+                      <div className="flex items-baseline gap-2 mb-3">
+                        {discounted ? (
+                          <>
+                            <span className="text-lg font-semibold line-through" style={{ color: "var(--flip-text-muted)" }}>
+                              {paddle.price}
+                            </span>
+                            <span className="text-2xl font-extrabold" style={{ color: "#2dd4bf" }}>
+                              {discounted}
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-2xl font-extrabold" style={{ color: "var(--flip-text-head)" }}>
+                            {paddle.price}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })()}
                   <div className="flex gap-2">
                     {paddle.discountLink ? (
                       <a
