@@ -551,8 +551,8 @@ export default async function PaddleDetailPage({ params }: Props) {
               className="rounded-2xl p-5 mb-5"
               style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}
             >
-              {/* Price row with code on the right */}
-              <div className="flex items-start justify-between gap-4 mb-4">
+              {/* Price row with code on the right — stacks on mobile */}
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
                 {/* Left: price */}
                 <div>
                   <p className="text-xs font-bold uppercase tracking-widest font-mono mb-1" style={{ color: "var(--flip-text-muted)" }}>
