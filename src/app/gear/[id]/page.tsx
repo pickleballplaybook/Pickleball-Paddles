@@ -3,8 +3,10 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { gearProducts } from "@/data/products";
+import { siteConfig } from "@/config/site";
 import YouTubeEmbed from "@/components/YouTubeEmbed";
 import ViewCounter from "@/components/ViewCounter";
+import PaddleStarRating from "@/components/PaddleStarRating";
 
 interface Props {
   params: { id: string };
@@ -17,135 +19,239 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const product = gearProducts.find((p) => p.id === params.id);
   if (!product) return {};
+  const url = `${siteConfig.siteUrl}/gear/${product.id}`;
+  const fullName = `${product.brand ? product.brand + " " : ""}${product.name}`;
   return {
-    title: `${product.brand} ${product.name} | Pickleball Playbook`,
-    description: product.subtitle,
+    title: `${fullName} Review — ${product.badge || "Best Deal"} | Pickleball Playbook`,
+    description: `${fullName} review — ${product.subtitle} ${product.price !== "Free" ? `Currently ${product.price}${product.badge ? ` with ${product.badge}` : ""}.` : ""} Independently reviewed by Pickleball Playbook.`,
+    alternates: { canonical: url },
+    openGraph: {
+      title: `${fullName} — ${product.badge || "Gear Review"}`,
+      description: product.subtitle,
+      url,
+      type: "article",
+      siteName: siteConfig.name,
+      ...(product.image ? { images: [{ url: `${siteConfig.siteUrl}${product.image}`, alt: fullName }] } : {}),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${fullName} — ${product.badge || "Review"}`,
+      description: product.subtitle,
+    },
   };
+}
+
+function calcDiscountedPrice(price: string, badge: string): string | null {
+  if (!price || price === "Free" || !badge) return null;
+  const base = parseFloat(price.replace(/[^0-9.]/g, ""));
+  if (isNaN(base) || base <= 0) return null;
+
+  // "$250 Off" style
+  const dollarMatch = badge.match(/\$(\d[\d,]*)/);
+  if (dollarMatch) {
+    const off = parseFloat(dollarMatch[1].replace(/,/g, ""));
+    if (!isNaN(off) && off > 0) {
+      const discounted = base - off;
+      return discounted > 0 ? `$${discounted.toLocaleString("en-US", { minimumFractionDigits: 2 })}` : null;
+    }
+  }
+
+  // "20% Off" style
+  const pctMatch = badge.match(/(\d+)%/);
+  if (pctMatch) {
+    const pct = parseFloat(pctMatch[1]);
+    if (!isNaN(pct) && pct > 0) {
+      const discounted = base * (1 - pct / 100);
+      return discounted > 0 ? `$${discounted.toLocaleString("en-US", { minimumFractionDigits: 2 })}` : null;
+    }
+  }
+
+  return null;
 }
 
 export default function GearProductPage({ params }: Props) {
   const product = gearProducts.find((p) => p.id === params.id);
   if (!product) notFound();
 
+  const fullName = `${product.brand ? product.brand + " " : ""}${product.name}`;
+  const discountedPrice = calcDiscountedPrice(product.price, product.badge);
+  const hasPrice = product.price && product.price !== "Free";
+
+  // JSON-LD
+  const productSchema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": fullName,
+    ...(product.brand ? { "brand": { "@type": "Brand", "name": product.brand } } : {}),
+    "description": product.subtitle,
+    "image": product.image ? `${siteConfig.siteUrl}${product.image}` : undefined,
+    ...(hasPrice ? {
+      "offers": {
+        "@type": "Offer",
+        "priceCurrency": "USD",
+        "price": parseFloat(product.price.replace(/[^0-9.]/g, "")).toFixed(2),
+        "availability": "https://schema.org/InStock",
+        "url": product.link,
+      },
+    } : {}),
+    "review": {
+      "@type": "Review",
+      "author": { "@type": "Person", "name": "Austin Hardy" },
+      "publisher": { "@type": "Organization", "name": "Pickleball Playbook" },
+    },
+  };
+
   return (
-    <div className="min-h-screen pt-[156px]" style={{ background: "var(--bg-page)" }}>
-      <div className="container-xl py-10">
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }} />
 
-        {/* Back nav */}
-        <Link
-          href="/gear"
-          className="inline-flex items-center gap-1.5 text-sm mb-10 transition-colors hover:text-brand-500"
-          style={{ color: "var(--text-muted)" }}
-        >
-          <ArrowLeft className="w-4 h-4" />
-          All Gear
-        </Link>
+      <div className="min-h-screen pt-[156px]" style={{ background: "var(--bg-page)" }}>
+        <div className="container-xl py-10">
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-
-          {/* Image */}
-          <div
-            className="rounded-3xl overflow-hidden w-full"
-            style={{ background: product.bg, aspectRatio: "1/1" }}
+          {/* Back nav */}
+          <Link
+            href="/gear"
+            className="inline-flex items-center gap-1.5 text-sm mb-10 transition-colors hover:text-brand-500"
+            style={{ color: "var(--text-muted)" }}
           >
-            {product.imageAspect !== "none" && product.image ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={product.image}
-                alt={`${product.brand} ${product.name}`}
-                className="w-full h-full object-cover object-center"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <p className="text-sm font-medium" style={{ color: "rgba(255,255,255,0.4)" }}>
-                  No image
-                </p>
-              </div>
-            )}
-          </div>
+            <ArrowLeft className="w-4 h-4" />
+            All Gear
+          </Link>
 
-          {/* Details */}
-          <div className="flex flex-col">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
 
-            {product.badge && (
-              <span
-                className="self-start text-[11px] font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-5"
-                style={{
-                  background: "rgba(20,184,166,0.15)",
-                  color: "#2dd4bf",
-                  border: "1px solid rgba(20,184,166,0.35)",
-                }}
-              >
-                {product.badge}
-              </span>
-            )}
-
-            <p className="text-xs font-bold uppercase tracking-widest text-brand-500 mb-2">
-              {product.brand}
-            </p>
-
-            <h1
-              className="font-extrabold tracking-tight leading-tight mb-3"
-              style={{ fontSize: "clamp(2rem, 4vw, 3rem)", color: "var(--text-primary)" }}
+            {/* Image */}
+            <div
+              className="rounded-3xl overflow-hidden w-full"
+              style={{ background: product.bg, aspectRatio: "1/1" }}
             >
-              {product.name}
-            </h1>
-
-            {product.price && product.price !== "Free" && (
-              <p className="text-xl font-semibold mb-5" style={{ color: "var(--text-secondary)" }}>
-                {product.price}
-              </p>
-            )}
-
-            <p className="text-base leading-relaxed mb-4" style={{ color: "var(--text-muted)" }}>
-              {product.subtitle}
-            </p>
-
-            <div className="mb-6">
-              <ViewCounter slug={product.id} type="gear" />
+              {product.imageAspect !== "none" && product.image ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={product.image}
+                  alt={`${fullName} for pickleball`}
+                  className="w-full h-full object-cover object-center"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <p className="text-sm font-medium" style={{ color: "rgba(255,255,255,0.4)" }}>
+                    No image
+                  </p>
+                </div>
+              )}
             </div>
 
-            {product.features && (
-              <pre
-                className="text-sm leading-relaxed mb-8 whitespace-pre-wrap font-sans p-5 rounded-2xl"
+            {/* Details */}
+            <div className="flex flex-col">
+
+              {product.badge && (
+                <span
+                  className="self-start text-[11px] font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-5"
+                  style={{
+                    background: "rgba(20,184,166,0.15)",
+                    color: "#2dd4bf",
+                    border: "1px solid rgba(20,184,166,0.35)",
+                  }}
+                >
+                  {product.badge}
+                </span>
+              )}
+
+              <p className="text-xs font-bold uppercase tracking-widest text-brand-500 mb-2">
+                {product.brand}
+              </p>
+
+              <h1
+                className="font-extrabold tracking-tight leading-tight mb-3"
+                style={{ fontSize: "clamp(2rem, 4vw, 3rem)", color: "var(--text-primary)" }}
+              >
+                {product.name}
+              </h1>
+
+              {/* Price with strikethrough + discounted */}
+              {hasPrice && (
+                <div className="flex items-baseline gap-3 mb-5">
+                  {discountedPrice ? (
+                    <>
+                      <span className="text-xl font-semibold line-through" style={{ color: "var(--text-muted)" }}>
+                        {product.price}
+                      </span>
+                      <span className="text-3xl font-extrabold" style={{ color: "#2dd4bf" }}>
+                        {discountedPrice}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-3xl font-extrabold" style={{ color: "var(--text-primary)" }}>
+                      {product.price}
+                    </span>
+                  )}
+                </div>
+              )}
+
+              <p className="text-base leading-relaxed mb-4" style={{ color: "var(--text-muted)" }}>
+                {product.subtitle}
+              </p>
+
+              {/* Star ratings */}
+              <div className="flex items-center gap-4 mb-2">
+                <PaddleStarRating paddleId={`gear-${product.id}`} />
+              </div>
+
+              <div className="mb-6">
+                <ViewCounter slug={product.id} type="gear" />
+              </div>
+
+              {product.features && (
+                <pre
+                  className="text-sm leading-relaxed mb-8 whitespace-pre-wrap font-sans p-5 rounded-2xl"
+                  style={{
+                    color: "var(--text-secondary)",
+                    background: "var(--bg-section)",
+                    border: "1px solid var(--border)",
+                  }}
+                >
+                  {product.features}
+                </pre>
+              )}
+
+              <a
+                href={product.link}
+                target="_blank"
+                rel="noopener noreferrer sponsored"
+                className="self-start inline-flex items-center gap-2 font-bold text-base px-8 py-4 rounded-2xl text-white transition-all duration-200 active:scale-[0.97]"
                 style={{
-                  color: "var(--text-secondary)",
-                  background: "var(--bg-section)",
-                  border: "1px solid var(--border)",
+                  background: "linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)",
+                  boxShadow: "0 0 32px rgba(20,184,166,0.35), 0 4px 12px rgba(0,0,0,0.25)",
                 }}
               >
-                {product.features}
-              </pre>
-            )}
+                {product.ctaText}
+                <ArrowRight className="w-5 h-5" strokeWidth={2.5} />
+              </a>
 
-            <a
-              href={product.link}
-              target="_blank"
-              rel="noopener noreferrer sponsored"
-              className="self-start inline-flex items-center gap-2 font-bold text-base px-8 py-4 rounded-2xl text-white transition-all duration-200 active:scale-[0.97]"
-              style={{
-                background: "linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)",
-                boxShadow: "0 0 32px rgba(20,184,166,0.35), 0 4px 12px rgba(0,0,0,0.25)",
-              }}
-            >
-              {product.ctaText}
-              <ArrowRight className="w-5 h-5" strokeWidth={2.5} />
-            </a>
+              <p className="text-[11px] mt-2" style={{ color: "var(--text-muted)" }}>
+                Affiliate link. We may earn a commission — it never affects our recommendations.
+              </p>
 
+            </div>
           </div>
+
+          {/* Video review */}
+          {product.videoId && (
+            <div className="mt-14 max-w-3xl">
+              <p className="text-xs font-bold uppercase tracking-widest mb-5" style={{ color: "#14b8a6" }}>
+                Video Review
+              </p>
+              <YouTubeEmbed videoId={product.videoId} title={`${fullName} Review`} />
+            </div>
+          )}
+
+          {/* Community reviews portal */}
+          <div className="mt-14 max-w-3xl">
+            <div id="community-reviews" />
+          </div>
+
         </div>
-
-        {/* Video review */}
-        {product.videoId && (
-          <div className="mt-14">
-            <p className="text-xs font-bold uppercase tracking-widest mb-5" style={{ color: "#14b8a6" }}>
-              Video Review
-            </p>
-            <YouTubeEmbed videoId={product.videoId} title={`${product.brand} ${product.name} Review`} />
-          </div>
-        )}
-
       </div>
-    </div>
+    </>
   );
 }
