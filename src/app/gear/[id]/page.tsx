@@ -214,6 +214,28 @@ export default function GearProductPage({ params }: Props) {
                 </pre>
               )}
 
+              {/* Specs table */}
+              {product.specs && product.specs.length > 0 && (
+                <div
+                  className="rounded-2xl p-5 mb-8"
+                  style={{ background: "var(--bg-section)", border: "1px solid var(--border)" }}
+                >
+                  <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: "#14b8a6" }}>
+                    Specifications
+                  </p>
+                  {product.specs.map((spec, i) => (
+                    <div
+                      key={spec.label}
+                      className={`flex items-center justify-between py-3 ${i < product.specs!.length - 1 ? "border-b" : ""}`}
+                      style={{ borderColor: "var(--border)" }}
+                    >
+                      <span className="text-sm font-medium" style={{ color: "var(--text-muted)" }}>{spec.label}</span>
+                      <span className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>{spec.value}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               <a
                 href={product.link}
                 target="_blank"
@@ -234,6 +256,29 @@ export default function GearProductPage({ params }: Props) {
 
             </div>
           </div>
+
+          {/* Austin's Take */}
+          {product.description && (
+            <div className="mt-14 max-w-3xl">
+              <div
+                className="rounded-2xl p-6 md:p-8"
+                style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.08)" }}
+              >
+                <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: "#14b8a6" }}>
+                  Austin&apos;s Take
+                </p>
+                {product.description.split("\n\n").map((paragraph, i) => (
+                  <p
+                    key={i}
+                    className="text-sm leading-relaxed mb-4 last:mb-0"
+                    style={{ color: "var(--text-muted)" }}
+                  >
+                    {paragraph}
+                  </p>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Video review */}
           {product.videoId && (

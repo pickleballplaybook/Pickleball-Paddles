@@ -9,6 +9,8 @@ export interface GearProduct {
   imageAspect: "square" | "wide" | "none";
   subtitle: string;
   features?: string;
+  description?: string;
+  specs?: { label: string; value: string }[];
   bg: string;
   ctaText: string;
   videoId?: string;
@@ -27,8 +29,20 @@ export const gearProducts: GearProduct[] = [
     image: "/images/products/Titan-Ball-Machine.png",
     imageAspect: "square",
     subtitle: "The best training partner. Hit more balls and improve faster — on your own schedule.",
+    description: "The Titan One is one of the two best pickleball ball machines on the market right now, and it's the one I personally use. After testing it head-to-head against the Titan Ace, I chose the Titan One because it holds all the balls inside — no separate ball basket needed. You just wheel it out, turn it on, and start drilling.\n\nWhat makes this machine special is the consistency. Most ball machines are 1–2 feet off from shot to shot. The Titan is only about 2–5 inches off — that's a massive difference when you're drilling third-shot drops or resets. And the consistency holds whether you're at 100% battery or 2%.\n\nThe Titan Drills app is where things get really powerful. You can program up to 24 custom drills where each ball goes to a different location — baseline, kitchen, overhead — and control the speed (up to 75 mph), spin, and feed rate (1–10 seconds between balls) for every single ball. The app just got a major update that made it way more user-friendly. You can also download drills from other Titan users via QR code.\n\nIt holds 85 balls internally (or 240 with the add-on hopper), uses a Ryobi-compatible lithium-ion battery that lasts weeks on a single charge, and the machine auto-shuts off between drills to save power. The battery charges separately — no lugging the whole machine inside.\n\nThe 60° oscillation covers the entire court. For almost every drill, you just park the machine at center baseline and it stays there. Delivery typically arrives within 3 weeks.\n\nAt $2,299 with $250 off through our link, it's a serious investment — but if you want to get better faster without relying on a drilling partner, this is the machine that does it.",
+    specs: [
+      { label: "Ball Capacity", value: "85 (240 with add-on)" },
+      { label: "Max Speed", value: "75 mph" },
+      { label: "Oscillation", value: "60°" },
+      { label: "Weight", value: "48 lbs (56 lbs with balls)" },
+      { label: "Battery", value: "Lithium-ion (Ryobi compatible)" },
+      { label: "Battery Life", value: "Multiple weeks per charge" },
+      { label: "Feed Rate", value: "1–10 seconds between balls" },
+      { label: "Custom Drills", value: "24 via Titan Drills app" },
+      { label: "Delivery", value: "~3 weeks" },
+    ],
     bg: "#163a6a",
-    ctaText: "Get Discount",
+    ctaText: "Get $250 Off",
     videoId: "H7ylk_NQYUQ",
   },
   {
