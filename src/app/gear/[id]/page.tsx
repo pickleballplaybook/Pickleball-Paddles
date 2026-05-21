@@ -201,6 +201,24 @@ export default function GearProductPage({ params }: Props) {
                 <ViewCounter slug={product.id} type="gear" />
               </div>
 
+              <a
+                href={product.link}
+                target="_blank"
+                rel="noopener noreferrer sponsored"
+                className="self-start inline-flex items-center gap-2 font-bold text-base px-8 py-4 rounded-2xl text-white transition-all duration-200 active:scale-[0.97] mb-2"
+                style={{
+                  background: "linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)",
+                  boxShadow: "0 0 32px rgba(20,184,166,0.35), 0 4px 12px rgba(0,0,0,0.25)",
+                }}
+              >
+                {product.ctaText}
+                <ArrowRight className="w-5 h-5" strokeWidth={2.5} />
+              </a>
+
+              <p className="text-[11px] mb-8" style={{ color: "var(--text-muted)" }}>
+                Affiliate link. We may earn a commission — it never affects our recommendations.
+              </p>
+
               {product.features && (
                 <pre
                   className="text-sm leading-relaxed mb-8 whitespace-pre-wrap font-sans p-5 rounded-2xl"
@@ -235,24 +253,6 @@ export default function GearProductPage({ params }: Props) {
                   ))}
                 </div>
               )}
-
-              <a
-                href={product.link}
-                target="_blank"
-                rel="noopener noreferrer sponsored"
-                className="self-start inline-flex items-center gap-2 font-bold text-base px-8 py-4 rounded-2xl text-white transition-all duration-200 active:scale-[0.97]"
-                style={{
-                  background: "linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)",
-                  boxShadow: "0 0 32px rgba(20,184,166,0.35), 0 4px 12px rgba(0,0,0,0.25)",
-                }}
-              >
-                {product.ctaText}
-                <ArrowRight className="w-5 h-5" strokeWidth={2.5} />
-              </a>
-
-              <p className="text-[11px] mt-2" style={{ color: "var(--text-muted)" }}>
-                Affiliate link. We may earn a commission — it never affects our recommendations.
-              </p>
 
             </div>
           </div>
