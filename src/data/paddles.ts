@@ -639,7 +639,7 @@ export const paddles: Paddle[] = [
     swingWeight: 115.76,
     twistWeight: 6.19,
     thickness: "16mm",
-    image: "/images/paddles/Fuze-Elongated-16mm.png",
+    image: "/images/paddles/Holbrook-fuze-Elongated-16mm.png",
     amountOff: "15%",
     price: "$229.99",
     discountLink: "https://lockerroompickleball.com/products/fuze?sca_ref=8334840.yY4rLJi7oU9HDNHD",
