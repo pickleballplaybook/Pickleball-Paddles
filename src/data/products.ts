@@ -21,7 +21,7 @@ export const gearProducts: GearProduct[] = [
     id: "titan",
     brand: "Titan",
     name: "Ball Machine",
-    price: "$2,195.00",
+    price: "$2,299.00",
     badge: "$250 Off",
     link: "https://titanballmachines.com/products/titan-pickleball-machine?sca_ref=5510919.3e3QLH63Ya",
     image: "/images/products/Titan-Ball-Machine.png",
