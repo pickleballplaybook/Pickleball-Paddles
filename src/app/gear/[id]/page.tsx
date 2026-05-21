@@ -257,6 +257,28 @@ export default function GearProductPage({ params }: Props) {
             </div>
           </div>
 
+          {/* Why Players Choose This — social proof / key benefits */}
+          {product.specs && product.specs.length > 0 && (
+            <div className="mt-14 max-w-3xl">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                {product.specs.slice(0, 6).map((spec) => (
+                  <div
+                    key={spec.label}
+                    className="rounded-2xl p-4 text-center"
+                    style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.08)" }}
+                  >
+                    <p className="text-lg font-extrabold mb-1" style={{ color: "#2dd4bf" }}>
+                      {spec.value}
+                    </p>
+                    <p className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
+                      {spec.label}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Austin's Take */}
           {product.description && (
             <div className="mt-14 max-w-3xl">
@@ -280,6 +302,34 @@ export default function GearProductPage({ params }: Props) {
             </div>
           )}
 
+          {/* Second CTA — conversion nudge after reading Austin's Take */}
+          {product.badge && (
+            <div className="mt-10 max-w-3xl">
+              <div
+                className="rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4"
+                style={{ background: "rgba(20,184,166,0.06)", border: "1px solid rgba(20,184,166,0.15)" }}
+              >
+                <div>
+                  <p className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>
+                    Ready to level up your game?
+                  </p>
+                  <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                    Get {product.badge.toLowerCase()} through our exclusive link. Limited time offer.
+                  </p>
+                </div>
+                <a
+                  href={product.link}
+                  target="_blank"
+                  rel="noopener noreferrer sponsored"
+                  className="inline-flex items-center gap-2 font-bold text-sm px-6 py-3 rounded-xl text-white transition-all hover:scale-[1.02] flex-shrink-0"
+                  style={{ background: "#14b8a6" }}
+                >
+                  {product.ctaText} <ArrowRight className="w-4 h-4" />
+                </a>
+              </div>
+            </div>
+          )}
+
           {/* Video review */}
           {product.videoId && (
             <div className="mt-14 max-w-3xl">
@@ -290,8 +340,11 @@ export default function GearProductPage({ params }: Props) {
             </div>
           )}
 
-          {/* Community reviews portal */}
-          <div className="mt-14 max-w-3xl">
+          {/* Community reviews */}
+          <div id="discussion" className="mt-14 max-w-3xl scroll-mt-40">
+            <h2 className="text-2xl font-extrabold mb-6" style={{ color: "var(--text-primary)" }}>
+              Reviews
+            </h2>
             <div id="community-reviews" />
           </div>
 
