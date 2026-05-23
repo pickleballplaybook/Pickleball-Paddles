@@ -79,9 +79,19 @@ export async function GET(req: NextRequest) {
           upsertData.prev_count = existing.review_count;
         }
 
-        const { error } = await supabase
+        // Try update first, then insert if no rows affected
+        const { error: updateError, count: updateCount } = await supabase
           .from("external_reviews")
-          .upsert(upsertData, { onConflict: "paddle_slug" });
+          .update(upsertData)
+          .eq("paddle_slug", slug);
+
+        let error = updateError;
+        if (!updateError && (updateCount === 0 || updateCount === null)) {
+          const { error: insertError } = await supabase
+            .from("external_reviews")
+            .insert(upsertData);
+          error = insertError;
+        }
 
         if (error) {
           console.error(`[sync-external-reviews] DB error for ${slug}:`, error.message, error.details);
