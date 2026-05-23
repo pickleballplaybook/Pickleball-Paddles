@@ -69,17 +69,19 @@ function getDeals(): BrandDeal[] {
   return deals;
 }
 
-type SortMode = "trending" | "a-z" | "z-a";
+type SortMode = "popular" | "a-z" | "z-a";
 
 export default function DiscountsPage() {
-  const [sort, setSort] = useState<SortMode>("trending");
+  const [sort, setSort] = useState<SortMode>("popular");
   const deals = getDeals();
 
   const sorted = [...deals].sort((a, b) => {
     if (sort === "a-z") return a.name.localeCompare(b.name);
     if (sort === "z-a") return b.name.localeCompare(a.name);
-    // trending: by trendingScore desc, then paddle count
-    return b.trendingScore - a.trendingScore || b.paddleCount - a.paddleCount;
+    // popular: by paddle count (most reviewed brands first), then discount size
+    const aPct = a.discount.endsWith("%") ? parseFloat(a.discount) : 0;
+    const bPct = b.discount.endsWith("%") ? parseFloat(b.discount) : 0;
+    return b.paddleCount - a.paddleCount || bPct - aPct;
   });
 
   return (
@@ -114,7 +116,7 @@ export default function DiscountsPage() {
             style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.08)" }}
           >
             <ArrowUpDown className="w-3.5 h-3.5 ml-2" style={{ color: "var(--text-muted)" }} />
-            {(["trending", "a-z", "z-a"] as const).map((mode) => (
+            {(["popular", "a-z", "z-a"] as const).map((mode) => (
               <button
                 key={mode}
                 onClick={() => setSort(mode)}
@@ -125,7 +127,7 @@ export default function DiscountsPage() {
                     : { color: "var(--text-muted)" }
                 }
               >
-                {mode === "trending" ? "Trending" : mode === "a-z" ? "A → Z" : "Z → A"}
+                {mode === "popular" ? "Popular" : mode === "a-z" ? "A → Z" : "Z → A"}
               </button>
             ))}
           </div>
