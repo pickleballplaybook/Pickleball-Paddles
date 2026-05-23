@@ -190,10 +190,8 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Build "Highest Rated" list — Bayesian weighted average
-  // Paddles with few reviews get pulled toward the global average,
-  // so 4.7 with 2000 reviews ranks higher than 5.0 with 3 reviews.
-  const C = 25; // minimum reviews for full weight
+  // Build "Highest Rated" list — Bayesian weighted, deduplicated by review source
+  const C = 100; // minimum reviews for full weight (higher = more penalty for few reviews)
   const allRated = paddles
     .map((paddle) => {
       const ext = extReviews[paddle.slug];
@@ -201,8 +199,11 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
       const ratingAvg = ext?.rating ?? onSite?.average ?? 0;
       const ratingCount = ext?.count ?? onSite?.count ?? 0;
       const sourceName = ext?.sourceName ?? undefined;
+      const source = getReviewSource(paddle.slug);
+      // Use product URL as dedup key for external reviews, paddle ID for on-site
+      const dedup = source?.productUrl ?? paddle.id;
       const t = allTrending.find((tr) => tr.paddle.id === paddle.id);
-      return { paddle, totalHearts: t?.totalHearts ?? 0, weightedScore: t?.weightedScore ?? 0, ratingCount, ratingAvg, sourceName };
+      return { paddle, totalHearts: t?.totalHearts ?? 0, weightedScore: t?.weightedScore ?? 0, ratingCount, ratingAvg, sourceName, dedup };
     })
     .filter((t) => t.ratingCount >= 1);
 
@@ -210,7 +211,16 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
     ? allRated.reduce((sum, t) => sum + t.ratingAvg, 0) / allRated.length
     : 4.5;
 
-  const highestRated = allRated
+  // Deduplicate: keep the highest-trending paddle per review source
+  const dedupMap = new Map<string, typeof allRated[number]>();
+  for (const t of allRated) {
+    const existing = dedupMap.get(t.dedup);
+    if (!existing || t.totalHearts > existing.totalHearts) {
+      dedupMap.set(t.dedup, t);
+    }
+  }
+
+  const highestRated = Array.from(dedupMap.values())
     .map((t) => ({
       ...t,
       bayesian: (t.ratingCount * t.ratingAvg + C * globalAvg) / (t.ratingCount + C),
@@ -340,7 +350,14 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
                   Rate paddles to see top-rated ones here.
                 </p>
               ) : (
-                highestRated.map(({ paddle, ratingCount, ratingAvg, sourceName }, i) => (
+                highestRated.map(({ paddle, ratingCount, ratingAvg, sourceName, dedup }, i) => {
+                  // If multiple paddles share the same review source, show the series/brand name
+                  const source = getReviewSource(paddle.slug);
+                  const sharedCount = source ? source.paddleSlugs.length : 0;
+                  const displayName = sharedCount > 1
+                    ? `${paddle.brand} ${paddle.name.split(" ").slice(0, -1).join(" ") || paddle.name}`
+                    : `${paddle.name} ${paddle.thickness}`;
+                  return (
                   <Link
                     key={paddle.id}
                     href={`/paddles/${paddle.slug}`}
@@ -363,7 +380,7 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-bold truncate group-hover:text-teal-500 transition-colors" style={{ color: "var(--flip-text-head)" }}>
-                        {paddle.name} {paddle.thickness}
+                        {displayName}
                       </p>
                       <p className="text-[11px] truncate" style={{ color: "var(--flip-text-muted)" }}>
                         {sourceName ? `via ${sourceName}` : paddle.brand}
@@ -374,7 +391,8 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
                       {ratingAvg.toFixed(1)} ({ratingCount})
                     </span>
                   </Link>
-                ))
+                  );
+                })
               )}
             </div>
           </div>
