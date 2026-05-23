@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!paddle) return {};
   const code = getDiscountCode(paddle.brand, paddle.discountLink);
   const url = `${siteConfig.siteUrl}/paddles/${paddle.slug}`;
-  const title = `${paddle.brand} ${paddle.name} ${paddle.thickness} Review | Pickleball Playbook`;
+  const title = `${paddle.brand} ${paddle.name} ${paddle.shape} ${paddle.thickness} Review | Pickleball Playbook`;
   const description = `${paddle.brand} ${paddle.name} pickleball paddle review — ${paddle.shape} shape, ${paddle.thickness} core, ${paddle.weight}, Swing Weight ${paddle.swingWeight}. Specs, who it's for, video review & discount code ${code}.`;
   const imageUrl = paddle.image ? `${siteConfig.siteUrl}${paddle.image}` : undefined;
 
@@ -47,7 +47,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description,
     alternates: { canonical: url },
     openGraph: {
-      title: `${paddle.brand} ${paddle.name} ${paddle.thickness} Review`,
+      title: `${paddle.brand} ${paddle.name} ${paddle.shape} ${paddle.thickness} Review`,
       description,
       url,
       type: "article",
@@ -281,7 +281,7 @@ export default async function PaddleDetailPage({ params }: Props) {
   const articleSchema = {
     "@context": "https://schema.org",
     "@type": "Article",
-    "headline": `${paddle.brand} ${paddle.name} ${paddle.thickness} Pickleball Paddle Review`,
+    "headline": `${paddle.brand} ${paddle.name} ${paddle.shape} ${paddle.thickness} Pickleball Paddle Review`,
     "description": `In-depth review of the ${paddle.brand} ${paddle.name} — ${paddle.shape} shape, ${paddle.thickness} core. Specs, performance, and discount code.`,
     "image": paddle.image ? `${siteConfig.siteUrl}${paddle.image}` : undefined,
     "datePublished": paddle.addedAt,
@@ -528,7 +528,7 @@ export default async function PaddleDetailPage({ params }: Props) {
               className="text-4xl md:text-5xl font-extrabold tracking-tight leading-[1.05] mb-1"
               style={{ color: "var(--flip-text-head)" }}
             >
-              {paddle.name} {paddle.thickness} Pickleball Paddle Review
+              {paddle.name} {paddle.shape} {paddle.thickness} Pickleball Paddle Review
             </h1>
 
             {paddle.tagline && (

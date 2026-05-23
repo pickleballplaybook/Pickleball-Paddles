@@ -108,7 +108,7 @@ export const REVIEW_SOURCES: ReviewSource[] = [
     productHandle: "epp-turbo",
   },
   {
-    paddleSlugs: ["enhance-turbo-mpp-elongated"],
+    paddleSlugs: ["enhance-turbo-mpp-elongated", "enhance-turbo-mpp-hybrid"],
     platform: "judgeme",
     shopDomain: "enhancepickleball.com",
     productUrl: "https://enhancepickleball.com/products/mpp-turbo",
