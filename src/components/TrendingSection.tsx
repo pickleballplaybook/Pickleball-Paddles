@@ -191,7 +191,8 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Build "Highest Rated" list — Bayesian weighted, deduplicated by review source
-  const C = 100; // minimum reviews for full weight (higher = more penalty for few reviews)
+  // Build "Highest Rated" — score = rating × log10(reviews + 1)
+  // This heavily rewards review volume: 4.8 with 2300 reviews beats 5.0 with 15.
   const allRated = paddles
     .map((paddle) => {
       const ext = extReviews[paddle.slug];
@@ -200,16 +201,11 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
       const ratingCount = ext?.count ?? onSite?.count ?? 0;
       const sourceName = ext?.sourceName ?? undefined;
       const source = getReviewSource(paddle.slug);
-      // Use product URL as dedup key for external reviews, paddle ID for on-site
       const dedup = source?.productUrl ?? paddle.id;
       const t = allTrending.find((tr) => tr.paddle.id === paddle.id);
       return { paddle, totalHearts: t?.totalHearts ?? 0, weightedScore: t?.weightedScore ?? 0, ratingCount, ratingAvg, sourceName, dedup };
     })
     .filter((t) => t.ratingCount >= 1);
-
-  const globalAvg = allRated.length > 0
-    ? allRated.reduce((sum, t) => sum + t.ratingAvg, 0) / allRated.length
-    : 4.5;
 
   // Deduplicate: keep the highest-trending paddle per review source
   const dedupMap = new Map<string, typeof allRated[number]>();
@@ -223,9 +219,9 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
   const highestRated = Array.from(dedupMap.values())
     .map((t) => ({
       ...t,
-      bayesian: (t.ratingCount * t.ratingAvg + C * globalAvg) / (t.ratingCount + C),
+      score: t.ratingAvg * Math.log10(t.ratingCount + 1),
     }))
-    .sort((a, b) => b.bayesian - a.bayesian)
+    .sort((a, b) => b.score - a.score)
     .slice(0, 6);
 
   return (
