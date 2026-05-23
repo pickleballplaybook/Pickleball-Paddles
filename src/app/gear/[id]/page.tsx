@@ -7,6 +7,7 @@ import { siteConfig } from "@/config/site";
 import YouTubeEmbed from "@/components/YouTubeEmbed";
 import ViewCounter from "@/components/ViewCounter";
 import PaddleStarRating from "@/components/PaddleStarRating";
+import ExternalReviewBadge from "@/components/ExternalReviewBadge";
 
 interface Props {
   params: { id: string };
@@ -193,8 +194,13 @@ export default function GearProductPage({ params }: Props) {
               </p>
 
               {/* Star ratings */}
-              <div className="flex items-center gap-4 mb-2">
+              <div className="flex items-center gap-4 mb-1">
                 <PaddleStarRating paddleId={`gear-${product.id}`} />
+              </div>
+
+              {/* External review badge */}
+              <div className="mb-2">
+                <ExternalReviewBadge paddleSlug={`gear-${product.id}`} />
               </div>
 
               <div className="mb-6">
