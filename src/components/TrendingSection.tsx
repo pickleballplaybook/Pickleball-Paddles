@@ -8,6 +8,7 @@ import { getTrendingPaddles, getRisingBrands, HeartRecord } from "@/lib/trending
 import { siteConfig } from "@/config/site";
 import { supabase } from "@/lib/supabaseClient";
 import { getBrandByName } from "@/data/brands";
+import { getReviewSource } from "@/lib/externalReviews";
 
 // ── Subcomponent ──────────────────────────────────────────────────────────────
 
@@ -170,13 +171,44 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
     .filter((b) => (hasHearts || hasRatings) ? b.engagement > 0 : true)
     .slice(0, 6);
 
-  // Build "Highest Rated" list — sorted by average rating then count
-  const highestRated = allTrending
-    .map((t) => ({
-      ...t,
-      ratingCount: ratingCounts[t.paddle.id]?.count ?? 0,
-      ratingAvg: ratingCounts[t.paddle.id]?.average ?? 0,
-    }))
+  // Fetch external reviews from Supabase cache
+  const [extReviews, setExtReviews] = useState<Record<string, { rating: number; count: number; sourceName: string }>>({});
+  useEffect(() => {
+    const slugsWithSources = paddles.filter((p) => getReviewSource(p.slug)).map((p) => p.slug);
+    if (slugsWithSources.length === 0) return;
+    Promise.all(
+      slugsWithSources.map((slug) =>
+        fetch(`/api/external-reviews?slug=${slug}`)
+          .then((r) => r.json())
+          .then((d) => d.found ? { slug, rating: d.rating, count: d.count, sourceName: d.sourceName } : null)
+          .catch(() => null)
+      )
+    ).then((results) => {
+      const map: Record<string, { rating: number; count: number; sourceName: string }> = {};
+      for (const r of results) if (r) map[r.slug] = { rating: r.rating, count: r.count, sourceName: r.sourceName };
+      setExtReviews(map);
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Build "Highest Rated" list — merge external + on-site ratings
+  const highestRated = paddles
+    .map((paddle) => {
+      const ext = extReviews[paddle.slug];
+      const onSite = ratingCounts[paddle.id];
+      // Prefer external reviews, fall back to on-site
+      const ratingAvg = ext?.rating ?? onSite?.average ?? 0;
+      const ratingCount = ext?.count ?? onSite?.count ?? 0;
+      const sourceName = ext?.sourceName ?? undefined;
+      const t = allTrending.find((tr) => tr.paddle.id === paddle.id);
+      return {
+        paddle,
+        totalHearts: t?.totalHearts ?? 0,
+        weightedScore: t?.weightedScore ?? 0,
+        ratingCount,
+        ratingAvg,
+        sourceName,
+      };
+    })
     .filter((t) => t.ratingCount >= 1)
     .sort((a, b) => b.ratingAvg - a.ratingAvg || b.ratingCount - a.ratingCount)
     .slice(0, 6);
@@ -303,7 +335,7 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
                   Rate paddles to see top-rated ones here.
                 </p>
               ) : (
-                highestRated.map(({ paddle, ratingCount, ratingAvg }, i) => (
+                highestRated.map(({ paddle, ratingCount, ratingAvg, sourceName }, i) => (
                   <Link
                     key={paddle.id}
                     href={`/paddles/${paddle.slug}`}
@@ -329,7 +361,7 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
                         {paddle.name} {paddle.thickness}
                       </p>
                       <p className="text-[11px] truncate" style={{ color: "var(--flip-text-muted)" }}>
-                        {paddle.brand}
+                        {sourceName ? `via ${sourceName}` : paddle.brand}
                       </p>
                     </div>
                     <span className="inline-flex items-center gap-1 text-[11px] font-bold flex-shrink-0" style={{ color: "#facc15" }}>

@@ -148,6 +148,34 @@ export const REVIEW_SOURCES: ReviewSource[] = [
     productHandle: "rpm-q2-16mm-widebody-pickleball-paddle",
   },
 
+  // ── SixZero ──────────────────────────────────────────────────────────────
+  {
+    paddleSlugs: ["6-0-coral-hybrid", "6-0-coral-elongated"],
+    platform: "judgeme",
+    shopDomain: "us.sixzeropickleball.com",
+    productUrl: "https://us.sixzeropickleball.com/products/coral-16mm",
+    sourceName: "SixZero",
+    productHandle: "coral-16mm",
+  },
+
+  // ── Luzz ─────────────────────────────────────────────────────────────────
+  {
+    paddleSlugs: ["luzz-inferno-elongated"],
+    platform: "judgeme",
+    shopDomain: "luzzpickleball.com",
+    productUrl: "https://luzzpickleball.com/collections/us-inferno/products/luzzpickleball-pro-4-inferno-mpp-pickleball-paddle-large-sweet-spot-durable-core",
+    sourceName: "Luzz Pickleball",
+    productHandle: "luzzpickleball-pro-4-inferno-mpp-pickleball-paddle-large-sweet-spot-durable-core",
+  },
+  {
+    paddleSlugs: ["luzz-cannon-elongated"],
+    platform: "judgeme",
+    shopDomain: "luzzpickleball.com",
+    productUrl: "https://luzzpickleball.com/collections/cannon-paddle/products/luzzpickleball-cannon-paddle-t700-carbon-friction-surface-thermoformed",
+    sourceName: "Luzz Pickleball",
+    productHandle: "luzzpickleball-cannon-paddle-t700-carbon-friction-surface-thermoformed",
+  },
+
   // ── Loox brands (static — no public API) ────────────────────────────────
   {
     paddleSlugs: ["avoura-rhapsody-elongated"],
