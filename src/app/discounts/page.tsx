@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowRight, Tag, ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { paddles } from "@/data/paddles";
@@ -88,20 +88,76 @@ function getDeals(): Deal[] {
 }
 
 type SortMode = "popular" | "a-z" | "z-a";
-const PER_PAGE = 20; // 10 rows × 2 columns
+const PER_PAGE = 20;
+
+function useViewCounts(slugs: string[]) {
+  const [views, setViews] = useState<Record<string, number>>({});
+  useEffect(() => {
+    if (slugs.length === 0) return;
+    fetch(`/api/views?slugs=${slugs.join(",")}`)
+      .then((r) => r.json())
+      .then((data) => { if (data && typeof data === "object") setViews(data); })
+      .catch(() => {});
+  }, [slugs.join(",")]); // eslint-disable-line react-hooks/exhaustive-deps
+  return views;
+}
+
+function interleaveGear(paddleDeals: Deal[], gearDeals: Deal[]): Deal[] {
+  const result: Deal[] = [];
+  let gearIdx = 0;
+  for (let i = 0; i < paddleDeals.length; i++) {
+    result.push(paddleDeals[i]);
+    // Insert a gear item every 5 paddle brands
+    if ((i + 1) % 5 === 0 && gearIdx < gearDeals.length) {
+      result.push(gearDeals[gearIdx]);
+      gearIdx++;
+    }
+  }
+  // Append remaining gear
+  while (gearIdx < gearDeals.length) {
+    result.push(gearDeals[gearIdx]);
+    gearIdx++;
+  }
+  return result;
+}
 
 export default function DiscountsPage() {
   const [sort, setSort] = useState<SortMode>("popular");
   const [page, setPage] = useState(0);
   const deals = getDeals();
 
-  const sorted = [...deals].sort((a, b) => {
-    if (sort === "a-z") return a.name.localeCompare(b.name);
-    if (sort === "z-a") return b.name.localeCompare(a.name);
-    // popular: paddle brands by count first, then gear
-    if (a.type !== b.type) return a.type === "paddle" ? -1 : 1;
-    return b.paddleCount - a.paddleCount;
-  });
+  // Fetch real view counts for brand ranking
+  const brandSlugs = deals
+    .filter((d) => d.type === "paddle")
+    .flatMap((d) => paddles.filter((p) => p.brand === d.name).map((p) => p.slug))
+    .slice(0, 50);
+  const viewCounts = useViewCounts(brandSlugs);
+
+  // Calculate total views per brand
+  const brandViews = new Map<string, number>();
+  for (const d of deals) {
+    if (d.type !== "paddle") continue;
+    const total = paddles
+      .filter((p) => p.brand === d.name)
+      .reduce((sum, p) => sum + (viewCounts[p.slug] ?? 0), 0);
+    brandViews.set(d.name, total);
+  }
+
+  const paddleDeals = deals.filter((d) => d.type === "paddle");
+  const gearDeals = deals.filter((d) => d.type === "gear");
+
+  let sorted: Deal[];
+  if (sort === "a-z") {
+    sorted = [...deals].sort((a, b) => a.name.localeCompare(b.name));
+  } else if (sort === "z-a") {
+    sorted = [...deals].sort((a, b) => b.name.localeCompare(a.name));
+  } else {
+    // Popular: sort paddle brands by total views, then interleave gear
+    const sortedPaddles = [...paddleDeals].sort((a, b) =>
+      (brandViews.get(b.name) ?? 0) - (brandViews.get(a.name) ?? 0)
+    );
+    sorted = interleaveGear(sortedPaddles, gearDeals);
+  }
 
   const totalPages = Math.ceil(sorted.length / PER_PAGE);
   const visible = sorted.slice(page * PER_PAGE, (page + 1) * PER_PAGE);
