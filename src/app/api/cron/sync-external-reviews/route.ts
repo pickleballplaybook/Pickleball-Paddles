@@ -66,18 +66,26 @@ export async function GET(req: NextRequest) {
           .eq("paddle_slug", slug)
           .maybeSingle();
 
+        const upsertData: Record<string, unknown> = {
+          paddle_slug: slug,
+          rating,
+          review_count: count,
+          source_name: source.sourceName,
+          source_url: source.productUrl,
+          platform: source.platform,
+          last_fetched: new Date().toISOString(),
+        };
+        if (existing?.review_count != null) {
+          upsertData.prev_count = existing.review_count;
+        }
+
         const { error } = await supabase
           .from("external_reviews")
-          .upsert({
-            paddle_slug: slug,
-            rating,
-            review_count: count,
-            prev_count: existing?.review_count ?? null,
-            source_name: source.sourceName,
-            source_url: source.productUrl,
-            platform: source.platform,
-            last_fetched: new Date().toISOString(),
-          }, { onConflict: "paddle_slug" });
+          .upsert(upsertData, { onConflict: "paddle_slug" });
+
+        if (error) {
+          console.error(`[sync-external-reviews] DB error for ${slug}:`, error.message, error.details);
+        }
 
         results.push({
           slug,
