@@ -30,15 +30,25 @@ export async function GET(req: NextRequest) {
     let status = "ok";
 
     try {
-      if (source.platform === "judgeme" && source.productHandle) {
-        const data = await fetchJudgeMeReview(source.shopDomain, source.productHandle);
+      if (source.platform === "judgeme") {
+        const data = await scrapeProductRating(source.productUrl);
         if (data) {
           rating = data.rating;
           count = data.count;
         } else {
           status = "no_data";
         }
-      } else if (source.platform === "loox" || source.platform === "static") {
+      } else if (source.platform === "loox") {
+        // Try scraping first, fall back to static values
+        const data = await scrapeProductRating(source.productUrl);
+        if (data) {
+          rating = data.rating;
+          count = data.count;
+        } else {
+          rating = source.staticRating ?? 0;
+          count = source.staticCount ?? 0;
+        }
+      } else if (source.platform === "static") {
         rating = source.staticRating ?? 0;
         count = source.staticCount ?? 0;
       }
@@ -80,66 +90,42 @@ export async function GET(req: NextRequest) {
 }
 
 /**
- * Fetch review data from Judge.me public API.
+ * Scrape rating data from a Shopify product page.
+ * Works for Judge.me, Stamped, and any platform that embeds rating
+ * metafields in the page source (Klaviyo integration pattern).
  */
-async function fetchJudgeMeReview(
-  shopDomain: string,
-  productHandle: string,
+async function scrapeProductRating(
+  productUrl: string,
 ): Promise<{ rating: number; count: number } | null> {
-  // Judge.me public widget API — no auth required
-  const url = `https://judge.me/api/v1/widgets/product_review?url=${encodeURIComponent(shopDomain)}&handle=${encodeURIComponent(productHandle)}&per_page=1`;
-
-  const res = await fetch(url, {
-    headers: { Accept: "application/json" },
-    signal: AbortSignal.timeout(10000),
-  });
-
-  if (!res.ok) {
-    // Fallback: try the badge endpoint
-    return fetchJudgeMeBadge(shopDomain, productHandle);
-  }
-
-  const html = await res.text();
-
-  // Parse rating from the badge HTML response
-  const ratingMatch = html.match(/data-average-rating="([\d.]+)"/);
-  const countMatch = html.match(/data-number-of-reviews="(\d+)"/);
-
-  if (ratingMatch && countMatch) {
-    return {
-      rating: parseFloat(ratingMatch[1]),
-      count: parseInt(countMatch[1], 10),
-    };
-  }
-
-  return fetchJudgeMeBadge(shopDomain, productHandle);
-}
-
-/**
- * Fallback: fetch from Judge.me badge endpoint.
- */
-async function fetchJudgeMeBadge(
-  shopDomain: string,
-  productHandle: string,
-): Promise<{ rating: number; count: number } | null> {
-  const url = `https://judge.me/api/v1/widgets/product_review?url=${encodeURIComponent(shopDomain)}&handle=${encodeURIComponent(productHandle)}`;
-
   try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
-    const text = await res.text();
+    const res = await fetch(productUrl, {
+      signal: AbortSignal.timeout(15000),
+      headers: { "User-Agent": "PlaybookPaddles/1.0 (review-sync)" },
+    });
 
-    // Try to extract from various Judge.me response formats
-    const ratingMatch = text.match(/(\d+\.\d+)\s*out of/i) || text.match(/rating.*?(\d+\.\d+)/i);
-    const countMatch = text.match(/(\d+)\s*review/i);
+    if (!res.ok) return null;
+    const html = await res.text();
 
-    if (ratingMatch && countMatch) {
-      return {
-        rating: parseFloat(ratingMatch[1]),
-        count: parseInt(countMatch[1], 10),
-      };
+    // Pattern 1: Klaviyo/metafield embedded rating (most common)
+    const metaMatch = html.match(/"rating":\{"scale_min":"[^"]*","scale_max":"[^"]*","value":"([\d.]+)"\},"rating_count":(\d+)/);
+    if (metaMatch) {
+      return { rating: parseFloat(metaMatch[1]), count: parseInt(metaMatch[2], 10) };
+    }
+
+    // Pattern 2: JSON-LD aggregateRating
+    const ldMatch = html.match(/"aggregateRating"\s*:\s*\{[^}]*"ratingValue"\s*:\s*"?([\d.]+)"?[^}]*"reviewCount"\s*:\s*"?(\d+)"?/);
+    if (ldMatch) {
+      return { rating: parseFloat(ldMatch[1]), count: parseInt(ldMatch[2], 10) };
+    }
+
+    // Pattern 3: Loox metafield
+    const looxRating = html.match(/MetafieldLooxRating\s*=\s*"([\d.]+)"/);
+    const looxCount = html.match(/MetafieldLooxCount\s*=\s*"?(\d+)"?/);
+    if (looxRating && looxCount) {
+      return { rating: parseFloat(looxRating[1]), count: parseInt(looxCount[1], 10) };
     }
   } catch {
-    // ignore
+    // timeout or network error
   }
 
   return null;
