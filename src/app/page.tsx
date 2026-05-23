@@ -146,6 +146,8 @@ export default async function HomePage() {
     <>
       <Hero />
 
+      <div id="paddles"><HottestPaddle /></div>
+
       <div id="latest-reviews">
         <LatestReviews
           items={latestReviewItems}
@@ -158,8 +160,6 @@ export default async function HomePage() {
       </div>
 
       <TrendingSection paddles={paddles} />
-
-      <div id="paddles"><HottestPaddle /></div>
 
       <LatestPaddles paddles={latestPaddles} />
 
