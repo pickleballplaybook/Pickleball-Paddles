@@ -112,9 +112,11 @@ async function scrapeProductRating(
       return { rating: parseFloat(metaMatch[1]), count: parseInt(metaMatch[2], 10) };
     }
 
-    // Pattern 2: JSON-LD aggregateRating
-    const ldMatch = html.match(/"aggregateRating"\s*:\s*\{[^}]*"ratingValue"\s*:\s*"?([\d.]+)"?[^}]*"reviewCount"\s*:\s*"?(\d+)"?/);
-    if (ldMatch) {
+    // Pattern 2: JSON-LD ratingValue + reviewCount (anywhere in page, any order)
+    const rvMatch = html.match(/"ratingValue"\s*:\s*"?([\d.]+)/);
+    const rcMatch = html.match(/"reviewCount"\s*:\s*"?(\d+)/);
+    const ldMatch = rvMatch && rcMatch ? [null, rvMatch[1], rcMatch[1]] : null;
+    if (ldMatch && ldMatch[1] && ldMatch[2]) {
       return { rating: parseFloat(ldMatch[1]), count: parseInt(ldMatch[2], 10) };
     }
 

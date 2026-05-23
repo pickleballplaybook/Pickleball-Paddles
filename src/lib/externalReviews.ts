@@ -80,6 +80,16 @@ export const REVIEW_SOURCES: ReviewSource[] = [
     productHandle: "loco-16mm-pickleball-paddle-hybrid",
   },
 
+  // ── Selkirk (Okendo) ──────────────────────────────────────────────────────
+  {
+    paddleSlugs: ["selkirk-boomstik-elongated"],
+    platform: "judgeme",  // uses same scrape pattern (JSON-LD aggregateRating)
+    shopDomain: "www.selkirk.com",
+    productUrl: "https://www.selkirk.com/products/selkirk-labs-project-boomstik",
+    sourceName: "Selkirk",
+    productHandle: "selkirk-labs-project-boomstik",
+  },
+
   // ── Judge.me brands ─────────────────────────────────────────────────────
   {
     paddleSlugs: ["flik-f3-triple-core-elongated", "flik-f3-triple-core-hybrid"],
