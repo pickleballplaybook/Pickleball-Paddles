@@ -1,23 +1,11 @@
-import { Metadata } from "next";
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Tag } from "lucide-react";
+import { ArrowRight, Tag, ArrowUpDown } from "lucide-react";
 import { paddles } from "@/data/paddles";
 import { brands } from "@/data/brands";
 import { siteConfig } from "@/config/site";
-
-export const metadata: Metadata = {
-  title: "Pickleball Paddle Discount Codes — Save on Every Brand | Pickleball Playbook",
-  description:
-    "Use code PLAYBOOK to save on 30+ pickleball paddle brands. Exclusive discount codes for 11SIX24, Selkirk, Joola, CRBN, Bread & Butter, and more. Updated daily.",
-  alternates: { canonical: `${siteConfig.siteUrl}/discounts` },
-  openGraph: {
-    title: "Pickleball Paddle Discount Codes — Save on Every Brand",
-    description: "Use code PLAYBOOK at checkout. Exclusive discounts on 30+ brands.",
-    url: `${siteConfig.siteUrl}/discounts`,
-    type: "website",
-    siteName: siteConfig.name,
-  },
-};
 
 interface BrandDeal {
   name: string;
@@ -27,20 +15,20 @@ interface BrandDeal {
   shopLink: string;
   paddleCount: number;
   slug: string;
+  trendingScore: number;
 }
 
 function getDeals(): BrandDeal[] {
-  // Group paddles by brand, find the best discount and a representative link
-  const brandMap = new Map<string, { discount: string; link: string; count: number }>();
+  const brandMap = new Map<string, { discount: string; link: string; count: number; topScore: number }>();
 
   for (const p of paddles) {
     if (!p.discountLink || !p.amountOff || p.amountOff === "$0" || p.amountOff === "") continue;
     const existing = brandMap.get(p.brand);
     if (!existing) {
-      brandMap.set(p.brand, { discount: p.amountOff, link: p.discountLink, count: 1 });
+      brandMap.set(p.brand, { discount: p.amountOff, link: p.discountLink, count: 1, topScore: p.trendingScore });
     } else {
       existing.count += 1;
-      // Prefer higher percentage discounts
+      if (p.trendingScore > existing.topScore) existing.topScore = p.trendingScore;
       const currentPct = parseFloat(existing.discount);
       const newPct = parseFloat(p.amountOff);
       if (!isNaN(newPct) && !isNaN(currentPct) && newPct > currentPct) {
@@ -55,10 +43,15 @@ function getDeals(): BrandDeal[] {
     const brandData = brands.find((b) => b.name === brandName);
     if (!brandData) continue;
 
-    // Determine the code
     let code = "PLAYBOOK";
     if (brandName === "Selkirk" || brandName === "SLK") {
       if (!data.link.includes("lockerroompickleball.com")) code = "INF-PLAYBOOK";
+    }
+
+    // Use the Radiance link for Rev
+    let shopLink = data.link;
+    if (brandName === "Rev") {
+      shopLink = "https://www.revpickleball.com/discount/PLAYBOOK?redirect=/products/radiance-foam-pickleball-paddle";
     }
 
     deals.push({
@@ -66,25 +59,28 @@ function getDeals(): BrandDeal[] {
       logo: brandData.logo,
       discount: data.discount,
       code,
-      shopLink: data.link,
+      shopLink,
       paddleCount: data.count,
       slug: brandData.slug,
+      trendingScore: data.topScore,
     });
   }
-
-  // Sort by discount value (percentages first, then dollar amounts)
-  deals.sort((a, b) => {
-    const aPct = a.discount.endsWith("%") ? parseFloat(a.discount) : 0;
-    const bPct = b.discount.endsWith("%") ? parseFloat(b.discount) : 0;
-    if (aPct !== bPct) return bPct - aPct;
-    return b.paddleCount - a.paddleCount;
-  });
 
   return deals;
 }
 
+type SortMode = "trending" | "a-z" | "z-a";
+
 export default function DiscountsPage() {
+  const [sort, setSort] = useState<SortMode>("trending");
   const deals = getDeals();
+
+  const sorted = [...deals].sort((a, b) => {
+    if (sort === "a-z") return a.name.localeCompare(b.name);
+    if (sort === "z-a") return b.name.localeCompare(a.name);
+    // trending: by trendingScore desc, then paddle count
+    return b.trendingScore - a.trendingScore || b.paddleCount - a.paddleCount;
+  });
 
   return (
     <div className="min-h-screen pt-[156px] pb-20" style={{ background: "var(--bg-page)" }}>
@@ -111,9 +107,33 @@ export default function DiscountsPage() {
           </p>
         </div>
 
+        {/* Sort toggle */}
+        <div className="flex items-center justify-end mb-6">
+          <div
+            className="inline-flex items-center gap-1 rounded-xl p-0.5"
+            style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.08)" }}
+          >
+            <ArrowUpDown className="w-3.5 h-3.5 ml-2" style={{ color: "var(--text-muted)" }} />
+            {(["trending", "a-z", "z-a"] as const).map((mode) => (
+              <button
+                key={mode}
+                onClick={() => setSort(mode)}
+                className="text-xs font-bold px-3 py-1.5 rounded-[10px] transition-all"
+                style={
+                  sort === mode
+                    ? { background: "#14b8a6", color: "#fff" }
+                    : { color: "var(--text-muted)" }
+                }
+              >
+                {mode === "trending" ? "Trending" : mode === "a-z" ? "A → Z" : "Z → A"}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Brand grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {deals.map((deal) => (
+          {sorted.map((deal) => (
             <div
               key={deal.name}
               className="rounded-2xl overflow-hidden flex flex-col"
