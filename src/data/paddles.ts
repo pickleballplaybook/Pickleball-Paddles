@@ -474,6 +474,24 @@ export const paddles: Paddle[] = [
     trendingScore: 66,
     playStyle: "power",
   },
+  {
+    id: "117",
+    slug: "enhance-turbo-mpp-hybrid",
+    brand: "Enhance",
+    name: "Turbo MPP",
+    shape: "Hybrid",
+    weight: "8.0 oz",
+    swingWeight: 114.24,
+    twistWeight: 6.48,
+    thickness: "16mm",
+    image: "/images/paddles/Turbo-MPP-Hybrid-16mm.png",
+    amountOff: "$20",
+    price: "$119.99",
+    discountLink: "https://www.enhancepickleball.com/PLAYBOOK",
+    addedAt: "2026-05-23",
+    trendingScore: 50,
+    playStyle: "power",
+  },
 
   // ── Friday ─────────────────────────────────────────────────────────────────
   {
