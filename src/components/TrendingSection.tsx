@@ -190,27 +190,32 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Build "Highest Rated" list — merge external + on-site ratings
-  const highestRated = paddles
+  // Build "Highest Rated" list — Bayesian weighted average
+  // Paddles with few reviews get pulled toward the global average,
+  // so 4.7 with 2000 reviews ranks higher than 5.0 with 3 reviews.
+  const C = 25; // minimum reviews for full weight
+  const allRated = paddles
     .map((paddle) => {
       const ext = extReviews[paddle.slug];
       const onSite = ratingCounts[paddle.id];
-      // Prefer external reviews, fall back to on-site
       const ratingAvg = ext?.rating ?? onSite?.average ?? 0;
       const ratingCount = ext?.count ?? onSite?.count ?? 0;
       const sourceName = ext?.sourceName ?? undefined;
       const t = allTrending.find((tr) => tr.paddle.id === paddle.id);
-      return {
-        paddle,
-        totalHearts: t?.totalHearts ?? 0,
-        weightedScore: t?.weightedScore ?? 0,
-        ratingCount,
-        ratingAvg,
-        sourceName,
-      };
+      return { paddle, totalHearts: t?.totalHearts ?? 0, weightedScore: t?.weightedScore ?? 0, ratingCount, ratingAvg, sourceName };
     })
-    .filter((t) => t.ratingCount >= 1)
-    .sort((a, b) => b.ratingAvg - a.ratingAvg || b.ratingCount - a.ratingCount)
+    .filter((t) => t.ratingCount >= 1);
+
+  const globalAvg = allRated.length > 0
+    ? allRated.reduce((sum, t) => sum + t.ratingAvg, 0) / allRated.length
+    : 4.5;
+
+  const highestRated = allRated
+    .map((t) => ({
+      ...t,
+      bayesian: (t.ratingCount * t.ratingAvg + C * globalAvg) / (t.ratingCount + C),
+    }))
+    .sort((a, b) => b.bayesian - a.bayesian)
     .slice(0, 6);
 
   return (
