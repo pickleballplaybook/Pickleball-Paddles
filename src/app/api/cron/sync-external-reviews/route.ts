@@ -59,12 +59,20 @@ export async function GET(req: NextRequest) {
 
     if (rating > 0 && count > 0) {
       for (const slug of source.paddleSlugs) {
+        // Save previous count before overwriting for growth tracking
+        const { data: existing } = await supabase
+          .from("external_reviews")
+          .select("review_count")
+          .eq("paddle_slug", slug)
+          .maybeSingle();
+
         const { error } = await supabase
           .from("external_reviews")
           .upsert({
             paddle_slug: slug,
             rating,
             review_count: count,
+            prev_count: existing?.review_count ?? null,
             source_name: source.sourceName,
             source_url: source.productUrl,
             platform: source.platform,
