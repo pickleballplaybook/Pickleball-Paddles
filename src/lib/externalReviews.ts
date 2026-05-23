@@ -26,6 +26,60 @@ export interface ReviewSource {
  * Only paddles with detectable review platforms are listed.
  */
 export const REVIEW_SOURCES: ReviewSource[] = [
+  // ── 11SIX24 ─────────────────────────────────────────────────────────────
+  {
+    paddleSlugs: ["11six24-vapor-power-2-hybrid"],
+    platform: "judgeme",
+    shopDomain: "11six24.com",
+    productUrl: "https://11six24.com/collections/power-2/products/vapor-power-2",
+    sourceName: "11SIX24",
+    productHandle: "vapor-power-2",
+  },
+  {
+    paddleSlugs: ["11six24-hurache-power-2-elongated"],
+    platform: "judgeme",
+    shopDomain: "11six24.com",
+    productUrl: "https://11six24.com/collections/power-2/products/hurache-x-power-2",
+    sourceName: "11SIX24",
+    productHandle: "hurache-x-power-2",
+  },
+  {
+    paddleSlugs: ["11six24-pegasus-power-2-widebody"],
+    platform: "judgeme",
+    shopDomain: "11six24.com",
+    productUrl: "https://11six24.com/collections/power-2/products/pegasus-power-2",
+    sourceName: "11SIX24",
+    productHandle: "pegasus-power-2",
+  },
+
+  // ── Rev ──────────────────────────────────────────────────────────────────
+  {
+    paddleSlugs: ["rev-aria-pro-elongated"],
+    platform: "judgeme",
+    shopDomain: "www.revpickleball.com",
+    productUrl: "https://www.revpickleball.com/products/aria-pro",
+    sourceName: "Rev Pickleball",
+    productHandle: "aria-pro",
+  },
+  {
+    paddleSlugs: ["rev-radiance-elongated"],
+    platform: "judgeme",
+    shopDomain: "www.revpickleball.com",
+    productUrl: "https://www.revpickleball.com/products/radiance-foam-pickleball-paddle",
+    sourceName: "Rev Pickleball",
+    productHandle: "radiance-foam-pickleball-paddle",
+  },
+
+  // ── Bread & Butter (Loco) ───────────────────────────────────────────────
+  {
+    paddleSlugs: ["bread-and-butter-loco-elongated", "bread-and-butter-loco-hybrid", "bread-and-butter-loco-widebody"],
+    platform: "judgeme",
+    shopDomain: "www.bnbpickleball.com",
+    productUrl: "https://www.bnbpickleball.com/collections/loco/products/loco-16mm-pickleball-paddle-hybrid",
+    sourceName: "Bread & Butter",
+    productHandle: "loco-16mm-pickleball-paddle-hybrid",
+  },
+
   // ── Judge.me brands ─────────────────────────────────────────────────────
   {
     paddleSlugs: ["flik-f3-triple-core-elongated", "flik-f3-triple-core-hybrid"],

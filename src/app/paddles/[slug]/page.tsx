@@ -19,6 +19,7 @@ import ReactionButtons from "@/components/ReactionButtons";
 import DiscountCodeBox from "@/components/DiscountCodeBox";
 import PaddleStarRating from "@/components/PaddleStarRating";
 import ExternalReviewBadge from "@/components/ExternalReviewBadge";
+import { getReviewSource } from "@/lib/externalReviews";
 import ViewCounter from "@/components/ViewCounter";
 import { getBlogPostForPaddle, BlogSection } from "@/data/blogPosts";
 
@@ -538,13 +539,12 @@ export default async function PaddleDetailPage({ params }: Props) {
 
             {/* Star ratings + views */}
             <div className="flex items-center gap-4 mb-1 flex-wrap">
-              <PaddleStarRating paddleId={paddle.id} />
+              {getReviewSource(paddle.slug) ? (
+                <ExternalReviewBadge paddleSlug={paddle.slug} />
+              ) : (
+                <PaddleStarRating paddleId={paddle.id} />
+              )}
               <ViewCounter slug={paddle.slug} type="paddle" />
-            </div>
-
-            {/* External review badge */}
-            <div className="mb-2">
-              <ExternalReviewBadge paddleSlug={paddle.slug} />
             </div>
 
             {/* Hearts / reactions */}
