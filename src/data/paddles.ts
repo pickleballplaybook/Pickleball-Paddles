@@ -502,7 +502,7 @@ export const paddles: Paddle[] = [
     shape: "Elongated",
     weight: "7.9 oz",
     swingWeight: 116.33,
-    twistWeight: 5.77,
+    twistWeight: 5.93,
     thickness: "16mm",
     image: "/images/paddles/Aura-Pro-Elongated-16mm.png",
     amountOff: "$10",
