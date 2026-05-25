@@ -396,6 +396,23 @@ export default function TrendingPage() {
     }
   }
 
+  // Owner-only hotkey: ⌘I / Ctrl+I instantly downloads the full top-10 zip.
+  // A ref keeps the listener pointed at the latest closure (current top10 /
+  // exporting state) without re-registering on every render.
+  const downloadAllRef = useRef(downloadAll);
+  useEffect(() => { downloadAllRef.current = downloadAll; });
+  useEffect(() => {
+    if (!canExport) return;
+    function onKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && !e.shiftKey && !e.altKey && (e.key === "i" || e.key === "I")) {
+        e.preventDefault();
+        downloadAllRef.current();
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [canExport]);
+
   return (
     <div className="min-h-screen pt-[156px] pb-20" style={{ background: "#060e1a" }}>
       <div className="max-w-[640px] mx-auto px-4">
@@ -478,6 +495,11 @@ export default function TrendingPage() {
                   : <><Download className="w-4 h-4" /> Download all {top10.length} (.zip)</>}
               </button>
             </div>}
+            {canExport && (
+              <p className="text-center text-xs mt-3" style={{ color: "rgba(255,255,255,0.35)" }}>
+                Tip: press <kbd className="font-mono font-bold" style={{ color: "rgba(255,255,255,0.6)" }}>⌘I</kbd> (or <kbd className="font-mono font-bold" style={{ color: "rgba(255,255,255,0.6)" }}>Ctrl+I</kbd>) to download all {top10.length} instantly.
+              </p>
+            )}
 
             {/* Dot navigation */}
             <div className="flex items-center justify-center gap-2 mt-6">

@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { ArrowRight, CheckCircle2, TrendingUp } from "lucide-react";
 import { getPaddleBySlug } from "@/data/paddles";
 import { siteConfig } from "@/config/site";
 import { getPaddleCountLabel } from "@/lib/catalogStats";
@@ -247,9 +247,40 @@ export default function BestPaddlesPage() {
           </div>
 
           {/* ── Featured video ─────────────────────────────────────────── */}
-          <div className="mb-16 max-w-3xl">
+          <div className="mb-12 max-w-3xl">
             <YouTubeEmbed videoId="kOONExGr-s0" title="Best Pickleball Paddle of 2026" />
           </div>
+
+          {/* ── Weekly rankings callout ───────────────────────────────────── */}
+          <Link
+            href="/best-pickleball-paddles/weekly"
+            className="group flex flex-col sm:flex-row sm:items-center gap-4 rounded-2xl p-5 sm:p-6 mb-16 max-w-3xl transition-all hover:scale-[1.01]"
+            style={{ background: "var(--bg-card)", border: "1px solid rgba(20,184,166,0.3)" }}
+          >
+            <div
+              className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: "rgba(20,184,166,0.12)", border: "1px solid rgba(20,184,166,0.25)" }}
+            >
+              <TrendingUp className="w-5 h-5" style={{ color: "#14b8a6" }} strokeWidth={2.2} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] font-bold uppercase tracking-widest mb-1" style={{ color: "#14b8a6" }}>
+                Updated Weekly
+              </p>
+              <h2 className="text-lg font-extrabold leading-snug mb-1" style={{ color: "var(--text-primary)" }}>
+                See this week&apos;s data-driven rankings
+              </h2>
+              <p className="text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
+                Updated every Monday based on what real players are hearting, rating, and viewing right now.
+              </p>
+            </div>
+            <span
+              className="inline-flex items-center justify-center gap-2 font-bold text-sm px-5 py-2.5 rounded-xl text-white flex-shrink-0 transition-all group-hover:gap-3"
+              style={{ background: "#14b8a6" }}
+            >
+              View this week&apos;s top 10 <ArrowRight className="w-4 h-4" />
+            </span>
+          </Link>
 
           {/* ── Jump links ────────────────────────────────────────────────── */}
           <div

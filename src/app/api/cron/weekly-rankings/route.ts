@@ -28,11 +28,15 @@ export async function GET(req: NextRequest) {
   const supabase = getSupabaseAdmin();
 
   try {
-    // ── 1. Fetch engagement data ──────────────────────────────────────────
+    // ── 1. Fetch engagement data (rolling 7-day window) ───────────────────
+    // Mirrors the /trending page: rank by activity in the trailing 7 days, not
+    // all-time totals, so a paddle with stale-but-high lifetime views can't
+    // dominate the weekly snapshot.
+    const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString();
     const [heartsRes, ratingsRes, viewsRes] = await Promise.all([
-      supabase.from("paddle_hearts").select("paddle_id"),
-      supabase.from("paddle_ratings").select("paddle_id, stars"),
-      supabase.from("page_views").select("slug").eq("page_type", "paddle"),
+      supabase.from("paddle_hearts").select("paddle_id").gte("created_at", sevenDaysAgo),
+      supabase.from("paddle_ratings").select("paddle_id, stars").gte("created_at", sevenDaysAgo),
+      supabase.from("page_views").select("slug").eq("page_type", "paddle").gte("created_at", sevenDaysAgo),
     ]);
 
     // Aggregate hearts by paddle_id
@@ -70,10 +74,21 @@ export async function GET(req: NextRequest) {
     scored.sort((a, b) => b.composite - a.composite);
     const top10 = scored.slice(0, 10);
 
-    // ── 3. Get previous week for rank diffs ───────────────────────────────
+    // ── 3. Determine this week's Monday ──────────────────────────────────
+    const now = new Date();
+    const day = now.getUTCDay();
+    const monday = new Date(now);
+    monday.setUTCDate(now.getUTCDate() - ((day + 6) % 7));
+    const weekDate = monday.toISOString().split("T")[0];
+
+    // ── 4. Get the prior week's snapshot for rank diffs ───────────────────
+    // Strictly-earlier week so movement is always week-over-week — and so
+    // re-running the cron within the same week compares to the previous week
+    // rather than to the version of this week it's about to overwrite.
     const { data: prevWeekData } = await supabase
       .from("weekly_rankings")
       .select("week_date")
+      .lt("week_date", weekDate)
       .order("week_date", { ascending: false })
       .limit(1)
       .maybeSingle();
@@ -89,13 +104,6 @@ export async function GET(req: NextRequest) {
         prevRankMap.set(row.paddle_slug, row.rank);
       }
     }
-
-    // ── 4. Determine this week's Monday ──────────────────────────────────
-    const now = new Date();
-    const day = now.getUTCDay();
-    const monday = new Date(now);
-    monday.setUTCDate(now.getUTCDate() - ((day + 6) % 7));
-    const weekDate = monday.toISOString().split("T")[0];
 
     // ── 5. Delete any existing rows for this week and insert fresh ────────
     await supabase.from("weekly_rankings").delete().eq("week_date", weekDate);
