@@ -53,6 +53,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${siteConfig.siteUrl}/gear`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
     { url: `${siteConfig.siteUrl}/trending`, lastModified: now, changeFrequency: "daily", priority: 0.7 },
     { url: `${siteConfig.siteUrl}/discounts`, lastModified: now, changeFrequency: "weekly", priority: 0.85 },
+    { url: `${siteConfig.siteUrl}/newsletter`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
     { url: `${siteConfig.siteUrl}/brands`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
   ];
 
