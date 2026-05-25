@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { paddles } from "@/data/paddles";
 import { submitToIndexNow } from "@/lib/indexnow";
+import { engagementScore } from "@/lib/trending";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -67,7 +68,7 @@ export async function GET(req: NextRequest) {
       const ratings = rating?.count ?? 0;
       const avgRating = rating ? Math.round((rating.sum / rating.count) * 100) / 100 : 0;
       const views = viewCounts.get(p.slug) ?? 0;
-      const composite = hearts + ratings + Math.floor(views / 10);
+      const composite = engagementScore(hearts, ratings, views);
       return { paddle: p, hearts, ratings, avgRating, views, composite };
     });
 

@@ -6,7 +6,7 @@ import { toPng } from "html-to-image";
 import JSZip from "jszip";
 import { paddles } from "@/data/paddles";
 import { Paddle } from "@/types";
-import { getTrendingPaddles, HeartRecord } from "@/lib/trending";
+import { getTrendingPaddles, engagementScore, HeartRecord } from "@/lib/trending";
 import { siteConfig } from "@/config/site";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -309,7 +309,7 @@ export default function TrendingPage() {
   const top10 = allTrending
     .map((t) => ({
       ...t,
-      engagement: t.totalHearts + (ratingCounts[t.paddle.id]?.count ?? 0) + Math.floor((viewCounts[t.paddle.slug] ?? 0) / 10),
+      engagement: engagementScore(t.totalHearts, ratingCounts[t.paddle.id]?.count ?? 0, viewCounts[t.paddle.slug] ?? 0),
     }))
     .sort((a, b) => b.engagement - a.engagement || b.totalHearts - a.totalHearts)
     .filter((t) => (hasHearts || hasRatings || hasViews) ? t.engagement > 0 : true)

@@ -1,5 +1,20 @@
 import { Paddle } from "@/types";
 
+// ── Engagement scoring ─────────────────────────────────────────────────────────
+// Single source of truth for the weekly/trending "top paddles" score, shared by
+// the weekly cron, the /trending page, and the homepage Trending section so they
+// can never drift. Hearts and ratings are weighted up so they aren't drowned out
+// by raw view counts (1 heart ≈ 50 views of weight; 1 rating ≈ 30).
+export const ENGAGEMENT_WEIGHTS = { heart: 5, rating: 3, viewDivisor: 10 } as const;
+
+export function engagementScore(hearts: number, ratings: number, views: number): number {
+  return (
+    hearts * ENGAGEMENT_WEIGHTS.heart +
+    ratings * ENGAGEMENT_WEIGHTS.rating +
+    Math.floor(views / ENGAGEMENT_WEIGHTS.viewDivisor)
+  );
+}
+
 // ── Time-decay weight by age bucket ───────────────────────────────────────────
 
 export function getHeartWeight(createdAt: Date | string | number): number {
