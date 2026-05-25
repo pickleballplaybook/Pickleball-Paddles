@@ -266,8 +266,12 @@ export default function TrendingPage() {
       });
   }, []);
 
+  // Filter hearts to last 7 days for trending page
+  const sevenDaysAgo = Date.now() - 7 * 86400000;
+  const recentHearts = heartRecords.filter((h) => new Date(h.createdAt).getTime() >= sevenDaysAgo);
+
   // Only fetch ratings for top candidates (not all 116+ paddles)
-  const allTrending = getTrendingPaddles(paddles, heartRecords, paddles.length);
+  const allTrending = getTrendingPaddles(paddles, recentHearts, paddles.length);
   const heartedIds = new Set(heartRecords.map((h) => h.paddleId));
   const topByScore = [...paddles].sort((a, b) => b.trendingScore - a.trendingScore).slice(0, 20);
   const candidateIds = Array.from(new Set([...Array.from(heartedIds), ...topByScore.map((p) => p.id)])).slice(0, 30);
@@ -309,7 +313,7 @@ export default function TrendingPage() {
             Top 10 Trending Paddles
           </h1>
           <p className="text-base" style={{ color: "rgba(255,255,255,0.5)" }}>
-            Ranked by views, hearts, and ratings combined
+            Ranked by views, hearts, and ratings — last 7 days
           </p>
         </div>
 
@@ -321,31 +325,35 @@ export default function TrendingPage() {
         )}
         {dataReady && top10.length > 0 && (
           <>
-            <div className="relative">
-              {/* Nav buttons */}
+            {/* Card */}
+            <TrendingCard
+              paddle={top10[currentIndex].paddle}
+              rank={currentIndex + 1}
+              code={getCode(top10[currentIndex].paddle.brand, top10[currentIndex].paddle.discountLink)}
+              totalCards={top10.length}
+            />
+
+            {/* Nav buttons — below the card, outside the frame */}
+            <div className="flex items-center justify-center gap-4 mt-4">
               <button
                 onClick={() => setCurrentIndex((p) => Math.max(0, p - 1))}
                 disabled={currentIndex === 0}
-                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 z-20 w-10 h-10 rounded-full flex items-center justify-center transition-all disabled:opacity-20"
+                className="w-10 h-10 rounded-full flex items-center justify-center transition-all disabled:opacity-20"
                 style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)" }}
               >
                 <ChevronLeft className="w-5 h-5 text-white" />
               </button>
+              <span className="text-sm font-bold" style={{ color: "rgba(255,255,255,0.5)" }}>
+                {currentIndex + 1} / {top10.length}
+              </span>
               <button
                 onClick={() => setCurrentIndex((p) => Math.min(top10.length - 1, p + 1))}
                 disabled={currentIndex >= top10.length - 1}
-                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-2 z-20 w-10 h-10 rounded-full flex items-center justify-center transition-all disabled:opacity-20"
+                className="w-10 h-10 rounded-full flex items-center justify-center transition-all disabled:opacity-20"
                 style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)" }}
               >
                 <ChevronRight className="w-5 h-5 text-white" />
               </button>
-
-              <TrendingCard
-                paddle={top10[currentIndex].paddle}
-                rank={currentIndex + 1}
-                code={getCode(top10[currentIndex].paddle.brand, top10[currentIndex].paddle.discountLink)}
-                totalCards={top10.length}
-              />
             </div>
 
             {/* Dot navigation */}
