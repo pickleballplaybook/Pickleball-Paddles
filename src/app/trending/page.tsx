@@ -1,12 +1,26 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { ChevronLeft, ChevronRight, Download, Loader2 } from "lucide-react";
+import { toPng } from "html-to-image";
+import JSZip from "jszip";
 import { paddles } from "@/data/paddles";
 import { Paddle } from "@/types";
 import { getTrendingPaddles, HeartRecord } from "@/lib/trending";
 import { siteConfig } from "@/config/site";
 import { supabase } from "@/lib/supabaseClient";
+
+// Width each card is rendered at for export; pixelRatio 2 doubles it for a
+// crisp ~1200×1200 Instagram-ready PNG. Kept fixed so every export is identical
+// regardless of the viewer's screen size.
+const EXPORT_WIDTH = 600;
+
+// The download buttons are owner-only. Visiting /trending?export=<secret> once
+// per device sets a localStorage flag that reveals them; ?export=off hides them
+// again. Normal visitors never see the buttons. (This hides the UI from the
+// public; it isn't a hard security boundary — the secret lives in the bundle.)
+const EXPORT_SECRET = "tr3nd-export-9f2c";
+const EXPORT_UNLOCK_FLAG = "pb-trending-export-unlocked";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -301,6 +315,87 @@ export default function TrendingPage() {
     .filter((t) => (hasHearts || hasRatings || hasViews) ? t.engagement > 0 : true)
     .slice(0, 10);
 
+  // ── PNG export ────────────────────────────────────────────────────────────
+  // Hidden, fixed-size copies of every card (below) are the capture source, so
+  // single and "all" downloads always produce identical, screen-independent PNGs.
+  const exportRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [exporting, setExporting] = useState<"none" | "all" | number>("none");
+
+  // Owner-only unlock: reveal the download buttons only when the localStorage
+  // flag is set (via /trending?export=<secret>). Hidden for everyone else.
+  const [canExport, setCanExport] = useState(false);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const key = params.get("export");
+    if (key === EXPORT_SECRET) {
+      localStorage.setItem(EXPORT_UNLOCK_FLAG, "1");
+      params.delete("export"); // strip the secret from the visible URL
+      const qs = params.toString();
+      window.history.replaceState({}, "", window.location.pathname + (qs ? `?${qs}` : ""));
+    } else if (key === "off") {
+      localStorage.removeItem(EXPORT_UNLOCK_FLAG);
+    }
+    setCanExport(localStorage.getItem(EXPORT_UNLOCK_FLAG) === "1");
+  }, []);
+
+  function fileName(index: number): string {
+    const slug = top10[index]?.paddle.slug ?? `paddle-${index + 1}`;
+    return `${String(index + 1).padStart(2, "0")}-${slug}.png`;
+  }
+
+  async function captureCard(index: number): Promise<string> {
+    const node = exportRefs.current[index];
+    if (!node) throw new Error(`card ${index} not mounted`);
+    // Wait for fonts so text isn't captured in a fallback face.
+    if (document.fonts?.ready) await document.fonts.ready;
+    // html-to-image's first capture of a node can miss late-loaded images;
+    // a warm-up pass makes the real capture reliable.
+    const opts = { pixelRatio: 2, cacheBust: true, backgroundColor: "#060e1a" };
+    await toPng(node, opts);
+    return toPng(node, opts);
+  }
+
+  function triggerDownload(href: string, name: string) {
+    const link = document.createElement("a");
+    link.download = name;
+    link.href = href;
+    link.click();
+  }
+
+  async function downloadOne(index: number) {
+    if (exporting !== "none") return;
+    setExporting(index);
+    try {
+      triggerDownload(await captureCard(index), fileName(index));
+    } catch (err) {
+      console.error("Card export failed:", err);
+      alert("Sorry — that card couldn't be exported. Please try again.");
+    } finally {
+      setExporting("none");
+    }
+  }
+
+  async function downloadAll() {
+    if (exporting !== "none" || top10.length === 0) return;
+    setExporting("all");
+    try {
+      const zip = new JSZip();
+      for (let i = 0; i < top10.length; i++) {
+        const dataUrl = await captureCard(i);
+        zip.file(fileName(i), dataUrl.split(",")[1], { base64: true });
+      }
+      const blob = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(blob);
+      triggerDownload(url, `playbook-trending-top10-${new Date().toISOString().slice(0, 10)}.zip`);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Bulk export failed:", err);
+      alert("Sorry — the bulk export failed. Please try again.");
+    } finally {
+      setExporting("none");
+    }
+  }
+
   return (
     <div className="min-h-screen pt-[156px] pb-20" style={{ background: "#060e1a" }}>
       <div className="max-w-[640px] mx-auto px-4">
@@ -359,6 +454,30 @@ export default function TrendingPage() {
                 <ChevronRight className="w-5 h-5 text-white" />
               </button>
             </div>
+
+            {/* Download buttons — owner-only (unlocked via ?export=<secret>) */}
+            {canExport && <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-6">
+              <button
+                onClick={() => downloadOne(currentIndex)}
+                disabled={exporting !== "none"}
+                className="inline-flex items-center justify-center gap-2 font-bold text-sm px-6 py-3 rounded-xl text-white transition-all hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100 w-full sm:w-auto"
+                style={{ background: "#14b8a6" }}
+              >
+                {exporting === currentIndex
+                  ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</>
+                  : <><Download className="w-4 h-4" /> Download this card (#{currentIndex + 1})</>}
+              </button>
+              <button
+                onClick={downloadAll}
+                disabled={exporting !== "none"}
+                className="inline-flex items-center justify-center gap-2 font-bold text-sm px-6 py-3 rounded-xl transition-all hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100 w-full sm:w-auto"
+                style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff" }}
+              >
+                {exporting === "all"
+                  ? <><Loader2 className="w-4 h-4 animate-spin" /> Building zip…</>
+                  : <><Download className="w-4 h-4" /> Download all {top10.length} (.zip)</>}
+              </button>
+            </div>}
 
             {/* Dot navigation */}
             <div className="flex items-center justify-center gap-2 mt-6">
@@ -427,6 +546,26 @@ export default function TrendingPage() {
         </div>}
 
       </div>
+
+      {/* Hidden fixed-size copies — the PNG capture source. Positioned off-screen
+          (not display:none / opacity:0) so they keep real layout and images load.
+          Only mounted for the owner so normal visitors render nothing extra. */}
+      {canExport && <div aria-hidden style={{ position: "fixed", top: 0, left: -99999, pointerEvents: "none" }}>
+        {top10.map((t, i) => (
+          <div
+            key={t.paddle.id}
+            ref={(el) => { exportRefs.current[i] = el; }}
+            style={{ width: EXPORT_WIDTH }}
+          >
+            <TrendingCard
+              paddle={t.paddle}
+              rank={i + 1}
+              code={getCode(t.paddle.brand, t.paddle.discountLink)}
+              totalCards={top10.length}
+            />
+          </div>
+        ))}
+      </div>}
     </div>
   );
 }
