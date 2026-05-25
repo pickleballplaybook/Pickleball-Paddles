@@ -99,7 +99,7 @@ function filterByTimeRange<T extends { createdAt: Date | string | number }>(
 
 export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
   const [heartRecords, setHeartRecords] = useState<HeartRecord[]>([]);
-  const [timeRange, setTimeRange] = useState<TimeRange>("30d");
+  const [timeRange, setTimeRange] = useState<TimeRange>("7d");
 
   async function fetchHearts() {
     try {
