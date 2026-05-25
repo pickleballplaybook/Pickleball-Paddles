@@ -271,8 +271,12 @@ export default function TrendingPage() {
   const recentHearts = heartRecords.filter((h) => new Date(h.createdAt).getTime() >= sevenDaysAgo);
 
   // Only fetch ratings for top candidates (not all 116+ paddles)
+  // Mirror the homepage Trending Paddles section exactly: candidate selection
+  // and the hasHearts flag use the SAME last-7-days window as the scoring, so a
+  // paddle hearted only outside the window (e.g. Selkirk Boomstik) never becomes
+  // a candidate, never picks up its accumulated views, and stays out of the top 10.
   const allTrending = getTrendingPaddles(paddles, recentHearts, paddles.length);
-  const heartedIds = new Set(heartRecords.map((h) => h.paddleId));
+  const heartedIds = new Set(recentHearts.map((h) => h.paddleId));
   const topByScore = [...paddles].sort((a, b) => b.trendingScore - a.trendingScore).slice(0, 20);
   const candidateIds = Array.from(new Set([...Array.from(heartedIds), ...topByScore.map((p) => p.id)])).slice(0, 30);
   const ratingCounts = useRatingCounts(candidateIds);
@@ -282,7 +286,7 @@ export default function TrendingPage() {
     .filter(Boolean) as string[];
   const viewCounts = useViewCounts(candidateSlugs);
 
-  const hasHearts = heartRecords.length > 0;
+  const hasHearts = recentHearts.length > 0;
   const hasRatings = Object.values(ratingCounts).some((r) => r.count > 0);
   const hasViews = Object.values(viewCounts).some((v) => v > 0);
   const dataReady = heartsLoaded && (hasViews || (!hasHearts && !hasRatings));
