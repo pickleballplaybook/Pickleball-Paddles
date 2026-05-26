@@ -76,7 +76,7 @@ function EditorPickCard({ p }: { p: GearProduct }) {
                 {salePrice ? (
                   <>
                     <span className="text-2xl font-extrabold" style={{ color: "#2dd4bf" }}>{salePrice}</span>
-                    <span className="text-base font-semibold line-through" style={{ color: "rgba(255,255,255,0.3)" }}>{p.price}</span>
+                    <span className="text-xl font-semibold line-through" style={{ color: "rgba(255,255,255,0.45)" }}>{p.price}</span>
                   </>
                 ) : (
                   <span className="text-2xl font-extrabold" style={{ color: "var(--text-primary)" }}>{p.price}</span>

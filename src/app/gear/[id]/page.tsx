@@ -174,7 +174,7 @@ export default function GearProductPage({ params }: Props) {
                 <div className="flex items-baseline gap-3 mb-5">
                   {discountedPrice ? (
                     <>
-                      <span className="text-xl font-semibold line-through" style={{ color: "var(--text-muted)" }}>
+                      <span className="text-2xl font-semibold line-through" style={{ color: "var(--text-muted)" }}>
                         {product.price}
                       </span>
                       <span className="text-3xl font-extrabold" style={{ color: "#2dd4bf" }}>

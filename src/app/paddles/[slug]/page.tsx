@@ -571,7 +571,7 @@ export default async function PaddleDetailPage({ params }: Props) {
                           <span className="text-3xl font-extrabold" style={{ color: "#2dd4bf" }}>
                             {discountedPrice}
                           </span>
-                          <span className="text-lg font-semibold line-through" style={{ color: "var(--flip-text-muted)" }}>
+                          <span className="text-2xl font-semibold line-through" style={{ color: "var(--flip-text-muted)" }}>
                             {paddle.price}
                           </span>
                         </>
