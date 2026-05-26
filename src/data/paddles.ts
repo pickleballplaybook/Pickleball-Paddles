@@ -754,7 +754,8 @@ export const paddles: Paddle[] = [
     swingWeight: 116.29,
     twistWeight: 6.35,
     thickness: "16mm",
-    image: "/images/paddles/Pro-V-16mm.png",
+    // TEMP limited-edition image — revert to "/images/paddles/Pro-V-16mm.png" when done.
+    image: "/images/limited-edition/Joola-Pro-V-Perseus-16mm.png",
     amountOff: "15%",
     price: "$299.95",
     discountLink: "https://lockerroompickleball.com/search?q=Joola&sca_ref=8334840.yY4rLJi7oU9HDNHD",
