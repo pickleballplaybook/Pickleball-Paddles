@@ -116,6 +116,39 @@ export default function Hero() {
               </a>
             </div>
 
+            {/* TEMP limited-edition promo button — remove when the Joola Pro V Perseus promo ends */}
+            <a
+              href="/paddles/joola-pro-v-perseus-elongated"
+              className="group inline-flex items-center gap-3 mt-5 pl-2 pr-4 py-2 rounded-full self-start transition-all duration-200 hover:scale-[1.02]"
+              style={{
+                background: "rgba(4,10,20,0.6)",
+                border: "1px solid rgba(45,212,191,0.45)",
+                backdropFilter: "blur(12px)",
+                boxShadow: "0 0 24px rgba(20,184,166,0.18)",
+              }}
+            >
+              <span
+                className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0"
+                style={{ background: "rgba(255,255,255,0.08)" }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/images/limited-edition/Joola-Pro-V-Perseus-16mm.png"
+                  alt="Joola Pro V Perseus limited edition"
+                  className="w-full h-full object-contain p-0.5"
+                />
+              </span>
+              <span className="flex flex-col leading-tight">
+                <span className="text-[10px] font-bold uppercase tracking-[0.22em]" style={{ color: "#2dd4bf" }}>
+                  Limited Edition
+                </span>
+                <span className="text-xs font-semibold text-white">Joola Pro V Perseus</span>
+              </span>
+              <svg className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" viewBox="0 0 16 16" fill="none" aria-hidden style={{ color: "#2dd4bf" }}>
+                <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </a>
+
             {/* Social proof */}
             <div className="mt-8 flex items-center gap-3">
               <div className="flex gap-0.5">
