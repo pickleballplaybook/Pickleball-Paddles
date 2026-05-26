@@ -754,11 +754,13 @@ export const paddles: Paddle[] = [
     swingWeight: 116.29,
     twistWeight: 6.35,
     thickness: "16mm",
-    // TEMP limited-edition image — revert to "/images/paddles/Pro-V-16mm.png" when done.
+    // TEMP limited-edition promo — when done, revert:
+    //   image -> "/images/paddles/Pro-V-16mm.png"
+    //   discountLink -> "https://lockerroompickleball.com/search?q=Joola&sca_ref=8334840.yY4rLJi7oU9HDNHD"
     image: "/images/limited-edition/Joola-Pro-V-Perseus-16mm.png",
     amountOff: "15%",
     price: "$299.95",
-    discountLink: "https://lockerroompickleball.com/search?q=Joola&sca_ref=8334840.yY4rLJi7oU9HDNHD",
+    discountLink: "https://lockerroompickleball.com/products/limited-edition-rocket-rally-perseus-pro-v?sca_ref=8334840.yY4rLJi7oU9HDNHD",
     reviewUrl: "https://youtu.be/gRU_Zwn2iwQ",
     addedAt: "2025-06-01",
     trendingScore: 68,
