@@ -5,7 +5,7 @@ import CategoryPage from "../CategoryPage";
 const URL = `${siteConfig.siteUrl}/best-pickleball-paddles/control`;
 
 export const metadata: Metadata = {
-  title: "Best Control Pickleball Paddles of 2026 — Tested & Ranked | Pickleball Playbook",
+  title: "Best Control Pickleball Paddles of 2026 — Tested & Ranked",
   description:
     "The best control pickleball paddles of 2026, tested on court with lab-measured specs. Ranked for touch, dwell time, kitchen play, and shot placement. Every pick is unsponsored.",
   alternates: { canonical: URL },

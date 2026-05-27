@@ -5,7 +5,7 @@ import CategoryPage from "../CategoryPage";
 const URL = `${siteConfig.siteUrl}/best-pickleball-paddles/power`;
 
 export const metadata: Metadata = {
-  title: "Best Power Pickleball Paddles of 2026 — Tested & Ranked | Pickleball Playbook",
+  title: "Best Power Pickleball Paddles of 2026 — Tested & Ranked",
   description:
     "The best power pickleball paddles of 2026, tested on court with lab-measured swing weight and specs. Ranked for driving power, serve pace, and offensive play. Every pick is unsponsored.",
   alternates: { canonical: URL },

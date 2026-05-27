@@ -5,7 +5,7 @@ import CategoryPage from "../CategoryPage";
 const URL = `${siteConfig.siteUrl}/best-pickleball-paddles/spin`;
 
 export const metadata: Metadata = {
-  title: "Best Spin Pickleball Paddles of 2026 — Tested & Ranked | Pickleball Playbook",
+  title: "Best Spin Pickleball Paddles of 2026 — Tested & Ranked",
   description:
     "The best spin pickleball paddles of 2026, tested on court with lab-measured specs. Ranked by surface texture, dwell time, and RPM generation. Every pick is unsponsored.",
   alternates: { canonical: URL },
