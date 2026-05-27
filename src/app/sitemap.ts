@@ -46,6 +46,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${siteConfig.siteUrl}/best-pickleball-paddles/power`, lastModified: bestPaddlesLastMod, changeFrequency: "weekly", priority: 0.85 },
     { url: `${siteConfig.siteUrl}/best-pickleball-paddles/control`, lastModified: bestPaddlesLastMod, changeFrequency: "weekly", priority: 0.85 },
     { url: `${siteConfig.siteUrl}/best-pickleball-paddles/under-125`, lastModified: bestPaddlesLastMod, changeFrequency: "weekly", priority: 0.85 },
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/under-200`, lastModified: bestPaddlesLastMod, changeFrequency: "weekly", priority: 0.85 },
     // Real 200 page now (was a redirect). lastmod tracks the latest week_date;
     // priority raised to 0.9 — it's a primary, frequently-refreshed landing page.
     { url: `${siteConfig.siteUrl}/best-pickleball-paddles/weekly`, lastModified: bestPaddlesLastMod, changeFrequency: "weekly", priority: 0.9 },

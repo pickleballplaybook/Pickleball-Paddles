@@ -312,6 +312,17 @@ export default function BestPaddlesPage() {
             >
               Under $125 →
             </Link>
+            <Link
+              href="/best-pickleball-paddles/under-200"
+              className="text-sm font-bold px-4 py-2 rounded-xl transition-all hover:scale-[1.02]"
+              style={{
+                background: "rgba(96,165,250,0.12)",
+                border: "1px solid rgba(96,165,250,0.4)",
+                color: "#60a5fa",
+              }}
+            >
+              Under $200 →
+            </Link>
           </div>
 
           {/* ── Picks ─────────────────────────────────────────────────────── */}

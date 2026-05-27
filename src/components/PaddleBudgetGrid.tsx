@@ -21,7 +21,12 @@ const selectStyle: React.CSSProperties = {
   color: "var(--text-primary)",
 };
 
-export default function Under125Grid({ paddles }: { paddles: Paddle[] }) {
+interface Props {
+  paddles: Paddle[];
+  maxPrice: number;
+}
+
+export default function PaddleBudgetGrid({ paddles, maxPrice }: Props) {
   const [brand, setBrand] = useState("all");
   const [shape, setShape] = useState("all");
   const [style, setStyle] = useState("all");
@@ -102,7 +107,7 @@ export default function Under125Grid({ paddles }: { paddles: Paddle[] }) {
       </div>
 
       <p className="text-sm font-semibold mb-6" style={{ color: "var(--text-muted)" }}>
-        Showing <span style={{ color: "var(--text-primary)" }}>{filtered.length}</span> {filtered.length === 1 ? "paddle" : "paddles"} under $125
+        Showing <span style={{ color: "var(--text-primary)" }}>{filtered.length}</span> {filtered.length === 1 ? "paddle" : "paddles"} under ${maxPrice}
       </p>
 
       {filtered.length === 0 ? (

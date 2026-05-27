@@ -7,9 +7,9 @@ import { getPaddlesUnder } from "@/lib/price";
 import type { Paddle } from "@/types";
 import PaddleBudgetGrid from "@/components/PaddleBudgetGrid";
 
-const PAGE_URL = `${siteConfig.siteUrl}/best-pickleball-paddles/under-125`;
-const ACCENT = "#4ade80";
-const MAX_PRICE = 125;
+const PAGE_URL = `${siteConfig.siteUrl}/best-pickleball-paddles/under-200`;
+const ACCENT = "#60a5fa";
+const MAX_PRICE = 200;
 
 // ── Discount code helper ──────────────────────────────────────────────────────
 function getCode(brand: string, discountLink?: string): string {
@@ -24,72 +24,68 @@ function getCode(brand: string, discountLink?: string): string {
 interface Pick {
   slug: string;
   seriesSlugs?: string[];
-  seriesName?: string; // explicit display name for the series heading
-  label: string;       // short superlative shown on the rank chip
+  seriesName?: string;
+  label: string;
   why: string;
 }
 
 const PICKS: Pick[] = [
   {
-    slug: "beyond-measure-ronin-hybrid",
-    seriesSlugs: ["beyond-measure-ronin-hybrid", "beyond-measure-ronin-elongated"],
-    seriesName: "Beyond Measure Ronin",
+    slug: "gruvn-lazr-16hd-hybrid",
     label: "Best Overall",
-    why: "The Beyond Measure Ronin is the best all-around paddle under $125 — period. Both shapes pair a genuinely high swing weight (Hybrid 115.65, Elongated 114.98) with the kind of twist weight (6.36–6.53) that keeps off-center hits stable — numbers you'd normally pay $200+ for. The thermoformed 16mm build feels premium in hand, with enough pop to drive and enough touch to reset. At $117 with 10% off using code PLAYBOOK (about $105), nothing in this bracket matches its spec sheet.",
+    why: "The Gruvn LAZR-16HD Full Foam is our favorite all-court paddle under $200. The full-foam 16mm core delivers a soft, planted feel with a huge sweet spot while still generating real pop off the baseline, and the hybrid shape splits the difference between reach and hand speed beautifully. At SW 107 it stays quick at the net without feeling weak. At $169 with 10% off using code PLAYBOOK (about $152), it's genuine premium-foam performance for well under $200.",
   },
   {
-    slug: "friday-aura-elongated",
-    seriesSlugs: ["friday-aura-elongated", "friday-aura-hybrid"],
-    seriesName: "Friday Aura",
-    label: "Best Control",
-    why: "If you win points with placement instead of pace, the Friday Aura is the budget touch king. The soft 16mm core has some of the best dwell time we've measured under $125 — resets, dinks, and third-shot drops feel locked in. The Elongated (SW 114.73) gives you reach at the kitchen; the Hybrid (SW 108.60) is quicker in the hands for fast exchanges. At $129 with $10 off using PLAYBOOK (about $119), it's a control paddle that punches well above its price.",
+    slug: "thrive-ignite-pro-series-hybrid",
+    label: "Best for Spin",
+    why: "The Thrive Ignite Pro Series has one of the grippiest faces in our database — its textured 15.5mm surface bites the ball for heavy topspin on drives and serves. SW 111.16 with TW 6.44 keeps it stable and forgiving for an aggressive paddle. At $219.99 with 10% off using PLAYBOOK, it sneaks just under $200 (about $198) — a spin-and-power weapon that competes with $250 flagships.",
   },
   {
-    slug: "ronbus-quanta-r3-elongated",
-    seriesSlugs: ["ronbus-quanta-r3-elongated", "ronbus-quanta-r4-hybrid"],
-    seriesName: "Ronbus Quanta",
-    label: "Best Under $100",
-    why: "Ronbus built its reputation on absurd value, and the Quanta proves it. The R3 Elongated (SW 115.40) brings real driving power, while the R4 Hybrid (SW 105.00) is maneuverable and forgiving for all-court play — both on a clean 16mm thermoformed build. At $119.99 with $20 off using PLAYBOOK, you're getting genuine sub-$100 performance that competes with paddles at twice the price.",
+    slug: "honolulu-j2cr-crystal-blue-hybrid",
+    seriesSlugs: ["honolulu-j2cr-crystal-blue-hybrid", "honolulu-j6cr-crystal-blue-elongated", "honolulu-j3cr-crystal-blue-widebody"],
+    seriesName: "Honolulu Crystal Blue",
+    label: "Best All-Court",
+    why: "The Honolulu Crystal Blue Endurance Surface series is the complete package — and it comes in three shapes so every player can find their fit: the J2CR Hybrid (SW 109.61, TW 6.57), the J6CR Elongated for reach, and the J3CR Widebody for the biggest sweet spot. The Endurance Surface face holds its spin texture far longer than most. At $195 with 10% off using PLAYBOOK (about $176), it's an easy all-court recommendation under $200.",
   },
   {
-    slug: "enhance-turbo-mpp-elongated",
-    seriesSlugs: ["enhance-turbo-mpp-elongated", "enhance-turbo-mpp-hybrid"],
-    seriesName: "Enhance Turbo MPP",
-    label: "Best for Power",
-    why: "MPP stands for Max Power Polymer, and the Turbo MPP delivers exactly that. A floating foam core and SW 116.06 (Elongated) put real heat on drives and serves, while the Hybrid (SW 114.24, TW 6.48) trades a little power for added stability. At $119.99 with $20 off using PLAYBOOK — under $100 — it's the most raw power you can buy at this price.",
+    slug: "friday-aura-pro-elongated",
+    label: "Best Power Value",
+    why: "The Friday Aura Pro is one of the best power-per-dollar paddles anywhere — SW 116.33 at just $169. The elongated shape gives you leverage and reach to dictate rallies, while the 16mm core keeps enough touch for kitchen transitions. At $169 with $10 off using PLAYBOOK (about $159), it's a serious offensive paddle that leaves $40+ in your pocket versus the flagships.",
   },
   {
-    slug: "luzz-cannon-elongated",
-    label: "Best Budget Power Value",
-    why: "The Luzz Cannon lives up to its name with a SW of 119.19 — among the highest in our entire database — at the lowest price of any pick here. If you want to overpower opponents from the baseline and don't mind a heavier swing, nothing else under $125 hits this hard. At $109 with 15% off using PLAYBOOK (about $93), it's the budget power play.",
+    slug: "bread-and-butter-loco-elongated",
+    seriesSlugs: ["bread-and-butter-loco-elongated", "bread-and-butter-loco-hybrid", "bread-and-butter-loco-widebody"],
+    seriesName: "Bread & Butter Loco",
+    label: "Best for Pure Power",
+    why: "Bread & Butter brings serious competitive credibility, and the Loco delivers it across three shapes. The Elongated (SW 118.20) is elite driving territory; the Hybrid (SW 115.46, TW 6.86) is the most stable; the Widebody (SW 108.06, TW 7.29) is the most forgiving. At $199 with 10% off using PLAYBOOK (about $179), the Loco is the most power-per-dollar you can get while staying under $200.",
   },
 ];
 
 // ── FAQ ────────────────────────────────────────────────────────────────────────
 const FAQ = [
   {
-    q: "What is the best pickleball paddle under $125?",
-    a: "Our top pick is the Beyond Measure Ronin (about $105 with code PLAYBOOK) — it has the best all-around spec sheet at the price, with a high swing weight and stable twist weight in both elongated and hybrid shapes. For control players, the Friday Aura is the best touch paddle, and for raw power the Luzz Cannon and Enhance Turbo MPP lead the budget category.",
+    q: "What is the best pickleball paddle under $200?",
+    a: "Our top pick is the Gruvn LAZR-16HD Full Foam (about $152 with code PLAYBOOK) — the best all-court feel and sweet spot at the price. For shape options go with the Honolulu Crystal Blue series, for raw power the Friday Aura Pro or Bread & Butter Loco, and for spin the Thrive Ignite Pro Series.",
   },
   {
-    q: "Are cheap pickleball paddles any good?",
-    a: "Yes — the gap between budget and premium paddles has narrowed dramatically. Brands like Ronbus, Enhance, Beyond Measure, and Friday now sell thermoformed and foam-core paddles with swing weights and twist weights that rival $200+ models. With code PLAYBOOK, several of our picks land under $100.",
+    q: "Is a $200 pickleball paddle worth it?",
+    a: "The $150–$200 range is where you get full thermoformed and foam-core builds, premium carbon faces, and pro-level specs. For most players it's the ceiling of meaningful returns — paddles above $200 rarely outperform the best in this bracket, they just cost more.",
   },
   {
-    q: "Can you get a good pickleball paddle under $100?",
-    a: "Absolutely. The Ronbus Quanta and Enhance Turbo MPP both drop to $99.99 with code PLAYBOOK, and the Luzz Cannon is around $93 — all with competition-level specs and full thermoformed or foam-core builds.",
+    q: "What's the difference between a $125 paddle and a $200 paddle?",
+    a: "Mostly materials and face durability. $200 paddles tend to use higher-grade carbon faces, foam-injected edges, and surfaces that hold their spin texture longer. If you want to spend less, our best pickleball paddles under $125 page covers the strongest budget options.",
   },
   {
-    q: "What should I look for in a budget pickleball paddle?",
-    a: "Three specs matter most: swing weight (higher = more power, lower = more maneuverable), twist weight (higher = a more stable, forgiving sweet spot), and core thickness (16mm leans control, 14mm leans pop). After that, pick a shape — elongated for reach and power, hybrid for an all-around feel, widebody for the biggest sweet spot.",
+    q: "Are these paddles good for intermediate and advanced players?",
+    a: "Yes — every paddle on this page has competition-level specs, and several are used by 4.5–5.5+ players. Swing weight, twist weight, and face texture in this price range are right in line with what you'll find on the pro tour.",
   },
   {
     q: "How much should you spend on a pickleball paddle?",
-    a: "The $100–$150 range is the sweet spot for performance-per-dollar. Most recreational and intermediate players will never out-grow a well-specced ~$120 paddle. Spend more only once you know exactly which specs you prefer — and even then, several paddles on this page hold up against $250 flagships.",
+    a: "The $130–$200 range is the sweet spot for performance-per-dollar. Most recreational and intermediate players will never out-grow a well-specced paddle in this bracket. Spend more only once you know exactly which specs you prefer.",
   },
   {
     q: "Do the listed prices include a discount?",
-    a: "The lower (green) price is what you pay after applying code PLAYBOOK at checkout on each brand's site; the crossed-out price is the retail price. Every paddle on this page is unsponsored — no brand pays to be ranked higher.",
+    a: "The lower (green) price is what you pay after applying code PLAYBOOK at checkout on each brand's site; the crossed-out price is retail. Every paddle on this page is unsponsored — no brand pays to be ranked higher.",
   },
 ];
 
@@ -97,55 +93,54 @@ const FAQ = [
 const topPick = getPaddleBySlug(PICKS[0].slug);
 
 export const metadata: Metadata = {
-  title: "Best Pickleball Paddles Under $125 (2026) — Tested & Ranked",
+  title: "Best Pickleball Paddles Under $200 (2026) — Tested & Ranked",
   description:
-    "The best pickleball paddles under $125 in 2026, tested on court with lab-measured swing weight and twist weight. Top 5 budget picks plus every sub-$125 paddle, filterable by brand, shape, and play style. Unsponsored.",
+    "The best pickleball paddles under $200 in 2026, tested on court with lab-measured swing weight and twist weight. Top 5 picks plus every sub-$200 paddle, filterable by brand, shape, and play style. Unsponsored.",
   keywords: [
-    "best pickleball paddles under $125",
-    "best budget pickleball paddles",
-    "cheap pickleball paddles",
-    "best pickleball paddle under 100",
-    "affordable pickleball paddles 2026",
+    "best pickleball paddles under $200",
+    "best pickleball paddles under 200",
+    "best mid-range pickleball paddles",
+    "best pickleball paddle for the money",
+    "best pickleball paddles 2026",
   ],
   alternates: { canonical: PAGE_URL },
   openGraph: {
-    title: "Best Pickleball Paddles Under $125 (2026) — Tested & Ranked",
+    title: "Best Pickleball Paddles Under $200 (2026) — Tested & Ranked",
     description:
-      "Top 5 budget pickleball paddles plus every sub-$125 paddle on the site, ranked by a pro player with lab-measured specs. Unsponsored.",
+      "Top 5 pickleball paddles under $200 plus every sub-$200 paddle on the site, ranked by a pro player with lab-measured specs. Unsponsored.",
     url: PAGE_URL,
     type: "article",
     siteName: siteConfig.name,
-    ...(topPick?.image ? { images: [{ url: `${siteConfig.siteUrl}${topPick.image}`, alt: "Best pickleball paddles under $125" }] } : {}),
+    ...(topPick?.image ? { images: [{ url: `${siteConfig.siteUrl}${topPick.image}`, alt: "Best pickleball paddles under $200" }] } : {}),
   },
   twitter: {
     card: "summary_large_image",
-    title: "Best Pickleball Paddles Under $125 (2026)",
-    description: "Top 5 budget picks plus every sub-$125 paddle, ranked with lab-measured specs.",
+    title: "Best Pickleball Paddles Under $200 (2026)",
+    description: "Top 5 picks plus every sub-$200 paddle, ranked with lab-measured specs.",
   },
 };
 
 // ── Page ──────────────────────────────────────────────────────────────────────
-export default function BestPaddlesUnder125Page() {
-  const under125 = getPaddlesUnder(MAX_PRICE, paddles);
-  const count = under125.length;
-  const brandCount = new Set(under125.map((p) => p.brand)).size;
+export default function BestPaddlesUnder200Page() {
+  const under200 = getPaddlesUnder(MAX_PRICE, paddles);
+  const count = under200.length;
+  const brandCount = new Set(under200.map((p) => p.brand)).size;
 
-  // ── JSON-LD ──────────────────────────────────────────────────────────────
   const breadcrumbSchema = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     "itemListElement": [
       { "@type": "ListItem", "position": 1, "name": "Home", "item": siteConfig.siteUrl },
       { "@type": "ListItem", "position": 2, "name": "Best Pickleball Paddles", "item": `${siteConfig.siteUrl}/best-pickleball-paddles` },
-      { "@type": "ListItem", "position": 3, "name": "Under $125", "item": PAGE_URL },
+      { "@type": "ListItem", "position": 3, "name": "Under $200", "item": PAGE_URL },
     ],
   };
 
   const listSchema = {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    "name": "Best Pickleball Paddles Under $125 (2026)",
-    "description": "The top 5 pickleball paddles under $125, tested and ranked by Pickleball Playbook.",
+    "name": "Best Pickleball Paddles Under $200 (2026)",
+    "description": "The top 5 pickleball paddles under $200, tested and ranked by Pickleball Playbook.",
     "url": PAGE_URL,
     "numberOfItems": PICKS.length,
     "itemListElement": PICKS.map((pick, i) => {
@@ -186,26 +181,26 @@ export default function BestPaddlesUnder125Page() {
               <span style={{ color: "var(--text-muted)" }}>/</span>
               <li><Link href="/best-pickleball-paddles" className="transition-colors hover:text-brand-400" style={{ color: "var(--text-muted)" }}>Best Paddles</Link></li>
               <span style={{ color: "var(--text-muted)" }}>/</span>
-              <li style={{ color: "var(--text-primary)" }}>Under $125</li>
+              <li style={{ color: "var(--text-primary)" }}>Under $200</li>
             </ol>
           </nav>
 
           {/* Hero */}
           <div className="mb-12 max-w-3xl">
             <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: ACCENT }}>
-              Budget Picks &middot; Updated May 2026
+              Mid-Range Picks &middot; Updated May 2026
             </p>
             <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-5" style={{ color: "var(--text-primary)" }}>
-              Best Pickleball Paddles Under $125
+              Best Pickleball Paddles Under $200
             </h1>
             <p className="text-lg leading-relaxed mb-6" style={{ color: "var(--text-muted)" }}>
-              The best paddles don&apos;t have to cost $250. We tested every paddle in our database — measuring swing
-              weight, twist weight, and static weight in the lab before hitting a single ball — and pulled out the ones
-              that deliver real performance for under $125. Below are our top 5 budget picks, then every sub-$125 paddle
-              on the site, filterable by brand, shape, and play style. Every review is unsponsored.
+              You don&apos;t have to spend $250 for a tournament-ready paddle. We tested every paddle in our database —
+              measuring swing weight, twist weight, and static weight in the lab before hitting a single ball — and pulled
+              out the best that come in under $200. Below are our top 5 picks, then every sub-$200 paddle on the site,
+              filterable by brand, shape, and play style. Every review is unsponsored.
             </p>
             <div className="flex flex-wrap gap-4">
-              {[`${count} Paddles Under $125`, `${brandCount} Brands`, "Lab-Measured Specs", "Unsponsored Reviews"].map((t) => (
+              {[`${count} Paddles Under $200`, `${brandCount} Brands`, "Lab-Measured Specs", "Unsponsored Reviews"].map((t) => (
                 <div key={t} className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 flex-shrink-0" style={{ color: ACCENT }} />
                   <span className="text-sm font-medium" style={{ color: "var(--text-muted)" }}>{t}</span>
@@ -216,7 +211,7 @@ export default function BestPaddlesUnder125Page() {
 
           {/* ── Top 5 picks ─────────────────────────────────────────────── */}
           <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight mb-8" style={{ color: "var(--text-primary)" }}>
-            Top 5 Pickleball Paddles Under $125
+            Top 5 Pickleball Paddles Under $200
           </h2>
           <div className="flex flex-col gap-10 mb-20">
             {PICKS.map((pick, i) => {
@@ -255,7 +250,7 @@ export default function BestPaddlesUnder125Page() {
                                   <div className="flex flex-col items-center" style={{ width: "100px" }}>
                                     {sp.image && (
                                       // eslint-disable-next-line @next/next/no-img-element
-                                      <img src={sp.image} alt={`${sp.brand} ${sp.name} ${sp.shape} pickleball paddle under $125`} className="w-full h-auto object-contain" style={{ maxHeight: "160px", filter: "drop-shadow(0 6px 16px rgba(0,0,0,0.4))" }} />
+                                      <img src={sp.image} alt={`${sp.brand} ${sp.name} ${sp.shape} pickleball paddle under $200`} className="w-full h-auto object-contain" style={{ maxHeight: "160px", filter: "drop-shadow(0 6px 16px rgba(0,0,0,0.4))" }} />
                                     )}
                                     <p className="text-[10px] font-bold text-center mt-1 truncate w-full" style={{ color: "rgba(255,255,255,0.6)" }}>{sp.shape}</p>
                                   </div>
@@ -265,7 +260,7 @@ export default function BestPaddlesUnder125Page() {
                           </div>
                         ) : (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={paddle.image ?? ""} alt={`${paddle.brand} ${paddle.name} ${paddle.shape} ${paddle.thickness} pickleball paddle under $125`} className="w-full h-full object-contain" style={{ maxHeight: "200px", filter: "drop-shadow(0 8px 24px rgba(0,0,0,0.4))" }} />
+                          <img src={paddle.image ?? ""} alt={`${paddle.brand} ${paddle.name} ${paddle.shape} ${paddle.thickness} pickleball paddle under $200`} className="w-full h-full object-contain" style={{ maxHeight: "200px", filter: "drop-shadow(0 8px 24px rgba(0,0,0,0.4))" }} />
                         )}
                       </div>
 
@@ -290,7 +285,7 @@ export default function BestPaddlesUnder125Page() {
                         </div>
 
                         <div className="flex flex-wrap gap-3">
-                          <Link href={isSeries && paddle.seriesSlug ? `/series/${paddle.seriesSlug}` : `/paddles/${pick.slug}`} className="inline-flex items-center gap-2 font-bold text-sm px-6 py-3 rounded-xl text-white transition-all duration-200 hover:scale-[1.02]" style={{ background: ACCENT, color: "#06281a" }}>
+                          <Link href={isSeries && paddle.seriesSlug ? `/series/${paddle.seriesSlug}` : `/paddles/${pick.slug}`} className="inline-flex items-center gap-2 font-bold text-sm px-6 py-3 rounded-xl transition-all duration-200 hover:scale-[1.02]" style={{ background: ACCENT, color: "#0a2540" }}>
                             {isSeries ? "View Paddles" : "Full Review"}
                             <ArrowRight className="w-4 h-4" />
                           </Link>
@@ -309,43 +304,44 @@ export default function BestPaddlesUnder125Page() {
             })}
           </div>
 
-          {/* ── All under $125 (filterable) ─────────────────────────────── */}
+          {/* ── All under $200 (filterable) ─────────────────────────────── */}
           <div className="flex items-center gap-3 mb-3">
             <Wallet className="w-6 h-6" style={{ color: ACCENT }} />
             <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight" style={{ color: "var(--text-primary)" }}>
-              Every Pickleball Paddle Under $125
+              Every Pickleball Paddle Under $200
             </h2>
           </div>
           <p className="text-base leading-relaxed mb-8 max-w-3xl" style={{ color: "var(--text-muted)" }}>
-            All {count} paddles on the site that come in under $125 after the PLAYBOOK discount. Filter by brand, shape,
-            or play style, and sort by price or swing weight to find the right budget paddle for your game.
+            All {count} paddles on the site that come in under $200 after the PLAYBOOK discount. Filter by brand, shape,
+            or play style, and sort by price or swing weight to find the right paddle for your game and budget.
           </p>
-          <PaddleBudgetGrid paddles={under125} maxPrice={MAX_PRICE} />
+          <PaddleBudgetGrid paddles={under200} maxPrice={MAX_PRICE} />
 
           {/* ── Buying guide ────────────────────────────────────────────── */}
           <div className="mt-24 max-w-3xl">
             <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight mb-6" style={{ color: "var(--text-primary)" }}>
-              How to Choose a Pickleball Paddle Under $125
+              How to Choose a Pickleball Paddle Under $200
             </h2>
             <div className="flex flex-col gap-4 text-base leading-relaxed" style={{ color: "var(--text-muted)" }}>
               <p>
-                Budget paddles have come a long way. A few years ago, spending under $125 meant compromising on materials
-                and performance. Today, brands like Ronbus, Enhance, Beyond Measure, and Friday build thermoformed and
-                foam-core paddles with swing weights and twist weights that rival models costing twice as much.
+                The $150–$200 range is where most players find their forever paddle. It&apos;s the price point where
+                thermoformed and foam-core construction, premium carbon faces, and tour-level specs all become standard —
+                without the diminishing returns of $250+ flagships.
               </p>
               <p>
-                <strong style={{ color: "var(--text-primary)" }}>Swing weight</strong> is the single most important spec:
-                higher numbers (115+) generate more power but feel heavier to swing, while lower numbers move faster at
-                the net. <strong style={{ color: "var(--text-primary)" }}>Twist weight</strong> measures forgiveness — a
-                higher value means off-center hits stay on target. <strong style={{ color: "var(--text-primary)" }}>Core
-                thickness</strong> rounds it out: 16mm cores lean toward control and a soft feel, while 14mm cores add pop.
+                <strong style={{ color: "var(--text-primary)" }}>Swing weight</strong> is the spec that shapes feel the
+                most: higher numbers (115+) drive harder, lower numbers move faster at the net.
+                <strong style={{ color: "var(--text-primary)" }}> Twist weight</strong> measures forgiveness on
+                off-center hits, and <strong style={{ color: "var(--text-primary)" }}> face texture</strong> matters more
+                in this bracket — paddles like the Thrive Ignite use surfaces that hold their grip far longer than budget
+                faces do.
               </p>
               <p>
-                Match the shape to your game: <Link href="/best-pickleball-paddles/power" className="font-semibold" style={{ color: "#2dd4bf" }}>elongated paddles</Link> give
-                you reach and power, hybrids balance maneuverability and stability, and widebodies offer the largest sweet
-                spot. Not sure where to start? Compare specs side by side with our <Link href="/compare" className="font-semibold" style={{ color: "#2dd4bf" }}>paddle comparison tool</Link>,
-                browse the full <Link href="/paddles" className="font-semibold" style={{ color: "#2dd4bf" }}>paddle database</Link>, or see our
-                overall <Link href="/best-pickleball-paddles" className="font-semibold" style={{ color: "#2dd4bf" }}>best pickleball paddles</Link> picks across every price range. Got a bit more to spend? See the <Link href="/best-pickleball-paddles/under-200" className="font-semibold" style={{ color: "#60a5fa" }}>best pickleball paddles under $200</Link>.
+                Match the shape to your game: elongated for reach and power, hybrid for an all-around feel, widebody for
+                the biggest sweet spot. On a tighter budget? See our <Link href="/best-pickleball-paddles/under-125" className="font-semibold" style={{ color: "#4ade80" }}>best pickleball paddles under $125</Link>.
+                Otherwise, compare specs side by side with our <Link href="/compare" className="font-semibold" style={{ color: "#2dd4bf" }}>comparison tool</Link>, browse the
+                full <Link href="/paddles" className="font-semibold" style={{ color: "#2dd4bf" }}>paddle database</Link>, or see our
+                overall <Link href="/best-pickleball-paddles" className="font-semibold" style={{ color: "#2dd4bf" }}>best pickleball paddles</Link> picks across every price range.
               </p>
             </div>
           </div>
@@ -354,7 +350,7 @@ export default function BestPaddlesUnder125Page() {
           <div className="mt-20 max-w-3xl">
             <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: ACCENT }}>Common Questions</p>
             <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-10" style={{ color: "var(--text-primary)" }}>
-              Budget Paddle FAQ
+              Mid-Range Paddle FAQ
             </h2>
             <div className="flex flex-col gap-4">
               {FAQ.map(({ q, a }) => (
