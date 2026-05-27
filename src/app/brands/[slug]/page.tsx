@@ -22,7 +22,7 @@ export function generateMetadata({ params }: Props): Metadata {
   const brandPaddles = paddles.filter((p) => p.brand === brand.name);
   const url = `${siteConfig.siteUrl}/brands/${brand.slug}`;
   return {
-    title: `${brand.name} Pickleball Paddles — Reviews, Specs & Discounts | Pickleball Playbook`,
+    title: `${brand.name} Pickleball Paddles — Reviews, Specs & Discounts`,
     description: `${brand.description} Browse all ${brandPaddles.length} ${brand.name} paddles with lab-measured specs, video reviews, and exclusive discount codes.`,
     alternates: { canonical: url },
     openGraph: {

@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!paddle) return {};
   const code = getDiscountCode(paddle.brand, paddle.discountLink);
   const url = `${siteConfig.siteUrl}/paddles/${paddle.slug}`;
-  const title = `${paddle.brand} ${paddle.name} ${paddle.shape} ${paddle.thickness} Review | Pickleball Playbook`;
+  const title = `${paddle.brand} ${paddle.name} ${paddle.shape} ${paddle.thickness} Review`;
   const description = `${paddle.brand} ${paddle.name} pickleball paddle review — ${paddle.shape} shape, ${paddle.thickness} core, ${paddle.weight}, Swing Weight ${paddle.swingWeight}. Specs, who it's for, video review & discount code ${code}.`;
   const imageUrl = paddle.image ? `${siteConfig.siteUrl}${paddle.image}` : undefined;
 

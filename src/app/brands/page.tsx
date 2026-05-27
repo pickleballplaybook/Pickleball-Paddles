@@ -5,7 +5,7 @@ import { paddles } from "@/data/paddles";
 import { siteConfig } from "@/config/site";
 
 export const metadata: Metadata = {
-  title: "Pickleball Paddle Brands — All Brands Reviewed | Pickleball Playbook",
+  title: "Pickleball Paddle Brands — All Brands Reviewed",
   description: "Browse all pickleball paddle brands with independent reviews, lab-measured specs, and exclusive discount codes. Find the best brand for your game.",
   alternates: { canonical: `${siteConfig.siteUrl}/brands` },
   openGraph: {

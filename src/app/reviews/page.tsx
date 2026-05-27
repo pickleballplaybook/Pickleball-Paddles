@@ -11,7 +11,7 @@ import { gearProducts } from "@/data/products";
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "Pickleball Paddle Video Reviews — Full In-Depth Reviews | Pickleball Playbook",
+  title: "Pickleball Paddle Video Reviews — Full In-Depth Reviews",
   description: `Watch full in-depth video reviews for 100+ pickleball paddles. Every paddle tested on court with lab-measured specs. Subscribe to @playbookreviews for new reviews weekly.`,
   alternates: { canonical: `${siteConfig.siteUrl}/reviews` },
   openGraph: {

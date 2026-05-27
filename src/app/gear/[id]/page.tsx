@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const url = `${siteConfig.siteUrl}/gear/${product.id}`;
   const fullName = `${product.brand ? product.brand + " " : ""}${product.name}`;
   return {
-    title: `${fullName} Review — ${product.badge || "Best Deal"} | Pickleball Playbook`,
+    title: `${fullName} Review — ${product.badge || "Best Deal"}`,
     description: `${fullName} review — ${product.subtitle} ${product.price !== "Free" ? `Currently ${product.price}${product.badge ? ` with ${product.badge}` : ""}.` : ""} Independently reviewed by Pickleball Playbook.`,
     alternates: { canonical: url },
     openGraph: {

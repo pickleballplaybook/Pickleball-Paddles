@@ -3,7 +3,7 @@ import { paddles } from "@/data/paddles";
 import ComparePage from "./ComparePage";
 
 export const metadata: Metadata = {
-  title: "Compare Paddles | Pickleball Playbook",
+  title: "Compare Paddles",
   description: "Side-by-side comparison of pickleball paddles. Compare specs, ratings, price, and more.",
 };
 

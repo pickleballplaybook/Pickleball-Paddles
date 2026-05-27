@@ -5,7 +5,7 @@ import { siteConfig } from "@/config/site";
 import PaddlesPage from "./PaddlesPage";
 
 export const metadata: Metadata = {
-  title: "All Pickleball Paddles — Compare Specs, Prices & Discounts | Pickleball Playbook",
+  title: "All Pickleball Paddles — Compare Specs, Prices & Discounts",
   description: `Browse and compare ${paddles.length}+ pickleball paddles with lab-measured specs. Filter by brand, shape, price, and play style. Every paddle has swing weight, twist weight, and exclusive discount codes.`,
   alternates: { canonical: `${siteConfig.siteUrl}/paddles` },
   openGraph: {

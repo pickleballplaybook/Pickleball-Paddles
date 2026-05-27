@@ -5,7 +5,7 @@ import { blogPosts } from "@/data/blogPosts";
 import { siteConfig } from "@/config/site";
 
 export const metadata: Metadata = {
-  title: "Pickleball Paddle Reviews Blog | Pickleball Playbook",
+  title: "Pickleball Paddle Reviews Blog",
   description: `In-depth pickleball paddle reviews, specs breakdowns, and buying guides from ${siteConfig.name}. Find the best paddle for your game.`,
   alternates: { canonical: `${siteConfig.siteUrl}/blog` },
   openGraph: {

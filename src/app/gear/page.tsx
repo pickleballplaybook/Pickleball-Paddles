@@ -4,7 +4,7 @@ import Link from "next/link";
 import { gearProducts, GearProduct } from "@/data/products";
 
 export const metadata: Metadata = {
-  title: "Gear | Pickleball Playbook",
+  title: "Gear",
   description: "Top pickleball gear, clothing, accessories, and equipment — handpicked for serious players.",
 };
 

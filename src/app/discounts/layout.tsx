@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import { siteConfig } from "@/config/site";
 
 export const metadata: Metadata = {
-  title: "Pickleball Paddle Discount Codes — Save on Every Brand | Pickleball Playbook",
+  title: "Pickleball Paddle Discount Codes — Save on Every Brand",
   description:
     "Use code PLAYBOOK to save on 30+ pickleball paddle brands. Exclusive discount codes for 11SIX24, Selkirk, Joola, CRBN, Bread & Butter, and more. Updated daily.",
   alternates: { canonical: `${siteConfig.siteUrl}/discounts` },

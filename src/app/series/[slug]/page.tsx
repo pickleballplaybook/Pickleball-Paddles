@@ -63,7 +63,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const url = `${siteConfig.siteUrl}/series/${series.slug}`;
   const imageUrl = series.paddles[0]?.image ? `${siteConfig.siteUrl}${series.paddles[0].image}` : undefined;
   return {
-    title: `${series.title} — ${shapes} | Pickleball Playbook`,
+    title: `${series.title} — ${shapes}`,
     description: `Compare all ${series.paddles.length} shapes in the ${series.title}. Specs, reviews, and discount codes for every shape. Use code PLAYBOOK at checkout.`,
     alternates: { canonical: url },
     openGraph: {

@@ -5,7 +5,7 @@ import { ArrowRight } from "lucide-react";
 import type { Paddle } from "@/types";
 
 export const metadata: Metadata = {
-  title: "Paddle Series — Compare All Shapes | Pickleball Playbook",
+  title: "Paddle Series — Compare All Shapes",
   description: "Browse pickleball paddle families and compare every shape side by side. Find the right shape for your game.",
 };
 

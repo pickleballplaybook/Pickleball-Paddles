@@ -6,7 +6,7 @@ import { siteConfig } from "@/config/site";
 const SUBSTACK_URL = "https://pickleballplaybookreviews.substack.com/";
 
 export const metadata: Metadata = {
-  title: "Newsletter — Free Paddle Reviews & Deals | Pickleball Playbook",
+  title: "Newsletter — Free Paddle Reviews & Deals",
   description:
     "Subscribe to the Pickleball Playbook newsletter. Get early paddle reviews, lab-measured specs, exclusive discount codes, and weekly trending paddles — free, straight to your inbox.",
   alternates: { canonical: `${siteConfig.siteUrl}/newsletter` },

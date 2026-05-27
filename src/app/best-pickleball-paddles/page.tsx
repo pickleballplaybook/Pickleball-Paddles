@@ -7,7 +7,7 @@ import { getPaddleCountLabel } from "@/lib/catalogStats";
 import YouTubeEmbed from "@/components/YouTubeEmbed";
 
 export const metadata: Metadata = {
-  title: "Best Pickleball Paddles of 2026 — Tested & Ranked | Pickleball Playbook",
+  title: "Best Pickleball Paddles of 2026 — Tested & Ranked",
   description:
     "We tested 100+ pickleball paddles on a real court in 2026 and ranked the best by category — power, control, all-court, spin, value, and beginners. Every pick is unsponsored.",
   alternates: { canonical: `${siteConfig.siteUrl}/best-pickleball-paddles` },
