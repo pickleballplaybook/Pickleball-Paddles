@@ -42,6 +42,25 @@ const YTDLP_BIN = process.env.YTDLP_BIN || 'yt-dlp';
 fs.mkdirSync(JOBS_DIR, { recursive: true });
 fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 
+// Materialize YouTube cookies from env if provided. Datacenter IPs (Railway) get
+// blocked by YouTube's bot check; a cookies.txt from a real browser session bypasses it.
+const COOKIES_PATH = path.join(OUTPUT_DIR, '..', 'cookies.txt');
+function loadCookies() {
+  const raw = process.env.YT_COOKIES_BASE64;
+  if (!raw) return null;
+  try {
+    const decoded = Buffer.from(raw, 'base64').toString('utf-8');
+    fs.writeFileSync(COOKIES_PATH, decoded);
+    fs.chmodSync(COOKIES_PATH, 0o600);
+    console.log(`Wrote cookies.txt (${decoded.length} bytes) for yt-dlp`);
+    return COOKIES_PATH;
+  } catch (err) {
+    console.error('Failed to decode YT_COOKIES_BASE64:', err.message);
+    return null;
+  }
+}
+const YT_COOKIES_FILE = loadCookies();
+
 // Serve output clips as static files
 app.use('/clips', express.static(OUTPUT_DIR));
 
@@ -242,8 +261,12 @@ async function processVideo(jobId, jobDir, youtubeUrl) {
   // 1. Download video with yt-dlp
   setJobStatus(jobId, { status: 'downloading', message: 'Downloading video…', progress: 5 });
   const videoPath = path.join(jobDir, 'video.mp4');
+  const cookiesArg = YT_COOKIES_FILE ? `--cookies "${YT_COOKIES_FILE}" ` : '';
+  // Use the `tv` player client — it tends to be less bot-checked than `web`.
+  const clientArg = '--extractor-args "youtube:player_client=tv,web_safari" ';
   await execAsync(
-    `${YTDLP_BIN} -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best" ` +
+    `${YTDLP_BIN} ${cookiesArg}${clientArg}` +
+    `-f "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best" ` +
     `--merge-output-format mp4 -o "${videoPath}" "${youtubeUrl}"`,
     { maxBuffer: 1024 * 1024 * 100 }
   );

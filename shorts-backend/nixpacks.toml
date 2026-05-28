@@ -1,5 +1,11 @@
 [phases.setup]
-nixPkgs = ["ffmpeg", "yt-dlp", "nodejs_20"]
+nixPkgs = ["ffmpeg", "yt-dlp", "nodejs_20", "python3", "python3Packages.pip"]
+
+[phases.install]
+cmds = [
+  "npm ci",
+  "python3 -m pip install --break-system-packages --user -U yt-dlp || true"
+]
 
 [start]
-cmd = "npm start"
+cmd = "PATH=/root/.local/bin:$PATH npm start"
