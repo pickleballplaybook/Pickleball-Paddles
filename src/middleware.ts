@@ -8,7 +8,15 @@ export function middleware(request: NextRequest) {
 
   const isShortsApi = pathname.startsWith("/api/admin/shorts/");
   const isShortsPage = pathname.startsWith("/admin/shorts");
-  if (isShortsPage || isShortsApi) {
+  const isPublishApi = pathname.startsWith("/api/admin/publish/");
+  const isPublishPage = pathname.startsWith("/admin/publish");
+  const isPublishOAuth =
+    pathname.startsWith("/auth/youtube") || pathname.startsWith("/auth/meta");
+  const isApiGated = isShortsApi || isPublishApi;
+  const isGated =
+    isShortsPage || isShortsApi || isPublishPage || isPublishApi || isPublishOAuth;
+
+  if (isGated) {
     const isLoginPage = pathname === "/admin/shorts/login";
     const isAuthApi =
       pathname === "/api/admin/shorts/login" ||
@@ -16,7 +24,7 @@ export function middleware(request: NextRequest) {
     const hasCookie = request.cookies.get(SHORTS_COOKIE)?.value === "ok";
 
     if (!hasCookie && !isLoginPage && !isAuthApi) {
-      if (isShortsApi) {
+      if (isApiGated) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
       const url = request.nextUrl.clone();

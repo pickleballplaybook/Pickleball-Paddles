@@ -8,8 +8,14 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { v4 as uuidv4 } from 'uuid';
 import Anthropic from '@anthropic-ai/sdk';
+import {
+  getYouTubeAuthUrl, exchangeYouTubeCode, uploadToYouTube,
+  getMetaAuthUrl, exchangeMetaCode, getLongLivedToken,
+  getPages, getInstagramAccount, uploadToInstagram, uploadToFacebook
+} from './social.js';
 import OpenAI from 'openai';
 import archiver from 'archiver';
+import multer from 'multer';
 
 const execAsync = promisify(exec);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -417,3 +423,169 @@ function formatTime(seconds) {
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => console.log(`Shorts backend running on port ${PORT}`));
+
+// ─── SOCIAL MEDIA ROUTES ─────────────────────────────────────────────────────
+
+
+
+// Token storage (use a database in production)
+let youtubeTokens = null;
+let metaAccessToken = null;
+let facebookPages = [];
+let instagramAccountId = null;
+
+// ─── YOUTUBE AUTH ─────────────────────────────────────────────────────────────
+app.get('/auth/youtube', (req, res) => {
+  res.redirect(getYouTubeAuthUrl());
+});
+
+app.get('/auth/youtube/callback', async (req, res) => {
+  try {
+    youtubeTokens = await exchangeYouTubeCode(req.query.code);
+    res.send('<script>window.close();</script>YouTube connected! You can close this window.');
+  } catch (e) {
+    res.status(500).send('YouTube auth failed: ' + e.message);
+  }
+});
+
+app.get('/auth/youtube/status', (req, res) => {
+  res.json({ connected: !!youtubeTokens });
+});
+
+// ─── META AUTH ────────────────────────────────────────────────────────────────
+app.get('/auth/meta', (req, res) => {
+  res.redirect(getMetaAuthUrl());
+});
+
+app.get('/auth/meta/callback', async (req, res) => {
+  try {
+    const { access_token } = await exchangeMetaCode(req.query.code);
+    metaAccessToken = await getLongLivedToken(access_token);
+    facebookPages = await getPages(metaAccessToken);
+    if (facebookPages.length > 0) {
+      instagramAccountId = await getInstagramAccount(facebookPages[0].id, facebookPages[0].access_token);
+    }
+    res.send('<script>window.close();</script>Meta connected! You can close this window.');
+  } catch (e) {
+    res.status(500).send('Meta auth failed: ' + e.message);
+  }
+});
+
+app.get('/auth/meta/status', (req, res) => {
+  res.json({
+    connected: !!metaAccessToken,
+    pages: facebookPages.map(p => ({ id: p.id, name: p.name })),
+    instagramAccountId,
+  });
+});
+
+// ─── UPLOAD & SCHEDULE ────────────────────────────────────────────────────────
+const UPLOADS_DIR = path.join(OUTPUT_DIR, 'uploads');
+fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, UPLOADS_DIR),
+    filename: (_req, file, cb) => {
+      const safe = file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_');
+      cb(null, `${Date.now()}-${safe}`);
+    },
+  }),
+  limits: { fileSize: 1024 * 1024 * 1024 }, // 1 GB
+});
+
+// Lists every clip across every job — used by the publish picker.
+app.get('/api/clips', (_req, res) => {
+  const out = [];
+  for (const job of Object.values(jobs)) {
+    if (!Array.isArray(job.clips)) continue;
+    for (const clip of job.clips) {
+      if (!clip.filename) continue;
+      const diskPath = path.join(OUTPUT_DIR, job.jobId, clip.filename);
+      if (!fs.existsSync(diskPath)) continue;
+      out.push({
+        jobId: job.jobId,
+        filename: clip.filename,
+        path: diskPath,
+        title: clip.title,
+        duration: clip.duration,
+        createdAt: job.createdAt,
+        sourceUrl: job.youtubeUrl,
+      });
+    }
+  }
+  out.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+  res.json({ clips: out });
+});
+
+app.post('/api/publish', upload.single('video'), async (req, res) => {
+  let { videoPath, title, description, scheduledAt, platforms, videoUrl } = req.body;
+
+  // If an uploaded file came through multer, prefer it.
+  if (req.file) videoPath = req.file.path;
+
+  // Reject path-traversal / non-OUTPUT_DIR paths.
+  if (videoPath) {
+    const resolved = path.resolve(videoPath);
+    if (!resolved.startsWith(path.resolve(OUTPUT_DIR))) {
+      return res.status(400).json({ error: 'videoPath must be inside OUTPUT_DIR' });
+    }
+    videoPath = resolved;
+  }
+
+  if (!videoPath && !videoUrl) {
+    return res.status(400).json({ error: 'videoPath, videoUrl, or video upload required' });
+  }
+
+  // Multipart sends fields as strings; JSON sends arrays. Normalize.
+  if (typeof platforms === 'string') {
+    platforms = platforms.split(',').map(s => s.trim()).filter(Boolean);
+  }
+  if (!Array.isArray(platforms)) platforms = [];
+
+  const results = {};
+
+  if (platforms.includes('youtube') && youtubeTokens) {
+    try {
+      results.youtube = await uploadToYouTube({
+        tokens: youtubeTokens,
+        videoPath,
+        title,
+        description,
+        scheduledAt,
+      });
+    } catch (e) {
+      results.youtube = { error: e.message };
+    }
+  }
+
+  if (platforms.includes('instagram') && metaAccessToken && instagramAccountId) {
+    try {
+      results.instagram = await uploadToInstagram({
+        igAccountId: instagramAccountId,
+        accessToken: metaAccessToken,
+        videoUrl,
+        caption: description,
+        scheduledAt,
+      });
+    } catch (e) {
+      results.instagram = { error: e.message };
+    }
+  }
+
+  if (platforms.includes('facebook') && facebookPages.length > 0) {
+    try {
+      results.facebook = await uploadToFacebook({
+        pageId: facebookPages[0].id,
+        accessToken: facebookPages[0].access_token,
+        videoPath,
+        title,
+        description,
+        scheduledAt,
+      });
+    } catch (e) {
+      results.facebook = { error: e.message };
+    }
+  }
+
+  res.json({ success: true, results });
+});
