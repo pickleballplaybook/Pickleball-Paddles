@@ -40,6 +40,8 @@ if (SHORTS_BACKEND_TOKEN) {
     // Uploaded videos must be publicly fetchable so Instagram/Meta can ingest them.
     // The path includes a UUID upload id which acts as an unguessable token.
     if (req.path.startsWith('/uploads/')) return next();
+    // Same for scheduled-IG media — Meta fetches the video URL at fire time.
+    if (req.path.startsWith('/scheduled/')) return next();
     const header = req.headers.authorization || '';
     const provided = header.startsWith('Bearer ') ? header.slice(7) : '';
     if (provided !== SHORTS_BACKEND_TOKEN) {
@@ -657,6 +659,23 @@ function loadScheduledQueue() {
   if (!fs.existsSync(SCHEDULED_QUEUE_PATH)) return;
   try {
     scheduledQueue = JSON.parse(fs.readFileSync(SCHEDULED_QUEUE_PATH, 'utf-8'));
+    // Reset any entries that errored due to transient "Media download failed"
+    // (subcode 2207076) so the cron can retry once the underlying fix lands.
+    let resets = 0;
+    for (const e of scheduledQueue) {
+      if (e.status === 'error' && /2207076|Media download failed/i.test(e.error || '')) {
+        const dir = path.join(SCHEDULED_DIR, e.id);
+        if (fs.existsSync(path.join(dir))) {
+          e.status = 'pending';
+          delete e.error;
+          resets += 1;
+        }
+      }
+    }
+    if (resets > 0) {
+      console.log(`Reset ${resets} previously-errored entr(y/ies) for retry`);
+      saveScheduledQueue();
+    }
     console.log(`Loaded ${scheduledQueue.length} scheduled IG post(s)`);
   } catch (err) {
     console.error('Failed to load scheduled queue:', err.message);
