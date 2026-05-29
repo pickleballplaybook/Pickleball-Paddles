@@ -333,13 +333,17 @@ export async function uploadToFacebookReel({
     throw new Error('FB Reels start: missing video_id or upload_url');
   }
 
-  // 2. Upload binary
+  // 2. Upload binary. FB rejects the upload if Content-Length is missing
+  // ("Invalid Header format: expected either both Content-Length and
+  // X-Entity-Length, or Transfer-Encoding alone"), and axios doesn't infer
+  // it from a Readable stream. Set it explicitly from the file size.
   const stat = fs.statSync(videoPath);
   await axios.post(upload_url, fs.createReadStream(videoPath), {
     headers: {
       Authorization: `OAuth ${accessToken}`,
       offset: '0',
       file_size: String(stat.size),
+      'Content-Length': String(stat.size),
       'Content-Type': 'application/octet-stream',
     },
     maxContentLength: Infinity,
