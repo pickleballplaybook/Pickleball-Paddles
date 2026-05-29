@@ -150,7 +150,16 @@ export function getMetaAuthUrl() {
   const params = new URLSearchParams({
     client_id: process.env.META_APP_ID,
     redirect_uri: process.env.META_REDIRECT_URI,
-    scope: 'instagram_basic,instagram_content_publish,pages_show_list,pages_read_engagement,pages_manage_posts',
+    scope: [
+      'instagram_basic',
+      'instagram_content_publish',
+      'instagram_shopping_tag_products',
+      'pages_show_list',
+      'pages_read_engagement',
+      'pages_manage_posts',
+      'catalog_management',
+      'business_management',
+    ].join(','),
     response_type: 'code',
   });
   return `https://www.facebook.com/dialog/oauth?${params}`;
@@ -197,6 +206,26 @@ export async function getInstagramAccount(pageId, pageToken) {
   return res.data.instagram_business_account?.id;
 }
 
+// Lists products in a Meta Commerce catalog for the product picker UI.
+// `fields` defaults to a useful subset; you can pass more if needed.
+export async function listMetaCatalogProducts(catalogId, accessToken, opts = {}) {
+  const fields = opts.fields || 'id,retailer_id,name,price,image_url';
+  const limit = opts.limit || 50;
+  const all = [];
+  let url = `https://graph.facebook.com/v19.0/${catalogId}/products`;
+  let params = { access_token: accessToken, fields, limit };
+  // Paginate up to 5 pages so we don't blow up for huge catalogs.
+  for (let page = 0; page < 5; page++) {
+    const res = await axios.get(url, { params });
+    for (const item of res.data.data || []) all.push(item);
+    const next = res.data.paging?.next;
+    if (!next) break;
+    url = next;
+    params = undefined;
+  }
+  return all;
+}
+
 export async function getInstagramUsername(igAccountId, accessToken) {
   try {
     const res = await axios.get(`https://graph.facebook.com/v19.0/${igAccountId}`, {
@@ -214,6 +243,7 @@ export async function uploadToInstagram({
   taggedUsernames,      // string[] — IG usernames
   collaboratorUsernames,// string[] — IG usernames (max 3)
   locationId,           // string
+  productIds,           // string[] — catalog product IDs
 }) {
   // Step 1: Create container
   const params = {
@@ -232,6 +262,12 @@ export async function uploadToInstagram({
   }
   if (Array.isArray(collaboratorUsernames) && collaboratorUsernames.length > 0) {
     params.collaborators = JSON.stringify(collaboratorUsernames.map(String));
+  }
+  if (Array.isArray(productIds) && productIds.length > 0) {
+    // IG product_tags: [{product_id, x, y}] — center default; user can position later in IG.
+    params.product_tags = JSON.stringify(
+      productIds.map((pid) => ({ product_id: String(pid), x: 0.5, y: 0.5 }))
+    );
   }
 
   const containerRes = await axios.post(
@@ -284,7 +320,7 @@ export async function uploadToInstagram({
 export async function uploadToFacebookReel({
   pageId, accessToken, videoPath, description, scheduledAt,
   thumbnailDataUrl,
-  collaboratorIds, placeId,
+  collaboratorIds, placeId, productIds,
 }) {
   // 1. Start
   const startRes = await axios.post(
@@ -329,6 +365,12 @@ export async function uploadToFacebookReel({
     finishParams.collaborators = JSON.stringify(collaboratorIds.map(String));
   }
   if (placeId) finishParams.place = String(placeId);
+  if (Array.isArray(productIds) && productIds.length > 0) {
+    // FB Reels product_tags: [{product_id, ...}] — center positions default.
+    finishParams.product_tags = JSON.stringify(
+      productIds.map((pid) => ({ product_id: String(pid) }))
+    );
+  }
 
   await axios.post(
     `https://graph.facebook.com/v19.0/${pageId}/video_reels`,

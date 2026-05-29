@@ -57,6 +57,7 @@ type FacebookOptions = {
   taggedUserIds?: string[];
   collaboratorIds?: string[];
   placeId?: string;
+  productIds?: string[];
   // UI-only:
   taggedInput?: string;
   collaboratorsInput?: string;
@@ -66,9 +67,18 @@ type InstagramOptions = {
   taggedUsernames?: string[];
   collaboratorUsernames?: string[];
   locationId?: string;
+  productIds?: string[];
   // UI-only:
   taggedInput?: string;
   collaboratorsInput?: string;
+};
+
+type CatalogProduct = {
+  id: string;
+  retailer_id?: string;
+  name?: string;
+  image_url?: string;
+  price?: string;
 };
 
 type AnyOptions = YouTubeOptions & FacebookOptions & InstagramOptions;
@@ -394,12 +404,14 @@ export default function PublishPage() {
           if (tagged.length > 0) options.taggedUserIds = tagged;
           if (collabs.length > 0) options.collaboratorIds = collabs;
           if (raw.placeId) options.placeId = raw.placeId;
+          if (raw.productIds && raw.productIds.length > 0) options.productIds = raw.productIds;
         } else if (t.platform === "instagram") {
           const tagged = csv(raw.taggedInput).map((u) => u.replace(/^@/, ""));
           const collabs = csv(raw.collaboratorsInput).map((u) => u.replace(/^@/, ""));
           if (tagged.length > 0) options.taggedUsernames = tagged;
           if (collabs.length > 0) options.collaboratorUsernames = collabs;
           if (raw.locationId) options.locationId = raw.locationId;
+          if (raw.productIds && raw.productIds.length > 0) options.productIds = raw.productIds;
         }
         return Object.keys(options).length > 0 ? { ...t, options } : t;
       });
@@ -669,6 +681,7 @@ export default function PublishPage() {
                         otherPages={connections.facebook.filter(
                           (p) => p.id !== c.id
                         )}
+                        connectionId={c.id}
                       />
                     )}
                   </div>
@@ -695,6 +708,7 @@ export default function PublishPage() {
                         otherAccounts={connections.instagram.filter(
                           (a) => a.id !== c.id
                         )}
+                        connectionId={c.id}
                       />
                     )}
                   </div>
@@ -926,6 +940,137 @@ function YouTubeOptionsExpander({
 
 type ThumbMode = "capture" | "upload";
 
+function ProductPicker({
+  connectionType,
+  connectionId,
+  selected,
+  onChange,
+}: {
+  connectionType: "facebook" | "instagram";
+  connectionId: string;
+  selected: string[];
+  onChange: (next: string[]) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [products, setProducts] = useState<CatalogProduct[] | null>(null);
+  const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    if (!open || products !== null) return;
+    setError("");
+    const params = new URLSearchParams({ connectionType, connectionId });
+    fetch(`/api/admin/publish/meta/products?${params.toString()}`)
+      .then(async (r) => {
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error || `Failed (${r.status})`);
+        setProducts(d.products || []);
+      })
+      .catch((err) => {
+        setError(err instanceof Error ? err.message : "Failed to load");
+        setProducts([]);
+      });
+  }, [open, products, connectionType, connectionId]);
+
+  const filtered = (products || []).filter((p) =>
+    !search
+      ? true
+      : (p.name || "").toLowerCase().includes(search.toLowerCase()) ||
+        (p.retailer_id || "").toLowerCase().includes(search.toLowerCase())
+  );
+
+  function toggle(id: string) {
+    onChange(
+      selected.includes(id)
+        ? selected.filter((x) => x !== id)
+        : [...selected, id]
+    );
+  }
+
+  return (
+    <div>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className="text-xs px-2.5 py-1 rounded border border-gray-700 text-gray-300 hover:border-gray-500"
+        >
+          {open ? "Hide products" : "+ Add products from shop"}
+        </button>
+        {selected.length > 0 && (
+          <span className="text-xs text-green-400">
+            {selected.length} product{selected.length === 1 ? "" : "s"} tagged
+          </span>
+        )}
+      </div>
+
+      {open && (
+        <div className="mt-2 border border-gray-800 bg-gray-950 rounded-lg p-2 space-y-2">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search products by name or SKU…"
+            className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-white outline-none"
+          />
+          {error && <p className="text-xs text-red-400">{error}</p>}
+          {products === null && (
+            <p className="text-xs text-gray-500">Loading…</p>
+          )}
+          {products && filtered.length === 0 && (
+            <p className="text-xs text-gray-500">
+              {search ? "No matches." : "No products in catalog."}
+            </p>
+          )}
+          {products && filtered.length > 0 && (
+            <div className="max-h-64 overflow-y-auto space-y-1">
+              {filtered.map((p) => {
+                const on = selected.includes(p.id);
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => toggle(p.id)}
+                    className={`w-full flex items-center gap-2 text-left px-2 py-1.5 rounded border transition ${
+                      on
+                        ? "border-green-500/40 bg-green-500/5"
+                        : "border-gray-800 bg-gray-900 hover:border-gray-700"
+                    }`}
+                  >
+                    {p.image_url && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={p.image_url}
+                        alt=""
+                        className="h-8 w-8 object-cover rounded shrink-0"
+                      />
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs text-white truncate">
+                        {p.name || p.retailer_id || p.id}
+                      </p>
+                      {p.price && (
+                        <p className="text-[10px] text-gray-500">{p.price}</p>
+                      )}
+                    </div>
+                    <span
+                      className={`text-[10px] ${
+                        on ? "text-green-400" : "text-gray-500"
+                      }`}
+                    >
+                      {on ? "✓" : "+"}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function PresetChips({
   presets,
   currentValue,
@@ -963,10 +1108,12 @@ function FacebookOptionsExpander({
   opts,
   onChange,
   otherPages,
+  connectionId,
 }: {
   opts: FacebookOptions;
   onChange: (patch: Partial<FacebookOptions>) => void;
   otherPages: FacebookAccount[];
+  connectionId: string;
 }) {
   const postAsReel = opts.postAsReel !== false;
   return (
@@ -1039,6 +1186,18 @@ function FacebookOptionsExpander({
           className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-white outline-none"
         />
       </label>
+
+      <div>
+        <span className="block text-xs uppercase tracking-wide text-gray-500 mb-1">
+          Tag products from your shop
+        </span>
+        <ProductPicker
+          connectionType="facebook"
+          connectionId={connectionId}
+          selected={opts.productIds || []}
+          onChange={(next) => onChange({ productIds: next })}
+        />
+      </div>
     </div>
   );
 }
@@ -1047,10 +1206,12 @@ function InstagramOptionsExpander({
   opts,
   onChange,
   otherAccounts,
+  connectionId,
 }: {
   opts: InstagramOptions;
   onChange: (patch: Partial<InstagramOptions>) => void;
   otherAccounts: InstagramAccount[];
+  connectionId: string;
 }) {
   const accountChips = otherAccounts.map((a) => ({
     label: `@${a.username}`,
@@ -1118,6 +1279,18 @@ function InstagramOptionsExpander({
           className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-white outline-none"
         />
       </label>
+
+      <div>
+        <span className="block text-xs uppercase tracking-wide text-gray-500 mb-1">
+          Tag products from your shop
+        </span>
+        <ProductPicker
+          connectionType="instagram"
+          connectionId={connectionId}
+          selected={opts.productIds || []}
+          onChange={(next) => onChange({ productIds: next })}
+        />
+      </div>
     </div>
   );
 }

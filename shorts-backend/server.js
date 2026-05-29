@@ -13,7 +13,8 @@ import {
   listYouTubePlaylists,
   getMetaAuthUrl, exchangeMetaCode, getLongLivedToken,
   getPages, getInstagramAccount, getInstagramUsername,
-  uploadToInstagram, uploadToFacebook, uploadToFacebookReel
+  uploadToInstagram, uploadToFacebook, uploadToFacebookReel,
+  listMetaCatalogProducts
 } from './social.js';
 import OpenAI from 'openai';
 import archiver from 'archiver';
@@ -554,6 +555,29 @@ app.get('/auth/connections', (_req, res) => {
   });
 });
 
+// Meta Commerce catalog products, for the FB/IG product-tag picker.
+// `connectionType` ∈ {facebook, instagram} so we use the right access token.
+app.get('/api/meta/products', async (req, res) => {
+  const { connectionType, connectionId } = req.query;
+  const catalogId = process.env.META_CATALOG_ID;
+  if (!catalogId) {
+    return res.status(500).json({ error: 'META_CATALOG_ID env var not set on backend' });
+  }
+  const arr =
+    connectionType === 'facebook' ? connections.facebook :
+    connectionType === 'instagram' ? connections.instagram : null;
+  if (!arr) return res.status(400).json({ error: 'Invalid connectionType' });
+  const conn = arr.find((c) => c.id === connectionId);
+  if (!conn) return res.status(404).json({ error: 'Connection not found' });
+  try {
+    const products = await listMetaCatalogProducts(catalogId, conn.accessToken);
+    res.json({ products });
+  } catch (err) {
+    const detail = err?.response?.data?.error?.message || err.message;
+    res.status(500).json({ error: detail });
+  }
+});
+
 // Per-channel playlist list for the YouTube expander UI.
 app.get('/api/youtube/:channelId/playlists', async (req, res) => {
   const conn = connections.youtube.find(c => c.id === req.params.channelId);
@@ -837,6 +861,7 @@ app.post('/api/publish', upload.single('video'), async (req, res) => {
               thumbnailDataUrl: sharedThumbnailDataUrl,
               collaboratorIds: Array.isArray(opts.collaboratorIds) ? opts.collaboratorIds : undefined,
               placeId: typeof opts.placeId === 'string' ? opts.placeId : undefined,
+              productIds: Array.isArray(opts.productIds) ? opts.productIds : undefined,
             })
           : await uploadToFacebook({
               pageId: conn.id, accessToken: conn.accessToken,
@@ -859,6 +884,7 @@ app.post('/api/publish', upload.single('video'), async (req, res) => {
           taggedUsernames: Array.isArray(opts.taggedUsernames) ? opts.taggedUsernames : undefined,
           collaboratorUsernames: Array.isArray(opts.collaboratorUsernames) ? opts.collaboratorUsernames : undefined,
           locationId: typeof opts.locationId === 'string' ? opts.locationId : undefined,
+          productIds: Array.isArray(opts.productIds) ? opts.productIds : undefined,
         });
         results.push({
           platform, id, accountName: conn.username,
