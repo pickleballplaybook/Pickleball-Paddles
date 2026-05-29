@@ -153,12 +153,14 @@ export function getMetaAuthUrl() {
     scope: [
       'instagram_basic',
       'instagram_content_publish',
-      'instagram_shopping_tag_products',
       'pages_show_list',
       'pages_read_engagement',
       'pages_manage_posts',
       'business_management',
       'catalog_management',
+      // instagram_shopping_tag_products is a restricted permission that
+      // requires Meta App Review. Not worth the multi-week submission
+      // process for a one-admin tool — IG product tagging is disabled.
     ].join(','),
     response_type: 'code',
   });

@@ -1276,15 +1276,11 @@ function InstagramOptionsExpander({
         />
       </label>
 
-      <div>
-        <span className="block text-xs uppercase tracking-wide text-gray-500 mb-1">
-          Tag products from your shop
-        </span>
-        <ProductPicker
-          selected={opts.productIds || []}
-          onChange={(next) => onChange({ productIds: next })}
-        />
-      </div>
+      <p className="text-xs text-gray-500 italic">
+        Product tagging on Instagram is unavailable — Meta requires App Review
+        for the instagram_shopping_tag_products permission. Tag products on the
+        Facebook destination instead.
+      </p>
     </div>
   );
 }
