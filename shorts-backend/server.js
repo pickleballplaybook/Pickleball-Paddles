@@ -642,6 +642,35 @@ fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 // Serve uploaded files so Instagram can fetch them. URLs include a UUID
 // uploadId which acts as an unguessable token.
 app.use('/uploads', express.static(UPLOADS_DIR));
+
+// Instagram has no native scheduled-publish API. We hold scheduled IG posts in
+// a persistent queue on the volume (so a container restart doesn't lose them)
+// and a cron loop fires them at the scheduled time.
+const SCHEDULED_DIR = path.join(OUTPUT_DIR, 'scheduled');
+const SCHEDULED_QUEUE_PATH = path.join(OUTPUT_DIR, 'scheduled-queue.json');
+fs.mkdirSync(SCHEDULED_DIR, { recursive: true });
+// Serve persisted videos/covers so Instagram can fetch them at fire time.
+app.use('/scheduled', express.static(SCHEDULED_DIR));
+
+let scheduledQueue = [];
+function loadScheduledQueue() {
+  if (!fs.existsSync(SCHEDULED_QUEUE_PATH)) return;
+  try {
+    scheduledQueue = JSON.parse(fs.readFileSync(SCHEDULED_QUEUE_PATH, 'utf-8'));
+    console.log(`Loaded ${scheduledQueue.length} scheduled IG post(s)`);
+  } catch (err) {
+    console.error('Failed to load scheduled queue:', err.message);
+    scheduledQueue = [];
+  }
+}
+function saveScheduledQueue() {
+  try {
+    fs.writeFileSync(SCHEDULED_QUEUE_PATH, JSON.stringify(scheduledQueue, null, 2));
+  } catch (err) {
+    console.error('Failed to save scheduled queue:', err.message);
+  }
+}
+loadScheduledQueue();
 const upload = multer({
   storage: multer.diskStorage({
     destination: (_req, _file, cb) => cb(null, UPLOADS_DIR),
@@ -765,6 +794,120 @@ app.get('/api/clips', (_req, res) => {
   }
   out.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
   res.json({ clips: out });
+});
+
+// Persist a video + cover into SCHEDULED_DIR/<id>/ and return URLs that the
+// /scheduled static route will serve at fire time. Source files are left in
+// place; the caller continues to publish to non-IG targets immediately.
+function persistForScheduledIg({ videoPath, coverUrlSource }) {
+  const id = uuidv4();
+  const dir = path.join(SCHEDULED_DIR, id);
+  fs.mkdirSync(dir, { recursive: true });
+
+  const videoFilename = `video${path.extname(videoPath) || '.mp4'}`;
+  const persistedVideo = path.join(dir, videoFilename);
+  fs.copyFileSync(videoPath, persistedVideo);
+  const videoUrl = PUBLIC_BASE_URL
+    ? `${PUBLIC_BASE_URL.replace(/\/$/, '')}/scheduled/${id}/${videoFilename}`
+    : null;
+
+  let coverUrl;
+  // coverUrlSource is the local on-disk cover image path inside UPLOADS_DIR
+  if (coverUrlSource && fs.existsSync(coverUrlSource)) {
+    const coverFilename = `cover${path.extname(coverUrlSource) || '.jpg'}`;
+    fs.copyFileSync(coverUrlSource, path.join(dir, coverFilename));
+    coverUrl = PUBLIC_BASE_URL
+      ? `${PUBLIC_BASE_URL.replace(/\/$/, '')}/scheduled/${id}/${coverFilename}`
+      : undefined;
+  }
+  return { id, dir, videoUrl, coverUrl };
+}
+
+async function fireScheduledEntry(entry) {
+  entry.status = 'publishing';
+  entry.attemptedAt = new Date().toISOString();
+  saveScheduledQueue();
+  try {
+    const data = await uploadToInstagram({
+      igAccountId: entry.igAccountId,
+      accessToken: entry.accessToken,
+      videoUrl: entry.videoUrl,
+      caption: entry.caption,
+      coverUrl: entry.coverUrl,
+      taggedUsernames: entry.taggedUsernames,
+      collaboratorUsernames: entry.collaboratorUsernames,
+      locationId: entry.locationId,
+      productIds: entry.productIds,
+    });
+    entry.status = 'published';
+    entry.publishedAt = new Date().toISOString();
+    entry.publishedId = data?.id;
+    console.log(`[scheduler] published IG ${entry.id} -> ${data?.id}`);
+  } catch (err) {
+    const detail = err?.response?.data?.error?.message || err.message;
+    entry.status = 'error';
+    entry.error = detail;
+    console.error(`[scheduler] IG ${entry.id} failed:`, detail);
+  }
+  saveScheduledQueue();
+  // Clean up the persisted media 1 hour after firing — Meta has long since
+  // ingested the video, and we want the volume back.
+  setTimeout(() => {
+    try {
+      fs.rmSync(path.join(SCHEDULED_DIR, entry.id), { recursive: true, force: true });
+      scheduledQueue = scheduledQueue.filter(e => e.id !== entry.id);
+      saveScheduledQueue();
+    } catch {}
+  }, 60 * 60 * 1000).unref();
+}
+
+// Cron-style loop: every 30 seconds, fire any pending entries whose
+// scheduledAt has passed. Fail-stuck entries (in 'publishing' for >15 min)
+// reset to pending — guards against container restart mid-publish.
+setInterval(() => {
+  const now = Date.now();
+  for (const entry of scheduledQueue) {
+    if (entry.status === 'publishing') {
+      const stuckMs = now - new Date(entry.attemptedAt || 0).getTime();
+      if (stuckMs > 15 * 60 * 1000) {
+        entry.status = 'pending';
+        saveScheduledQueue();
+      }
+      continue;
+    }
+    if (entry.status !== 'pending') continue;
+    if (new Date(entry.scheduledAt).getTime() > now) continue;
+    fireScheduledEntry(entry).catch(err =>
+      console.error(`[scheduler] fire crashed:`, err.message)
+    );
+  }
+}, 30 * 1000).unref();
+
+app.get('/api/scheduled', (_req, res) => {
+  // Sanitize: never leak access tokens to the UI.
+  const list = scheduledQueue.map(e => ({
+    id: e.id,
+    platform: e.platform,
+    accountId: e.igAccountId,
+    accountName: e.accountName,
+    scheduledAt: e.scheduledAt,
+    status: e.status,
+    error: e.error,
+    publishedId: e.publishedId,
+    caption: e.caption?.slice(0, 200),
+  }));
+  res.json({ scheduled: list });
+});
+
+app.delete('/api/scheduled/:id', (req, res) => {
+  const idx = scheduledQueue.findIndex(e => e.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: 'Not found' });
+  const entry = scheduledQueue[idx];
+  if (entry.status === 'published') return res.status(409).json({ error: 'Already published' });
+  scheduledQueue.splice(idx, 1);
+  saveScheduledQueue();
+  try { fs.rmSync(path.join(SCHEDULED_DIR, entry.id), { recursive: true, force: true }); } catch {}
+  res.json({ ok: true });
 });
 
 app.post('/api/publish', upload.single('video'), async (req, res) => {
@@ -920,6 +1063,47 @@ app.post('/api/publish', upload.single('video'), async (req, res) => {
           groupShare: groupShareSummary,
         });
       } else if (platform === 'instagram') {
+        // IG has no native scheduling — if scheduledAt is in the future,
+        // enqueue and persist a copy of the media so we can fire later.
+        const fireAt = scheduledAt ? new Date(scheduledAt).getTime() : 0;
+        if (fireAt && fireAt > Date.now() + 60 * 1000) {
+          // Re-derive the cover image source path for persistence.
+          const coverSource = coverDirToCleanup
+            ? fs.readdirSync(coverDirToCleanup).map(f => path.join(coverDirToCleanup, f))[0]
+            : null;
+          const persisted = persistForScheduledIg({
+            videoPath,
+            coverUrlSource: coverSource,
+          });
+          const entry = {
+            id: persisted.id,
+            platform: 'instagram',
+            igAccountId: conn.id,
+            accountName: conn.username,
+            accessToken: conn.accessToken,
+            videoUrl: persisted.videoUrl,
+            coverUrl: persisted.coverUrl,
+            caption: description,
+            taggedUsernames: opts.taggedUsernames,
+            collaboratorUsernames: opts.collaboratorUsernames,
+            locationId: opts.locationId,
+            productIds: opts.productIds,
+            scheduledAt,
+            status: 'pending',
+            createdAt: new Date().toISOString(),
+          };
+          scheduledQueue.push(entry);
+          saveScheduledQueue();
+          results.push({
+            platform, id,
+            accountName: conn.username,
+            scheduled: true,
+            scheduledAt,
+            scheduledId: persisted.id,
+          });
+          console.log(`[scheduler] queued IG ${persisted.id} for ${scheduledAt}`);
+          continue; // skip immediate publish
+        }
         const data = await uploadToInstagram({
           igAccountId: conn.id, accessToken: conn.accessToken,
           videoUrl, caption: description,

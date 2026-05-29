@@ -33,6 +33,9 @@ type PublishResult = {
   accountName?: string;
   url?: string;
   error?: string;
+  scheduled?: boolean;
+  scheduledAt?: string;
+  scheduledId?: string;
 };
 
 type PublishResponse = {
@@ -374,6 +377,20 @@ export default function PublishPage() {
     if (selectedTargets.length === 0) {
       setResult({ error: "Pick at least one destination." });
       return;
+    }
+
+    // Facebook and YouTube reject scheduled publishes less than 10 minutes
+    // in the future. We enforce 15 minutes as a safer buffer.
+    if (scheduleAt) {
+      const fireAt = new Date(scheduleAt).getTime();
+      const minAhead = 15 * 60 * 1000;
+      if (fireAt - Date.now() < minAhead) {
+        setResult({
+          error:
+            "Schedule must be at least 15 minutes in the future. Facebook and YouTube reject anything closer (Meta returns 'specified scheduled publish time is invalid').",
+        });
+        return;
+      }
     }
 
     setPublishing(true);
@@ -791,7 +808,9 @@ export default function PublishPage() {
                       className="ml-3 break-all"
                       title={r.error || r.url || ""}
                     >
-                      {ok
+                      {r.scheduled
+                        ? `⏱ Scheduled for ${r.scheduledAt ? new Date(r.scheduledAt).toLocaleString() : "later"}`
+                        : ok
                         ? r.url
                           ? <a href={r.url} target="_blank" rel="noreferrer" className="underline">{r.url}</a>
                           : "Published"
