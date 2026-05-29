@@ -223,9 +223,13 @@ export default function PublishPage() {
   // Derive a previewable video URL for the thumbnail scrubber: a blob URL for
   // uploaded files, or the proxied clip URL for clips picked from history.
   const [previewVideoUrl, setPreviewVideoUrl] = useState<string | null>(null);
+  // Depend only on the File reference (stable across upload progress updates)
+  // and clip path — NOT the full selectedUpload object, which gets recreated
+  // every time progress ticks and would re-mount the <video> element.
+  const selectedFile = selectedUpload?.file ?? null;
   useEffect(() => {
-    if (sourceMode === "upload" && selectedUpload?.file) {
-      const url = URL.createObjectURL(selectedUpload.file);
+    if (sourceMode === "upload" && selectedFile) {
+      const url = URL.createObjectURL(selectedFile);
       setPreviewVideoUrl(url);
       return () => URL.revokeObjectURL(url);
     }
@@ -239,7 +243,7 @@ export default function PublishPage() {
       }
     }
     setPreviewVideoUrl(null);
-  }, [sourceMode, selectedUpload, selectedClipPath, clips]);
+  }, [sourceMode, selectedFile, selectedClipPath, clips]);
 
   const loadConnections = useCallback(async () => {
     setConnectionsError("");

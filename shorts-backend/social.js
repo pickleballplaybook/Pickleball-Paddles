@@ -375,6 +375,22 @@ export async function getFacebookVideoMeta(videoId, accessToken) {
   }
 }
 
+// Same diagnostic but for the POST that wraps the Reel video. Reels store
+// description / with_tags / collaborators on the post, not the video.
+export async function getFacebookPostMeta(postId, accessToken) {
+  try {
+    const res = await axios.get(`https://graph.facebook.com/v19.0/${postId}`, {
+      params: {
+        fields: 'id,message,description,with_tags,collaborators,co_authors,attachments{type,media_type,title,description},permalink_url,from,is_published,application,status_type',
+        access_token: accessToken,
+      },
+    });
+    return res.data;
+  } catch (err) {
+    return { _error: err?.response?.data?.error?.message || err.message };
+  }
+}
+
 export async function uploadToFacebookReel({
   pageId, accessToken, videoPath, description, scheduledAt,
   thumbnailDataUrl,

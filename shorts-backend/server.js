@@ -16,7 +16,7 @@ import {
   uploadToInstagram, uploadToFacebook, uploadToFacebookReel,
   listMetaCatalogProducts,
   listFacebookGroups, shareToFacebookGroup,
-  getFacebookVideoMeta
+  getFacebookVideoMeta, getFacebookPostMeta
 } from './social.js';
 import OpenAI from 'openai';
 import archiver from 'archiver';
@@ -587,6 +587,19 @@ app.get('/api/meta/products', async (_req, res) => {
 // Facebook Groups the authenticated user admins, for the FB expander's
 // "Share to groups" picker. Requires user_managed_groups on the OAuth
 // token, which is Advanced Access and pending Meta App Review.
+// One-shot diagnostic: query a FB Reel POST with rich fields. Hit with
+// ?postId=… and optionally &pageId=…
+app.get('/api/fb-debug-post', async (req, res) => {
+  const { postId, pageId } = req.query;
+  if (!postId) return res.status(400).json({ error: 'postId required' });
+  const conn = pageId
+    ? connections.facebook.find(c => c.id === pageId)
+    : connections.facebook[0];
+  if (!conn) return res.status(404).json({ error: 'No FB connection' });
+  const data = await getFacebookPostMeta(postId, conn.accessToken);
+  res.json({ pageUsed: conn.name, data });
+});
+
 app.get('/api/facebook/groups', async (_req, res) => {
   const conn = connections.facebook[0];
   if (!conn || !conn.userAccessToken) {
