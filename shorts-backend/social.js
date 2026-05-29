@@ -158,12 +158,11 @@ export function getMetaAuthUrl() {
       'pages_manage_posts',
       'business_management',
       'catalog_management',
-      // The following three require Meta App Review (Advanced Access).
-      // They're requested so that as soon as App Review approves them,
-      // the next OAuth flow picks them up — no code change needed.
-      'instagram_shopping_tag_products',
-      'publish_to_groups',
-      'user_managed_groups',
+      // Advanced Access permissions (instagram_shopping_tag_products,
+      // publish_to_groups, user_managed_groups) cannot be requested here
+      // until they're at least marked as "Requested" in App Dashboard →
+      // App Review → Permissions and Features. Otherwise FB rejects the
+      // entire auth URL with "Invalid Scopes".
     ].join(','),
     response_type: 'code',
   });
