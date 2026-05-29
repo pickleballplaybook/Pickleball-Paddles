@@ -556,21 +556,20 @@ app.get('/auth/connections', (_req, res) => {
 });
 
 // Meta Commerce catalog products, for the FB/IG product-tag picker.
-// `connectionType` ∈ {facebook, instagram} so we use the right access token.
-app.get('/api/meta/products', async (req, res) => {
-  const { connectionType, connectionId } = req.query;
+// Reads use the long-lived System User token (META_SYSTEM_USER_TOKEN),
+// which has catalog_management. The per-connection page/IG tokens are
+// only used for the actual publish step.
+app.get('/api/meta/products', async (_req, res) => {
   const catalogId = process.env.META_CATALOG_ID;
+  const sysToken = process.env.META_SYSTEM_USER_TOKEN;
   if (!catalogId) {
     return res.status(500).json({ error: 'META_CATALOG_ID env var not set on backend' });
   }
-  const arr =
-    connectionType === 'facebook' ? connections.facebook :
-    connectionType === 'instagram' ? connections.instagram : null;
-  if (!arr) return res.status(400).json({ error: 'Invalid connectionType' });
-  const conn = arr.find((c) => c.id === connectionId);
-  if (!conn) return res.status(404).json({ error: 'Connection not found' });
+  if (!sysToken) {
+    return res.status(500).json({ error: 'META_SYSTEM_USER_TOKEN env var not set on backend' });
+  }
   try {
-    const products = await listMetaCatalogProducts(catalogId, conn.accessToken);
+    const products = await listMetaCatalogProducts(catalogId, sysToken);
     res.json({ products });
   } catch (err) {
     const detail = err?.response?.data?.error?.message || err.message;

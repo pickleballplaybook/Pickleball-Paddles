@@ -941,13 +941,9 @@ function YouTubeOptionsExpander({
 type ThumbMode = "capture" | "upload";
 
 function ProductPicker({
-  connectionType,
-  connectionId,
   selected,
   onChange,
 }: {
-  connectionType: "facebook" | "instagram";
-  connectionId: string;
   selected: string[];
   onChange: (next: string[]) => void;
 }) {
@@ -959,8 +955,7 @@ function ProductPicker({
   useEffect(() => {
     if (!open || products !== null) return;
     setError("");
-    const params = new URLSearchParams({ connectionType, connectionId });
-    fetch(`/api/admin/publish/meta/products?${params.toString()}`)
+    fetch("/api/admin/publish/meta/products")
       .then(async (r) => {
         const d = await r.json();
         if (!r.ok) throw new Error(d.error || `Failed (${r.status})`);
@@ -970,7 +965,7 @@ function ProductPicker({
         setError(err instanceof Error ? err.message : "Failed to load");
         setProducts([]);
       });
-  }, [open, products, connectionType, connectionId]);
+  }, [open, products]);
 
   const filtered = (products || []).filter((p) =>
     !search
@@ -1192,8 +1187,6 @@ function FacebookOptionsExpander({
           Tag products from your shop
         </span>
         <ProductPicker
-          connectionType="facebook"
-          connectionId={connectionId}
           selected={opts.productIds || []}
           onChange={(next) => onChange({ productIds: next })}
         />
@@ -1285,8 +1278,6 @@ function InstagramOptionsExpander({
           Tag products from your shop
         </span>
         <ProductPicker
-          connectionType="instagram"
-          connectionId={connectionId}
           selected={opts.productIds || []}
           onChange={(next) => onChange({ productIds: next })}
         />
