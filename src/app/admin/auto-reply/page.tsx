@@ -5,6 +5,7 @@ import Link from "next/link";
 import { CampaignCard } from "./_components/CampaignCard";
 import { ConnectionStatus } from "./_components/ConnectionStatus";
 import type { Campaign } from "./_components/types";
+import { AdminNav } from "../_components/AdminNav";
 
 export default function AutoReplyAdminPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
@@ -99,6 +100,7 @@ export default function AutoReplyAdminPage() {
       </header>
 
       <main className="mx-auto max-w-6xl px-6 py-8 space-y-8">
+        <AdminNav />
         <ConnectionStatus connections={connections} />
 
         {error && (

@@ -47,6 +47,15 @@ type PublishResponse = {
 
 type SourceMode = "upload" | "clip";
 
+type UploadItem = {
+  id: string;
+  file: File;
+  progress: number;          // 0-100
+  status: "uploading" | "ready" | "error" | "published";
+  videoPath?: string;        // Railway-side path once chunked upload completes
+  error?: string;
+};
+
 type YouTubeOptions = {
   visibility?: "public" | "unlisted" | "private";
   madeForKids?: boolean;
@@ -126,6 +135,28 @@ function toggleCsv(input: string | undefined, value: string): string {
   return [...items, value].join(", ");
 }
 
+const DESCRIPTION_PRESETS = [
+  {
+    label: "🏆 Drills App",
+    text: `🏆PBDrills.com
+
+@pickleballdrillsapp gives you a clear path to leveling up.
+Get personalized drills
+Learn proper technique
+Train with top PPA & APP pros
+
+Try Pickleball Drills free on the App Store - Link in bio.
+
+#pickleballdrills #pickleball #pickleballdrillsapp #pickleballdrilling #pickleballtournament`,
+  },
+  {
+    label: "🏓 Playbook Paddles",
+    text: `🏓PlaybookPaddles.com
+
+Save on paddles & gear with code PLAYBOOK - Link in bio.`,
+  },
+];
+
 function fileToDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -166,7 +197,8 @@ export default function PublishPage() {
   const [connectionsError, setConnectionsError] = useState("");
 
   const [sourceMode, setSourceMode] = useState<SourceMode>("upload");
-  const [file, setFile] = useState<File | null>(null);
+  const [uploads, setUploads] = useState<UploadItem[]>([]);
+  const [selectedUploadId, setSelectedUploadId] = useState<string | null>(null);
   const [clips, setClips] = useState<Clip[] | null>(null);
   const [selectedClipPath, setSelectedClipPath] = useState<string>("");
 
@@ -181,8 +213,10 @@ export default function PublishPage() {
   const [scheduleAt, setScheduleAt] = useState("");
 
   const [publishing, setPublishing] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [result, setResult] = useState<PublishResponse | null>(null);
+
+  const selectedUpload =
+    uploads.find((u) => u.id === selectedUploadId) || null;
 
   const popupPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -190,8 +224,8 @@ export default function PublishPage() {
   // uploaded files, or the proxied clip URL for clips picked from history.
   const [previewVideoUrl, setPreviewVideoUrl] = useState<string | null>(null);
   useEffect(() => {
-    if (sourceMode === "upload" && file) {
-      const url = URL.createObjectURL(file);
+    if (sourceMode === "upload" && selectedUpload?.file) {
+      const url = URL.createObjectURL(selectedUpload.file);
       setPreviewVideoUrl(url);
       return () => URL.revokeObjectURL(url);
     }
@@ -205,7 +239,7 @@ export default function PublishPage() {
       }
     }
     setPreviewVideoUrl(null);
-  }, [sourceMode, file, selectedClipPath, clips]);
+  }, [sourceMode, selectedUpload, selectedClipPath, clips]);
 
   const loadConnections = useCallback(async () => {
     setConnectionsError("");
@@ -319,7 +353,56 @@ export default function PublishPage() {
     setTargetOptions((m) => ({ ...m, [key]: { ...(m[key] || {}), ...patch } }));
   }
 
-  async function uploadFileDirect(f: File): Promise<string> {
+  function addFiles(files: File[]) {
+    if (files.length === 0) return;
+    const items: UploadItem[] = files.map((f) => ({
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      file: f,
+      progress: 0,
+      status: "uploading",
+    }));
+    setUploads((prev) => [...prev, ...items]);
+    setSelectedUploadId((cur) => cur || items[0].id);
+    for (const item of items) startBackgroundUpload(item);
+  }
+
+  function removeUpload(id: string) {
+    setUploads((prev) => prev.filter((u) => u.id !== id));
+    setSelectedUploadId((cur) => {
+      if (cur !== id) return cur;
+      const next = uploads.find((u) => u.id !== id && u.status === "ready");
+      return next?.id || null;
+    });
+  }
+
+  async function startBackgroundUpload(item: UploadItem) {
+    try {
+      const path = await uploadFileDirect(item.file, (pct) => {
+        setUploads((prev) =>
+          prev.map((u) => (u.id === item.id ? { ...u, progress: pct } : u))
+        );
+      });
+      setUploads((prev) =>
+        prev.map((u) =>
+          u.id === item.id
+            ? { ...u, status: "ready", videoPath: path, progress: 100 }
+            : u
+        )
+      );
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Upload failed";
+      setUploads((prev) =>
+        prev.map((u) =>
+          u.id === item.id ? { ...u, status: "error", error: message } : u
+        )
+      );
+    }
+  }
+
+  async function uploadFileDirect(
+    f: File,
+    onProgress: (pct: number) => void
+  ): Promise<string> {
     const reserveRes = await fetch("/api/admin/publish/upload-reserve", {
       method: "POST",
     });
@@ -351,9 +434,9 @@ export default function PublishPage() {
         `${uploadUrl}/chunk?token=${encodeURIComponent(token)}` +
         `&exp=${exp}&index=${i}&total=${total}&filename=${filename}`;
 
-      const body = await sendChunk(url, chunk, (chunkLoaded, chunkTotal) => {
+      const body = await sendChunk(url, chunk, (chunkLoaded) => {
         const done = i * CHUNK_SIZE + chunkLoaded;
-        setUploadProgress(Math.min(100, Math.round((done / f.size) * 100)));
+        onProgress(Math.min(100, Math.round((done / f.size) * 100)));
       });
 
       if (body.done && body.path) finalPath = body.path;
@@ -363,8 +446,8 @@ export default function PublishPage() {
   }
 
   async function handlePublish() {
-    if (sourceMode === "upload" && !file) {
-      setResult({ error: "Pick a video file first." });
+    if (sourceMode === "upload" && !selectedUpload) {
+      setResult({ error: "Add a video to the upload queue first." });
       return;
     }
     if (sourceMode === "clip" && !selectedClipPath) {
@@ -395,16 +478,18 @@ export default function PublishPage() {
     }
 
     setPublishing(true);
-    setUploadProgress(null);
     setResult(null);
     try {
       const scheduledAt = scheduleAt ? new Date(scheduleAt).toISOString() : undefined;
 
       let videoPath: string;
       if (sourceMode === "upload") {
-        setUploadProgress(0);
-        videoPath = await uploadFileDirect(file as File);
-        setUploadProgress(null);
+        if (!selectedUpload || selectedUpload.status !== "ready" || !selectedUpload.videoPath) {
+          throw new Error(
+            "Selected upload isn't ready yet. Wait for the progress bar to hit 100%."
+          );
+        }
+        videoPath = selectedUpload.videoPath;
       } else {
         videoPath = selectedClipPath;
       }
@@ -473,11 +558,25 @@ export default function PublishPage() {
         throw new Error(d.error || `Request failed (${r.status})`);
       }
       setResult(d);
+      // Mark the published upload done and advance to the next ready one.
+      if (sourceMode === "upload" && selectedUpload) {
+        setUploads((prev) =>
+          prev.map((u) =>
+            u.id === selectedUpload.id ? { ...u, status: "published" as const } : u
+          )
+        );
+        setSelectedUploadId((cur) => {
+          if (cur !== selectedUpload.id) return cur;
+          const next = uploads.find(
+            (u) => u.id !== selectedUpload.id && u.status === "ready"
+          );
+          return next?.id || null;
+        });
+      }
     } catch (err) {
       setResult({ error: err instanceof Error ? err.message : "Publish failed" });
     } finally {
       setPublishing(false);
-      setUploadProgress(null);
     }
   }
 
@@ -576,19 +675,13 @@ export default function PublishPage() {
           </div>
 
           {sourceMode === "upload" && (
-            <>
-              <input
-                type="file"
-                accept="video/*"
-                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-                className="block w-full text-sm text-gray-300 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-gray-800 file:text-white hover:file:bg-gray-700 mb-2"
-              />
-              {file && (
-                <p className="text-xs text-gray-500 mb-4">
-                  {file.name} · {(file.size / 1024 / 1024).toFixed(1)} MB
-                </p>
-              )}
-            </>
+            <UploadQueue
+              uploads={uploads}
+              selectedId={selectedUploadId}
+              onAdd={(fs) => addFiles(fs)}
+              onSelect={(id) => setSelectedUploadId(id)}
+              onRemove={(id) => removeUpload(id)}
+            />
           )}
 
           {sourceMode === "clip" && (
@@ -630,9 +723,23 @@ export default function PublishPage() {
             placeholder="Short, descriptive title"
           />
 
-          <label className="block text-xs uppercase tracking-wide text-gray-500 mb-1">
-            Description
-          </label>
+          <div className="flex items-center justify-between mb-1">
+            <label className="block text-xs uppercase tracking-wide text-gray-500">
+              Description
+            </label>
+            <div className="flex gap-1.5">
+              {DESCRIPTION_PRESETS.map((p) => (
+                <button
+                  key={p.label}
+                  type="button"
+                  onClick={() => setDescription(p.text)}
+                  className="text-xs px-2.5 py-1 rounded border border-gray-700 text-gray-300 hover:border-green-500 hover:text-white"
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+          </div>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
@@ -765,24 +872,13 @@ export default function PublishPage() {
             className="bg-green-500 hover:bg-green-400 disabled:bg-gray-700 disabled:text-gray-400 text-black font-bold px-6 py-3 rounded-xl"
           >
             {publishing
-              ? uploadProgress !== null
-                ? `Uploading ${uploadProgress}%`
-                : "Publishing..."
+              ? "Publishing..."
               : scheduleAt
               ? "Schedule"
               : `Publish to ${selectedTargets.length || "..."} destination${
                   selectedTargets.length === 1 ? "" : "s"
                 }`}
           </button>
-
-          {publishing && uploadProgress !== null && (
-            <div className="mt-4 h-2 bg-gray-800 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-green-500 transition-all"
-                style={{ width: `${uploadProgress}%` }}
-              />
-            </div>
-          )}
 
           {result?.error && (
             <div className="mt-6 bg-red-950 border border-red-800 text-red-300 rounded-lg p-4 text-sm">
@@ -1451,6 +1547,127 @@ function InstagramOptionsExpander({
           onChange={(next) => onChange({ productIds: next })}
         />
       </div>
+    </div>
+  );
+}
+
+function UploadQueue({
+  uploads,
+  selectedId,
+  onAdd,
+  onSelect,
+  onRemove,
+}: {
+  uploads: UploadItem[];
+  selectedId: string | null;
+  onAdd: (files: File[]) => void;
+  onSelect: (id: string) => void;
+  onRemove: (id: string) => void;
+}) {
+  const [isDragOver, setIsDragOver] = useState(false);
+  return (
+    <div className="mb-4">
+      <div
+        onDragOver={(e) => {
+          e.preventDefault();
+          setIsDragOver(true);
+        }}
+        onDragLeave={() => setIsDragOver(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setIsDragOver(false);
+          const files = Array.from(e.dataTransfer.files).filter((f) =>
+            f.type.startsWith("video/")
+          );
+          if (files.length > 0) onAdd(files);
+        }}
+        className={`border-2 border-dashed rounded-lg p-4 mb-2 transition ${
+          isDragOver
+            ? "border-green-500 bg-green-500/5"
+            : "border-gray-700 hover:border-gray-500"
+        }`}
+      >
+        <input
+          type="file"
+          accept="video/*"
+          multiple
+          onChange={(e) => {
+            const files = Array.from(e.target.files || []);
+            if (files.length > 0) onAdd(files);
+            e.target.value = ""; // allow re-adding the same file
+          }}
+          className="block w-full text-sm text-gray-300 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-gray-800 file:text-white hover:file:bg-gray-700"
+        />
+        <p className="text-xs text-gray-500 mt-1.5">
+          Drag &amp; drop multiple videos here — they upload in parallel.
+        </p>
+      </div>
+
+      {uploads.length === 0 ? null : (
+        <ul className="space-y-1.5">
+          {uploads.map((u) => {
+            const selected = u.id === selectedId;
+            const sizeMb = (u.file.size / 1024 / 1024).toFixed(1);
+            return (
+              <li
+                key={u.id}
+                onClick={() => u.status === "ready" && onSelect(u.id)}
+                className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition ${
+                  selected
+                    ? "border-green-500/40 bg-green-500/5"
+                    : "border-gray-800 bg-gray-800"
+                } ${u.status === "ready" ? "cursor-pointer hover:border-gray-600" : ""}`}
+              >
+                <div className="flex-1 min-w-0">
+                  <p className="text-white truncate">
+                    {selected && <span className="text-green-400 mr-1">●</span>}
+                    {u.file.name}{" "}
+                    <span className="text-gray-500 text-xs">· {sizeMb} MB</span>
+                  </p>
+                  {u.status === "uploading" && (
+                    <div className="mt-1 h-1 bg-gray-700 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-green-500 transition-all"
+                        style={{ width: `${u.progress}%` }}
+                      />
+                    </div>
+                  )}
+                  {u.status === "error" && (
+                    <p className="text-xs text-red-400 mt-0.5 truncate">
+                      {u.error}
+                    </p>
+                  )}
+                </div>
+                <span className="text-xs whitespace-nowrap">
+                  {u.status === "uploading" && (
+                    <span className="text-gray-400">{u.progress}%</span>
+                  )}
+                  {u.status === "ready" && (
+                    <span className="text-green-400">Ready</span>
+                  )}
+                  {u.status === "error" && (
+                    <span className="text-red-400">Error</span>
+                  )}
+                  {u.status === "published" && (
+                    <span className="text-gray-500">✓ Published</span>
+                  )}
+                </span>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRemove(u.id);
+                  }}
+                  className="text-gray-500 hover:text-red-400 text-lg leading-none"
+                  title="Remove"
+                >
+                  ×
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </div>
   );
 }
