@@ -587,19 +587,29 @@ app.get('/api/meta/products', async (_req, res) => {
 // Facebook Groups the authenticated user admins, for the FB expander's
 // "Share to groups" picker. Requires user_managed_groups on the OAuth
 // token, which is Advanced Access and pending Meta App Review.
-// One-shot diagnostic: query a FB Reel POST with rich fields. Tries every
-// connected Page so the right token always succeeds.
-app.get('/api/fb-debug-post', async (req, res) => {
-  const { postId } = req.query;
-  if (!postId) return res.status(400).json({ error: 'postId required' });
-  if (connections.facebook.length === 0) {
-    return res.status(404).json({ error: 'No FB connections' });
+// One-shot diagnostic — list the page's recent posts with the collab fields.
+// Hit with ?pageId=…
+app.get('/api/fb-debug-page-posts', async (req, res) => {
+  const { pageId } = req.query;
+  const conn = pageId
+    ? connections.facebook.find(c => c.id === pageId)
+    : connections.facebook[0];
+  if (!conn) return res.status(404).json({ error: 'No matching FB connection' });
+  try {
+    const r = await axios.get(`https://graph.facebook.com/v19.0/${conn.id}/posts`, {
+      params: {
+        fields: 'id,message,collaborators,co_authors,with_tags,permalink_url',
+        limit: 5,
+        access_token: conn.accessToken,
+      },
+    });
+    res.json({ page: conn.name, posts: r.data.data });
+  } catch (err) {
+    res.status(500).json({
+      page: conn.name,
+      error: err?.response?.data?.error || err.message,
+    });
   }
-  const results = {};
-  for (const conn of connections.facebook) {
-    results[conn.name] = await getFacebookPostMeta(postId, conn.accessToken);
-  }
-  res.json(results);
 });
 
 app.get('/api/facebook/groups', async (_req, res) => {
