@@ -725,6 +725,8 @@ app.get('/api/clips', (_req, res) => {
 
 app.post('/api/publish', upload.single('video'), async (req, res) => {
   let { videoPath, title, description, scheduledAt, platforms, videoUrl } = req.body;
+  const sharedThumbnailDataUrl =
+    typeof req.body.thumbnailDataUrl === 'string' ? req.body.thumbnailDataUrl : undefined;
 
   // If an uploaded file came through multer, prefer it.
   if (req.file) videoPath = req.file.path;
@@ -793,7 +795,7 @@ app.post('/api/publish', upload.single('video'), async (req, res) => {
           tags: Array.isArray(opts.tags) ? opts.tags : undefined,
           madeForKids: typeof opts.madeForKids === 'boolean' ? opts.madeForKids : undefined,
           playlistIds: Array.isArray(opts.playlistIds) ? opts.playlistIds : undefined,
-          thumbnailDataUrl: typeof opts.thumbnailDataUrl === 'string' ? opts.thumbnailDataUrl : undefined,
+          thumbnailDataUrl: sharedThumbnailDataUrl,
         });
         results.push({
           platform, id, accountName: conn.name,

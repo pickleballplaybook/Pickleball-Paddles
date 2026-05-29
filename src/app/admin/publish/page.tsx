@@ -48,10 +48,8 @@ type YouTubeOptions = {
   madeForKids?: boolean;
   tags?: string[];
   playlistIds?: string[];
-  thumbnailDataUrl?: string;
   // UI-only state (not sent):
   tagsInput?: string;
-  thumbnailPreview?: string;
 };
 
 type TargetOptionsMap = Record<string, YouTubeOptions>; // key = targetKey
@@ -111,6 +109,9 @@ export default function PublishPage() {
   const [selectedTargets, setSelectedTargets] = useState<Target[]>([]);
   const [targetOptions, setTargetOptions] = useState<TargetOptionsMap>({});
   const [ytPlaylists, setYtPlaylists] = useState<Record<string, YouTubePlaylist[]>>({});
+
+  // Single thumbnail applied to every selected platform.
+  const [thumbnailDataUrl, setThumbnailDataUrl] = useState<string | null>(null);
   const [scheduleAt, setScheduleAt] = useState("");
 
   const [publishing, setPublishing] = useState(false);
@@ -118,6 +119,27 @@ export default function PublishPage() {
   const [result, setResult] = useState<PublishResponse | null>(null);
 
   const popupPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Derive a previewable video URL for the thumbnail scrubber: a blob URL for
+  // uploaded files, or the proxied clip URL for clips picked from history.
+  const [previewVideoUrl, setPreviewVideoUrl] = useState<string | null>(null);
+  useEffect(() => {
+    if (sourceMode === "upload" && file) {
+      const url = URL.createObjectURL(file);
+      setPreviewVideoUrl(url);
+      return () => URL.revokeObjectURL(url);
+    }
+    if (sourceMode === "clip" && selectedClipPath && clips) {
+      const clip = clips.find((c) => c.path === selectedClipPath);
+      if (clip) {
+        setPreviewVideoUrl(
+          `/api/admin/shorts/clips/${encodeURIComponent(clip.jobId)}/${encodeURIComponent(clip.filename)}`
+        );
+        return;
+      }
+    }
+    setPreviewVideoUrl(null);
+  }, [sourceMode, file, selectedClipPath, clips]);
 
   const loadConnections = useCallback(async () => {
     setConnectionsError("");
@@ -307,7 +329,7 @@ export default function PublishPage() {
         videoPath = selectedClipPath;
       }
 
-      // Strip UI-only state (tagsInput, thumbnailPreview) and parse tags string.
+      // Strip UI-only state (tagsInput) and parse tags string.
       const targetsWithOptions = selectedTargets.map((t) => {
         const raw = targetOptions[targetKey(t)] || {};
         const tags = (raw.tagsInput || "")
@@ -319,7 +341,6 @@ export default function PublishPage() {
         if (typeof raw.madeForKids === "boolean") options.madeForKids = raw.madeForKids;
         if (tags.length > 0) options.tags = tags;
         if (raw.playlistIds && raw.playlistIds.length > 0) options.playlistIds = raw.playlistIds;
-        if (raw.thumbnailDataUrl) options.thumbnailDataUrl = raw.thumbnailDataUrl;
         return Object.keys(options).length > 0 ? { ...t, options } : t;
       });
 
@@ -332,6 +353,7 @@ export default function PublishPage() {
           description,
           targets: targetsWithOptions,
           scheduledAt,
+          thumbnailDataUrl: thumbnailDataUrl || undefined,
         }),
       });
       const d: PublishResponse = await r.json();
@@ -505,6 +527,17 @@ export default function PublishPage() {
             className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white outline-none mb-4 resize-y"
             placeholder="Caption / description"
           />
+
+          <label className="block text-xs uppercase tracking-wide text-gray-500 mb-2">
+            Thumbnail
+          </label>
+          <div className="mb-5">
+            <SharedThumbnailPicker
+              videoUrl={previewVideoUrl}
+              dataUrl={thumbnailDataUrl}
+              onChange={setThumbnailDataUrl}
+            />
+          </div>
 
           <label className="block text-xs uppercase tracking-wide text-gray-500 mb-2">
             Destinations
@@ -717,18 +750,6 @@ function YouTubeOptionsExpander({
       : [...selectedPlaylists, id];
     onChange({ playlistIds: next });
   }
-  async function handleThumb(file: File | null) {
-    if (!file) {
-      onChange({ thumbnailDataUrl: undefined, thumbnailPreview: undefined });
-      return;
-    }
-    if (file.size > 2 * 1024 * 1024) {
-      alert("YouTube thumbnails must be 2 MB or smaller.");
-      return;
-    }
-    const dataUrl = await fileToDataUrl(file);
-    onChange({ thumbnailDataUrl: dataUrl, thumbnailPreview: dataUrl });
-  }
   return (
     <div className="mt-2 ml-6 mb-2 rounded-lg border border-gray-800 bg-gray-950/60 p-3 space-y-3 text-sm">
       <div className="flex flex-wrap items-center gap-3">
@@ -795,36 +816,333 @@ function YouTubeOptionsExpander({
         )}
       </div>
 
-      <label className="block">
-        <span className="block text-xs uppercase tracking-wide text-gray-500 mb-1">
-          Custom thumbnail (JPG/PNG, ≤2 MB)
-        </span>
-        <input
-          type="file"
-          accept="image/jpeg,image/png"
-          onChange={(e) => handleThumb(e.target.files?.[0] ?? null)}
-          className="block w-full text-xs text-gray-300 file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:bg-gray-800 file:text-white hover:file:bg-gray-700"
-        />
-        {opts.thumbnailPreview && (
-          <div className="mt-2 flex items-center gap-2">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={opts.thumbnailPreview}
-              alt="thumb"
-              className="h-16 w-28 object-cover rounded border border-gray-700"
-            />
-            <button
-              type="button"
-              onClick={() => handleThumb(null)}
-              className="text-xs text-gray-500 hover:text-red-400"
-            >
-              Remove
-            </button>
-          </div>
-        )}
-      </label>
     </div>
   );
+}
+
+type ThumbMode = "capture" | "upload";
+
+function SharedThumbnailPicker({
+  videoUrl,
+  dataUrl,
+  onChange,
+}: {
+  videoUrl: string | null;
+  dataUrl: string | null;
+  onChange: (next: string | null) => void;
+}) {
+  async function handleUpload(file: File | null) {
+    if (!file) {
+      onChange(null);
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      alert("Thumbnail images must be 2 MB or smaller.");
+      return;
+    }
+    const url = await fileToDataUrl(file);
+    onChange(url);
+  }
+  if (videoUrl) {
+    return (
+      <ThumbnailFromVideo
+        videoUrl={videoUrl}
+        currentPreview={dataUrl || undefined}
+        onCapture={(d) => onChange(d)}
+        onClear={() => onChange(null)}
+        fallbackUpload={
+          <input
+            type="file"
+            accept="image/jpeg,image/png"
+            onChange={(e) => handleUpload(e.target.files?.[0] ?? null)}
+            className="block w-full text-xs text-gray-300 file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:bg-gray-800 file:text-white hover:file:bg-gray-700"
+          />
+        }
+      />
+    );
+  }
+  return (
+    <div>
+      <p className="text-xs text-gray-500 mb-2">
+        Pick a video file or a clip above to scrub for a thumbnail. Or upload an
+        image directly:
+      </p>
+      <input
+        type="file"
+        accept="image/jpeg,image/png"
+        onChange={(e) => handleUpload(e.target.files?.[0] ?? null)}
+        className="block w-full text-xs text-gray-300 file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:bg-gray-800 file:text-white hover:file:bg-gray-700"
+      />
+      {dataUrl && (
+        <div className="mt-2 flex items-center gap-2">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={dataUrl}
+            alt="thumb"
+            className="h-16 w-28 object-cover rounded border border-gray-700"
+          />
+          <button
+            type="button"
+            onClick={() => onChange(null)}
+            className="text-xs text-gray-500 hover:text-red-400"
+          >
+            Remove
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ThumbnailFromVideo({
+  videoUrl,
+  currentPreview,
+  onCapture,
+  onClear,
+  fallbackUpload,
+}: {
+  videoUrl: string;
+  currentPreview?: string;
+  onCapture: (dataUrl: string) => void;
+  onClear: () => void;
+  fallbackUpload: React.ReactNode;
+}) {
+  const [mode, setMode] = useState<ThumbMode>("capture");
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [livePreview, setLivePreview] = useState<string | null>(null);
+  const [text, setText] = useState("");
+  const [pos, setPos] = useState<"top" | "middle" | "bottom">("bottom");
+  const [color, setColor] = useState("#ffffff");
+  const [outline, setOutline] = useState(true);
+  const [sizePct, setSizePct] = useState(60); // 0..100 → scales relative to video height
+
+  const renderFrame = useCallback(() => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!video || !canvas || !video.videoWidth) return null;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+    try {
+      ctx.drawImage(video, 0, 0);
+    } catch {
+      // Cross-origin tainting — shouldn't happen with same-origin clips or blob URLs.
+      return null;
+    }
+
+    if (text.trim()) {
+      const fontPx = Math.max(
+        16,
+        Math.round((sizePct / 100) * canvas.height * 0.18)
+      );
+      ctx.font = `900 ${fontPx}px Inter, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+
+      const lines = wrapTextLines(ctx, text.trim(), canvas.width * 0.9);
+      const lineHeight = Math.round(fontPx * 1.15);
+      const totalH = lines.length * lineHeight;
+      const cx = canvas.width / 2;
+      let cy =
+        pos === "top"
+          ? Math.round(canvas.height * 0.08) + totalH / 2
+          : pos === "middle"
+          ? canvas.height / 2
+          : canvas.height - Math.round(canvas.height * 0.08) - totalH / 2;
+
+      let y = cy - totalH / 2 + lineHeight / 2;
+      for (const line of lines) {
+        if (outline) {
+          ctx.lineJoin = "round";
+          ctx.strokeStyle = "#000000";
+          ctx.lineWidth = Math.max(3, fontPx * 0.14);
+          ctx.strokeText(line, cx, y);
+        }
+        ctx.fillStyle = color;
+        ctx.fillText(line, cx, y);
+        y += lineHeight;
+      }
+    }
+
+    return canvas.toDataURL("image/jpeg", 0.92);
+  }, [text, pos, color, outline, sizePct]);
+
+  // Re-render on text/style changes
+  useEffect(() => {
+    const t = setTimeout(() => {
+      const url = renderFrame();
+      if (url) setLivePreview(url);
+    }, 80);
+    return () => clearTimeout(t);
+  }, [renderFrame]);
+
+  // Re-render on video seek
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const handler = () => {
+      const url = renderFrame();
+      if (url) setLivePreview(url);
+    };
+    video.addEventListener("seeked", handler);
+    video.addEventListener("loadeddata", handler);
+    return () => {
+      video.removeEventListener("seeked", handler);
+      video.removeEventListener("loadeddata", handler);
+    };
+  }, [renderFrame]);
+
+  function useThisFrame() {
+    const url = renderFrame();
+    if (url) onCapture(url);
+  }
+
+  return (
+    <div>
+      <div className="inline-flex bg-gray-800 border border-gray-700 rounded p-0.5 mb-2">
+        {(["capture", "upload"] as const).map((m) => (
+          <button
+            key={m}
+            type="button"
+            onClick={() => setMode(m)}
+            className={`px-3 py-1 rounded text-xs font-medium transition ${
+              mode === m
+                ? "bg-green-500 text-black"
+                : "text-gray-400 hover:text-white"
+            }`}
+          >
+            {m === "capture" ? "Capture from video" : "Upload image"}
+          </button>
+        ))}
+      </div>
+
+      {mode === "capture" ? (
+        <div className="space-y-2">
+          {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+          <video
+            ref={videoRef}
+            src={videoUrl}
+            controls
+            crossOrigin="anonymous"
+            className="w-full rounded border border-gray-700 bg-black"
+            style={{ maxHeight: 320 }}
+          />
+          <input
+            type="text"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Add bold text (optional)"
+            className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-white outline-none text-sm"
+          />
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs">
+            <label className="flex items-center gap-1">
+              <span className="text-gray-500">Position</span>
+              <select
+                value={pos}
+                onChange={(e) =>
+                  setPos(e.target.value as "top" | "middle" | "bottom")
+                }
+                className="bg-gray-800 border border-gray-700 rounded px-2 py-1"
+              >
+                <option value="top">Top</option>
+                <option value="middle">Middle</option>
+                <option value="bottom">Bottom</option>
+              </select>
+            </label>
+            <label className="flex items-center gap-1">
+              <span className="text-gray-500">Size</span>
+              <input
+                type="range"
+                min={20}
+                max={100}
+                value={sizePct}
+                onChange={(e) => setSizePct(Number(e.target.value))}
+              />
+            </label>
+            <label className="flex items-center gap-1">
+              <span className="text-gray-500">Color</span>
+              <input
+                type="color"
+                value={color}
+                onChange={(e) => setColor(e.target.value)}
+                className="h-7 w-8 bg-transparent border border-gray-700 rounded"
+              />
+            </label>
+            <label className="flex items-center gap-1">
+              <input
+                type="checkbox"
+                checked={outline}
+                onChange={(e) => setOutline(e.target.checked)}
+                className="accent-green-500"
+              />
+              <span>Outline</span>
+            </label>
+          </div>
+          <canvas ref={canvasRef} className="hidden" />
+
+          {livePreview && (
+            <div>
+              <p className="text-xs text-gray-500 mb-1">Preview</p>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={livePreview}
+                alt="preview"
+                className="w-full max-w-xs rounded border border-gray-700"
+              />
+              <div className="flex items-center gap-2 mt-2">
+                <button
+                  type="button"
+                  onClick={useThisFrame}
+                  className="bg-green-500 hover:bg-green-400 text-black text-xs font-semibold px-3 py-1.5 rounded"
+                >
+                  Use this thumbnail
+                </button>
+                {currentPreview && (
+                  <button
+                    type="button"
+                    onClick={onClear}
+                    className="text-xs text-gray-500 hover:text-red-400"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+          {currentPreview && (
+            <div className="text-xs text-green-400">
+              ✓ Thumbnail set (will be applied on publish)
+            </div>
+          )}
+        </div>
+      ) : (
+        <>{fallbackUpload}</>
+      )}
+    </div>
+  );
+}
+
+function wrapTextLines(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  maxWidth: number
+): string[] {
+  const words = text.split(/\s+/);
+  const lines: string[] = [];
+  let current = "";
+  for (const word of words) {
+    const tentative = current ? `${current} ${word}` : word;
+    if (ctx.measureText(tentative).width > maxWidth && current) {
+      lines.push(current);
+      current = word;
+    } else {
+      current = tentative;
+    }
+  }
+  if (current) lines.push(current);
+  return lines;
 }
 
 function DestinationCheckbox({
