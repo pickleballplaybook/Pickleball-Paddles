@@ -572,8 +572,15 @@ app.get('/auth/meta/status', (_req, res) => {
 });
 
 // ─── UPLOAD & SCHEDULE ────────────────────────────────────────────────────────
-const UPLOADS_DIR = path.join(OUTPUT_DIR, 'uploads');
+// Default to ephemeral container disk (not the persistent volume) — raw uploads
+// only need to exist briefly while we publish to YT/IG/FB, and the volume is
+// reserved for clips + connections.
+const UPLOADS_DIR = process.env.UPLOADS_DIR || '/tmp/shorts-uploads';
+const PUBLIC_BASE_URL = process.env.PUBLIC_BASE_URL || '';
 fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+// Serve uploaded files so Instagram can fetch them. URLs include a UUID
+// uploadId which acts as an unguessable token.
+app.use('/uploads', express.static(UPLOADS_DIR));
 const upload = multer({
   storage: multer.diskStorage({
     destination: (_req, _file, cb) => cb(null, UPLOADS_DIR),
@@ -663,13 +670,22 @@ app.post('/api/publish', upload.single('video'), async (req, res) => {
   // If an uploaded file came through multer, prefer it.
   if (req.file) videoPath = req.file.path;
 
-  // Reject path-traversal / non-OUTPUT_DIR paths.
+  // Reject path-traversal / out-of-allowed-roots paths.
   if (videoPath) {
     const resolved = path.resolve(videoPath);
-    if (!resolved.startsWith(path.resolve(OUTPUT_DIR))) {
-      return res.status(400).json({ error: 'videoPath must be inside OUTPUT_DIR' });
+    const outRoot = path.resolve(OUTPUT_DIR);
+    const upRoot = path.resolve(UPLOADS_DIR);
+    if (!resolved.startsWith(outRoot) && !resolved.startsWith(upRoot)) {
+      return res.status(400).json({ error: 'videoPath outside allowed roots' });
     }
     videoPath = resolved;
+
+    // If the file lives in UPLOADS_DIR and we have a public base URL, derive
+    // a fetchable URL for Instagram. (IG requires video_url, not a local path.)
+    if (!videoUrl && resolved.startsWith(upRoot) && PUBLIC_BASE_URL) {
+      const rel = path.relative(upRoot, resolved).split(path.sep).map(encodeURIComponent).join('/');
+      videoUrl = `${PUBLIC_BASE_URL.replace(/\/$/, '')}/uploads/${rel}`;
+    }
   }
 
   if (!videoPath && !videoUrl) {
@@ -746,6 +762,23 @@ app.post('/api/publish', upload.single('video'), async (req, res) => {
       results.push({ platform, id, accountName: conn.name || conn.username, error: e.message });
     }
     console.log(`[publish] ${key} done`);
+  }
+
+  // If the source was an upload (lives in UPLOADS_DIR), schedule cleanup so
+  // ephemeral disk doesn't accumulate. Give Instagram time to fetch first.
+  if (videoPath && path.resolve(videoPath).startsWith(path.resolve(UPLOADS_DIR))) {
+    setTimeout(() => {
+      try {
+        // Delete the whole upload folder (one folder per uploadId).
+        const parent = path.dirname(videoPath);
+        if (parent !== UPLOADS_DIR && parent.startsWith(path.resolve(UPLOADS_DIR))) {
+          fs.rmSync(parent, { recursive: true, force: true });
+          console.log(`[cleanup] removed ${parent}`);
+        }
+      } catch (err) {
+        console.error('[cleanup] failed:', err.message);
+      }
+    }, 10 * 60 * 1000).unref();
   }
 
   res.json({ success: true, results });
