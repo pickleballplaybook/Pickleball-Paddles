@@ -158,9 +158,12 @@ export function getMetaAuthUrl() {
       'pages_manage_posts',
       'business_management',
       'catalog_management',
-      // instagram_shopping_tag_products is a restricted permission that
-      // requires Meta App Review. Not worth the multi-week submission
-      // process for a one-admin tool — IG product tagging is disabled.
+      // The following three require Meta App Review (Advanced Access).
+      // They're requested so that as soon as App Review approves them,
+      // the next OAuth flow picks them up — no code change needed.
+      'instagram_shopping_tag_products',
+      'publish_to_groups',
+      'user_managed_groups',
     ].join(','),
     response_type: 'code',
   });
@@ -226,6 +229,42 @@ export async function listMetaCatalogProducts(catalogId, accessToken, opts = {})
     params = undefined;
   }
   return all;
+}
+
+// Lists Facebook Groups the AUTHENTICATED USER admins (or is a member of, if
+// admin_only=false). Needs a USER access token (not a Page token) and the
+// `user_managed_groups` permission.
+export async function listFacebookGroups(userAccessToken, opts = {}) {
+  const params = {
+    access_token: userAccessToken,
+    fields: 'id,name,picture,member_count,privacy',
+    admin_only: opts.adminOnly ? 'true' : 'false',
+    limit: 100,
+  };
+  const all = [];
+  let url = 'https://graph.facebook.com/v19.0/me/groups';
+  for (let page = 0; page < 5; page++) {
+    const res = await axios.get(url, { params: page === 0 ? params : undefined });
+    for (const g of res.data.data || []) all.push(g);
+    const next = res.data.paging?.next;
+    if (!next) break;
+    url = next;
+  }
+  return all;
+}
+
+// Shares an already-published Reel (or any FB URL) into a Group's feed.
+// Requires `publish_to_groups` on the USER access token; the Group must allow
+// post-by-API in its settings.
+export async function shareToFacebookGroup({ groupId, link, message, userAccessToken }) {
+  const params = { link, access_token: userAccessToken };
+  if (message) params.message = message;
+  const res = await axios.post(
+    `https://graph.facebook.com/v19.0/${groupId}/feed`,
+    null,
+    { params }
+  );
+  return res.data;
 }
 
 export async function getInstagramUsername(igAccountId, accessToken) {

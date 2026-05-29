@@ -14,7 +14,8 @@ import {
   getMetaAuthUrl, exchangeMetaCode, getLongLivedToken,
   getPages, getInstagramAccount, getInstagramUsername,
   uploadToInstagram, uploadToFacebook, uploadToFacebookReel,
-  listMetaCatalogProducts
+  listMetaCatalogProducts,
+  listFacebookGroups, shareToFacebookGroup
 } from './social.js';
 import OpenAI from 'openai';
 import archiver from 'archiver';
@@ -521,6 +522,10 @@ app.get('/auth/meta/callback', async (req, res) => {
         id: page.id,
         name: page.name,
         accessToken: page.access_token,
+        // User access token is needed for Group endpoints (Pages can't list
+        // or post to Groups; only Users can with user_managed_groups +
+        // publish_to_groups, both Advanced Access).
+        userAccessToken: longLived,
       });
       const igId = await getInstagramAccount(page.id, page.access_token);
       if (igId) {
@@ -570,6 +575,23 @@ app.get('/api/meta/products', async (_req, res) => {
   try {
     const products = await listMetaCatalogProducts(catalogId, page.accessToken);
     res.json({ products });
+  } catch (err) {
+    const detail = err?.response?.data?.error?.message || err.message;
+    res.status(500).json({ error: detail });
+  }
+});
+
+// Facebook Groups the authenticated user admins, for the FB expander's
+// "Share to groups" picker. Requires user_managed_groups on the OAuth
+// token, which is Advanced Access and pending Meta App Review.
+app.get('/api/facebook/groups', async (_req, res) => {
+  const conn = connections.facebook[0];
+  if (!conn || !conn.userAccessToken) {
+    return res.status(400).json({ error: 'No Facebook user token. Reconnect Meta.' });
+  }
+  try {
+    const groups = await listFacebookGroups(conn.userAccessToken, { adminOnly: true });
+    res.json({ groups });
   } catch (err) {
     const detail = err?.response?.data?.error?.message || err.message;
     res.status(500).json({ error: detail });
@@ -869,10 +891,33 @@ app.post('/api/publish', upload.single('video'), async (req, res) => {
               collaboratorIds: Array.isArray(opts.collaboratorIds) ? opts.collaboratorIds : undefined,
               placeId: typeof opts.placeId === 'string' ? opts.placeId : undefined,
             });
+        const reelUrl = data.id ? `https://facebook.com/${data.id}` : undefined;
+        // If the user asked to share to FB Groups, fan out to each.
+        // Best-effort — failures are recorded but don't fail the main result.
+        let groupShareSummary;
+        if (postAsReel && Array.isArray(opts.groupIds) && opts.groupIds.length > 0 && reelUrl) {
+          const ok = [];
+          const fail = [];
+          for (const gid of opts.groupIds) {
+            try {
+              await shareToFacebookGroup({
+                groupId: String(gid),
+                link: reelUrl,
+                message: description,
+                userAccessToken: conn.userAccessToken,
+              });
+              ok.push(gid);
+            } catch (gerr) {
+              fail.push({ groupId: gid, error: gerr?.response?.data?.error?.message || gerr.message });
+            }
+          }
+          groupShareSummary = { ok, fail };
+        }
         results.push({
           platform, id, accountName: conn.name,
-          url: data.id ? `https://facebook.com/${data.id}` : undefined,
+          url: reelUrl,
           raw: data,
+          groupShare: groupShareSummary,
         });
       } else if (platform === 'instagram') {
         const data = await uploadToInstagram({

@@ -58,9 +58,18 @@ type FacebookOptions = {
   collaboratorIds?: string[];
   placeId?: string;
   productIds?: string[];
+  groupIds?: string[];
   // UI-only:
   taggedInput?: string;
   collaboratorsInput?: string;
+};
+
+type FacebookGroup = {
+  id: string;
+  name: string;
+  picture?: { data?: { url?: string } };
+  member_count?: number;
+  privacy?: string;
 };
 
 type InstagramOptions = {
@@ -405,6 +414,7 @@ export default function PublishPage() {
           if (collabs.length > 0) options.collaboratorIds = collabs;
           if (raw.placeId) options.placeId = raw.placeId;
           if (raw.productIds && raw.productIds.length > 0) options.productIds = raw.productIds;
+          if (raw.groupIds && raw.groupIds.length > 0) options.groupIds = raw.groupIds;
         } else if (t.platform === "instagram") {
           const tagged = csv(raw.taggedInput).map((u) => u.replace(/^@/, ""));
           const collabs = csv(raw.collaboratorsInput).map((u) => u.replace(/^@/, ""));
@@ -943,6 +953,123 @@ function YouTubeOptionsExpander({
 
 type ThumbMode = "capture" | "upload";
 
+function GroupsPicker({
+  selected,
+  onChange,
+}: {
+  selected: string[];
+  onChange: (next: string[]) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [groups, setGroups] = useState<FacebookGroup[] | null>(null);
+  const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    if (!open || groups !== null) return;
+    setError("");
+    fetch("/api/admin/publish/facebook/groups")
+      .then(async (r) => {
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error || `Failed (${r.status})`);
+        setGroups(d.groups || []);
+      })
+      .catch((err) => {
+        setError(err instanceof Error ? err.message : "Failed to load");
+        setGroups([]);
+      });
+  }, [open, groups]);
+
+  const filtered = (groups || []).filter((g) =>
+    !search ? true : g.name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  function toggle(id: string) {
+    if (selected.includes(id)) {
+      onChange(selected.filter((x) => x !== id));
+    } else if (selected.length >= 9) {
+      alert("Facebook caps cross-posts at 9 groups per Reel.");
+    } else {
+      onChange([...selected, id]);
+    }
+  }
+
+  return (
+    <div>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className="text-xs px-2.5 py-1 rounded border border-gray-700 text-gray-300 hover:border-gray-500"
+        >
+          {open ? "Hide groups" : "+ Share to FB Groups"}
+        </button>
+        {selected.length > 0 && (
+          <span className="text-xs text-green-400">
+            {selected.length}/9 selected
+          </span>
+        )}
+      </div>
+      {open && (
+        <div className="mt-2 border border-gray-800 bg-gray-950 rounded-lg p-2 space-y-2">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search groups…"
+            className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-white outline-none"
+          />
+          {error && <p className="text-xs text-red-400">{error}</p>}
+          {groups === null && <p className="text-xs text-gray-500">Loading…</p>}
+          {groups && filtered.length === 0 && (
+            <p className="text-xs text-gray-500">
+              {search ? "No matches." : "No groups found. (Requires user_managed_groups permission.)"}
+            </p>
+          )}
+          {groups && filtered.length > 0 && (
+            <div className="max-h-64 overflow-y-auto space-y-1">
+              {filtered.map((g) => {
+                const on = selected.includes(g.id);
+                return (
+                  <button
+                    key={g.id}
+                    type="button"
+                    onClick={() => toggle(g.id)}
+                    className={`w-full flex items-center gap-2 text-left px-2 py-1.5 rounded border transition ${
+                      on
+                        ? "border-green-500/40 bg-green-500/5"
+                        : "border-gray-800 bg-gray-900 hover:border-gray-700"
+                    }`}
+                  >
+                    {g.picture?.data?.url && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={g.picture.data.url}
+                        alt=""
+                        className="h-8 w-8 object-cover rounded shrink-0"
+                      />
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs text-white truncate">{g.name}</p>
+                      <p className="text-[10px] text-gray-500">
+                        {g.privacy || ""}
+                        {g.member_count ? ` · ${g.member_count.toLocaleString()} members` : ""}
+                      </p>
+                    </div>
+                    <span className={`text-[10px] ${on ? "text-green-400" : "text-gray-500"}`}>
+                      {on ? "✓" : "+"}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ProductPicker({
   selected,
   onChange,
@@ -1194,6 +1321,20 @@ function FacebookOptionsExpander({
           onChange={(next) => onChange({ productIds: next })}
         />
       </div>
+
+      <div>
+        <span className="block text-xs uppercase tracking-wide text-gray-500 mb-1">
+          Share the Reel to Facebook Groups (max 9)
+        </span>
+        <p className="text-[11px] text-yellow-500/80 mb-1.5">
+          Pending Meta App Review for user_managed_groups + publish_to_groups.
+          Selection is saved and will fan out once the permissions are granted.
+        </p>
+        <GroupsPicker
+          selected={opts.groupIds || []}
+          onChange={(next) => onChange({ groupIds: next })}
+        />
+      </div>
     </div>
   );
 }
@@ -1276,11 +1417,19 @@ function InstagramOptionsExpander({
         />
       </label>
 
-      <p className="text-xs text-gray-500 italic">
-        Product tagging on Instagram is unavailable — Meta requires App Review
-        for the instagram_shopping_tag_products permission. Tag products on the
-        Facebook destination instead.
-      </p>
+      <div>
+        <span className="block text-xs uppercase tracking-wide text-gray-500 mb-1">
+          Tag products from your shop
+        </span>
+        <p className="text-[11px] text-yellow-500/80 mb-1.5">
+          Pending Meta App Review for instagram_shopping_tag_products. Selection
+          is saved and will be applied once the permission is granted.
+        </p>
+        <ProductPicker
+          selected={opts.productIds || []}
+          onChange={(next) => onChange({ productIds: next })}
+        />
+      </div>
     </div>
   );
 }
