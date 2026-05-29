@@ -80,6 +80,29 @@ function targetKey(t: { platform: string; id: string }) {
   return `${t.platform}:${t.id}`;
 }
 
+function csvList(input: string | undefined): string[] {
+  return (input || "").split(",").map((s) => s.trim()).filter(Boolean);
+}
+
+function normalize(v: string): string {
+  return v.replace(/^@/, "").toLowerCase();
+}
+
+function isInCsv(input: string | undefined, value: string): boolean {
+  const items = csvList(input);
+  const want = normalize(value);
+  return items.some((i) => normalize(i) === want);
+}
+
+function toggleCsv(input: string | undefined, value: string): string {
+  const items = csvList(input);
+  const want = normalize(value);
+  if (items.some((i) => normalize(i) === want)) {
+    return items.filter((i) => normalize(i) !== want).join(", ");
+  }
+  return [...items, value].join(", ");
+}
+
 function fileToDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -631,6 +654,9 @@ export default function PublishPage() {
                       <FacebookOptionsExpander
                         opts={targetOptions[key] || {}}
                         onChange={(patch) => setOptions(key, patch)}
+                        otherPages={connections.facebook.filter(
+                          (p) => p.id !== c.id
+                        )}
                       />
                     )}
                   </div>
@@ -654,6 +680,9 @@ export default function PublishPage() {
                       <InstagramOptionsExpander
                         opts={targetOptions[key] || {}}
                         onChange={(patch) => setOptions(key, patch)}
+                        otherAccounts={connections.instagram.filter(
+                          (a) => a.id !== c.id
+                        )}
                       />
                     )}
                   </div>
@@ -885,12 +914,47 @@ function YouTubeOptionsExpander({
 
 type ThumbMode = "capture" | "upload";
 
+function PresetChips({
+  presets,
+  currentValue,
+  onToggle,
+}: {
+  presets: { label: string; value: string }[];
+  currentValue: string;
+  onToggle: (value: string) => void;
+}) {
+  return (
+    <div className="flex flex-wrap gap-1.5 mt-1.5">
+      {presets.map((p) => {
+        const on = isInCsv(currentValue, p.value);
+        return (
+          <button
+            key={p.value}
+            type="button"
+            onClick={() => onToggle(p.value)}
+            className={`text-xs px-2 py-1 rounded-full border transition ${
+              on
+                ? "bg-green-500/15 border-green-500/50 text-green-200"
+                : "border-gray-700 text-gray-300 hover:border-gray-500"
+            }`}
+          >
+            {on ? "✓ " : "+ "}
+            {p.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 function FacebookOptionsExpander({
   opts,
   onChange,
+  otherPages,
 }: {
   opts: FacebookOptions;
   onChange: (patch: Partial<FacebookOptions>) => void;
+  otherPages: FacebookAccount[];
 }) {
   const postAsReel = opts.postAsReel !== false;
   return (
@@ -926,18 +990,31 @@ function FacebookOptionsExpander({
           className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-white outline-none"
         />
       </label>
-      <label className="block">
-        <span className="block text-xs uppercase tracking-wide text-gray-500 mb-1">
-          Collaborators (comma-separated FB user IDs — numeric)
-        </span>
-        <input
-          type="text"
-          value={opts.collaboratorsInput || ""}
-          onChange={(e) => onChange({ collaboratorsInput: e.target.value })}
-          placeholder="1234567890, 9876543210"
-          className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-white outline-none"
-        />
-      </label>
+      <div>
+        <label className="block">
+          <span className="block text-xs uppercase tracking-wide text-gray-500 mb-1">
+            Collaborators
+          </span>
+          <input
+            type="text"
+            value={opts.collaboratorsInput || ""}
+            onChange={(e) => onChange({ collaboratorsInput: e.target.value })}
+            placeholder="Click chips below or paste FB Page IDs"
+            className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-white outline-none"
+          />
+        </label>
+        {otherPages.length > 0 && (
+          <PresetChips
+            presets={otherPages.map((p) => ({ label: p.name, value: p.id }))}
+            currentValue={opts.collaboratorsInput || ""}
+            onToggle={(value) =>
+              onChange({
+                collaboratorsInput: toggleCsv(opts.collaboratorsInput, value),
+              })
+            }
+          />
+        )}
+      </div>
       <label className="block">
         <span className="block text-xs uppercase tracking-wide text-gray-500 mb-1">
           Location (FB place ID, optional)
@@ -957,36 +1034,66 @@ function FacebookOptionsExpander({
 function InstagramOptionsExpander({
   opts,
   onChange,
+  otherAccounts,
 }: {
   opts: InstagramOptions;
   onChange: (patch: Partial<InstagramOptions>) => void;
+  otherAccounts: InstagramAccount[];
 }) {
+  const accountChips = otherAccounts.map((a) => ({
+    label: `@${a.username}`,
+    value: `@${a.username}`,
+  }));
   return (
     <div className="mt-2 ml-6 mb-2 rounded-lg border border-gray-800 bg-gray-950/60 p-3 space-y-3 text-sm">
-      <label className="block">
-        <span className="block text-xs uppercase tracking-wide text-gray-500 mb-1">
-          Tag people (comma-separated @usernames)
-        </span>
-        <input
-          type="text"
-          value={opts.taggedInput || ""}
-          onChange={(e) => onChange({ taggedInput: e.target.value })}
-          placeholder="@friend1, @friend2"
-          className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-white outline-none"
-        />
-      </label>
-      <label className="block">
-        <span className="block text-xs uppercase tracking-wide text-gray-500 mb-1">
-          Collaborators (comma-separated @usernames, max 3)
-        </span>
-        <input
-          type="text"
-          value={opts.collaboratorsInput || ""}
-          onChange={(e) => onChange({ collaboratorsInput: e.target.value })}
-          placeholder="@cohost1, @cohost2"
-          className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-white outline-none"
-        />
-      </label>
+      <div>
+        <label className="block">
+          <span className="block text-xs uppercase tracking-wide text-gray-500 mb-1">
+            Tag people
+          </span>
+          <input
+            type="text"
+            value={opts.taggedInput || ""}
+            onChange={(e) => onChange({ taggedInput: e.target.value })}
+            placeholder="Click chips below or paste @usernames"
+            className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-white outline-none"
+          />
+        </label>
+        {accountChips.length > 0 && (
+          <PresetChips
+            presets={accountChips}
+            currentValue={opts.taggedInput || ""}
+            onToggle={(value) =>
+              onChange({ taggedInput: toggleCsv(opts.taggedInput, value) })
+            }
+          />
+        )}
+      </div>
+      <div>
+        <label className="block">
+          <span className="block text-xs uppercase tracking-wide text-gray-500 mb-1">
+            Collaborators (max 3)
+          </span>
+          <input
+            type="text"
+            value={opts.collaboratorsInput || ""}
+            onChange={(e) => onChange({ collaboratorsInput: e.target.value })}
+            placeholder="Click chips below or paste @usernames"
+            className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-white outline-none"
+          />
+        </label>
+        {accountChips.length > 0 && (
+          <PresetChips
+            presets={accountChips}
+            currentValue={opts.collaboratorsInput || ""}
+            onToggle={(value) =>
+              onChange({
+                collaboratorsInput: toggleCsv(opts.collaboratorsInput, value),
+              })
+            }
+          />
+        )}
+      </div>
       <label className="block">
         <span className="block text-xs uppercase tracking-wide text-gray-500 mb-1">
           Location ID (optional)
