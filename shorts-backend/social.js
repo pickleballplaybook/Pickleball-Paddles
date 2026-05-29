@@ -58,13 +58,27 @@ export async function uploadToYouTube({ tokens, videoPath, title, description, s
   return res.data;
 }
 
+// Returns the channel that the given OAuth token is associated with.
+export async function getYouTubeChannel(tokens) {
+  const oauth2Client = getYouTubeClient();
+  oauth2Client.setCredentials(tokens);
+  const youtube = google.youtube({ version: 'v3', auth: oauth2Client });
+  const res = await youtube.channels.list({
+    part: ['snippet'],
+    mine: true,
+  });
+  const ch = res.data.items?.[0];
+  if (!ch) throw new Error('No YouTube channel found for this account');
+  return { id: ch.id, title: ch.snippet?.title || ch.id };
+}
+
 // ─── META (Instagram + Facebook) ─────────────────────────────────────────────
 
 export function getMetaAuthUrl() {
   const params = new URLSearchParams({
     client_id: process.env.META_APP_ID,
     redirect_uri: process.env.META_REDIRECT_URI,
-    scope: 'instagram_business_content_publish,instagram_content_publish,pages_manage_posts,pages_read_engagement,pages_show_list',
+    scope: 'instagram_basic,instagram_content_publish,pages_show_list,pages_read_engagement,pages_manage_posts',
     response_type: 'code',
   });
   return `https://www.facebook.com/dialog/oauth?${params}`;
@@ -109,6 +123,17 @@ export async function getInstagramAccount(pageId, pageToken) {
     },
   });
   return res.data.instagram_business_account?.id;
+}
+
+export async function getInstagramUsername(igAccountId, accessToken) {
+  try {
+    const res = await axios.get(`https://graph.facebook.com/v19.0/${igAccountId}`, {
+      params: { fields: 'username', access_token: accessToken },
+    });
+    return res.data.username || null;
+  } catch {
+    return null;
+  }
 }
 
 export async function uploadToInstagram({ igAccountId, accessToken, videoUrl, caption, scheduledAt }) {

@@ -9,9 +9,10 @@ import { fileURLToPath } from 'url';
 import { v4 as uuidv4 } from 'uuid';
 import Anthropic from '@anthropic-ai/sdk';
 import {
-  getYouTubeAuthUrl, exchangeYouTubeCode, uploadToYouTube,
+  getYouTubeAuthUrl, exchangeYouTubeCode, uploadToYouTube, getYouTubeChannel,
   getMetaAuthUrl, exchangeMetaCode, getLongLivedToken,
-  getPages, getInstagramAccount, uploadToInstagram, uploadToFacebook
+  getPages, getInstagramAccount, getInstagramUsername,
+  uploadToInstagram, uploadToFacebook
 } from './social.js';
 import OpenAI from 'openai';
 import archiver from 'archiver';
@@ -437,11 +438,52 @@ app.listen(PORT, () => console.log(`Shorts backend running on port ${PORT}`));
 
 
 
-// Token storage (use a database in production)
-let youtubeTokens = null;
-let metaAccessToken = null;
-let facebookPages = [];
-let instagramAccountId = null;
+// Connection storage — persisted to disk so connections survive Railway redeploys.
+// Each entry has minimum: { id, name, … platform-specific fields }.
+const CONNECTIONS_PATH = path.join(OUTPUT_DIR, 'connections.json');
+const connections = {
+  youtube: [],   // { id (channelId), name, tokens }
+  facebook: [],  // { id (pageId), name, accessToken }
+  instagram: [], // { id (igAccountId), username, accessToken, facebookPageId, facebookPageName }
+};
+
+function loadConnections() {
+  if (!fs.existsSync(CONNECTIONS_PATH)) return;
+  try {
+    const data = JSON.parse(fs.readFileSync(CONNECTIONS_PATH, 'utf-8'));
+    connections.youtube = data.youtube || [];
+    connections.facebook = data.facebook || [];
+    connections.instagram = data.instagram || [];
+    console.log(`Loaded connections: yt=${connections.youtube.length} fb=${connections.facebook.length} ig=${connections.instagram.length}`);
+  } catch (err) {
+    console.error('Failed to load connections.json:', err.message);
+  }
+}
+
+function saveConnections() {
+  try {
+    fs.writeFileSync(CONNECTIONS_PATH, JSON.stringify(connections, null, 2));
+  } catch (err) {
+    console.error('Failed to write connections.json:', err.message);
+  }
+}
+
+function upsertConnection(type, entry) {
+  const arr = connections[type];
+  const idx = arr.findIndex(c => c.id === entry.id);
+  if (idx >= 0) arr[idx] = { ...arr[idx], ...entry };
+  else arr.push(entry);
+  saveConnections();
+}
+
+function removeConnection(type, id) {
+  const before = connections[type].length;
+  connections[type] = connections[type].filter(c => c.id !== id);
+  if (connections[type].length !== before) saveConnections();
+  return connections[type].length !== before;
+}
+
+loadConnections();
 
 // ─── YOUTUBE AUTH ─────────────────────────────────────────────────────────────
 app.get('/auth/youtube', (req, res) => {
@@ -450,15 +492,13 @@ app.get('/auth/youtube', (req, res) => {
 
 app.get('/auth/youtube/callback', async (req, res) => {
   try {
-    youtubeTokens = await exchangeYouTubeCode(req.query.code);
-    res.send('<script>window.close();</script>YouTube connected! You can close this window.');
+    const tokens = await exchangeYouTubeCode(req.query.code);
+    const channel = await getYouTubeChannel(tokens);
+    upsertConnection('youtube', { id: channel.id, name: channel.title, tokens });
+    res.send(`<script>window.close();</script>YouTube connected: ${channel.title}. You can close this window.`);
   } catch (e) {
     res.status(500).send('YouTube auth failed: ' + e.message);
   }
-});
-
-app.get('/auth/youtube/status', (req, res) => {
-  res.json({ connected: !!youtubeTokens });
 });
 
 // ─── META AUTH ────────────────────────────────────────────────────────────────
@@ -469,22 +509,65 @@ app.get('/auth/meta', (req, res) => {
 app.get('/auth/meta/callback', async (req, res) => {
   try {
     const { access_token } = await exchangeMetaCode(req.query.code);
-    metaAccessToken = await getLongLivedToken(access_token);
-    facebookPages = await getPages(metaAccessToken);
-    if (facebookPages.length > 0) {
-      instagramAccountId = await getInstagramAccount(facebookPages[0].id, facebookPages[0].access_token);
+    const longLived = await getLongLivedToken(access_token);
+    const pages = await getPages(longLived);
+    for (const page of pages) {
+      upsertConnection('facebook', {
+        id: page.id,
+        name: page.name,
+        accessToken: page.access_token,
+      });
+      const igId = await getInstagramAccount(page.id, page.access_token);
+      if (igId) {
+        const username = await getInstagramUsername(igId, page.access_token);
+        upsertConnection('instagram', {
+          id: igId,
+          username: username || `(IG ${igId})`,
+          accessToken: page.access_token,
+          facebookPageId: page.id,
+          facebookPageName: page.name,
+        });
+      }
     }
-    res.send('<script>window.close();</script>Meta connected! You can close this window.');
+    const summary = `${pages.length} Page${pages.length === 1 ? '' : 's'}`;
+    res.send(`<script>window.close();</script>Meta connected: ${summary}. You can close this window.`);
   } catch (e) {
     res.status(500).send('Meta auth failed: ' + e.message);
   }
 });
 
-app.get('/auth/meta/status', (req, res) => {
+// ─── CONNECTIONS ──────────────────────────────────────────────────────────────
+// Returns a sanitized view (no tokens) for the UI.
+app.get('/auth/connections', (_req, res) => {
   res.json({
-    connected: !!metaAccessToken,
-    pages: facebookPages.map(p => ({ id: p.id, name: p.name })),
-    instagramAccountId,
+    youtube: connections.youtube.map(c => ({ id: c.id, name: c.name })),
+    facebook: connections.facebook.map(c => ({ id: c.id, name: c.name })),
+    instagram: connections.instagram.map(c => ({
+      id: c.id,
+      username: c.username,
+      facebookPageName: c.facebookPageName,
+    })),
+  });
+});
+
+app.delete('/auth/connections/:type/:id', (req, res) => {
+  const { type, id } = req.params;
+  if (!['youtube', 'facebook', 'instagram'].includes(type)) {
+    return res.status(400).json({ error: 'Invalid connection type' });
+  }
+  const removed = removeConnection(type, id);
+  if (!removed) return res.status(404).json({ error: 'Not found' });
+  res.json({ ok: true });
+});
+
+// Back-compat for the previous frontend until it deploys with the new shape.
+app.get('/auth/youtube/status', (_req, res) => {
+  res.json({ connected: connections.youtube.length > 0 });
+});
+app.get('/auth/meta/status', (_req, res) => {
+  res.json({
+    connected: connections.facebook.length > 0 || connections.instagram.length > 0,
+    pages: connections.facebook.map(p => ({ id: p.id, name: p.name })),
   });
 });
 
@@ -593,55 +676,76 @@ app.post('/api/publish', upload.single('video'), async (req, res) => {
     return res.status(400).json({ error: 'videoPath, videoUrl, or video upload required' });
   }
 
-  // Multipart sends fields as strings; JSON sends arrays. Normalize.
-  if (typeof platforms === 'string') {
-    platforms = platforms.split(',').map(s => s.trim()).filter(Boolean);
+  // Build the list of (platform, connectionId) targets.
+  let targets = req.body.targets;
+  if (typeof targets === 'string') {
+    try { targets = JSON.parse(targets); } catch { targets = []; }
   }
-  if (!Array.isArray(platforms)) platforms = [];
+  if (!Array.isArray(targets)) targets = [];
 
-  const results = {};
-
-  if (platforms.includes('youtube') && youtubeTokens) {
-    try {
-      results.youtube = await uploadToYouTube({
-        tokens: youtubeTokens,
-        videoPath,
-        title,
-        description,
-        scheduledAt,
-      });
-    } catch (e) {
-      results.youtube = { error: e.message };
+  // Back-compat: if the old `platforms` shape was used, map to first connection of each type.
+  if (targets.length === 0 && platforms) {
+    if (typeof platforms === 'string') {
+      platforms = platforms.split(',').map(s => s.trim()).filter(Boolean);
+    }
+    if (Array.isArray(platforms)) {
+      for (const p of platforms) {
+        const first = connections[p]?.[0];
+        if (first) targets.push({ platform: p, id: first.id });
+      }
     }
   }
 
-  if (platforms.includes('instagram') && metaAccessToken && instagramAccountId) {
-    try {
-      results.instagram = await uploadToInstagram({
-        igAccountId: instagramAccountId,
-        accessToken: metaAccessToken,
-        videoUrl,
-        caption: description,
-        scheduledAt,
-      });
-    } catch (e) {
-      results.instagram = { error: e.message };
-    }
+  if (targets.length === 0) {
+    return res.status(400).json({ error: 'No destinations selected' });
   }
 
-  if (platforms.includes('facebook') && facebookPages.length > 0) {
-    try {
-      results.facebook = await uploadToFacebook({
-        pageId: facebookPages[0].id,
-        accessToken: facebookPages[0].access_token,
-        videoPath,
-        title,
-        description,
-        scheduledAt,
-      });
-    } catch (e) {
-      results.facebook = { error: e.message };
+  const results = [];
+  for (const target of targets) {
+    const { platform, id } = target;
+    const key = `${platform}:${id}`;
+    const conn = connections[platform]?.find(c => c.id === id);
+    if (!conn) {
+      results.push({ platform, id, error: 'Connection not found' });
+      continue;
     }
+    try {
+      if (platform === 'youtube') {
+        const data = await uploadToYouTube({
+          tokens: conn.tokens, videoPath, title, description, scheduledAt,
+        });
+        results.push({
+          platform, id, accountName: conn.name,
+          url: data.id ? `https://youtu.be/${data.id}` : undefined,
+          raw: data,
+        });
+      } else if (platform === 'facebook') {
+        const data = await uploadToFacebook({
+          pageId: conn.id, accessToken: conn.accessToken,
+          videoPath, title, description, scheduledAt,
+        });
+        results.push({
+          platform, id, accountName: conn.name,
+          url: data.id ? `https://facebook.com/${data.id}` : undefined,
+          raw: data,
+        });
+      } else if (platform === 'instagram') {
+        const data = await uploadToInstagram({
+          igAccountId: conn.id, accessToken: conn.accessToken,
+          videoUrl, caption: description, scheduledAt,
+        });
+        results.push({
+          platform, id, accountName: conn.username,
+          url: data.id ? `https://instagram.com/p/${data.id}` : undefined,
+          raw: data,
+        });
+      } else {
+        results.push({ platform, id, error: 'Unknown platform' });
+      }
+    } catch (e) {
+      results.push({ platform, id, accountName: conn.name || conn.username, error: e.message });
+    }
+    console.log(`[publish] ${key} done`);
   }
 
   res.json({ success: true, results });

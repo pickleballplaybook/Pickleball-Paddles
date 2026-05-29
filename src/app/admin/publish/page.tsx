@@ -2,16 +2,15 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-type YouTubeStatus = { connected: boolean };
-type MetaPage = { id: string; name: string };
-type MetaStatus = {
-  connected: boolean;
-  pages?: MetaPage[];
-  instagramAccountId?: string | null;
-};
-type PlatformStatus = { youtube: YouTubeStatus; meta: MetaStatus };
+type YouTubeAccount = { id: string; name: string };
+type FacebookAccount = { id: string; name: string };
+type InstagramAccount = { id: string; username: string; facebookPageName?: string };
 
-type Platforms = { youtube: boolean; instagram: boolean; facebook: boolean };
+type Connections = {
+  youtube: YouTubeAccount[];
+  facebook: FacebookAccount[];
+  instagram: InstagramAccount[];
+};
 
 type Clip = {
   jobId: string;
@@ -23,48 +22,60 @@ type Clip = {
   sourceUrl?: string;
 };
 
+type Target = {
+  platform: "youtube" | "facebook" | "instagram";
+  id: string;
+};
+
+type PublishResult = {
+  platform: string;
+  id: string;
+  accountName?: string;
+  url?: string;
+  error?: string;
+};
+
 type PublishResponse = {
   success?: boolean;
   error?: string;
-  results?: Record<string, { error?: string; url?: string; id?: string } | unknown>;
+  results?: PublishResult[];
 };
 
 type SourceMode = "upload" | "clip";
 
+function targetKey(t: Target) {
+  return `${t.platform}:${t.id}`;
+}
+
 export default function PublishPage() {
-  const [status, setStatus] = useState<PlatformStatus | null>(null);
-  const [statusError, setStatusError] = useState("");
+  const [connections, setConnections] = useState<Connections | null>(null);
+  const [connectionsError, setConnectionsError] = useState("");
 
   const [sourceMode, setSourceMode] = useState<SourceMode>("upload");
   const [file, setFile] = useState<File | null>(null);
   const [clips, setClips] = useState<Clip[] | null>(null);
   const [selectedClipPath, setSelectedClipPath] = useState<string>("");
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [platforms, setPlatforms] = useState<Platforms>({
-    youtube: false,
-    instagram: false,
-    facebook: false,
-  });
+  const [selectedTargets, setSelectedTargets] = useState<Target[]>([]);
   const [scheduleAt, setScheduleAt] = useState("");
 
   const [publishing, setPublishing] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [result, setResult] = useState<PublishResponse | null>(null);
 
-  const popupRef = useRef<Window | null>(null);
   const popupPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const loadStatus = useCallback(async () => {
-    setStatusError("");
+  const loadConnections = useCallback(async () => {
+    setConnectionsError("");
     try {
-      const [yt, meta] = await Promise.all([
-        fetch("/api/admin/publish/youtube/status").then((r) => r.json()),
-        fetch("/api/admin/publish/meta/status").then((r) => r.json()),
-      ]);
-      setStatus({ youtube: yt, meta });
+      const r = await fetch("/api/admin/publish/connections");
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || `Failed (${r.status})`);
+      setConnections(d);
     } catch (err) {
-      setStatusError(err instanceof Error ? err.message : "Failed to load status");
+      setConnectionsError(err instanceof Error ? err.message : "Failed to load");
     }
   }, []);
 
@@ -79,9 +90,9 @@ export default function PublishPage() {
   }, []);
 
   useEffect(() => {
-    loadStatus();
+    loadConnections();
     loadClips();
-  }, [loadStatus, loadClips]);
+  }, [loadConnections, loadClips]);
 
   useEffect(() => {
     return () => {
@@ -105,32 +116,52 @@ export default function PublishPage() {
     const top = window.screenY + (window.outerHeight - h) / 2;
     const popup = window.open(
       `/auth/${provider}`,
-      `connect-${provider}`,
+      `connect-${provider}-${Date.now()}`,
       `width=${w},height=${h},left=${left},top=${top}`
     );
     if (!popup) {
       alert("Popup blocked — allow popups for this site and try again.");
       return;
     }
-    popupRef.current = popup;
     if (popupPollRef.current) clearInterval(popupPollRef.current);
     popupPollRef.current = setInterval(() => {
       if (popup.closed) {
         if (popupPollRef.current) clearInterval(popupPollRef.current);
         popupPollRef.current = null;
-        loadStatus();
+        loadConnections();
       }
     }, 800);
   }
 
-  function togglePlatform(key: keyof Platforms) {
-    setPlatforms((p) => ({ ...p, [key]: !p[key] }));
+  async function disconnect(type: keyof Connections, id: string) {
+    if (!confirm(`Remove this ${type} connection?`)) return;
+    try {
+      const r = await fetch(
+        `/api/admin/publish/connections/${type}/${encodeURIComponent(id)}`,
+        { method: "DELETE" }
+      );
+      if (!r.ok) {
+        const d = await r.json().catch(() => ({}));
+        throw new Error(d.error || `Failed (${r.status})`);
+      }
+      setSelectedTargets((prev) =>
+        prev.filter((t) => !(t.platform === type && t.id === id))
+      );
+      loadConnections();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Disconnect failed");
+    }
   }
 
-  // Upload a file directly to the backend in two steps:
-  //   1. POST /api/admin/publish/upload-reserve → { uploadUrl, token, exp, uploadId }
-  //   2. POST <uploadUrl>?token=...&exp=... with multipart `video`
-  // Returns the on-disk path the publish endpoint should consume.
+  function toggleTarget(t: Target) {
+    setSelectedTargets((prev) => {
+      const exists = prev.some((p) => p.platform === t.platform && p.id === t.id);
+      return exists
+        ? prev.filter((p) => !(p.platform === t.platform && p.id === t.id))
+        : [...prev, t];
+    });
+  }
+
   async function uploadFileDirect(f: File): Promise<string> {
     const reserveRes = await fetch("/api/admin/publish/upload-reserve", {
       method: "POST",
@@ -157,11 +188,8 @@ export default function PublishPage() {
       xhr.onload = () => {
         try {
           const body = JSON.parse(xhr.responseText);
-          if (xhr.status >= 200 && xhr.status < 300 && body.path) {
-            resolve(body.path);
-          } else {
-            reject(new Error(body.error || `Upload failed (${xhr.status})`));
-          }
+          if (xhr.status >= 200 && xhr.status < 300 && body.path) resolve(body.path);
+          else reject(new Error(body.error || `Upload failed (${xhr.status})`));
         } catch {
           reject(new Error(`Upload failed (${xhr.status})`));
         }
@@ -188,11 +216,8 @@ export default function PublishPage() {
       setResult({ error: "Title is required." });
       return;
     }
-    const chosen = (Object.keys(platforms) as Array<keyof Platforms>).filter(
-      (k) => platforms[k]
-    );
-    if (chosen.length === 0) {
-      setResult({ error: "Pick at least one platform." });
+    if (selectedTargets.length === 0) {
+      setResult({ error: "Pick at least one destination." });
       return;
     }
 
@@ -218,11 +243,10 @@ export default function PublishPage() {
           videoPath,
           title: title.trim(),
           description,
-          platforms: chosen,
+          targets: selectedTargets,
           scheduledAt,
         }),
       });
-
       const d: PublishResponse = await r.json();
       if (!r.ok || d.error) {
         throw new Error(d.error || `Request failed (${r.status})`);
@@ -235,9 +259,6 @@ export default function PublishPage() {
       setUploadProgress(null);
     }
   }
-
-  const ytConnected = !!status?.youtube?.connected;
-  const metaConnected = !!status?.meta?.connected;
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-8">
@@ -252,41 +273,60 @@ export default function PublishPage() {
           </button>
         </div>
         <p className="text-gray-400 mb-8">
-          Upload a video to YouTube, Instagram, and Facebook in one go.
+          Connect multiple accounts and post to any combination of them at once.
         </p>
 
         {/* ───────── Connections ───────── */}
-        <section className="mb-10">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-semibold">Connections</h2>
-            <button
-              onClick={loadStatus}
-              className="text-sm text-gray-400 hover:text-white"
-            >
-              Refresh
-            </button>
-          </div>
-          {statusError && (
-            <p className="text-red-400 text-sm mb-3">{statusError}</p>
+        <section className="mb-10 space-y-6">
+          <ConnectionGroup
+            heading="YouTube"
+            empty="No channels connected."
+            connectLabel="+ Connect YouTube channel"
+            onConnect={() => openConnectPopup("youtube")}
+          >
+            {connections?.youtube.map((c) => (
+              <ConnectionRow
+                key={c.id}
+                label={c.name}
+                onRemove={() => disconnect("youtube", c.id)}
+              />
+            ))}
+          </ConnectionGroup>
+
+          <ConnectionGroup
+            heading="Facebook Pages"
+            empty="No Facebook Pages connected."
+            connectLabel="+ Connect a Meta account"
+            onConnect={() => openConnectPopup("meta")}
+          >
+            {connections?.facebook.map((c) => (
+              <ConnectionRow
+                key={c.id}
+                label={c.name}
+                onRemove={() => disconnect("facebook", c.id)}
+              />
+            ))}
+          </ConnectionGroup>
+
+          <ConnectionGroup
+            heading="Instagram"
+            empty="No Instagram accounts connected. Instagram requires a linked Facebook Page."
+            connectLabel="+ Connect a Meta account"
+            onConnect={() => openConnectPopup("meta")}
+          >
+            {connections?.instagram.map((c) => (
+              <ConnectionRow
+                key={c.id}
+                label={`@${c.username}`}
+                sublabel={c.facebookPageName ? `via ${c.facebookPageName}` : undefined}
+                onRemove={() => disconnect("instagram", c.id)}
+              />
+            ))}
+          </ConnectionGroup>
+
+          {connectionsError && (
+            <p className="text-red-400 text-sm">{connectionsError}</p>
           )}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <ConnectionCard
-              name="YouTube"
-              connected={ytConnected}
-              onConnect={() => openConnectPopup("youtube")}
-            />
-            <ConnectionCard
-              name="Meta (Instagram + Facebook)"
-              connected={metaConnected}
-              detail={[
-                status?.meta?.pages?.[0]?.name,
-                status?.meta?.instagramAccountId ? "Instagram linked" : null,
-              ]
-                .filter(Boolean)
-                .join(" · ")}
-              onConnect={() => openConnectPopup("meta")}
-            />
-          </div>
         </section>
 
         {/* ───────── Upload form ───────── */}
@@ -334,7 +374,8 @@ export default function PublishPage() {
               {clips === null && <p className="text-sm text-gray-500">Loading clips…</p>}
               {clips && clips.length === 0 && (
                 <p className="text-sm text-gray-500">
-                  No clips found. Cut a video in <span className="text-gray-300">/admin/shorts</span> first.
+                  No clips found. Cut a video in{" "}
+                  <span className="text-gray-300">/admin/shorts</span> first.
                 </p>
               )}
               {clips && clips.length > 0 && (
@@ -379,28 +420,50 @@ export default function PublishPage() {
           />
 
           <label className="block text-xs uppercase tracking-wide text-gray-500 mb-2">
-            Platforms
+            Destinations
           </label>
-          <div className="flex flex-wrap gap-2 mb-4">
-            <PlatformPill
-              label="YouTube"
-              active={platforms.youtube}
-              disabled={!ytConnected}
-              onClick={() => togglePlatform("youtube")}
-            />
-            <PlatformPill
-              label="Instagram"
-              active={platforms.instagram}
-              disabled={!metaConnected}
-              onClick={() => togglePlatform("instagram")}
-            />
-            <PlatformPill
-              label="Facebook"
-              active={platforms.facebook}
-              disabled={!metaConnected}
-              onClick={() => togglePlatform("facebook")}
-            />
-          </div>
+          {connections === null ? (
+            <p className="text-sm text-gray-500 mb-4">Loading…</p>
+          ) : connections.youtube.length === 0 &&
+            connections.facebook.length === 0 &&
+            connections.instagram.length === 0 ? (
+            <p className="text-sm text-gray-500 mb-4">
+              Connect at least one account above first.
+            </p>
+          ) : (
+            <div className="space-y-1.5 mb-4">
+              {connections.youtube.map((c) => (
+                <DestinationCheckbox
+                  key={`yt-${c.id}`}
+                  label={`YouTube · ${c.name}`}
+                  checked={selectedTargets.some(
+                    (t) => t.platform === "youtube" && t.id === c.id
+                  )}
+                  onChange={() => toggleTarget({ platform: "youtube", id: c.id })}
+                />
+              ))}
+              {connections.facebook.map((c) => (
+                <DestinationCheckbox
+                  key={`fb-${c.id}`}
+                  label={`Facebook · ${c.name}`}
+                  checked={selectedTargets.some(
+                    (t) => t.platform === "facebook" && t.id === c.id
+                  )}
+                  onChange={() => toggleTarget({ platform: "facebook", id: c.id })}
+                />
+              ))}
+              {connections.instagram.map((c) => (
+                <DestinationCheckbox
+                  key={`ig-${c.id}`}
+                  label={`Instagram · @${c.username}`}
+                  checked={selectedTargets.some(
+                    (t) => t.platform === "instagram" && t.id === c.id
+                  )}
+                  onChange={() => toggleTarget({ platform: "instagram", id: c.id })}
+                />
+              ))}
+            </div>
+          )}
 
           <label className="block text-xs uppercase tracking-wide text-gray-500 mb-1">
             Schedule (optional)
@@ -409,9 +472,9 @@ export default function PublishPage() {
             type="datetime-local"
             value={scheduleAt}
             onChange={(e) => setScheduleAt(e.target.value)}
-            className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white outline-none mb-6"
+            className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white outline-none mb-2"
           />
-          <p className="text-xs text-gray-500 -mt-4 mb-6">
+          <p className="text-xs text-gray-500 mb-6">
             Leave blank to publish immediately.
           </p>
 
@@ -426,7 +489,9 @@ export default function PublishPage() {
                 : "Publishing..."
               : scheduleAt
               ? "Schedule"
-              : "Publish now"}
+              : `Publish to ${selectedTargets.length || "..."} destination${
+                  selectedTargets.length === 1 ? "" : "s"
+                }`}
           </button>
 
           {publishing && uploadProgress !== null && (
@@ -443,28 +508,28 @@ export default function PublishPage() {
               {result.error}
             </div>
           )}
-          {result?.results && Object.keys(result.results).length > 0 && (
+          {result?.results && result.results.length > 0 && (
             <div className="mt-6 space-y-2">
-              {Object.entries(result.results).map(([platform, raw]) => {
-                const r = (raw || {}) as { error?: string; url?: string; id?: string };
+              {result.results.map((r) => {
                 const ok = !r.error;
                 return (
                   <div
-                    key={platform}
+                    key={`${r.platform}-${r.id}`}
                     className={`flex items-center justify-between rounded-lg border px-4 py-3 text-sm ${
                       ok
                         ? "border-green-500/30 bg-green-500/5 text-green-300"
                         : "border-red-500/30 bg-red-500/5 text-red-300"
                     }`}
                   >
-                    <span className="font-medium capitalize">{platform}</span>
+                    <span className="font-medium">
+                      <span className="capitalize">{r.platform}</span>
+                      {r.accountName ? ` · ${r.accountName}` : ""}
+                    </span>
                     <span className="truncate ml-3">
                       {ok
                         ? r.url
                           ? <a href={r.url} target="_blank" rel="noreferrer" className="underline">{r.url}</a>
-                          : r.id
-                            ? `id: ${r.id}`
-                            : "Published"
+                          : "Published"
                         : r.error || "Failed"}
                     </span>
                   </div>
@@ -478,72 +543,87 @@ export default function PublishPage() {
   );
 }
 
-function ConnectionCard({
-  name,
-  connected,
-  detail,
+function ConnectionGroup({
+  heading,
+  empty,
+  connectLabel,
   onConnect,
+  children,
 }: {
-  name: string;
-  connected: boolean;
-  detail?: string;
+  heading: string;
+  empty: string;
+  connectLabel: string;
   onConnect: () => void;
+  children?: React.ReactNode;
+}) {
+  const hasAny = Array.isArray(children)
+    ? children.filter(Boolean).length > 0
+    : Boolean(children);
+  return (
+    <div>
+      <h2 className="text-sm font-semibold text-gray-300 mb-2">{heading}</h2>
+      <div className="bg-gray-900 border border-gray-800 rounded-xl divide-y divide-gray-800">
+        {hasAny ? children : <p className="px-4 py-3 text-sm text-gray-500">{empty}</p>}
+        <button
+          onClick={onConnect}
+          className="block w-full text-left px-4 py-2.5 text-sm text-green-400 hover:bg-gray-800"
+        >
+          {connectLabel}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ConnectionRow({
+  label,
+  sublabel,
+  onRemove,
+}: {
+  label: string;
+  sublabel?: string;
+  onRemove: () => void;
 }) {
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 flex items-center justify-between gap-3">
+    <div className="flex items-center justify-between px-4 py-3">
       <div className="min-w-0">
-        <div className="flex items-center gap-2 mb-1">
-          <span
-            className={`inline-block h-2 w-2 rounded-full ${
-              connected ? "bg-green-400" : "bg-gray-600"
-            }`}
-          />
-          <span className="font-medium">{name}</span>
-        </div>
-        <p className="text-xs text-gray-500 truncate">
-          {connected ? detail || "Connected" : "Not connected"}
-        </p>
+        <p className="text-sm text-white truncate">{label}</p>
+        {sublabel && <p className="text-xs text-gray-500 truncate">{sublabel}</p>}
       </div>
       <button
-        onClick={onConnect}
-        className={`text-sm font-semibold px-4 py-2 rounded-lg shrink-0 ${
-          connected
-            ? "border border-gray-700 text-gray-300 hover:text-white"
-            : "bg-green-500 hover:bg-green-400 text-black"
-        }`}
+        onClick={onRemove}
+        className="text-xs text-gray-500 hover:text-red-400 ml-3"
       >
-        {connected ? "Reconnect" : "Connect"}
+        Disconnect
       </button>
     </div>
   );
 }
 
-function PlatformPill({
+function DestinationCheckbox({
   label,
-  active,
-  disabled,
-  onClick,
+  checked,
+  onChange,
 }: {
   label: string;
-  active: boolean;
-  disabled?: boolean;
-  onClick: () => void;
+  checked: boolean;
+  onChange: () => void;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      title={disabled ? "Connect this platform first" : undefined}
-      className={`px-4 py-2 rounded-full text-sm font-medium border transition ${
-        disabled
-          ? "border-gray-800 text-gray-600 cursor-not-allowed"
-          : active
-          ? "bg-green-500 border-green-500 text-black"
-          : "border-gray-700 text-gray-300 hover:border-gray-500"
+    <label
+      className={`flex items-center gap-3 rounded-lg border px-3 py-2 text-sm cursor-pointer transition ${
+        checked
+          ? "border-green-500/40 bg-green-500/5"
+          : "border-gray-800 bg-gray-800 hover:border-gray-700"
       }`}
     >
-      {label}
-    </button>
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={onChange}
+        className="accent-green-500"
+      />
+      <span className="text-white">{label}</span>
+    </label>
   );
 }
