@@ -49,6 +49,7 @@ export default function PublishPage() {
   const [scheduleAt, setScheduleAt] = useState("");
 
   const [publishing, setPublishing] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [result, setResult] = useState<PublishResponse | null>(null);
 
   const popupRef = useRef<Window | null>(null);
@@ -126,6 +127,54 @@ export default function PublishPage() {
     setPlatforms((p) => ({ ...p, [key]: !p[key] }));
   }
 
+  // Upload a file directly to the backend in two steps:
+  //   1. POST /api/admin/publish/upload-reserve → { uploadUrl, token, exp, uploadId }
+  //   2. POST <uploadUrl>?token=...&exp=... with multipart `video`
+  // Returns the on-disk path the publish endpoint should consume.
+  async function uploadFileDirect(f: File): Promise<string> {
+    const reserveRes = await fetch("/api/admin/publish/upload-reserve", {
+      method: "POST",
+    });
+    const reserve = await reserveRes.json();
+    if (!reserveRes.ok || reserve.error) {
+      throw new Error(reserve.error || `Reserve failed (${reserveRes.status})`);
+    }
+    const { uploadUrl, token, exp } = reserve as {
+      uploadUrl: string;
+      token: string;
+      exp: number;
+    };
+
+    const target = `${uploadUrl}?token=${encodeURIComponent(token)}&exp=${exp}`;
+    return await new Promise<string>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", target);
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) {
+          setUploadProgress(Math.round((e.loaded / e.total) * 100));
+        }
+      };
+      xhr.onload = () => {
+        try {
+          const body = JSON.parse(xhr.responseText);
+          if (xhr.status >= 200 && xhr.status < 300 && body.path) {
+            resolve(body.path);
+          } else {
+            reject(new Error(body.error || `Upload failed (${xhr.status})`));
+          }
+        } catch {
+          reject(new Error(`Upload failed (${xhr.status})`));
+        }
+      };
+      xhr.onerror = () => reject(new Error("Upload network error"));
+      xhr.onabort = () => reject(new Error("Upload aborted"));
+
+      const fd = new FormData();
+      fd.append("video", f);
+      xhr.send(fd);
+    });
+  }
+
   async function handlePublish() {
     if (sourceMode === "upload" && !file) {
       setResult({ error: "Pick a video file first." });
@@ -148,32 +197,31 @@ export default function PublishPage() {
     }
 
     setPublishing(true);
+    setUploadProgress(null);
     setResult(null);
     try {
-      let r: Response;
       const scheduledAt = scheduleAt ? new Date(scheduleAt).toISOString() : undefined;
 
+      let videoPath: string;
       if (sourceMode === "upload") {
-        const fd = new FormData();
-        fd.append("video", file as File);
-        fd.append("title", title.trim());
-        fd.append("description", description);
-        fd.append("platforms", chosen.join(","));
-        if (scheduledAt) fd.append("scheduledAt", scheduledAt);
-        r = await fetch("/api/admin/publish/publish", { method: "POST", body: fd });
+        setUploadProgress(0);
+        videoPath = await uploadFileDirect(file as File);
+        setUploadProgress(null);
       } else {
-        r = await fetch("/api/admin/publish/publish", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            videoPath: selectedClipPath,
-            title: title.trim(),
-            description,
-            platforms: chosen,
-            scheduledAt,
-          }),
-        });
+        videoPath = selectedClipPath;
       }
+
+      const r = await fetch("/api/admin/publish/publish", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          videoPath,
+          title: title.trim(),
+          description,
+          platforms: chosen,
+          scheduledAt,
+        }),
+      });
 
       const d: PublishResponse = await r.json();
       if (!r.ok || d.error) {
@@ -184,6 +232,7 @@ export default function PublishPage() {
       setResult({ error: err instanceof Error ? err.message : "Publish failed" });
     } finally {
       setPublishing(false);
+      setUploadProgress(null);
     }
   }
 
@@ -371,8 +420,23 @@ export default function PublishPage() {
             disabled={publishing}
             className="bg-green-500 hover:bg-green-400 disabled:bg-gray-700 disabled:text-gray-400 text-black font-bold px-6 py-3 rounded-xl"
           >
-            {publishing ? "Publishing..." : scheduleAt ? "Schedule" : "Publish now"}
+            {publishing
+              ? uploadProgress !== null
+                ? `Uploading ${uploadProgress}%`
+                : "Publishing..."
+              : scheduleAt
+              ? "Schedule"
+              : "Publish now"}
           </button>
+
+          {publishing && uploadProgress !== null && (
+            <div className="mt-4 h-2 bg-gray-800 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-green-500 transition-all"
+                style={{ width: `${uploadProgress}%` }}
+              />
+            </div>
+          )}
 
           {result?.error && (
             <div className="mt-6 bg-red-950 border border-red-800 text-red-300 rounded-lg p-4 text-sm">

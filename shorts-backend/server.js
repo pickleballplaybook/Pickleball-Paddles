@@ -16,6 +16,7 @@ import {
 import OpenAI from 'openai';
 import archiver from 'archiver';
 import multer from 'multer';
+import crypto from 'crypto';
 
 const execAsync = promisify(exec);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -30,6 +31,8 @@ if (SHORTS_BACKEND_TOKEN) {
   app.use((req, res, next) => {
     // Allow CORS preflight through
     if (req.method === 'OPTIONS') return next();
+    // Direct uploads from browser self-authenticate via signed token in query string.
+    if (req.path.startsWith('/api/file-upload/')) return next();
     const header = req.headers.authorization || '';
     const provided = header.startsWith('Bearer ') ? header.slice(7) : '';
     if (provided !== SHORTS_BACKEND_TOKEN) {
@@ -41,6 +44,12 @@ if (SHORTS_BACKEND_TOKEN) {
 } else {
   console.warn('SHORTS_BACKEND_TOKEN not set — backend is unauthenticated (dev mode)');
 }
+
+function signUploadToken(uploadId, exp) {
+  const secret = SHORTS_BACKEND_TOKEN || 'dev-secret';
+  return crypto.createHmac('sha256', secret).update(`${uploadId}|${exp}`).digest('hex');
+}
+const usedUploadTokens = new Set();
 
 const JOBS_DIR = process.env.JOBS_DIR || path.join(__dirname, 'jobs');
 const OUTPUT_DIR = process.env.OUTPUT_DIR || path.join(__dirname, 'output');
@@ -491,6 +500,54 @@ const upload = multer({
     },
   }),
   limits: { fileSize: 1024 * 1024 * 1024 }, // 1 GB
+});
+
+// Reserve a one-time upload slot. Called by Next.js with the bearer token.
+// Returns a short-lived signed token the browser can use to PUT a file directly.
+app.post('/api/upload-reserve', (_req, res) => {
+  const uploadId = uuidv4();
+  const exp = Date.now() + 30 * 60 * 1000; // 30 min
+  const token = signUploadToken(uploadId, exp);
+  res.json({ uploadId, token, exp });
+});
+
+// Direct upload from the browser. Self-authenticated by the signed token query param.
+// Exempt from the global bearer-token gate above.
+const uploadMulter = multer({
+  storage: multer.diskStorage({
+    destination: (req, _file, cb) => {
+      const { uploadId } = req.params;
+      const dir = path.join(UPLOADS_DIR, uploadId);
+      fs.mkdirSync(dir, { recursive: true });
+      cb(null, dir);
+    },
+    filename: (_req, file, cb) => {
+      const safe = file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_');
+      cb(null, safe);
+    },
+  }),
+  limits: { fileSize: 5 * 1024 * 1024 * 1024 }, // 5 GB
+});
+
+app.post('/api/file-upload/:uploadId', (req, res, next) => {
+  // Validate signed token BEFORE multer touches the body
+  const { uploadId } = req.params;
+  const token = String(req.query.token || '');
+  const exp = Number(req.query.exp || 0);
+  if (!token || !exp) return res.status(400).json({ error: 'Missing token/exp' });
+  if (exp < Date.now()) return res.status(401).json({ error: 'Token expired' });
+  if (usedUploadTokens.has(uploadId)) {
+    return res.status(409).json({ error: 'Token already used' });
+  }
+  const expected = signUploadToken(uploadId, exp);
+  if (!crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(token))) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+  usedUploadTokens.add(uploadId);
+  next();
+}, uploadMulter.single('video'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+  res.json({ path: req.file.path, filename: req.file.filename });
 });
 
 // Lists every clip across every job — used by the publish picker.
