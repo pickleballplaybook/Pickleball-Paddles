@@ -381,8 +381,7 @@ export async function getFacebookPostMeta(postId, accessToken) {
   try {
     const res = await axios.get(`https://graph.facebook.com/v19.0/${postId}`, {
       params: {
-        // Dropped status_type (deprecated, breaks the whole query).
-        fields: 'id,message,description,with_tags,collaborators,co_authors,permalink_url,from,is_published,application',
+        fields: 'id,message,collaborators,co_authors,with_tags,permalink_url',
         access_token: accessToken,
       },
     });
