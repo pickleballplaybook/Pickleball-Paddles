@@ -135,6 +135,32 @@ function toggleCsv(input: string | undefined, value: string): string {
   return [...items, value].join(", ");
 }
 
+const FILMER_HANDLES = [
+  "zachhigginson_pb",
+  "elliott_schupp_pickleball",
+  "itsezpb",
+  "lucpham__",
+  "picklewithsilas",
+  "officialmeganfudge",
+  "sheaunderwood_",
+  "blakesuard.pb",
+  "wesdawg_pb",
+  "travisrettenmaier",
+  "riripickleball",
+  "everett.epa",
+  "alber.pickleball",
+  "zack.card_pb",
+  "james_lin.pb",
+  "yaol.pb",
+  "zackmarceau_pb",
+  "dr.lane_o",
+  "drillmorepickleball",
+  "troyakin",
+  "pickleballmama",
+];
+
+const CREDIT_RE = /\n*🎥\s*@[\w.]+\s*$/;
+
 const DESCRIPTION_PRESETS = [
   {
     label: "🏆 Drills App",
@@ -727,11 +753,15 @@ export default function PublishPage() {
             placeholder="Short, descriptive title"
           />
 
-          <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center justify-between mb-1 gap-2 flex-wrap">
             <label className="block text-xs uppercase tracking-wide text-gray-500">
               Description
             </label>
-            <div className="flex gap-1.5">
+            <div className="flex gap-1.5 items-center flex-wrap">
+              <FilmerCreditPicker
+                description={description}
+                onChange={setDescription}
+              />
               {DESCRIPTION_PRESETS.map((p) => (
                 <button
                   key={p.label}
@@ -1538,6 +1568,105 @@ function InstagramOptionsExpander({
           onChange={(next) => onChange({ productIds: next })}
         />
       </div>
+    </div>
+  );
+}
+
+function FilmerCreditPicker({
+  description,
+  onChange,
+}: {
+  description: string;
+  onChange: (next: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const match = description.match(/🎥\s*@([\w.]+)\s*$/);
+  const currentCredit = match ? match[1] : null;
+
+  // Close on outside click.
+  useEffect(() => {
+    if (!open) return;
+    function onClick(e: MouseEvent) {
+      if (!containerRef.current?.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, [open]);
+
+  const filtered = FILMER_HANDLES.filter((h) =>
+    h.toLowerCase().includes(search.toLowerCase())
+  );
+
+  function apply(handle: string) {
+    const stripped = description.replace(CREDIT_RE, "").trimEnd();
+    const next = stripped + (stripped ? "\n\n" : "") + `🎥 @${handle}`;
+    onChange(next);
+    setSearch("");
+    setOpen(false);
+  }
+
+  function clear() {
+    onChange(description.replace(CREDIT_RE, "").trimEnd());
+  }
+
+  return (
+    <div className="relative" ref={containerRef}>
+      <div className="flex items-center gap-1">
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className={`text-xs px-2.5 py-1 rounded border transition ${
+            currentCredit
+              ? "border-green-500/40 text-green-200 bg-green-500/5"
+              : "border-gray-700 text-gray-300 hover:border-green-500 hover:text-white"
+          }`}
+        >
+          🎥 {currentCredit ? `@${currentCredit}` : "Filmer credit"}
+        </button>
+        {currentCredit && (
+          <button
+            type="button"
+            onClick={clear}
+            className="text-xs text-gray-500 hover:text-red-400"
+            title="Remove credit"
+          >
+            ×
+          </button>
+        )}
+      </div>
+      {open && (
+        <div className="absolute right-0 mt-1 z-20 w-64 bg-gray-900 border border-gray-700 rounded-lg shadow-lg p-2">
+          <input
+            type="text"
+            autoFocus
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search filmer…"
+            className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-white outline-none mb-1.5"
+          />
+          <div className="max-h-56 overflow-y-auto space-y-0.5">
+            {filtered.length === 0 ? (
+              <p className="text-xs text-gray-500 px-2 py-1.5">No matches</p>
+            ) : (
+              filtered.map((h) => (
+                <button
+                  key={h}
+                  type="button"
+                  onClick={() => apply(h)}
+                  className={`w-full text-left text-xs px-2 py-1.5 rounded hover:bg-gray-800 ${
+                    h === currentCredit ? "text-green-300" : "text-gray-300"
+                  }`}
+                >
+                  @{h}
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
