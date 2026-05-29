@@ -777,6 +777,29 @@ app.post('/api/publish', upload.single('video'), async (req, res) => {
     return res.status(400).json({ error: 'No destinations selected' });
   }
 
+  // If a shared thumbnail was sent, materialize it to disk and build a public
+  // URL so Instagram (which only accepts cover_url, not file uploads) can fetch it.
+  let coverUrl;
+  let coverDirToCleanup;
+  if (sharedThumbnailDataUrl) {
+    const m = /^data:(image\/[a-z0-9.+-]+);base64,(.+)$/i.exec(sharedThumbnailDataUrl);
+    if (m && PUBLIC_BASE_URL) {
+      try {
+        const buf = Buffer.from(m[2], 'base64');
+        const ext = m[1].includes('png') ? 'png' : 'jpg';
+        const thumbId = uuidv4();
+        const thumbDir = path.join(UPLOADS_DIR, `cover-${thumbId}`);
+        fs.mkdirSync(thumbDir, { recursive: true });
+        const thumbPath = path.join(thumbDir, `cover.${ext}`);
+        fs.writeFileSync(thumbPath, buf);
+        coverUrl = `${PUBLIC_BASE_URL.replace(/\/$/, '')}/uploads/cover-${thumbId}/cover.${ext}`;
+        coverDirToCleanup = thumbDir;
+      } catch (err) {
+        console.error('[publish] failed to materialize cover:', err.message);
+      }
+    }
+  }
+
   const results = [];
   for (const target of targets) {
     const { platform, id } = target;
@@ -806,6 +829,10 @@ app.post('/api/publish', upload.single('video'), async (req, res) => {
         const data = await uploadToFacebook({
           pageId: conn.id, accessToken: conn.accessToken,
           videoPath, title, description, scheduledAt,
+          thumbnailDataUrl: sharedThumbnailDataUrl,
+          taggedUserIds: Array.isArray(opts.taggedUserIds) ? opts.taggedUserIds : undefined,
+          collaboratorIds: Array.isArray(opts.collaboratorIds) ? opts.collaboratorIds : undefined,
+          placeId: typeof opts.placeId === 'string' ? opts.placeId : undefined,
         });
         results.push({
           platform, id, accountName: conn.name,
@@ -815,7 +842,11 @@ app.post('/api/publish', upload.single('video'), async (req, res) => {
       } else if (platform === 'instagram') {
         const data = await uploadToInstagram({
           igAccountId: conn.id, accessToken: conn.accessToken,
-          videoUrl, caption: description, scheduledAt,
+          videoUrl, caption: description,
+          coverUrl,
+          taggedUsernames: Array.isArray(opts.taggedUsernames) ? opts.taggedUsernames : undefined,
+          collaboratorUsernames: Array.isArray(opts.collaboratorUsernames) ? opts.collaboratorUsernames : undefined,
+          locationId: typeof opts.locationId === 'string' ? opts.locationId : undefined,
         });
         results.push({
           platform, id, accountName: conn.username,
@@ -844,17 +875,23 @@ app.post('/api/publish', upload.single('video'), async (req, res) => {
 
   // If the source was an upload (lives in UPLOADS_DIR), schedule cleanup so
   // ephemeral disk doesn't accumulate. Give Instagram time to fetch first.
+  const pathsToClean = [];
   if (videoPath && path.resolve(videoPath).startsWith(path.resolve(UPLOADS_DIR))) {
+    const parent = path.dirname(videoPath);
+    if (parent !== UPLOADS_DIR && parent.startsWith(path.resolve(UPLOADS_DIR))) {
+      pathsToClean.push(parent);
+    }
+  }
+  if (coverDirToCleanup) pathsToClean.push(coverDirToCleanup);
+  if (pathsToClean.length > 0) {
     setTimeout(() => {
-      try {
-        // Delete the whole upload folder (one folder per uploadId).
-        const parent = path.dirname(videoPath);
-        if (parent !== UPLOADS_DIR && parent.startsWith(path.resolve(UPLOADS_DIR))) {
-          fs.rmSync(parent, { recursive: true, force: true });
-          console.log(`[cleanup] removed ${parent}`);
+      for (const p of pathsToClean) {
+        try {
+          fs.rmSync(p, { recursive: true, force: true });
+          console.log(`[cleanup] removed ${p}`);
+        } catch (err) {
+          console.error('[cleanup] failed:', err.message);
         }
-      } catch (err) {
-        console.error('[cleanup] failed:', err.message);
       }
     }, 10 * 60 * 1000).unref();
   }

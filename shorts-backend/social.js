@@ -25,7 +25,11 @@ export function getYouTubeAuthUrl() {
       'https://www.googleapis.com/auth/youtube.upload',
       'https://www.googleapis.com/auth/youtube',
     ],
-    prompt: 'consent',
+    // `select_account` makes Google show the account picker even when the user
+    // is already signed in, so a second YouTube channel from a different
+    // Google account can be connected. `consent` keeps us getting a fresh
+    // refresh_token each time.
+    prompt: 'consent select_account',
   });
 }
 
@@ -204,19 +208,36 @@ export async function getInstagramUsername(igAccountId, accessToken) {
   }
 }
 
-export async function uploadToInstagram({ igAccountId, accessToken, videoUrl, caption }) {
+export async function uploadToInstagram({
+  igAccountId, accessToken, videoUrl, caption,
+  coverUrl,             // public URL to a JPG/PNG for the cover frame
+  taggedUsernames,      // string[] — IG usernames
+  collaboratorUsernames,// string[] — IG usernames (max 3)
+  locationId,           // string
+}) {
   // Step 1: Create container
+  const params = {
+    media_type: 'REELS',
+    video_url: videoUrl,
+    caption,
+    access_token: accessToken,
+  };
+  if (coverUrl) params.cover_url = coverUrl;
+  if (locationId) params.location_id = locationId;
+  if (Array.isArray(taggedUsernames) && taggedUsernames.length > 0) {
+    // IG user_tags need positions; default-center anyone the user didn't position.
+    params.user_tags = JSON.stringify(
+      taggedUsernames.map(u => ({ username: String(u), x: 0.5, y: 0.5 }))
+    );
+  }
+  if (Array.isArray(collaboratorUsernames) && collaboratorUsernames.length > 0) {
+    params.collaborators = JSON.stringify(collaboratorUsernames.map(String));
+  }
+
   const containerRes = await axios.post(
     `https://graph.facebook.com/v19.0/${igAccountId}/media`,
     null,
-    {
-      params: {
-        media_type: 'REELS',
-        video_url: videoUrl,
-        caption,
-        access_token: accessToken,
-      },
-    }
+    { params }
   );
   const containerId = containerRes.data.id;
 
@@ -258,10 +279,16 @@ export async function uploadToInstagram({ igAccountId, accessToken, videoUrl, ca
   return publishRes.data;
 }
 
-export async function uploadToFacebook({ pageId, accessToken, videoPath, title, description, scheduledAt }) {
+export async function uploadToFacebook({
+  pageId, accessToken, videoPath, title, description, scheduledAt,
+  thumbnailDataUrl,   // string data URL
+  taggedUserIds,      // string[] (FB user ids or usernames)
+  collaboratorIds,    // string[]
+  placeId,            // FB place id
+}) {
   const formData = new FormData();
-  formData.append('title', title);
-  formData.append('description', description);
+  if (title) formData.append('title', title);
+  if (description) formData.append('description', description);
   formData.append('source', fs.createReadStream(videoPath));
   if (scheduledAt) {
     formData.append('scheduled_publish_time', Math.floor(new Date(scheduledAt).getTime() / 1000));
@@ -269,12 +296,39 @@ export async function uploadToFacebook({ pageId, accessToken, videoPath, title, 
   } else {
     formData.append('published', 'true');
   }
+
+  // Optional: thumbnail uploaded as a binary buffer.
+  if (thumbnailDataUrl) {
+    const m = /^data:(image\/[a-z0-9.+-]+);base64,(.+)$/i.exec(thumbnailDataUrl);
+    if (m) {
+      const buf = Buffer.from(m[2], 'base64');
+      formData.append('thumb', buf, {
+        filename: m[1].includes('png') ? 'thumb.png' : 'thumb.jpg',
+        contentType: m[1],
+      });
+    }
+  }
+
+  if (Array.isArray(taggedUserIds) && taggedUserIds.length > 0) {
+    // FB expects an array of { tag_uid, x, y, in_video } — we don't have positions
+    // from the UI yet, so we pass minimal entries (still valid for non-positional tags).
+    formData.append('tags', JSON.stringify(taggedUserIds.map(uid => ({ tag_uid: String(uid) }))));
+  }
+  if (Array.isArray(collaboratorIds) && collaboratorIds.length > 0) {
+    formData.append('collaborators', JSON.stringify(collaboratorIds.map(String)));
+  }
+  if (placeId) formData.append('place', String(placeId));
+
   formData.append('access_token', accessToken);
 
   const res = await axios.post(
     `https://graph.facebook.com/v19.0/${pageId}/videos`,
     formData,
-    { headers: formData.getHeaders() }
+    {
+      headers: formData.getHeaders(),
+      maxBodyLength: Infinity,
+      maxContentLength: Infinity,
+    }
   );
   return res.data;
 }

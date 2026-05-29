@@ -52,7 +52,26 @@ type YouTubeOptions = {
   tagsInput?: string;
 };
 
-type TargetOptionsMap = Record<string, YouTubeOptions>; // key = targetKey
+type FacebookOptions = {
+  taggedUserIds?: string[];
+  collaboratorIds?: string[];
+  placeId?: string;
+  // UI-only:
+  taggedInput?: string;
+  collaboratorsInput?: string;
+};
+
+type InstagramOptions = {
+  taggedUsernames?: string[];
+  collaboratorUsernames?: string[];
+  locationId?: string;
+  // UI-only:
+  taggedInput?: string;
+  collaboratorsInput?: string;
+};
+
+type AnyOptions = YouTubeOptions & FacebookOptions & InstagramOptions;
+type TargetOptionsMap = Record<string, AnyOptions>; // key = targetKey
 
 type YouTubePlaylist = { id: string; title: string };
 
@@ -249,7 +268,7 @@ export default function PublishPage() {
     }
   }
 
-  function setOptions(key: string, patch: Partial<YouTubeOptions>) {
+  function setOptions(key: string, patch: Partial<AnyOptions>) {
     setTargetOptions((m) => ({ ...m, [key]: { ...(m[key] || {}), ...patch } }));
   }
 
@@ -329,18 +348,33 @@ export default function PublishPage() {
         videoPath = selectedClipPath;
       }
 
-      // Strip UI-only state (tagsInput) and parse tags string.
+      const csv = (s: string | undefined) =>
+        (s || "").split(",").map((x) => x.trim()).filter(Boolean);
+
+      // Strip UI-only state and parse comma-separated inputs per platform.
       const targetsWithOptions = selectedTargets.map((t) => {
         const raw = targetOptions[targetKey(t)] || {};
-        const tags = (raw.tagsInput || "")
-          .split(",")
-          .map((s) => s.trim())
-          .filter(Boolean);
         const options: Record<string, unknown> = {};
-        if (raw.visibility) options.visibility = raw.visibility;
-        if (typeof raw.madeForKids === "boolean") options.madeForKids = raw.madeForKids;
-        if (tags.length > 0) options.tags = tags;
-        if (raw.playlistIds && raw.playlistIds.length > 0) options.playlistIds = raw.playlistIds;
+        if (t.platform === "youtube") {
+          const tags = csv(raw.tagsInput);
+          if (raw.visibility) options.visibility = raw.visibility;
+          if (typeof raw.madeForKids === "boolean") options.madeForKids = raw.madeForKids;
+          if (tags.length > 0) options.tags = tags;
+          if (raw.playlistIds && raw.playlistIds.length > 0)
+            options.playlistIds = raw.playlistIds;
+        } else if (t.platform === "facebook") {
+          const tagged = csv(raw.taggedInput);
+          const collabs = csv(raw.collaboratorsInput);
+          if (tagged.length > 0) options.taggedUserIds = tagged;
+          if (collabs.length > 0) options.collaboratorIds = collabs;
+          if (raw.placeId) options.placeId = raw.placeId;
+        } else if (t.platform === "instagram") {
+          const tagged = csv(raw.taggedInput).map((u) => u.replace(/^@/, ""));
+          const collabs = csv(raw.collaboratorsInput).map((u) => u.replace(/^@/, ""));
+          if (tagged.length > 0) options.taggedUsernames = tagged;
+          if (collabs.length > 0) options.collaboratorUsernames = collabs;
+          if (raw.locationId) options.locationId = raw.locationId;
+        }
         return Object.keys(options).length > 0 ? { ...t, options } : t;
       });
 
@@ -576,26 +610,52 @@ export default function PublishPage() {
                   </div>
                 );
               })}
-              {connections.facebook.map((c) => (
-                <DestinationCheckbox
-                  key={`fb-${c.id}`}
-                  label={`Facebook · ${c.name}`}
-                  checked={selectedTargets.some(
-                    (t) => t.platform === "facebook" && t.id === c.id
-                  )}
-                  onChange={() => toggleTarget({ platform: "facebook", id: c.id })}
-                />
-              ))}
-              {connections.instagram.map((c) => (
-                <DestinationCheckbox
-                  key={`ig-${c.id}`}
-                  label={`Instagram · @${c.username}`}
-                  checked={selectedTargets.some(
-                    (t) => t.platform === "instagram" && t.id === c.id
-                  )}
-                  onChange={() => toggleTarget({ platform: "instagram", id: c.id })}
-                />
-              ))}
+              {connections.facebook.map((c) => {
+                const key = `facebook:${c.id}`;
+                const checked = selectedTargets.some(
+                  (t) => t.platform === "facebook" && t.id === c.id
+                );
+                return (
+                  <div key={`fb-${c.id}`}>
+                    <DestinationCheckbox
+                      label={`Facebook · ${c.name}`}
+                      checked={checked}
+                      onChange={() =>
+                        toggleTarget({ platform: "facebook", id: c.id })
+                      }
+                    />
+                    {checked && (
+                      <FacebookOptionsExpander
+                        opts={targetOptions[key] || {}}
+                        onChange={(patch) => setOptions(key, patch)}
+                      />
+                    )}
+                  </div>
+                );
+              })}
+              {connections.instagram.map((c) => {
+                const key = `instagram:${c.id}`;
+                const checked = selectedTargets.some(
+                  (t) => t.platform === "instagram" && t.id === c.id
+                );
+                return (
+                  <div key={`ig-${c.id}`}>
+                    <DestinationCheckbox
+                      label={`Instagram · @${c.username}`}
+                      checked={checked}
+                      onChange={() =>
+                        toggleTarget({ platform: "instagram", id: c.id })
+                      }
+                    />
+                    {checked && (
+                      <InstagramOptionsExpander
+                        opts={targetOptions[key] || {}}
+                        onChange={(patch) => setOptions(key, patch)}
+                      />
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
 
@@ -822,6 +882,104 @@ function YouTubeOptionsExpander({
 
 type ThumbMode = "capture" | "upload";
 
+function FacebookOptionsExpander({
+  opts,
+  onChange,
+}: {
+  opts: FacebookOptions;
+  onChange: (patch: Partial<FacebookOptions>) => void;
+}) {
+  return (
+    <div className="mt-2 ml-6 mb-2 rounded-lg border border-gray-800 bg-gray-950/60 p-3 space-y-3 text-sm">
+      <label className="block">
+        <span className="block text-xs uppercase tracking-wide text-gray-500 mb-1">
+          Tag people (comma-separated FB user IDs or usernames)
+        </span>
+        <input
+          type="text"
+          value={opts.taggedInput || ""}
+          onChange={(e) => onChange({ taggedInput: e.target.value })}
+          placeholder="user1, user2"
+          className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-white outline-none"
+        />
+      </label>
+      <label className="block">
+        <span className="block text-xs uppercase tracking-wide text-gray-500 mb-1">
+          Tag and collaborate (comma-separated)
+        </span>
+        <input
+          type="text"
+          value={opts.collaboratorsInput || ""}
+          onChange={(e) => onChange({ collaboratorsInput: e.target.value })}
+          placeholder="user1, user2"
+          className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-white outline-none"
+        />
+      </label>
+      <label className="block">
+        <span className="block text-xs uppercase tracking-wide text-gray-500 mb-1">
+          Location (FB place ID, optional)
+        </span>
+        <input
+          type="text"
+          value={opts.placeId || ""}
+          onChange={(e) => onChange({ placeId: e.target.value })}
+          placeholder="e.g. 11077326922 (look up on FB)"
+          className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-white outline-none"
+        />
+      </label>
+    </div>
+  );
+}
+
+function InstagramOptionsExpander({
+  opts,
+  onChange,
+}: {
+  opts: InstagramOptions;
+  onChange: (patch: Partial<InstagramOptions>) => void;
+}) {
+  return (
+    <div className="mt-2 ml-6 mb-2 rounded-lg border border-gray-800 bg-gray-950/60 p-3 space-y-3 text-sm">
+      <label className="block">
+        <span className="block text-xs uppercase tracking-wide text-gray-500 mb-1">
+          Tag people (comma-separated @usernames)
+        </span>
+        <input
+          type="text"
+          value={opts.taggedInput || ""}
+          onChange={(e) => onChange({ taggedInput: e.target.value })}
+          placeholder="@friend1, @friend2"
+          className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-white outline-none"
+        />
+      </label>
+      <label className="block">
+        <span className="block text-xs uppercase tracking-wide text-gray-500 mb-1">
+          Collaborators (comma-separated @usernames, max 3)
+        </span>
+        <input
+          type="text"
+          value={opts.collaboratorsInput || ""}
+          onChange={(e) => onChange({ collaboratorsInput: e.target.value })}
+          placeholder="@cohost1, @cohost2"
+          className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-white outline-none"
+        />
+      </label>
+      <label className="block">
+        <span className="block text-xs uppercase tracking-wide text-gray-500 mb-1">
+          Location ID (optional)
+        </span>
+        <input
+          type="text"
+          value={opts.locationId || ""}
+          onChange={(e) => onChange({ locationId: e.target.value })}
+          placeholder="e.g. 213385402 (look up on IG)"
+          className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-white outline-none"
+        />
+      </label>
+    </div>
+  );
+}
+
 function SharedThumbnailPicker({
   videoUrl,
   dataUrl,
@@ -912,7 +1070,7 @@ function ThumbnailFromVideo({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [livePreview, setLivePreview] = useState<string | null>(null);
   const [text, setText] = useState("");
-  const [pos, setPos] = useState<"top" | "middle" | "bottom">("bottom");
+  const [pos, setPos] = useState<"top" | "middle" | "bottom">("middle");
   const [color, setColor] = useState("#ffffff");
   const [outline, setOutline] = useState(true);
   const [sizePct, setSizePct] = useState(60); // 0..100 → scales relative to video height
