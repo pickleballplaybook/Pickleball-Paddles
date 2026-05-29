@@ -1771,10 +1771,10 @@ function ThumbnailFromVideo({
     const video = videoRef.current;
     const canvas = canvasRef.current;
     if (!video || !canvas || !video.videoWidth) return null;
-    // Cap the canvas at 1280px on the longest dimension. A 1080p frame as a
-    // base64 data URL can easily hit 2-3 MB and tip the publish request past
-    // Vercel's 4.5 MB body cap.
-    const maxDim = 1280;
+    // Cap the canvas at 960px on the longest dimension and let the size loop
+    // below bring the JPEG under ~700KB. Vercel rejects requests >4.5 MB and
+    // base64 inflates payloads by ~34%, so we aim well below that.
+    const maxDim = 960;
     const scale = Math.min(
       1,
       maxDim / Math.max(video.videoWidth, video.videoHeight)
@@ -1824,7 +1824,17 @@ function ThumbnailFromVideo({
       }
     }
 
-    return canvas.toDataURL("image/jpeg", 0.85);
+    // Try decreasing JPEG quality until the data URL is small enough.
+    // Target: <700KB to stay well under Vercel's 4.5 MB body cap with
+    // headroom for the rest of the request.
+    const MAX_BYTES = 700 * 1024;
+    let quality = 0.82;
+    let dataUrl = canvas.toDataURL("image/jpeg", quality);
+    while (dataUrl.length > MAX_BYTES && quality > 0.35) {
+      quality -= 0.08;
+      dataUrl = canvas.toDataURL("image/jpeg", quality);
+    }
+    return dataUrl;
   }, [text, pos, color, outline, sizePct]);
 
   // Re-render on text/style changes

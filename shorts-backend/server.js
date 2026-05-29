@@ -15,7 +15,8 @@ import {
   getPages, getInstagramAccount, getInstagramUsername,
   uploadToInstagram, uploadToFacebook, uploadToFacebookReel,
   listMetaCatalogProducts,
-  listFacebookGroups, shareToFacebookGroup
+  listFacebookGroups, shareToFacebookGroup,
+  getFacebookVideoMeta
 } from './social.js';
 import OpenAI from 'openai';
 import archiver from 'archiver';
@@ -1056,6 +1057,13 @@ app.post('/api/publish', upload.single('video'), async (req, res) => {
               placeId: typeof opts.placeId === 'string' ? opts.placeId : undefined,
             });
         const reelUrl = data.id ? `https://facebook.com/${data.id}` : undefined;
+        // Verify what FB actually attached to the just-published Reel.
+        // Mostly to diagnose collaborator issues (silent drops vs pending vs accepted).
+        let fbVerify;
+        if (postAsReel && data.id) {
+          fbVerify = await getFacebookVideoMeta(data.id, conn.accessToken);
+          console.log(`[fb verify ${data.id}]`, JSON.stringify(fbVerify).slice(0, 500));
+        }
         // If the user asked to share to FB Groups, fan out to each.
         // Best-effort — failures are recorded but don't fail the main result.
         let groupShareSummary;
@@ -1082,6 +1090,7 @@ app.post('/api/publish', upload.single('video'), async (req, res) => {
           url: reelUrl,
           raw: data,
           groupShare: groupShareSummary,
+          fbVerify,
           scheduled: !!scheduledAt,
           scheduledAt: scheduledAt || undefined,
         });

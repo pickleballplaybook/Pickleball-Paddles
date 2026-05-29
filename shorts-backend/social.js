@@ -359,6 +359,22 @@ export async function uploadToInstagram({
 
 // Three-step resumable Reels upload. The Reels endpoint is the ONLY one that
 // supports `collaborators`. Video must be 9:16 vertical, 15-90s.
+// Diagnostic: pull the just-published Reel's collaborators/description/status
+// so we can verify what FB actually attached. Returns null on any error.
+export async function getFacebookVideoMeta(videoId, accessToken) {
+  try {
+    const res = await axios.get(`https://graph.facebook.com/v19.0/${videoId}`, {
+      params: {
+        fields: 'id,description,status,permalink_url,collaborators',
+        access_token: accessToken,
+      },
+    });
+    return res.data;
+  } catch (err) {
+    return { _error: err?.response?.data?.error?.message || err.message };
+  }
+}
+
 export async function uploadToFacebookReel({
   pageId, accessToken, videoPath, description, scheduledAt,
   thumbnailDataUrl,
