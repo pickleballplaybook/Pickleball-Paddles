@@ -153,12 +153,11 @@ export function getMetaAuthUrl() {
     scope: [
       'instagram_basic',
       'instagram_content_publish',
-      'instagram_shopping_tag_products',
       'pages_show_list',
       'pages_read_engagement',
       'pages_manage_posts',
-      'catalog_management',
       'business_management',
+      'catalog_management',
     ].join(','),
     response_type: 'code',
   });

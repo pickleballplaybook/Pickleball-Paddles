@@ -556,20 +556,19 @@ app.get('/auth/connections', (_req, res) => {
 });
 
 // Meta Commerce catalog products, for the FB/IG product-tag picker.
-// Reads use the long-lived System User token (META_SYSTEM_USER_TOKEN),
-// which has catalog_management. The per-connection page/IG tokens are
-// only used for the actual publish step.
+// Uses the first connected FB Page's access token (which has the
+// catalog_management scope after Meta re-auth).
 app.get('/api/meta/products', async (_req, res) => {
   const catalogId = process.env.META_CATALOG_ID;
-  const sysToken = process.env.META_SYSTEM_USER_TOKEN;
   if (!catalogId) {
     return res.status(500).json({ error: 'META_CATALOG_ID env var not set on backend' });
   }
-  if (!sysToken) {
-    return res.status(500).json({ error: 'META_SYSTEM_USER_TOKEN env var not set on backend' });
+  const page = connections.facebook[0];
+  if (!page) {
+    return res.status(400).json({ error: 'No Facebook page connected' });
   }
   try {
-    const products = await listMetaCatalogProducts(catalogId, sysToken);
+    const products = await listMetaCatalogProducts(catalogId, page.accessToken);
     res.json({ products });
   } catch (err) {
     const detail = err?.response?.data?.error?.message || err.message;
