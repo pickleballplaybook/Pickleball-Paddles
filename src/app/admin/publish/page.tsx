@@ -416,7 +416,19 @@ export default function PublishPage() {
           thumbnailDataUrl: thumbnailDataUrl || undefined,
         }),
       });
-      const d: PublishResponse = await r.json();
+      // The publish proxy sometimes returns a non-JSON HTML error (e.g. Vercel 413
+      // when the request body is too large). Catch that cleanly.
+      let d: PublishResponse;
+      try {
+        d = await r.json();
+      } catch {
+        if (r.status === 413) {
+          throw new Error(
+            "Publish payload too large (Vercel 4.5 MB body cap). Likely cause: thumbnail. Try Capture from video (auto-compresses) or use a smaller uploaded image."
+          );
+        }
+        throw new Error(`Publish failed with HTTP ${r.status} (non-JSON response)`);
+      }
       if (!r.ok || d.error) {
         throw new Error(d.error || `Request failed (${r.status})`);
       }
@@ -1209,12 +1221,20 @@ function ThumbnailFromVideo({
     const video = videoRef.current;
     const canvas = canvasRef.current;
     if (!video || !canvas || !video.videoWidth) return null;
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+    // Cap the canvas at 1280px on the longest dimension. A 1080p frame as a
+    // base64 data URL can easily hit 2-3 MB and tip the publish request past
+    // Vercel's 4.5 MB body cap.
+    const maxDim = 1280;
+    const scale = Math.min(
+      1,
+      maxDim / Math.max(video.videoWidth, video.videoHeight)
+    );
+    canvas.width = Math.round(video.videoWidth * scale);
+    canvas.height = Math.round(video.videoHeight * scale);
     const ctx = canvas.getContext("2d");
     if (!ctx) return null;
     try {
-      ctx.drawImage(video, 0, 0);
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     } catch {
       // Cross-origin tainting — shouldn't happen with same-origin clips or blob URLs.
       return null;
@@ -1254,7 +1274,7 @@ function ThumbnailFromVideo({
       }
     }
 
-    return canvas.toDataURL("image/jpeg", 0.92);
+    return canvas.toDataURL("image/jpeg", 0.85);
   }, [text, pos, color, outline, sizePct]);
 
   // Re-render on text/style changes
