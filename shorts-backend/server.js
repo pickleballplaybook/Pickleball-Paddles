@@ -10,6 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 import Anthropic from '@anthropic-ai/sdk';
 import {
   getYouTubeAuthUrl, exchangeYouTubeCode, uploadToYouTube, getYouTubeChannel,
+  listYouTubePlaylists,
   getMetaAuthUrl, exchangeMetaCode, getLongLivedToken,
   getPages, getInstagramAccount, getInstagramUsername,
   uploadToInstagram, uploadToFacebook
@@ -34,6 +35,9 @@ if (SHORTS_BACKEND_TOKEN) {
     if (req.method === 'OPTIONS') return next();
     // Direct uploads from browser self-authenticate via signed token in query string.
     if (req.path.startsWith('/api/file-upload/')) return next();
+    // Uploaded videos must be publicly fetchable so Instagram/Meta can ingest them.
+    // The path includes a UUID upload id which acts as an unguessable token.
+    if (req.path.startsWith('/uploads/')) return next();
     const header = req.headers.authorization || '';
     const provided = header.startsWith('Bearer ') ? header.slice(7) : '';
     if (provided !== SHORTS_BACKEND_TOKEN) {
@@ -550,6 +554,19 @@ app.get('/auth/connections', (_req, res) => {
   });
 });
 
+// Per-channel playlist list for the YouTube expander UI.
+app.get('/api/youtube/:channelId/playlists', async (req, res) => {
+  const conn = connections.youtube.find(c => c.id === req.params.channelId);
+  if (!conn) return res.status(404).json({ error: 'Channel not connected' });
+  try {
+    const playlists = await listYouTubePlaylists(conn.tokens);
+    res.json({ playlists });
+  } catch (err) {
+    const detail = err?.response?.data?.error?.message || err.message;
+    res.status(500).json({ error: detail });
+  }
+});
+
 app.delete('/auth/connections/:type/:id', (req, res) => {
   const { type, id } = req.params;
   if (!['youtube', 'facebook', 'instagram'].includes(type)) {
@@ -767,10 +784,16 @@ app.post('/api/publish', upload.single('video'), async (req, res) => {
       results.push({ platform, id, error: 'Connection not found' });
       continue;
     }
+    const opts = (target && typeof target.options === 'object' && target.options) || {};
     try {
       if (platform === 'youtube') {
         const data = await uploadToYouTube({
           tokens: conn.tokens, videoPath, title, description, scheduledAt,
+          visibility: opts.visibility,
+          tags: Array.isArray(opts.tags) ? opts.tags : undefined,
+          madeForKids: typeof opts.madeForKids === 'boolean' ? opts.madeForKids : undefined,
+          playlistIds: Array.isArray(opts.playlistIds) ? opts.playlistIds : undefined,
+          thumbnailDataUrl: typeof opts.thumbnailDataUrl === 'string' ? opts.thumbnailDataUrl : undefined,
         });
         results.push({
           platform, id, accountName: conn.name,
@@ -801,7 +824,18 @@ app.post('/api/publish', upload.single('video'), async (req, res) => {
         results.push({ platform, id, error: 'Unknown platform' });
       }
     } catch (e) {
-      results.push({ platform, id, accountName: conn.name || conn.username, error: e.message });
+      // Surface the underlying provider error (Meta / Google) for easier debugging.
+      const data = e?.response?.data;
+      const detail =
+        data?.error?.message ||
+        data?.error?.error_user_msg ||
+        data?.error_description ||
+        (data && typeof data === 'object' ? JSON.stringify(data).slice(0, 300) : '');
+      results.push({
+        platform, id,
+        accountName: conn.name || conn.username,
+        error: detail ? `${e.message} — ${detail}` : e.message,
+      });
     }
     console.log(`[publish] ${key} done`);
   }

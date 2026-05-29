@@ -43,8 +43,32 @@ type PublishResponse = {
 
 type SourceMode = "upload" | "clip";
 
-function targetKey(t: Target) {
+type YouTubeOptions = {
+  visibility?: "public" | "unlisted" | "private";
+  madeForKids?: boolean;
+  tags?: string[];
+  playlistIds?: string[];
+  thumbnailDataUrl?: string;
+  // UI-only state (not sent):
+  tagsInput?: string;
+  thumbnailPreview?: string;
+};
+
+type TargetOptionsMap = Record<string, YouTubeOptions>; // key = targetKey
+
+type YouTubePlaylist = { id: string; title: string };
+
+function targetKey(t: { platform: string; id: string }) {
   return `${t.platform}:${t.id}`;
+}
+
+function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(new Error("Read failed"));
+    reader.readAsDataURL(file);
+  });
 }
 
 function sendChunk(
@@ -85,6 +109,8 @@ export default function PublishPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [selectedTargets, setSelectedTargets] = useState<Target[]>([]);
+  const [targetOptions, setTargetOptions] = useState<TargetOptionsMap>({});
+  const [ytPlaylists, setYtPlaylists] = useState<Record<string, YouTubePlaylist[]>>({});
   const [scheduleAt, setScheduleAt] = useState("");
 
   const [publishing, setPublishing] = useState(false);
@@ -186,6 +212,23 @@ export default function PublishPage() {
         ? prev.filter((p) => !(p.platform === t.platform && p.id === t.id))
         : [...prev, t];
     });
+    // First time a YT channel is toggled, fetch its playlists.
+    if (t.platform === "youtube" && !ytPlaylists[t.id]) {
+      fetch(`/api/admin/publish/youtube/${encodeURIComponent(t.id)}/playlists`)
+        .then((r) => r.json())
+        .then((d) => {
+          if (Array.isArray(d.playlists)) {
+            setYtPlaylists((m) => ({ ...m, [t.id]: d.playlists }));
+          }
+        })
+        .catch(() => {
+          // ignore; expander will show empty list
+        });
+    }
+  }
+
+  function setOptions(key: string, patch: Partial<YouTubeOptions>) {
+    setTargetOptions((m) => ({ ...m, [key]: { ...(m[key] || {}), ...patch } }));
   }
 
   async function uploadFileDirect(f: File): Promise<string> {
@@ -264,6 +307,22 @@ export default function PublishPage() {
         videoPath = selectedClipPath;
       }
 
+      // Strip UI-only state (tagsInput, thumbnailPreview) and parse tags string.
+      const targetsWithOptions = selectedTargets.map((t) => {
+        const raw = targetOptions[targetKey(t)] || {};
+        const tags = (raw.tagsInput || "")
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
+        const options: Record<string, unknown> = {};
+        if (raw.visibility) options.visibility = raw.visibility;
+        if (typeof raw.madeForKids === "boolean") options.madeForKids = raw.madeForKids;
+        if (tags.length > 0) options.tags = tags;
+        if (raw.playlistIds && raw.playlistIds.length > 0) options.playlistIds = raw.playlistIds;
+        if (raw.thumbnailDataUrl) options.thumbnailDataUrl = raw.thumbnailDataUrl;
+        return Object.keys(options).length > 0 ? { ...t, options } : t;
+      });
+
       const r = await fetch("/api/admin/publish/publish", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -271,7 +330,7 @@ export default function PublishPage() {
           videoPath,
           title: title.trim(),
           description,
-          targets: selectedTargets,
+          targets: targetsWithOptions,
           scheduledAt,
         }),
       });
@@ -460,16 +519,30 @@ export default function PublishPage() {
             </p>
           ) : (
             <div className="space-y-1.5 mb-4">
-              {connections.youtube.map((c) => (
-                <DestinationCheckbox
-                  key={`yt-${c.id}`}
-                  label={`YouTube · ${c.name}`}
-                  checked={selectedTargets.some(
-                    (t) => t.platform === "youtube" && t.id === c.id
-                  )}
-                  onChange={() => toggleTarget({ platform: "youtube", id: c.id })}
-                />
-              ))}
+              {connections.youtube.map((c) => {
+                const key = `youtube:${c.id}`;
+                const checked = selectedTargets.some(
+                  (t) => t.platform === "youtube" && t.id === c.id
+                );
+                return (
+                  <div key={`yt-${c.id}`}>
+                    <DestinationCheckbox
+                      label={`YouTube · ${c.name}`}
+                      checked={checked}
+                      onChange={() =>
+                        toggleTarget({ platform: "youtube", id: c.id })
+                      }
+                    />
+                    {checked && (
+                      <YouTubeOptionsExpander
+                        opts={targetOptions[key] || {}}
+                        playlists={ytPlaylists[c.id] || null}
+                        onChange={(patch) => setOptions(key, patch)}
+                      />
+                    )}
+                  </div>
+                );
+              })}
               {connections.facebook.map((c) => (
                 <DestinationCheckbox
                   key={`fb-${c.id}`}
@@ -624,6 +697,132 @@ function ConnectionRow({
       >
         Disconnect
       </button>
+    </div>
+  );
+}
+
+function YouTubeOptionsExpander({
+  opts,
+  playlists,
+  onChange,
+}: {
+  opts: YouTubeOptions;
+  playlists: YouTubePlaylist[] | null;
+  onChange: (patch: Partial<YouTubeOptions>) => void;
+}) {
+  const selectedPlaylists = opts.playlistIds || [];
+  function togglePlaylist(id: string) {
+    const next = selectedPlaylists.includes(id)
+      ? selectedPlaylists.filter((p) => p !== id)
+      : [...selectedPlaylists, id];
+    onChange({ playlistIds: next });
+  }
+  async function handleThumb(file: File | null) {
+    if (!file) {
+      onChange({ thumbnailDataUrl: undefined, thumbnailPreview: undefined });
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      alert("YouTube thumbnails must be 2 MB or smaller.");
+      return;
+    }
+    const dataUrl = await fileToDataUrl(file);
+    onChange({ thumbnailDataUrl: dataUrl, thumbnailPreview: dataUrl });
+  }
+  return (
+    <div className="mt-2 ml-6 mb-2 rounded-lg border border-gray-800 bg-gray-950/60 p-3 space-y-3 text-sm">
+      <div className="flex flex-wrap items-center gap-3">
+        <label className="flex items-center gap-2">
+          <span className="text-xs uppercase tracking-wide text-gray-500">Visibility</span>
+          <select
+            value={opts.visibility || "public"}
+            onChange={(e) =>
+              onChange({ visibility: e.target.value as YouTubeOptions["visibility"] })
+            }
+            className="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white"
+          >
+            <option value="public">Public</option>
+            <option value="unlisted">Unlisted</option>
+            <option value="private">Private</option>
+          </select>
+        </label>
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={!!opts.madeForKids}
+            onChange={(e) => onChange({ madeForKids: e.target.checked })}
+            className="accent-green-500"
+          />
+          <span>Made for kids</span>
+        </label>
+      </div>
+
+      <label className="block">
+        <span className="block text-xs uppercase tracking-wide text-gray-500 mb-1">
+          Tags (comma-separated)
+        </span>
+        <input
+          type="text"
+          value={opts.tagsInput || ""}
+          onChange={(e) => onChange({ tagsInput: e.target.value })}
+          placeholder="pickleball, drills, paddle review"
+          className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-white outline-none"
+        />
+      </label>
+
+      <div>
+        <span className="block text-xs uppercase tracking-wide text-gray-500 mb-1">
+          Add to playlists
+        </span>
+        {playlists === null && <p className="text-gray-500 text-xs">Loading…</p>}
+        {playlists && playlists.length === 0 && (
+          <p className="text-gray-500 text-xs">No playlists on this channel.</p>
+        )}
+        {playlists && playlists.length > 0 && (
+          <div className="max-h-32 overflow-y-auto space-y-1 pr-1">
+            {playlists.map((p) => (
+              <label key={p.id} className="flex items-center gap-2 text-xs">
+                <input
+                  type="checkbox"
+                  checked={selectedPlaylists.includes(p.id)}
+                  onChange={() => togglePlaylist(p.id)}
+                  className="accent-green-500"
+                />
+                <span className="truncate">{p.title}</span>
+              </label>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <label className="block">
+        <span className="block text-xs uppercase tracking-wide text-gray-500 mb-1">
+          Custom thumbnail (JPG/PNG, ≤2 MB)
+        </span>
+        <input
+          type="file"
+          accept="image/jpeg,image/png"
+          onChange={(e) => handleThumb(e.target.files?.[0] ?? null)}
+          className="block w-full text-xs text-gray-300 file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:bg-gray-800 file:text-white hover:file:bg-gray-700"
+        />
+        {opts.thumbnailPreview && (
+          <div className="mt-2 flex items-center gap-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={opts.thumbnailPreview}
+              alt="thumb"
+              className="h-16 w-28 object-cover rounded border border-gray-700"
+            />
+            <button
+              type="button"
+              onClick={() => handleThumb(null)}
+              className="text-xs text-gray-500 hover:text-red-400"
+            >
+              Remove
+            </button>
+          </div>
+        )}
+      </label>
     </div>
   );
 }
