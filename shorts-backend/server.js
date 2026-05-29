@@ -1062,7 +1062,15 @@ app.post('/api/publish', upload.single('video'), async (req, res) => {
         let fbVerify;
         if (postAsReel && data.id) {
           fbVerify = await getFacebookVideoMeta(data.id, conn.accessToken);
-          console.log(`[fb verify ${data.id}]`, JSON.stringify(fbVerify).slice(0, 500));
+          console.log(`[fb verify ${data.id} t=0]`, JSON.stringify(fbVerify).slice(0, 800));
+          // Re-query at 2 and 5 minutes — FB hides fields like description and
+          // collaborators until the Reel finishes processing.
+          for (const delaySec of [120, 300]) {
+            setTimeout(async () => {
+              const later = await getFacebookVideoMeta(data.id, conn.accessToken);
+              console.log(`[fb verify ${data.id} t=${delaySec}s]`, JSON.stringify(later).slice(0, 800));
+            }, delaySec * 1000).unref();
+          }
         }
         // If the user asked to share to FB Groups, fan out to each.
         // Best-effort — failures are recorded but don't fail the main result.

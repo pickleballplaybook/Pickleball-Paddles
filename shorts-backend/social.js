@@ -434,11 +434,14 @@ export async function uploadToFacebookReel({
     );
   }
 
-  await axios.post(
+  const finishRes = await axios.post(
     `https://graph.facebook.com/v19.0/${pageId}/video_reels`,
     null,
     { params: finishParams }
   );
+  // Log full FB response to Railway logs so we can spot warnings about
+  // collaborators or other parameters that FB silently dropped.
+  console.log(`[fb finish ${video_id}]`, JSON.stringify(finishRes.data));
 
   // 4. Custom thumbnail post-publish (best effort).
   if (thumbnailDataUrl) {
