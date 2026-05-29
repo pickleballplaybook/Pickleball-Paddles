@@ -16,7 +16,7 @@ import {
   uploadToInstagram, uploadToFacebook, uploadToFacebookReel,
   listMetaCatalogProducts,
   listFacebookGroups, shareToFacebookGroup,
-  getFacebookVideoMeta, getFacebookPostMeta
+  getFacebookVideoMeta, getFacebookPostMeta, listFacebookPagePosts
 } from './social.js';
 import OpenAI from 'openai';
 import archiver from 'archiver';
@@ -595,21 +595,8 @@ app.get('/api/fb-debug-page-posts', async (req, res) => {
     ? connections.facebook.find(c => c.id === pageId)
     : connections.facebook[0];
   if (!conn) return res.status(404).json({ error: 'No matching FB connection' });
-  try {
-    const r = await axios.get(`https://graph.facebook.com/v19.0/${conn.id}/posts`, {
-      params: {
-        fields: 'id,message,collaborators,co_authors,with_tags,permalink_url',
-        limit: 5,
-        access_token: conn.accessToken,
-      },
-    });
-    res.json({ page: conn.name, posts: r.data.data });
-  } catch (err) {
-    res.status(500).json({
-      page: conn.name,
-      error: err?.response?.data?.error || err.message,
-    });
-  }
+  const data = await listFacebookPagePosts(conn.id, conn.accessToken, 5);
+  res.json({ page: conn.name, ...data });
 });
 
 app.get('/api/facebook/groups', async (_req, res) => {
