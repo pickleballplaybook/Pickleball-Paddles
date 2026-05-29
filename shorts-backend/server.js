@@ -587,18 +587,6 @@ app.get('/api/meta/products', async (_req, res) => {
 // Facebook Groups the authenticated user admins, for the FB expander's
 // "Share to groups" picker. Requires user_managed_groups on the OAuth
 // token, which is Advanced Access and pending Meta App Review.
-// One-shot diagnostic — list the page's recent posts with the collab fields.
-// Hit with ?pageId=…
-app.get('/api/fb-debug-page-posts', async (req, res) => {
-  const { pageId } = req.query;
-  const conn = pageId
-    ? connections.facebook.find(c => c.id === pageId)
-    : connections.facebook[0];
-  if (!conn) return res.status(404).json({ error: 'No matching FB connection' });
-  const data = await listFacebookPagePosts(conn.id, conn.accessToken, 5);
-  res.json({ page: conn.name, ...data });
-});
-
 app.get('/api/facebook/groups', async (_req, res) => {
   const conn = connections.facebook[0];
   if (!conn || !conn.userAccessToken) {

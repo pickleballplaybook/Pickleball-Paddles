@@ -1396,29 +1396,16 @@ function FacebookOptionsExpander({
         />
       </label>
       <div>
-        <label className="block">
-          <span className="block text-xs uppercase tracking-wide text-gray-500 mb-1">
-            Collaborators
-          </span>
-          <input
-            type="text"
-            value={opts.collaboratorsInput || ""}
-            onChange={(e) => onChange({ collaboratorsInput: e.target.value })}
-            placeholder="Click chips below or paste FB Page IDs"
-            className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-white outline-none"
-          />
-        </label>
-        {otherPages.length > 0 && (
-          <PresetChips
-            presets={otherPages.map((p) => ({ label: p.name, value: p.id }))}
-            currentValue={opts.collaboratorsInput || ""}
-            onToggle={(value) =>
-              onChange({
-                collaboratorsInput: toggleCsv(opts.collaboratorsInput, value),
-              })
-            }
-          />
-        )}
+        <span className="block text-xs uppercase tracking-wide text-gray-500 mb-1">
+          Collaborators
+        </span>
+        <p className="text-[11px] text-yellow-500/80">
+          Page-to-Page Reels collaboration isn&apos;t exposed in Meta&apos;s
+          Graph API — the in-app collab feature is UI/Studio-only. (Verified:
+          Reels published via API have no <code>collaborators</code> field set
+          even when we pass it.) Use the FB Pages app to add a Page collab
+          manually after posting.
+        </p>
       </div>
       <label className="block">
         <span className="block text-xs uppercase tracking-wide text-gray-500 mb-1">
