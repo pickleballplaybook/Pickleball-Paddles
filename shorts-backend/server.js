@@ -893,13 +893,22 @@ app.post('/api/publish', upload.single('video'), async (req, res) => {
         results.push({ platform, id, error: 'Unknown platform' });
       }
     } catch (e) {
-      // Surface the underlying provider error (Meta / Google) for easier debugging.
+      // Surface as much Meta/Google error detail as possible.
       const data = e?.response?.data;
-      const detail =
-        data?.error?.message ||
-        data?.error?.error_user_msg ||
-        data?.error_description ||
-        (data && typeof data === 'object' ? JSON.stringify(data).slice(0, 300) : '');
+      const err = data?.error || {};
+      const parts = [
+        err.message,
+        err.error_user_msg,
+        err.error_user_title,
+        err.error_subcode ? `subcode=${err.error_subcode}` : null,
+        err.fbtrace_id ? `trace=${err.fbtrace_id}` : null,
+        data?.error_description,
+      ].filter(Boolean);
+      const detail = parts.length
+        ? parts.join(' | ')
+        : (data && typeof data === 'object' ? JSON.stringify(data).slice(0, 500) : '');
+      // Also log the raw payload so we can grep it from Railway logs later.
+      console.error(`[publish ${platform}:${id}] ${e.message}`, data || e);
       results.push({
         platform, id,
         accountName: conn.name || conn.username,
