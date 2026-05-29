@@ -257,9 +257,11 @@ export async function uploadToInstagram({
   if (coverUrl) params.cover_url = coverUrl;
   if (locationId) params.location_id = locationId;
   if (Array.isArray(taggedUsernames) && taggedUsernames.length > 0) {
-    // IG user_tags need positions; default-center anyone the user didn't position.
+    // For Reels (video media), IG rejects x/y positions on user_tags
+    // ("User tag positions should not be specified for video media").
+    // Positions are only valid on static photo posts.
     params.user_tags = JSON.stringify(
-      taggedUsernames.map(u => ({ username: String(u), x: 0.5, y: 0.5 }))
+      taggedUsernames.map(u => ({ username: String(u) }))
     );
   }
   if (Array.isArray(collaboratorUsernames) && collaboratorUsernames.length > 0) {
