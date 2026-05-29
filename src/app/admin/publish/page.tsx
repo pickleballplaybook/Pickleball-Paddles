@@ -777,7 +777,10 @@ export default function PublishPage() {
                       <span className="capitalize">{r.platform}</span>
                       {r.accountName ? ` · ${r.accountName}` : ""}
                     </span>
-                    <span className="truncate ml-3">
+                    <span
+                      className="ml-3 break-all"
+                      title={r.error || r.url || ""}
+                    >
                       {ok
                         ? r.url
                           ? <a href={r.url} target="_blank" rel="noreferrer" className="underline">{r.url}</a>
