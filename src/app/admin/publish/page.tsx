@@ -47,6 +47,32 @@ function targetKey(t: Target) {
   return `${t.platform}:${t.id}`;
 }
 
+function sendChunk(
+  url: string,
+  blob: Blob,
+  onProgress: (loaded: number, total: number) => void
+): Promise<{ done?: boolean; path?: string; error?: string; index?: number }> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", url);
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) onProgress(e.loaded, e.total);
+    };
+    xhr.onload = () => {
+      try {
+        const body = JSON.parse(xhr.responseText);
+        if (xhr.status >= 200 && xhr.status < 300) resolve(body);
+        else reject(new Error(body.error || `Chunk failed (${xhr.status})`));
+      } catch {
+        reject(new Error(`Chunk failed (${xhr.status})`));
+      }
+    };
+    xhr.onerror = () => reject(new Error("Chunk network error"));
+    xhr.onabort = () => reject(new Error("Chunk aborted"));
+    xhr.send(blob);
+  });
+}
+
 export default function PublishPage() {
   const [connections, setConnections] = useState<Connections | null>(null);
   const [connectionsError, setConnectionsError] = useState("");
@@ -176,31 +202,33 @@ export default function PublishPage() {
       exp: number;
     };
 
-    const target = `${uploadUrl}?token=${encodeURIComponent(token)}&exp=${exp}`;
-    return await new Promise<string>((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      xhr.open("POST", target);
-      xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) {
-          setUploadProgress(Math.round((e.loaded / e.total) * 100));
-        }
-      };
-      xhr.onload = () => {
-        try {
-          const body = JSON.parse(xhr.responseText);
-          if (xhr.status >= 200 && xhr.status < 300 && body.path) resolve(body.path);
-          else reject(new Error(body.error || `Upload failed (${xhr.status})`));
-        } catch {
-          reject(new Error(`Upload failed (${xhr.status})`));
-        }
-      };
-      xhr.onerror = () => reject(new Error("Upload network error"));
-      xhr.onabort = () => reject(new Error("Upload aborted"));
+    // 5 MB chunks. Each chunk is a short HTTP request, well under Railway's
+    // 5-minute per-request timeout, regardless of total file size.
+    const CHUNK_SIZE = 5 * 1024 * 1024;
+    const total = Math.max(1, Math.ceil(f.size / CHUNK_SIZE));
+    const filename = encodeURIComponent(
+      f.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 200) || "upload.bin"
+    );
 
-      const fd = new FormData();
-      fd.append("video", f);
-      xhr.send(fd);
-    });
+    let finalPath: string | null = null;
+    for (let i = 0; i < total; i++) {
+      const start = i * CHUNK_SIZE;
+      const end = Math.min(start + CHUNK_SIZE, f.size);
+      const chunk = f.slice(start, end);
+
+      const url =
+        `${uploadUrl}/chunk?token=${encodeURIComponent(token)}` +
+        `&exp=${exp}&index=${i}&total=${total}&filename=${filename}`;
+
+      const body = await sendChunk(url, chunk, (chunkLoaded, chunkTotal) => {
+        const done = i * CHUNK_SIZE + chunkLoaded;
+        setUploadProgress(Math.min(100, Math.round((done / f.size) * 100)));
+      });
+
+      if (body.done && body.path) finalPath = body.path;
+    }
+    if (!finalPath) throw new Error("Upload finished without a final path");
+    return finalPath;
   }
 
   async function handlePublish() {

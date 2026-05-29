@@ -619,25 +619,67 @@ const uploadMulter = multer({
   limits: { fileSize: 5 * 1024 * 1024 * 1024 }, // 5 GB
 });
 
-app.post('/api/file-upload/:uploadId', (req, res, next) => {
-  // Validate signed token BEFORE multer touches the body
+// Chunked upload — each chunk is its own short HTTP request so we never hit
+// Railway's 5-minute per-request timeout, even for files larger than the
+// network can push in 5 minutes.
+//
+// Sequence (browser sends in order, awaits each):
+//   POST /api/file-upload/<id>/chunk?token=…&exp=…&index=0&total=N&filename=x
+//     body: raw bytes of chunk 0 (first chunk → file is truncated/created)
+//   POST … &index=1&total=N… body: raw bytes of chunk 1 (appended)
+//   …
+//   POST … &index=N-1&total=N… body: raw bytes of last chunk → response: { done: true, path }
+app.post('/api/file-upload/:uploadId/chunk', (req, res) => {
   const { uploadId } = req.params;
   const token = String(req.query.token || '');
   const exp = Number(req.query.exp || 0);
-  if (!token || !exp) return res.status(400).json({ error: 'Missing token/exp' });
+  const index = Number(req.query.index);
+  const total = Number(req.query.total);
+  const filename = String(req.query.filename || 'upload.bin')
+    .replace(/[^a-zA-Z0-9._-]/g, '_')
+    .slice(0, 200) || 'upload.bin';
+
+  if (!token || !exp || !Number.isFinite(index) || !Number.isFinite(total)) {
+    return res.status(400).json({ error: 'Missing or invalid chunk params' });
+  }
+  if (total < 1 || index < 0 || index >= total) {
+    return res.status(400).json({ error: 'Bad index/total' });
+  }
   if (exp < Date.now()) return res.status(401).json({ error: 'Token expired' });
   if (usedUploadTokens.has(uploadId)) {
-    return res.status(409).json({ error: 'Token already used' });
+    return res.status(409).json({ error: 'Upload already finalized' });
   }
   const expected = signUploadToken(uploadId, exp);
-  if (!crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(token))) {
+  if (
+    expected.length !== token.length ||
+    !crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(token))
+  ) {
     return res.status(401).json({ error: 'Invalid token' });
   }
-  usedUploadTokens.add(uploadId);
-  next();
-}, uploadMulter.single('video'), (req, res) => {
-  if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-  res.json({ path: req.file.path, filename: req.file.filename });
+
+  const dir = path.join(UPLOADS_DIR, uploadId);
+  fs.mkdirSync(dir, { recursive: true });
+  const finalPath = path.join(dir, filename);
+
+  // First chunk creates/truncates; subsequent chunks append.
+  const writeStream = fs.createWriteStream(finalPath, {
+    flags: index === 0 ? 'w' : 'a',
+  });
+  let aborted = false;
+  req.on('aborted', () => { aborted = true; writeStream.destroy(); });
+  writeStream.on('error', err => {
+    if (!res.headersSent) res.status(500).json({ error: err.message });
+  });
+  writeStream.on('finish', () => {
+    if (aborted) return;
+    if (index === total - 1) {
+      usedUploadTokens.add(uploadId);
+      res.json({ done: true, path: finalPath });
+    } else {
+      res.json({ done: false, index });
+    }
+  });
+  req.pipe(writeStream);
 });
 
 // Lists every clip across every job — used by the publish picker.
