@@ -279,6 +279,94 @@ export async function uploadToInstagram({
   return publishRes.data;
 }
 
+// Three-step resumable Reels upload. The Reels endpoint is the ONLY one that
+// supports `collaborators`. Video must be 9:16 vertical, 15-90s.
+export async function uploadToFacebookReel({
+  pageId, accessToken, videoPath, description, scheduledAt,
+  thumbnailDataUrl,
+  collaboratorIds, placeId,
+}) {
+  // 1. Start
+  const startRes = await axios.post(
+    `https://graph.facebook.com/v19.0/${pageId}/video_reels`,
+    null,
+    { params: { upload_phase: 'start', access_token: accessToken } }
+  );
+  const { video_id, upload_url } = startRes.data;
+  if (!video_id || !upload_url) {
+    throw new Error('FB Reels start: missing video_id or upload_url');
+  }
+
+  // 2. Upload binary
+  const stat = fs.statSync(videoPath);
+  await axios.post(upload_url, fs.createReadStream(videoPath), {
+    headers: {
+      Authorization: `OAuth ${accessToken}`,
+      offset: '0',
+      file_size: String(stat.size),
+      'Content-Type': 'application/octet-stream',
+    },
+    maxContentLength: Infinity,
+    maxBodyLength: Infinity,
+  });
+
+  // 3. Finish — pass collaborators and other options here
+  const finishParams = {
+    upload_phase: 'finish',
+    video_id,
+    access_token: accessToken,
+  };
+  if (scheduledAt) {
+    finishParams.video_state = 'SCHEDULED';
+    finishParams.scheduled_publish_time = Math.floor(
+      new Date(scheduledAt).getTime() / 1000
+    );
+  } else {
+    finishParams.video_state = 'PUBLISHED';
+  }
+  if (description) finishParams.description = description;
+  if (Array.isArray(collaboratorIds) && collaboratorIds.length > 0) {
+    finishParams.collaborators = JSON.stringify(collaboratorIds.map(String));
+  }
+  if (placeId) finishParams.place = String(placeId);
+
+  await axios.post(
+    `https://graph.facebook.com/v19.0/${pageId}/video_reels`,
+    null,
+    { params: finishParams }
+  );
+
+  // 4. Custom thumbnail post-publish (best effort).
+  if (thumbnailDataUrl) {
+    try {
+      const m = /^data:(image\/[a-z0-9.+-]+);base64,(.+)$/i.exec(thumbnailDataUrl);
+      if (m) {
+        const buf = Buffer.from(m[2], 'base64');
+        const fd = new FormData();
+        fd.append('source', buf, {
+          filename: m[1].includes('png') ? 'thumb.png' : 'thumb.jpg',
+          contentType: m[1],
+        });
+        fd.append('is_preferred', 'true');
+        fd.append('access_token', accessToken);
+        await axios.post(
+          `https://graph.facebook.com/v19.0/${video_id}/thumbnails`,
+          fd,
+          {
+            headers: fd.getHeaders(),
+            maxContentLength: Infinity,
+            maxBodyLength: Infinity,
+          }
+        );
+      }
+    } catch (err) {
+      console.error('[fb reel thumbnail] failed:', err?.response?.data || err.message);
+    }
+  }
+
+  return { id: video_id };
+}
+
 export async function uploadToFacebook({
   pageId, accessToken, videoPath, title, description, scheduledAt,
   thumbnailDataUrl,   // string data URL

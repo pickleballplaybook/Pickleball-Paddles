@@ -13,7 +13,7 @@ import {
   listYouTubePlaylists,
   getMetaAuthUrl, exchangeMetaCode, getLongLivedToken,
   getPages, getInstagramAccount, getInstagramUsername,
-  uploadToInstagram, uploadToFacebook
+  uploadToInstagram, uploadToFacebook, uploadToFacebookReel
 } from './social.js';
 import OpenAI from 'openai';
 import archiver from 'archiver';
@@ -826,14 +826,26 @@ app.post('/api/publish', upload.single('video'), async (req, res) => {
           raw: data,
         });
       } else if (platform === 'facebook') {
-        const data = await uploadToFacebook({
-          pageId: conn.id, accessToken: conn.accessToken,
-          videoPath, title, description, scheduledAt,
-          thumbnailDataUrl: sharedThumbnailDataUrl,
-          taggedUserIds: Array.isArray(opts.taggedUserIds) ? opts.taggedUserIds : undefined,
-          collaboratorIds: Array.isArray(opts.collaboratorIds) ? opts.collaboratorIds : undefined,
-          placeId: typeof opts.placeId === 'string' ? opts.placeId : undefined,
-        });
+        // Reels endpoint is the only one that supports `collaborators`.
+        // Default: post as Reel. If postAsReel is explicitly false, use the
+        // legacy /videos endpoint (collaborators won't apply there).
+        const postAsReel = opts.postAsReel !== false;
+        const data = postAsReel
+          ? await uploadToFacebookReel({
+              pageId: conn.id, accessToken: conn.accessToken,
+              videoPath, description, scheduledAt,
+              thumbnailDataUrl: sharedThumbnailDataUrl,
+              collaboratorIds: Array.isArray(opts.collaboratorIds) ? opts.collaboratorIds : undefined,
+              placeId: typeof opts.placeId === 'string' ? opts.placeId : undefined,
+            })
+          : await uploadToFacebook({
+              pageId: conn.id, accessToken: conn.accessToken,
+              videoPath, title, description, scheduledAt,
+              thumbnailDataUrl: sharedThumbnailDataUrl,
+              taggedUserIds: Array.isArray(opts.taggedUserIds) ? opts.taggedUserIds : undefined,
+              collaboratorIds: Array.isArray(opts.collaboratorIds) ? opts.collaboratorIds : undefined,
+              placeId: typeof opts.placeId === 'string' ? opts.placeId : undefined,
+            });
         results.push({
           platform, id, accountName: conn.name,
           url: data.id ? `https://facebook.com/${data.id}` : undefined,

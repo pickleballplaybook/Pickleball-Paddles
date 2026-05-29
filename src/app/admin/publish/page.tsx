@@ -53,6 +53,7 @@ type YouTubeOptions = {
 };
 
 type FacebookOptions = {
+  postAsReel?: boolean;
   taggedUserIds?: string[];
   collaboratorIds?: string[];
   placeId?: string;
@@ -365,6 +366,8 @@ export default function PublishPage() {
         } else if (t.platform === "facebook") {
           const tagged = csv(raw.taggedInput);
           const collabs = csv(raw.collaboratorsInput);
+          // Send postAsReel explicitly when user has toggled it OFF (default is true on the backend).
+          if (raw.postAsReel === false) options.postAsReel = false;
           if (tagged.length > 0) options.taggedUserIds = tagged;
           if (collabs.length > 0) options.collaboratorIds = collabs;
           if (raw.placeId) options.placeId = raw.placeId;
@@ -889,11 +892,31 @@ function FacebookOptionsExpander({
   opts: FacebookOptions;
   onChange: (patch: Partial<FacebookOptions>) => void;
 }) {
+  const postAsReel = opts.postAsReel !== false;
   return (
     <div className="mt-2 ml-6 mb-2 rounded-lg border border-gray-800 bg-gray-950/60 p-3 space-y-3 text-sm">
+      <label className="flex items-start gap-2">
+        <input
+          type="checkbox"
+          checked={postAsReel}
+          onChange={(e) => onChange({ postAsReel: e.target.checked })}
+          className="accent-green-500 mt-0.5"
+        />
+        <span>
+          Post as Reel
+          <span className="block text-xs text-gray-500">
+            Required for collaborators. Video must be 9:16 vertical, 15–90s.
+          </span>
+        </span>
+      </label>
+      {!postAsReel && (
+        <p className="text-xs text-yellow-400">
+          ⚠ Collaborators won&apos;t apply on legacy /videos posts.
+        </p>
+      )}
       <label className="block">
         <span className="block text-xs uppercase tracking-wide text-gray-500 mb-1">
-          Tag people (comma-separated FB user IDs or usernames)
+          Tag people (comma-separated FB user IDs, only works on legacy /videos)
         </span>
         <input
           type="text"
@@ -905,13 +928,13 @@ function FacebookOptionsExpander({
       </label>
       <label className="block">
         <span className="block text-xs uppercase tracking-wide text-gray-500 mb-1">
-          Tag and collaborate (comma-separated)
+          Collaborators (comma-separated FB user IDs — numeric)
         </span>
         <input
           type="text"
           value={opts.collaboratorsInput || ""}
           onChange={(e) => onChange({ collaboratorsInput: e.target.value })}
-          placeholder="user1, user2"
+          placeholder="1234567890, 9876543210"
           className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-white outline-none"
         />
       </label>
