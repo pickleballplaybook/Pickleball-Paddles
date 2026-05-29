@@ -1,0 +1,33 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+const TABS = [
+  { href: "/admin/shorts", label: "Shorts Generator" },
+  { href: "/admin/publish", label: "Publish" },
+];
+
+export function AdminNav() {
+  const pathname = usePathname();
+  return (
+    <div className="inline-flex bg-gray-900 border border-gray-800 rounded-xl p-1 mb-6">
+      {TABS.map((t) => {
+        const active = pathname.startsWith(t.href);
+        return (
+          <Link
+            key={t.href}
+            href={t.href}
+            className={`px-5 py-2 rounded-lg text-sm font-medium transition ${
+              active
+                ? "bg-green-500 text-black"
+                : "text-gray-400 hover:text-white"
+            }`}
+          >
+            {t.label}
+          </Link>
+        );
+      })}
+    </div>
+  );
+}

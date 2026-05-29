@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { AdminNav } from "../_components/AdminNav";
 
 type YouTubeAccount = { id: string; name: string };
 type FacebookAccount = { id: string; name: string };
@@ -483,6 +484,7 @@ export default function PublishPage() {
   return (
     <div className="min-h-screen bg-gray-950 text-white p-8">
       <div className="max-w-3xl mx-auto">
+        <AdminNav />
         <div className="flex items-start justify-between mb-2 gap-4">
           <h1 className="text-4xl font-bold">Publish</h1>
           <button

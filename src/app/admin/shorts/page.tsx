@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { AdminNav } from "../_components/AdminNav";
 
 type Clip = {
   filename?: string;
@@ -187,6 +188,7 @@ export default function ShortsPage() {
   return (
     <div className="min-h-screen bg-gray-950 text-white p-8">
       <div className="max-w-4xl mx-auto">
+        <AdminNav />
         <h1 className="text-4xl font-bold mb-2">Shorts Generator</h1>
         <p className="text-gray-400 mb-6">
           Paste a YouTube URL and AI will cut the best clips
