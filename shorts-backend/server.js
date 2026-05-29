@@ -1011,6 +1011,8 @@ app.post('/api/publish', upload.single('video'), async (req, res) => {
           platform, id, accountName: conn.name,
           url: data.id ? `https://youtu.be/${data.id}` : undefined,
           raw: data,
+          scheduled: !!scheduledAt,
+          scheduledAt: scheduledAt || undefined,
         });
       } else if (platform === 'facebook') {
         // Reels endpoint is the only one that supports `collaborators`.
@@ -1061,6 +1063,8 @@ app.post('/api/publish', upload.single('video'), async (req, res) => {
           url: reelUrl,
           raw: data,
           groupShare: groupShareSummary,
+          scheduled: !!scheduledAt,
+          scheduledAt: scheduledAt || undefined,
         });
       } else if (platform === 'instagram') {
         // IG has no native scheduling — if scheduledAt is in the future,
