@@ -34,6 +34,23 @@ function clipSrc(jobId: string | null, clip: Clip): string {
   return `/api/admin/shorts/clips/${jobId ?? ""}/${file}${v}`;
 }
 
+// URL of the untouched source for re-editing. Once a clip has been edited
+// at least once, the backend keeps a `<base>_orig.mp4` snapshot — load that
+// so the editor's video player exposes the full original timeline.
+function clipOrigSrc(jobId: string | null, clip: Clip): string {
+  const file = clip.filename || clip.url.split("/").pop() || "";
+  if (!clip.edit || clip.edit.version === 0) {
+    return `/api/admin/shorts/clips/${jobId ?? ""}/${file}`;
+  }
+  const origFile = file.replace(/\.mp4$/i, "_orig.mp4");
+  return `/api/admin/shorts/clips/${jobId ?? ""}/${origFile}`;
+}
+
+function effectiveDuration(clip: Clip): number {
+  if (clip.edit?.trim) return Math.round((clip.edit.trim.end - clip.edit.trim.start) * 10) / 10;
+  return clip.duration;
+}
+
 type Job = {
   status: "queued" | "processing" | "done" | "error" | string;
   message?: string;
@@ -79,6 +96,10 @@ function ClipEditor({
   onSaved: (updated: Clip) => void;
 }) {
   const filename = clip.filename || clip.url.split("/").pop() || "";
+  // The original snapshot (`_orig.mp4`) is the source of truth for length —
+  // clip.duration in meta.json can be stale if an old edit overwrote it.
+  // Read it from the loaded <video> element via onLoadedMetadata.
+  const [sourceDuration, setSourceDuration] = useState(clip.duration);
   const initialTrim = clip.edit?.trim ?? { start: 0, end: clip.duration };
   const [trimStart, setTrimStart] = useState(initialTrim.start);
   const [trimEnd, setTrimEnd] = useState(initialTrim.end);
@@ -142,7 +163,7 @@ function ClipEditor({
     setSaving(true);
     setError("");
     try {
-      const trimChanged = trimStart > 0 || trimEnd < clip.duration;
+      const trimChanged = trimStart > 0 || trimEnd < sourceDuration - 0.01;
       const body = {
         trim: trimChanged ? { start: trimStart, end: trimEnd } : null,
         texts: texts.map(({ id: _id, ...rest }) => rest),
@@ -207,10 +228,20 @@ function ClipEditor({
             >
               <video
                 ref={videoRef}
-                src={clipSrc(jobId, clip)}
+                src={clipOrigSrc(jobId, clip)}
                 controls
                 className="w-full block"
                 onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
+                onLoadedMetadata={(e) => {
+                  const d = e.currentTarget.duration;
+                  if (isFinite(d) && d > 0) {
+                    setSourceDuration(d);
+                    // If the saved trim window ends short of the real source
+                    // (because a prior edit truncated clip.duration), and the
+                    // user clearly intended "the full clip", expand back out.
+                    if (!clip.edit?.trim) setTrimEnd(d);
+                  }
+                }}
               />
               {visibleTexts.map((t) => (
                 <div
@@ -239,34 +270,63 @@ function ClipEditor({
             {/* Trim */}
             <div>
               <h3 className="font-semibold mb-2">Trim</h3>
-              <div className="grid grid-cols-2 gap-3">
-                <label className="block">
-                  <span className="text-xs text-gray-400">Start (s)</span>
-                  <input
-                    type="number"
-                    step="0.1"
-                    min={0}
-                    max={clip.duration}
-                    value={trimStart}
-                    onChange={(e) => setTrimStart(Math.max(0, Math.min(clip.duration, Number(e.target.value))))}
-                    className="w-full bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 text-sm"
-                  />
-                </label>
-                <label className="block">
-                  <span className="text-xs text-gray-400">End (s)</span>
-                  <input
-                    type="number"
-                    step="0.1"
-                    min={0}
-                    max={clip.duration}
-                    value={trimEnd}
-                    onChange={(e) => setTrimEnd(Math.max(trimStart + 0.1, Math.min(clip.duration, Number(e.target.value))))}
-                    className="w-full bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 text-sm"
-                  />
-                </label>
+              <p className="text-xs text-gray-500 mb-2">
+                Scrub the video to the moment you want, then click &quot;Set start&quot; or &quot;Set end&quot;. Fine-tune with the numbers.
+              </p>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setTrimStart(Math.min(trimEnd - 0.1, Math.max(0, Number(currentTime.toFixed(2)))))}
+                    className="text-xs bg-gray-800 hover:bg-gray-700 text-white px-3 py-2 rounded-lg whitespace-nowrap"
+                  >
+                    Set start ← {currentTime.toFixed(2)}s
+                  </button>
+                  <label className="flex-1">
+                    <span className="text-xs text-gray-400 block">Start (s)</span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min={0}
+                      max={sourceDuration}
+                      value={trimStart}
+                      onChange={(e) => setTrimStart(Math.max(0, Math.min(trimEnd - 0.1, Number(e.target.value))))}
+                      className="w-full bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 text-sm"
+                    />
+                  </label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setTrimEnd(Math.max(trimStart + 0.1, Math.min(sourceDuration, Number(currentTime.toFixed(2)))))}
+                    className="text-xs bg-gray-800 hover:bg-gray-700 text-white px-3 py-2 rounded-lg whitespace-nowrap"
+                  >
+                    Set end ← {currentTime.toFixed(2)}s
+                  </button>
+                  <label className="flex-1">
+                    <span className="text-xs text-gray-400 block">End (s)</span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min={0}
+                      max={sourceDuration}
+                      value={trimEnd}
+                      onChange={(e) => setTrimEnd(Math.max(trimStart + 0.1, Math.min(sourceDuration, Number(e.target.value))))}
+                      className="w-full bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 text-sm"
+                    />
+                  </label>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { setTrimStart(0); setTrimEnd(sourceDuration); }}
+                  className="w-full text-xs border border-gray-700 text-gray-400 hover:bg-gray-800 px-3 py-1.5 rounded-lg"
+                >
+                  Reset trim to full ({sourceDuration.toFixed(2)}s)
+                </button>
               </div>
-              <p className="text-xs text-gray-500 mt-1">
-                Original length: {clip.duration}s. Use the video&apos;s scrubber to find frames.
+              <p className="text-xs text-gray-500 mt-2">
+                Output length: <span className="text-white">{Math.max(0, trimEnd - trimStart).toFixed(2)}s</span>
+                {" · "}Source: {sourceDuration.toFixed(2)}s
               </p>
             </div>
 
@@ -622,7 +682,12 @@ export default function ShortsPage() {
                       <div className="p-4">
                         <p className="font-semibold mb-1">{clip.title}</p>
                         <p className="text-gray-400 text-sm mb-3">{clip.reason}</p>
-                        <p className="text-gray-600 text-xs mb-3">{clip.duration}s</p>
+                        <p className="text-gray-600 text-xs mb-3">
+                          {effectiveDuration(clip)}s
+                          {clip.edit?.trim && (
+                            <span className="text-gray-700"> (trimmed from {clip.duration}s)</span>
+                          )}
+                        </p>
                         <div className="grid grid-cols-2 gap-2">
                           <button
                             onClick={() => setEditingClipIdx(i)}

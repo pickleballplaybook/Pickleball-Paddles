@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import { exec } from 'child_process';
+import { exec, execSync } from 'child_process';
 import { promisify } from 'util';
 import fs from 'fs';
 import path from 'path';
@@ -256,12 +256,12 @@ setInterval(diskCleanup, 60 * 60 * 1000); // hourly
 // Resolve once at startup via fontconfig; falls back gracefully if missing.
 let DRAWTEXT_FONT = '';
 try {
-  const out = require('child_process')
-    .execSync('fc-match -f "%{file}" "DejaVu Sans:style=Bold"', { encoding: 'utf-8' })
-    .trim();
+  const out = execSync('fc-match -f "%{file}" "DejaVu Sans:style=Bold"', { encoding: 'utf-8' }).trim();
   if (out && fs.existsSync(out)) {
     DRAWTEXT_FONT = out;
     console.log(`[font] using ${DRAWTEXT_FONT} for drawtext overlays`);
+  } else {
+    console.warn(`[font] fc-match returned "${out}" but file does not exist`);
   }
 } catch (err) {
   console.warn('[font] fc-match unavailable; text overlays disabled:', err.message);
@@ -437,11 +437,9 @@ app.post('/api/clips/:jobId/:filename/edit', async (req, res) => {
 
   let ssArg = '';
   let tArg = '';
-  let newDuration = null;
   if (trim && typeof trim.start === 'number' && typeof trim.end === 'number' && trim.end > trim.start) {
     ssArg = `-ss ${trim.start}`;
     tArg = `-t ${trim.end - trim.start}`;
-    newDuration = Math.round((trim.end - trim.start) * 10) / 10;
   }
 
   const tmpOut = path.join(clipDir, `__edit_${Date.now()}_${filename}`);
@@ -462,7 +460,9 @@ app.post('/api/clips/:jobId/:filename/edit', async (req, res) => {
     texts: Array.isArray(texts) ? texts : [],
     version: ((clip.edit && clip.edit.version) || 0) + 1,
   };
-  if (newDuration != null) clip.duration = newDuration;
+  // Do NOT mutate clip.duration — it must remain the original source length so
+  // the editor can re-trim against the full _orig.mp4. Effective length is
+  // derived from clip.edit.trim in the UI.
   persistJob(jobId);
   res.json({ ok: true, clip });
 });
