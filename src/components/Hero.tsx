@@ -116,6 +116,42 @@ export default function Hero() {
               </a>
             </div>
 
+            {/* NEW REVIEW feature button — Selkirk Omni */}
+            <a
+              href="/paddles/selkirk-omni-widebody"
+              className="group inline-flex items-center gap-4 mt-6 pl-3 pr-5 py-3 rounded-2xl self-start transition-all duration-200 hover:scale-[1.02]"
+              style={{
+                background: "rgba(4,10,20,0.6)",
+                border: "1px solid rgba(45,212,191,0.45)",
+                backdropFilter: "blur(12px)",
+                boxShadow: "0 0 32px rgba(20,184,166,0.22)",
+              }}
+            >
+              <span
+                className="w-14 h-14 rounded-xl overflow-hidden flex items-center justify-center flex-shrink-0"
+                style={{ background: "rgba(255,255,255,0.06)" }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/images/heros/Selkirk-Omni.png"
+                  alt="Selkirk Omni pickleball paddle"
+                  className="w-full h-full object-contain p-1"
+                />
+              </span>
+              <span className="flex flex-col leading-tight">
+                <span className="text-[11px] font-bold uppercase tracking-[0.22em]" style={{ color: "#2dd4bf" }}>
+                  New Review
+                </span>
+                <span className="text-base font-extrabold text-white">Selkirk Omni</span>
+                <span className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.55)" }}>
+                  ReactCore™ Widebody · All-Court
+                </span>
+              </span>
+              <svg className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-0.5" viewBox="0 0 16 16" fill="none" aria-hidden style={{ color: "#2dd4bf" }}>
+                <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </a>
+
             {/* Social proof */}
             <div className="mt-8 flex items-center gap-3">
               <div className="flex gap-0.5">
