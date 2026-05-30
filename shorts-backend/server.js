@@ -287,14 +287,32 @@ async function processVideo(jobId, jobDir, youtubeUrl) {
   setJobStatus(jobId, { status: 'downloading', message: 'Downloading video…', progress: 5 });
   const videoPath = path.join(jobDir, 'video.mp4');
   const cookiesArg = YT_COOKIES_FILE ? `--cookies "${YT_COOKIES_FILE}" ` : '';
-  // Use the `tv` player client — it tends to be less bot-checked than `web`.
-  const clientArg = '--extractor-args "youtube:player_client=tv,web_safari" ';
-  await execAsync(
-    `${YTDLP_BIN} ${cookiesArg}${clientArg}` +
-    `-f "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best" ` +
-    `--merge-output-format mp4 -o "${videoPath}" "${youtubeUrl}"`,
-    { maxBuffer: 1024 * 1024 * 100 }
-  );
+  // Try `android` client first — it usually works on datacenter IPs without
+  // needing valid cookies or PO Tokens. Fall back to `tv,web_safari` (the
+  // previous combo) if android fails. format 18 (android default) is
+  // 360p mp4; allow 720p mp4 via web_safari if it bypasses the bot check.
+  const clientArgs = [
+    '--extractor-args "youtube:player_client=android"',
+    '--extractor-args "youtube:player_client=tv,web_safari"',
+  ];
+  let lastErr;
+  for (const clientArg of clientArgs) {
+    try {
+      await execAsync(
+        `${YTDLP_BIN} ${cookiesArg}${clientArg} ` +
+        `-f "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best" ` +
+        `--merge-output-format mp4 -o "${videoPath}" "${youtubeUrl}"`,
+        { maxBuffer: 1024 * 1024 * 100 }
+      );
+      console.log(`[yt-dlp] succeeded with ${clientArg}`);
+      lastErr = null;
+      break;
+    } catch (err) {
+      console.warn(`[yt-dlp] failed with ${clientArg}:`, err.message.slice(0, 200));
+      lastErr = err;
+    }
+  }
+  if (lastErr) throw lastErr;
 
   // 2. Extract audio for Whisper
   setJobStatus(jobId, { status: 'transcribing', message: 'Extracting audio…', progress: 20 });
