@@ -15,16 +15,19 @@ set -euo pipefail
 YTDLP="${YTDLP:-/opt/homebrew/bin/yt-dlp}"
 RAILWAY="${RAILWAY:-/opt/homebrew/bin/railway}"
 
-RAW=$(mktemp -t yt-cookies-raw.XXXX)
-FILTERED=$(mktemp -t yt-cookies-filtered.XXXX)
+RAW="${TMPDIR:-/tmp}/yt-cookies-raw.$$"
+FILTERED="${TMPDIR:-/tmp}/yt-cookies-filtered.$$"
 trap 'rm -f "$RAW" "$FILTERED"' EXIT
+# yt-dlp refuses to write into an already-existing file that isn't Netscape-
+# formatted, so make sure these paths don't exist before it runs.
+rm -f "$RAW" "$FILTERED"
 
 echo "→ extracting cookies from Chrome…"
 "$YTDLP" --cookies-from-browser chrome \
          --cookies "$RAW" \
          --skip-download \
-         --quiet \
-         "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+         "https://www.youtube.com/watch?v=dQw4w9WgXcQ" \
+         2>&1 | tail -3
 
 echo "→ filtering to YouTube + Google cookies…"
 (head -2 "$RAW"
