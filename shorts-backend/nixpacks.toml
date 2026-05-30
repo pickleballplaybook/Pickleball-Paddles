@@ -1,10 +1,14 @@
 [phases.setup]
-nixPkgs = ["ffmpeg", "yt-dlp", "nodejs_20", "python3", "python3Packages.pip"]
+# deno is needed for yt-dlp to solve YouTube's JS player challenges
+# (without it, nsig extraction fails and downloads come back empty).
+nixPkgs = ["ffmpeg", "yt-dlp", "nodejs_20", "python3", "python3Packages.pip", "deno"]
 
 [phases.install]
 cmds = [
   "npm ci",
-  "python3 -m pip install --break-system-packages --user -U yt-dlp || true"
+  # Force-reinstall the absolute latest yt-dlp on every build — YouTube
+  # changes its player frequently and the nixpkgs version lags behind.
+  "python3 -m pip install --break-system-packages --user --upgrade --force-reinstall yt-dlp || true"
 ]
 
 [start]
