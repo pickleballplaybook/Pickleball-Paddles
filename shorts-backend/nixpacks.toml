@@ -8,8 +8,10 @@ nixPkgs = ["ffmpeg", "nodejs_20", "deno", "curl"]
 [phases.install]
 cmds = [
   "npm ci",
-  # Always grab the absolute latest yt-dlp self-contained binary.
-  "curl -L -o /usr/local/bin/yt-dlp https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp",
+  # `yt-dlp_linux` is the standalone Linux binary (PyInstaller-bundled, no
+  # Python needed). The plain `yt-dlp` filename is a Python script and won't
+  # run without python3 on PATH.
+  "curl -L -o /usr/local/bin/yt-dlp https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_linux",
   "chmod +x /usr/local/bin/yt-dlp",
   "/usr/local/bin/yt-dlp --version"
 ]
