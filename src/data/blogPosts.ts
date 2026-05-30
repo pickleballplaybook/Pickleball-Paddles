@@ -1128,6 +1128,42 @@ export const blogPosts: BlogPost[] = [
       { type: "verdict", text: "The Rebl Alliance delivers a spec combination that's hard to find elsewhere — SW 119.22 with TW 6.68 in a hybrid shape. At $200.06 with $50 off, it's a compelling option for power players who want maneuverability. A strong debut from Rebl." },
     ],
   },
+
+  // ── Selkirk Omni ─────────────────────────────────────────────────────────
+  {
+    slug: "selkirk-omni-review",
+    title: "Selkirk Omni Review: ReactCore™ Double-Ring Foam in a Premium All-Court Paddle",
+    metaDescription: "Selkirk Omni Widebody review — ReactCore™ PureFoam center + EVA Power Ring, adjustable MOI tuning, InfiniGrit™ surface. SW 115.24, TW 7.87, 8.3 oz. $299.99 with code INF-PLAYBOOK.",
+    publishDate: "2026-05-30",
+    videoId: "2jXKJrCH9iI",
+    brand: "Selkirk",
+    paddleName: "Omni",
+    thumbnail: "/images/paddles/Selkirk-Omni-Widebody-16mm.png",
+    excerpt: "The Selkirk Omni introduces ReactCore™ — a PureFoam™ floating center inside a new PureFoam™ Ring, surrounded by the EVA Power Ring made famous by Project Boomstik® — for all-court versatility with adaptive flexibility.",
+    paddleSlugs: ["selkirk-omni-widebody"],
+    sections: [
+      { type: "p", text: "At the heart of this paddle is the innovative ReactCore™ — a PureFoam™ floating center with a new PureFoam™ Ring surrounded by an EVA Power Ring for a dynamic core with adaptive flexibility. This double-ring technology takes the EVA Power Ring players loved in Project Boomstik® and refines it with an additional PureFoam Ring for a more connected feel with additional control. This gives you consistent playability across your paddle face with versatile all-court performance for the modern fast-paced game. You'll have great power, a plush feeling on control shots, and dwell to grab the ball for more spin. This game-changing technology tailors its response to every swing, making this an all-court paddle built for the modern fast-paced game. Your paddle will feel less stiff than traditional solid cores while adapting to your game. Plus, its durability smashes through the standard set by a comparable polypropylene paddle." },
+      { type: "h2", text: "Specs at a Glance" },
+      { type: "ul", items: [
+        "Shape: Widebody",
+        "Core: 16mm ReactCore™ (PureFoam™ center + PureFoam™ Ring + EVA Power Ring)",
+        "Weight: 8.3 oz",
+        "Swing Weight: 115.24",
+        "Twist Weight: 7.87",
+        "Surface: InfiniGrit™",
+        "Price: $299.99 — use code INF-PLAYBOOK",
+      ]},
+      { type: "h2", text: "Features & Technology" },
+      { type: "ul", items: [
+        "ReactCore™ for Control When You Need It and Power When You Want It: The ReactCore consists of a PureFoam™ floating center with a new PureFoam™ Ring surrounded by an EVA Power Ring for a dynamic core with adaptive flexibility. This double-ring technology takes the EVA Power Ring players loved in Project Boomstik and refines it with an additional PureFoam Ring for a more connected feel with additional control.",
+        "New Adjustable MOI Tuning System: This next generation of the MOI Tuning System gives you the ability to remove and rearrange the perimeter weights by hand to fine-tune your paddle. The MOI weights are designed to hold steady and will not shift during play.",
+        "InfiniGrit™ Surface for 3x Spin Durability Over Raw Carbon: Triples the durability of traditional embossed epoxy peel-ply texture raw carbon surfaces while significantly enhancing spin potential, allowing players to achieve up to 2,000 RPMs for more precise and controlled shots. This advanced surface ensures consistent performance and a competitive edge, even during extended play.",
+        "Multistrata Face for Balanced Performance: A proprietary, patent-pending multi-layer T700 carbon-fiber system tunable for balanced performance and engineered to integrate seamlessly with PureFoam™ technology. Together, they deliver optimized flexibility, consistent energy return, and rock-solid durability.",
+        "Octagonal Handle for Better Control: The upgraded octagonal grip offers greater maneuverability and shot accuracy on the court.",
+        "Superior Durability: With extensive testing on Selkirk's durability cannon — which fires pickleballs at 110mph to simulate wear so the change in core can be measured — the Omni held strong while other paddles deteriorated. No core crush, just consistent performance that lasts.",
+      ]},
+    ],
+  },
 ];
 
 export function getBlogPostBySlug(slug: string): BlogPost | undefined {
