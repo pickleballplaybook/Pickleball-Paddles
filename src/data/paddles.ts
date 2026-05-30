@@ -2323,6 +2323,26 @@ export const paddles: Paddle[] = [
     trendingScore: 50,
     playStyle: "power",
   },
+
+  // ── Selkirk (Omni) ─────────────────────────────────────────────────────────
+  {
+    id: "120",
+    slug: "selkirk-omni-widebody",
+    brand: "Selkirk",
+    name: "Omni",
+    shape: "Widebody",
+    weight: "",
+    swingWeight: 115.24,
+    twistWeight: 7.87,
+    thickness: "16mm",
+    image: "/images/paddles/Selkirk-Omni-Widebody-16mm.png",
+    amountOff: "$0",
+    price: "$299.99",
+    discountLink: "https://www.selkirk.com/discount/inf-playbook",
+    addedAt: "2026-05-29",
+    trendingScore: 50,
+    playStyle: "all-court",
+  },
 ];
 
 // Review dates — ISO publish dates for Latest Reviews sort (newest-first)
