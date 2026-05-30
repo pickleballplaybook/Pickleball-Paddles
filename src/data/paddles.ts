@@ -2340,6 +2340,7 @@ export const paddles: Paddle[] = [
     amountOff: "$0",
     price: "$299.99",
     discountLink: "https://www.selkirk.com/discount/inf-playbook",
+    reviewUrl: "https://youtu.be/2jXKJrCH9iI",
     addedAt: "2026-05-29",
     trendingScore: 50,
     playStyle: "all-court",
@@ -2349,6 +2350,7 @@ export const paddles: Paddle[] = [
 // Review dates — ISO publish dates for Latest Reviews sort (newest-first)
 // Set youtubeApiKey in site.ts to auto-fetch real dates; or fill in manually.
 export const reviewDates: Record<string, string> = {
+  "2jXKJrCH9iI": "2026-05-30",  // Selkirk Omni
   azQ81arW72g:   "2026-05-19",  // Joola Pro V Line (Scorpeus, Agassi, Graf, Hyperion)
   tLtBiz9bNWc:   "2026-05-18",  // Thrive Ignite Pro Series
   "il6Z4hPh-jY": "2026-05-17",  // Joysent Gearfoam Max
