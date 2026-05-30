@@ -2331,7 +2331,7 @@ export const paddles: Paddle[] = [
     brand: "Selkirk",
     name: "Omni",
     shape: "Widebody",
-    weight: "",
+    weight: "8.3 oz",
     swingWeight: 115.24,
     twistWeight: 7.87,
     thickness: "16mm",
