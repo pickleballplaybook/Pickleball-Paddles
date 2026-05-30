@@ -3,7 +3,7 @@
 # it, nsig extraction fails and downloads come back empty).
 # We pull yt-dlp itself from its GitHub releases below instead of nixpkgs
 # (which lags months behind YouTube's player changes).
-nixPkgs = ["ffmpeg", "nodejs_20", "deno", "curl"]
+nixPkgs = ["ffmpeg", "nodejs_20", "deno", "curl", "dejavu_fonts", "fontconfig"]
 
 [phases.install]
 cmds = [

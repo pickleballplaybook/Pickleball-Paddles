@@ -175,6 +175,108 @@ function loadJobsFromDisk() {
 
 loadJobsFromDisk();
 
+// ─── DISK CLEANUP ────────────────────────────────────────────────────────────
+// Without this, /data fills up (raw downloads + finished clips accumulate
+// indefinitely on the persistent volume) and yt-dlp fails with ENOSPC.
+function dirSize(p) {
+  let total = 0;
+  try {
+    for (const entry of fs.readdirSync(p, { withFileTypes: true })) {
+      const full = path.join(p, entry.name);
+      try {
+        const stat = fs.statSync(full);
+        if (stat.isDirectory()) total += dirSize(full);
+        else total += stat.size;
+      } catch {}
+    }
+  } catch {}
+  return total;
+}
+
+// Keep only the N most recent finished jobs on disk — bounded storage,
+// independent of how actively clips are being generated. History tab will
+// only show what's still on disk.
+const CLEANUP_KEEP_JOBS = Number(process.env.CLEANUP_KEEP_JOBS || 15);
+
+function diskCleanup() {
+  let freed = 0;
+  let removed = 0;
+
+  // JOBS_DIR only ever holds the raw downloaded video for an in-flight job —
+  // it's wiped at the end of processVideo. Anything still here on startup is
+  // an orphan from a crashed/interrupted run, so wipe unconditionally.
+  if (fs.existsSync(JOBS_DIR)) {
+    for (const entry of fs.readdirSync(JOBS_DIR, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+      const dir = path.join(JOBS_DIR, entry.name);
+      try {
+        freed += dirSize(dir);
+        fs.rmSync(dir, { recursive: true, force: true });
+        removed++;
+      } catch (err) {
+        console.error(`[cleanup] failed to remove ${dir}:`, err.message);
+      }
+    }
+  }
+
+  // OUTPUT_DIR: keep only the most recent N job dirs, drop the rest.
+  // Skip files (connections.json, scheduled-queue.json) and the scheduled/ dir.
+  if (fs.existsSync(OUTPUT_DIR)) {
+    const jobDirs = [];
+    for (const entry of fs.readdirSync(OUTPUT_DIR, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+      if (entry.name === 'scheduled') continue;
+      const dir = path.join(OUTPUT_DIR, entry.name);
+      try {
+        const stat = fs.statSync(dir);
+        jobDirs.push({ name: entry.name, dir, mtime: stat.mtimeMs });
+      } catch {}
+    }
+    jobDirs.sort((a, b) => b.mtime - a.mtime); // newest first
+    for (const j of jobDirs.slice(CLEANUP_KEEP_JOBS)) {
+      try {
+        freed += dirSize(j.dir);
+        fs.rmSync(j.dir, { recursive: true, force: true });
+        delete jobs[j.name];
+        removed++;
+      } catch (err) {
+        console.error(`[cleanup] failed to remove ${j.dir}:`, err.message);
+      }
+    }
+  }
+
+  console.log(`[cleanup] freed ${(freed / 1024 / 1024).toFixed(1)} MB across ${removed} dir(s) (keep ${CLEANUP_KEEP_JOBS} most recent)`);
+}
+
+diskCleanup();
+setInterval(diskCleanup, 60 * 60 * 1000); // hourly
+
+// ─── DRAWTEXT FONT ───────────────────────────────────────────────────────────
+// ffmpeg's drawtext filter (for clip text overlays) needs a TTF/OTF path.
+// Resolve once at startup via fontconfig; falls back gracefully if missing.
+let DRAWTEXT_FONT = '';
+try {
+  const out = require('child_process')
+    .execSync('fc-match -f "%{file}" "DejaVu Sans:style=Bold"', { encoding: 'utf-8' })
+    .trim();
+  if (out && fs.existsSync(out)) {
+    DRAWTEXT_FONT = out;
+    console.log(`[font] using ${DRAWTEXT_FONT} for drawtext overlays`);
+  }
+} catch (err) {
+  console.warn('[font] fc-match unavailable; text overlays disabled:', err.message);
+}
+
+// Escape user-supplied text so ffmpeg's drawtext filter parses it correctly.
+// drawtext is colon-separated, single-quoted strings, with % expansions.
+function escapeDrawText(s) {
+  return String(s)
+    .replace(/\\/g, '\\\\')
+    .replace(/:/g, '\\:')
+    .replace(/'/g, "\\\\'")
+    .replace(/%/g, '\\%');
+}
+
 // ─── ROUTES ──────────────────────────────────────────────────────────────────
 
 app.post('/api/process', async (req, res) => {
@@ -279,37 +381,161 @@ app.get('/api/zip/:jobId', (req, res) => {
   archive.finalize();
 });
 
+// ─── CLIP EDIT (trim + text overlays) ────────────────────────────────────────
+// First edit snapshots the clip file as `<base>_orig.mp4`. Subsequent edits
+// re-render from that original so trims and text don't compound. Reset
+// restores from the snapshot.
+app.post('/api/clips/:jobId/:filename/edit', async (req, res) => {
+  const { jobId, filename } = req.params;
+  if (filename.includes('/') || filename.includes('..')) {
+    return res.status(400).json({ error: 'Invalid filename' });
+  }
+  const job = jobs[jobId];
+  if (!job) return res.status(404).json({ error: 'Job not found' });
+  const clip = (job.clips || []).find(c => c.filename === filename);
+  if (!clip) return res.status(404).json({ error: 'Clip not found' });
+
+  const { trim, texts } = req.body || {};
+  const clipDir = path.join(OUTPUT_DIR, jobId);
+  const editedPath = path.join(clipDir, filename);
+  const origPath = path.join(clipDir, filename.replace(/\.mp4$/i, '_orig.mp4'));
+
+  if (!fs.existsSync(editedPath) && !fs.existsSync(origPath)) {
+    return res.status(404).json({ error: 'Clip file missing on disk' });
+  }
+  if (!fs.existsSync(origPath)) {
+    try { fs.copyFileSync(editedPath, origPath); }
+    catch (err) { return res.status(500).json({ error: `Snapshot failed: ${err.message}` }); }
+  }
+
+  const filters = [];
+  if (Array.isArray(texts) && texts.length > 0) {
+    if (!DRAWTEXT_FONT) {
+      return res.status(500).json({ error: 'Server is missing a font for text overlays' });
+    }
+    for (const t of texts) {
+      if (!t || !t.text) continue;
+      const txt = escapeDrawText(t.text);
+      const xPct = Math.max(0, Math.min(100, Number(t.xPct) || 50)) / 100;
+      const yPct = Math.max(0, Math.min(100, Number(t.yPct) || 80)) / 100;
+      const fontSize = Math.max(12, Math.min(200, Number(t.fontSize) || 64));
+      const start = Math.max(0, Number(t.start) || 0);
+      const end = Math.max(start + 0.1, Number(t.end) || (start + 3));
+      // Position the text CENTER at (xPct, yPct) of the video. Matches the
+      // CSS `left: xPct%; top: yPct%; transform: translate(-50%,-50%)` we use
+      // in the editor preview, so what the user drags is what they get.
+      filters.push(
+        `drawtext=fontfile='${DRAWTEXT_FONT}':text='${txt}':` +
+        `x=(w*${xPct}-text_w/2):y=(h*${yPct}-text_h/2):` +
+        `fontsize=${fontSize}:fontcolor=white:` +
+        `box=1:boxcolor=black@0.55:boxborderw=14:` +
+        `enable='between(t,${start},${end})'`
+      );
+    }
+  }
+  const vfArg = filters.length > 0 ? `-vf "${filters.join(',')}"` : '';
+
+  let ssArg = '';
+  let tArg = '';
+  let newDuration = null;
+  if (trim && typeof trim.start === 'number' && typeof trim.end === 'number' && trim.end > trim.start) {
+    ssArg = `-ss ${trim.start}`;
+    tArg = `-t ${trim.end - trim.start}`;
+    newDuration = Math.round((trim.end - trim.start) * 10) / 10;
+  }
+
+  const tmpOut = path.join(clipDir, `__edit_${Date.now()}_${filename}`);
+  const cmd =
+    `ffmpeg ${ssArg} -i "${origPath}" ${tArg} ${vfArg} ` +
+    `-c:v libx264 -preset fast -crf 23 -c:a aac -b:a 128k "${tmpOut}" -y`;
+  try {
+    await execAsync(cmd, { maxBuffer: 1024 * 1024 * 200 });
+  } catch (err) {
+    try { fs.rmSync(tmpOut, { force: true }); } catch {}
+    return res.status(500).json({ error: err.message.slice(0, 500) });
+  }
+  try { fs.renameSync(tmpOut, editedPath); }
+  catch (err) { return res.status(500).json({ error: `Swap failed: ${err.message}` }); }
+
+  clip.edit = {
+    trim: (trim && trim.end > trim.start) ? { start: trim.start, end: trim.end } : null,
+    texts: Array.isArray(texts) ? texts : [],
+    version: ((clip.edit && clip.edit.version) || 0) + 1,
+  };
+  if (newDuration != null) clip.duration = newDuration;
+  persistJob(jobId);
+  res.json({ ok: true, clip });
+});
+
+app.delete('/api/clips/:jobId/:filename/edit', (req, res) => {
+  const { jobId, filename } = req.params;
+  if (filename.includes('/') || filename.includes('..')) {
+    return res.status(400).json({ error: 'Invalid filename' });
+  }
+  const job = jobs[jobId];
+  if (!job) return res.status(404).json({ error: 'Job not found' });
+  const clip = (job.clips || []).find(c => c.filename === filename);
+  if (!clip) return res.status(404).json({ error: 'Clip not found' });
+
+  const clipDir = path.join(OUTPUT_DIR, jobId);
+  const editedPath = path.join(clipDir, filename);
+  const origPath = path.join(clipDir, filename.replace(/\.mp4$/i, '_orig.mp4'));
+  if (fs.existsSync(origPath)) {
+    try { fs.copyFileSync(origPath, editedPath); }
+    catch (err) { return res.status(500).json({ error: err.message }); }
+  }
+  clip.edit = { trim: null, texts: [], version: ((clip.edit && clip.edit.version) || 0) + 1 };
+  persistJob(jobId);
+  res.json({ ok: true, clip });
+});
+
 // ─── PIPELINE ────────────────────────────────────────────────────────────────
 
 async function processVideo(jobId, jobDir, youtubeUrl) {
+
+  // Make sure the volume has space before pulling a potentially-large video.
+  try { diskCleanup(); } catch (err) { console.error('[cleanup] pre-job sweep failed:', err.message); }
 
   // 1. Download video with yt-dlp
   setJobStatus(jobId, { status: 'downloading', message: 'Downloading video…', progress: 5 });
   const videoPath = path.join(jobDir, 'video.mp4');
   const cookiesArg = YT_COOKIES_FILE ? `--cookies "${YT_COOKIES_FILE}" ` : '';
-  // Try `android` client first — it usually works on datacenter IPs without
-  // needing valid cookies or PO Tokens. Fall back to `tv,web_safari` (the
-  // previous combo) if android fails. format 18 (android default) is
-  // 360p mp4; allow 720p mp4 via web_safari if it bypasses the bot check.
-  const clientArgs = [
-    '--extractor-args "youtube:player_client=android"',
-    '--extractor-args "youtube:player_client=tv,web_safari"',
+  // YouTube's SABR-only experiment is breaking the bestvideo+bestaudio merge
+  // path on some accounts (separate streams missing URLs, ffmpeg fails to
+  // merge). Each attempt below picks (client, format) combos that prefer
+  // pre-muxed formats so we don't need to merge at all.
+  // - `ios` + format 18 (360p muxed) is the most reliable on datacenter IPs
+  // - `android` is a fallback that also often serves muxed
+  // - `tv,web_safari` with merge is the last resort for HD when SABR isn't on
+  const attempts = [
+    {
+      label: 'ios muxed',
+      args: '--extractor-args "youtube:player_client=ios" -f "best[ext=mp4][protocol^=http]/best[ext=mp4]/18/best"',
+    },
+    {
+      label: 'android muxed',
+      args: '--extractor-args "youtube:player_client=android" -f "best[ext=mp4][protocol^=http]/best[ext=mp4]/18/best"',
+    },
+    {
+      label: 'tv,web_safari hd',
+      args: '--extractor-args "youtube:player_client=tv,web_safari" -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best" --merge-output-format mp4',
+    },
   ];
   let lastErr;
-  for (const clientArg of clientArgs) {
+  for (const attempt of attempts) {
     try {
       await execAsync(
-        `${YTDLP_BIN} ${cookiesArg}${clientArg} ` +
-        `-f "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best" ` +
-        `--merge-output-format mp4 -o "${videoPath}" "${youtubeUrl}"`,
+        `${YTDLP_BIN} ${cookiesArg}${attempt.args} -o "${videoPath}" "${youtubeUrl}"`,
         { maxBuffer: 1024 * 1024 * 100 }
       );
-      console.log(`[yt-dlp] succeeded with ${clientArg}`);
+      console.log(`[yt-dlp] succeeded with ${attempt.label}`);
       lastErr = null;
       break;
     } catch (err) {
-      console.warn(`[yt-dlp] failed with ${clientArg}:`, err.message.slice(0, 200));
+      console.warn(`[yt-dlp] failed with ${attempt.label}:`, err.message.slice(0, 200));
       lastErr = err;
+      // Clean partial output before next attempt
+      try { fs.rmSync(videoPath, { force: true }); } catch {}
     }
   }
   if (lastErr) throw lastErr;
@@ -397,10 +623,16 @@ Respond ONLY with valid JSON — no preamble, no markdown fences. Format:
   );
   const { width, height } = JSON.parse(probeOut).streams[0];
 
-  // For 9:16 crop: use full height, crop width to height*(9/16)
-  const cropW = Math.floor(height * (9 / 16));
-  const cropX = Math.floor((width - cropW) / 2);
-  const cropFilter = `scale=1920:1080`;
+  // Output is 9:16 portrait (1080x1920) for IG/FB Reels. The full landscape
+  // video is preserved (no cropping), scaled to fit the portrait width, and
+  // centered vertically. Empty space above/below is filled with a zoomed +
+  // blurred copy of the same frame.
+  void width; void height;
+  const reelFilter =
+    `[0:v]split=2[bg][fg];` +
+    `[bg]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=30:1[bg];` +
+    `[fg]scale=1080:-2[fg];` +
+    `[bg][fg]overlay=(W-w)/2:(H-h)/2,setsar=1`;
 
   const clipOutputDir = path.join(OUTPUT_DIR, jobId);
   fs.mkdirSync(clipOutputDir, { recursive: true });
@@ -421,7 +653,7 @@ Respond ONLY with valid JSON — no preamble, no markdown fences. Format:
 
     await execAsync(
       `ffmpeg -ss ${clip.start} -i "${videoPath}" -t ${duration} ` +
-      `-vf "${cropFilter}" -c:v libx264 -preset fast -crf 23 ` +
+      `-filter_complex "${reelFilter}" -c:v libx264 -preset fast -crf 23 ` +
       `-c:a aac -b:a 128k "${outPath}" -y`,
       { maxBuffer: 1024 * 1024 * 200 }
     );
