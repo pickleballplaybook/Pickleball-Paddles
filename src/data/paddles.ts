@@ -758,7 +758,6 @@ export const paddles: Paddle[] = [
     //   image       -> "/images/paddles/Pro-V-16mm.png"
     //   discountLink -> "https://lockerroompickleball.com/search?q=Joola&sca_ref=8334840.yY4rLJi7oU9HDNHD"
     //   price        -> "$299.95"
-    //   plus: remove the TEMP limited-edition button in src/components/Hero.tsx
     image: "/images/limited-edition/Joola-Pro-V-Perseus-16mm.png",
     amountOff: "15%",
     price: "$329.95",
