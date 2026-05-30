@@ -2298,7 +2298,9 @@ export const paddles: Paddle[] = [
     reviewUrl: "https://youtu.be/tLtBiz9bNWc",
     amountOff: "10%",
     price: "$219.99",
-    discountLink: "https://thrivepb.com/discount/PLAYBOOK?redirect=/%3Fsca_ref%3D11226925.N8ui0Ppn9Vnb8DM",
+    // TEMP discount link — when reverting, restore to:
+    //   "https://thrivepb.com/discount/PLAYBOOK?redirect=/%3Fsca_ref%3D11226925.N8ui0Ppn9Vnb8DM"
+    discountLink: "https://lockerroompickleball.com/products/ignite-hybrid-foam?sca_ref=8334840.yY4rLJi7oU9HDNHD",
     addedAt: "2026-05-14",
     trendingScore: 50,
     playStyle: "power",
