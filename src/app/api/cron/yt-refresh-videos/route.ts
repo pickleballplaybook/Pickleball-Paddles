@@ -108,7 +108,7 @@ async function refreshChannelVideos(conn: YoutubeConnection): Promise<{
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     if (!res.ok) {
-      throw new Error(`playlistItems fetch failed: ${(await res.text()).slice(0, 200)}`);
+      throw new Error(`playlistItems fetch failed (status ${res.status}): ${(await res.text()).slice(0, 800)}`);
     }
     const data = (await res.json()) as {
       items: Array<{ contentDetails: { videoId: string } }>;
