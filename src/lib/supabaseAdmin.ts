@@ -20,5 +20,14 @@ export function getSupabaseAdmin() {
 
   return createClient(url, serviceKey, {
     auth: { persistSession: false, autoRefreshToken: false },
+    // Next.js wraps global fetch and caches GET responses by URL. Supabase's
+    // PostgREST uses GET for queries, which means the same .select().eq()
+    // returns CACHED stale rows across requests inside a deploy — caught
+    // this when token_expires_at + refresh_token were frozen from before
+    // a reconnect. Override fetch to opt out of the cache.
+    global: {
+      fetch: (input, init) =>
+        fetch(input, { ...init, cache: "no-store" }),
+    },
   });
 }
