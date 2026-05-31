@@ -95,32 +95,31 @@ export async function GET(req: NextRequest) {
       throw new Error("no YouTube channel found on this Google account");
     }
 
-    const channel = channelData.items[0];
     const expiresAt = new Date(Date.now() + tokens.expires_in * 1000).toISOString();
 
-    // Step 3: upsert into social_connections
+    // Upsert EVERY channel returned. Google may return multiple when a
+    // single Google account has owner access to several brand channels —
+    // we want all of them connected, not just the first.
     const supabase = getSupabaseAdmin();
+    const rows = channelData.items.map((channel) => ({
+      platform: "youtube" as const,
+      account_id: channel.id,
+      account_name: channel.snippet.customUrl
+        ? (channel.snippet.customUrl.startsWith("@") ? channel.snippet.customUrl : `@${channel.snippet.customUrl}`)
+        : channel.snippet.title,
+      page_id: null,
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token,
+      token_expires_at: expiresAt,
+      metadata: {
+        channel_title: channel.snippet.title,
+        scope: tokens.scope,
+      },
+      is_active: true,
+    }));
     const { error: dbError } = await supabase
       .from("social_connections")
-      .upsert(
-        {
-          platform: "youtube",
-          account_id: channel.id,
-          account_name: channel.snippet.customUrl
-            ? (channel.snippet.customUrl.startsWith("@") ? channel.snippet.customUrl : `@${channel.snippet.customUrl}`)
-            : channel.snippet.title,
-          page_id: null,
-          access_token: tokens.access_token,
-          refresh_token: tokens.refresh_token,
-          token_expires_at: expiresAt,
-          metadata: {
-            channel_title: channel.snippet.title,
-            scope: tokens.scope,
-          },
-          is_active: true,
-        },
-        { onConflict: "platform,account_id" }
-      );
+      .upsert(rows, { onConflict: "platform,account_id" });
 
     if (dbError) {
       throw new Error(`db upsert failed: ${dbError.message}`);
@@ -128,7 +127,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.redirect(
       new URL(
-        `${dashboardUrl}?status=ok&message=youtube_connected`,
+        `${dashboardUrl}?status=ok&message=youtube_connected&count=${rows.length}`,
         url.origin
       )
     );

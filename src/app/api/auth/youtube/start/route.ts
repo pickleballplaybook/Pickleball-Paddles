@@ -21,9 +21,12 @@ export async function GET() {
     // access_type=offline gets us a refresh_token. Without it, the access
     // token expires after 1 hour and we'd have to re-auth manually.
     access_type: "offline",
-    // prompt=consent forces the consent screen even on re-auth, which
-    // ensures we always get a fresh refresh_token.
-    prompt: "consent",
+    // select_account: show Google's account chooser even when one is signed
+    // in, so the user can pick a different channel than last time (needed
+    // for adding a second YouTube channel like @playbookreviews alongside
+    // @pickleballplaybook). consent: still force the consent screen so we
+    // always get a fresh refresh_token.
+    prompt: "select_account consent",
   });
 
   return NextResponse.redirect(`${GOOGLE_OAUTH_AUTH_URL}?${params.toString()}`);
