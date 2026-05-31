@@ -55,6 +55,7 @@ export default function ConnectionsPage() {
 
   const ig = connections.filter((c) => c.platform === "instagram" && c.is_active);
   const fb = connections.filter((c) => c.platform === "facebook" && c.is_active);
+  const yt = connections.filter((c) => c.platform === "youtube" && c.is_active);
 
   return (
     <div className="min-h-screen bg-stone-50 text-stone-900">
@@ -174,13 +175,76 @@ export default function ConnectionsPage() {
           )}
         </section>
 
-        <section className="rounded-lg border border-stone-200 bg-white p-6">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-2">
-            YouTube
+        <div className="rounded-lg border border-stone-200 bg-white p-6">
+          <div className="flex items-center gap-4">
+            <div className="h-10 w-10 rounded-full bg-red-600 flex items-center justify-center shrink-0">
+              <PlatformIcon platform="youtube" className="h-5 w-5 text-white" />
+            </div>
+            <div className="flex-1">
+              <h2 className="font-semibold">YouTube</h2>
+              <p className="text-sm text-stone-600 mt-0.5">
+                Authorize via Google OAuth. Required so the poller can read
+                comments and post replies on your channel videos.
+              </p>
+            </div>
+            <a
+              href="/api/auth/youtube/start"
+              className="rounded-md bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-stone-800 shrink-0"
+            >
+              {yt.length === 0 ? "Connect" : "Reconnect"}
+            </a>
+          </div>
+        </div>
+
+        <section>
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-3">
+            YouTube channels ({yt.length})
           </h3>
-          <p className="text-sm text-stone-500">
-            YouTube uses a different setup (Google OAuth). We'll add it in Step 5.
-          </p>
+          {loading ? (
+            <div className="rounded-lg border border-stone-200 bg-white p-6 text-sm text-stone-500">
+              Loading…
+            </div>
+          ) : yt.length === 0 ? (
+            <div className="rounded-lg border border-dashed border-stone-300 bg-white p-6 text-sm text-stone-500">
+              No YouTube channels connected. Click <strong>Connect</strong> above.
+            </div>
+          ) : (
+            <ul className="space-y-2">
+              {yt.map((c) => (
+                <li
+                  key={c.id}
+                  className="rounded-lg border border-stone-200 bg-white p-4 flex items-center gap-4"
+                >
+                  <PlatformIcon platform={c.platform} className="h-5 w-5" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium truncate">
+                        {c.account_name || c.account_id}
+                      </span>
+                      <span className="text-[10px] uppercase tracking-wider text-stone-500">
+                        {c.platform}
+                      </span>
+                    </div>
+                    <div className="text-xs text-stone-500 mt-0.5">
+                      ID: {c.account_id}
+                      {c.token_expires_at && (
+                        <>
+                          {" · expires "}
+                          {new Date(c.token_expires_at).toLocaleDateString()}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => disconnect(c)}
+                    className="text-xs font-medium text-stone-500 hover:text-rose-600"
+                  >
+                    Disconnect
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
       </main>
     </div>
