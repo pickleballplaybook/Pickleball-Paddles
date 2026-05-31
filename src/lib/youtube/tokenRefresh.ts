@@ -19,17 +19,6 @@ export async function getValidAccessToken(conn: YoutubeConnection): Promise<stri
   const fiveMinFromNow = Date.now() + 5 * 60 * 1000;
   const expiresAt = new Date(conn.token_expires_at).getTime();
 
-  console.log("[tokenRefresh]", {
-    conn_id: conn.id,
-    token_expires_at_str: conn.token_expires_at,
-    expires_at_ms: expiresAt,
-    five_min_from_now_ms: fiveMinFromNow,
-    now_ms: Date.now(),
-    will_refresh: !(expiresAt > fiveMinFromNow),
-    refresh_token_first10: conn.refresh_token?.slice(0, 10),
-    refresh_token_len: conn.refresh_token?.length,
-  });
-
   if (expiresAt > fiveMinFromNow) {
     return conn.access_token;
   }

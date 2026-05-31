@@ -66,41 +66,23 @@ async function refreshChannelVideos(conn: YoutubeConnection): Promise<{
   const accessToken = await getValidAccessToken(conn);
   const supabase = getSupabaseAdmin();
 
-  // Step 1: get the channel's "uploads" playlist ID. Every channel has one.
-  const channelRes = await fetch(
-    `${YT_API}/channels?part=contentDetails&id=${conn.account_id}`,
-    { headers: { Authorization: `Bearer ${accessToken}` } }
-  );
-  if (!channelRes.ok) {
-    throw new Error(`channel fetch failed: ${(await channelRes.text()).slice(0, 200)}`);
-  }
-  const channelData = (await channelRes.json()) as {
-    items: Array<{ contentDetails: { relatedPlaylists: { uploads: string } } }>;
-  };
-  const uploadsPlaylistId = channelData.items?.[0]?.contentDetails?.relatedPlaylists?.uploads;
-  console.log("[yt-refresh-videos]", {
-    queried_channel_id: conn.account_id,
-    channels_returned: channelData.items?.length ?? 0,
-    uploads_playlist_id: uploadsPlaylistId,
-    access_token_first15: accessToken.slice(0, 15),
-    access_token_len: accessToken.length,
-    channel_data_first300: JSON.stringify(channelData).slice(0, 300),
-  });
-  if (!uploadsPlaylistId) {
-    throw new Error("no uploads playlist found");
-  }
-
-  // Step 2: paginate through all videos in the uploads playlist.
-  // playlistItems.list costs 1 quota unit per page (50 videos/page).
+  // Use search.list with channelId — YouTube's playlistItems.list returns
+  // a spurious `playlistNotFound` on the channel's uploads playlist for
+  // some accounts (reproducible bug on Brand-account-owned channels) even
+  // when the playlist exists publicly. search.list bypasses this.
+  // Cost: 100 quota units per page (vs 1 for playlistItems) — we only
+  // refresh once a day, so well within the 10k/day quota.
   const allVideoIds: string[] = [];
   let pageToken: string | undefined = undefined;
   let pages = 0;
-  const MAX_PAGES = 50; // safety cap = 2500 videos
+  const MAX_PAGES = 10; // 10 pages × 50 results = 500 videos, plenty
 
   do {
-    const url = new URL(`${YT_API}/playlistItems`);
-    url.searchParams.set("part", "contentDetails");
-    url.searchParams.set("playlistId", uploadsPlaylistId);
+    const url = new URL(`${YT_API}/search`);
+    url.searchParams.set("part", "id");
+    url.searchParams.set("channelId", conn.account_id);
+    url.searchParams.set("type", "video");
+    url.searchParams.set("order", "date");
     url.searchParams.set("maxResults", "50");
     if (pageToken) url.searchParams.set("pageToken", pageToken);
 
@@ -108,14 +90,14 @@ async function refreshChannelVideos(conn: YoutubeConnection): Promise<{
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     if (!res.ok) {
-      throw new Error(`playlistItems fetch failed (status ${res.status}): ${(await res.text()).slice(0, 800)}`);
+      throw new Error(`search fetch failed (status ${res.status}): ${(await res.text()).slice(0, 600)}`);
     }
     const data = (await res.json()) as {
-      items: Array<{ contentDetails: { videoId: string } }>;
+      items: Array<{ id: { videoId?: string } }>;
       nextPageToken?: string;
     };
     for (const item of data.items || []) {
-      if (item.contentDetails?.videoId) allVideoIds.push(item.contentDetails.videoId);
+      if (item.id?.videoId) allVideoIds.push(item.id.videoId);
     }
     pageToken = data.nextPageToken;
     pages++;
