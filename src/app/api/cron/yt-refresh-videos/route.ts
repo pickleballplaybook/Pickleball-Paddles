@@ -82,6 +82,9 @@ async function refreshChannelVideos(conn: YoutubeConnection): Promise<{
     queried_channel_id: conn.account_id,
     channels_returned: channelData.items?.length ?? 0,
     uploads_playlist_id: uploadsPlaylistId,
+    access_token_first15: accessToken.slice(0, 15),
+    access_token_len: accessToken.length,
+    channel_data_first300: JSON.stringify(channelData).slice(0, 300),
   });
   if (!uploadsPlaylistId) {
     throw new Error("no uploads playlist found");
