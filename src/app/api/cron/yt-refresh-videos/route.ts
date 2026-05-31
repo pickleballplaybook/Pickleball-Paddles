@@ -78,6 +78,11 @@ async function refreshChannelVideos(conn: YoutubeConnection): Promise<{
     items: Array<{ contentDetails: { relatedPlaylists: { uploads: string } } }>;
   };
   const uploadsPlaylistId = channelData.items?.[0]?.contentDetails?.relatedPlaylists?.uploads;
+  console.log("[yt-refresh-videos]", {
+    queried_channel_id: conn.account_id,
+    channels_returned: channelData.items?.length ?? 0,
+    uploads_playlist_id: uploadsPlaylistId,
+  });
   if (!uploadsPlaylistId) {
     throw new Error("no uploads playlist found");
   }
