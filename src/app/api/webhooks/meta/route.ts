@@ -43,7 +43,20 @@ export async function POST(req: NextRequest) {
   const signature = req.headers.get("x-hub-signature-256") || "";
 
   if (!verifySignature(rawBody, signature)) {
-    console.warn("[meta webhook] bad signature");
+    // TEMP debug: figure out why signature mismatches after domain migration.
+    const secret = process.env.META_APP_SECRET || "";
+    const expectedSig = secret
+      ? "sha256=" +
+        crypto.createHmac("sha256", secret).update(rawBody, "utf8").digest("hex")
+      : "(no secret)";
+    console.warn("[meta webhook] bad signature DEBUG", {
+      received_sig: signature,
+      expected_sig: expectedSig,
+      secret_len: secret.length,
+      secret_first6: secret.slice(0, 6),
+      body_len: rawBody.length,
+      body_first120: rawBody.slice(0, 120),
+    });
     return new NextResponse("invalid signature", { status: 403 });
   }
 
