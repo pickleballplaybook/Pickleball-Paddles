@@ -112,6 +112,12 @@ export async function processPendingLog(
         .update({ reply_status: "sent", reply_id: replyResult.id, reply_error: null })
         .eq("id", logId);
     } else {
+      console.error("[processor] reply send FAILED", {
+        platform,
+        comment_id: log.comment_id,
+        error: replyResult.error,
+        code: replyResult.code,
+      });
       await supabase
         .from("auto_reply_logs")
         .update({
@@ -171,6 +177,12 @@ export async function processPendingLog(
         .update({ dm_status: "sent", dm_id: dmResult.id, dm_error: null })
         .eq("id", logId);
     } else {
+      console.error("[processor] dm send FAILED", {
+        platform,
+        comment_id: log.comment_id,
+        error: dmResult.error,
+        code: dmResult.code,
+      });
       await supabase
         .from("auto_reply_logs")
         .update({
