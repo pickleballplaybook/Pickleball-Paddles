@@ -7,9 +7,11 @@ import { PlatformIcon } from "./PlatformIcon";
 export function CampaignCard({
   campaign,
   onToggle,
+  onDelete,
 }: {
   campaign: Campaign;
   onToggle: () => void;
+  onDelete: () => void;
 }) {
   const lastTriggered = campaign.last_triggered_at
     ? formatRelative(campaign.last_triggered_at)
@@ -17,10 +19,10 @@ export function CampaignCard({
 
   return (
     <div
-      className={`group rounded-lg border bg-white transition ${
+      className={`group rounded-2xl border bg-gray-900 transition ${
         campaign.is_active
-          ? "border-stone-200 hover:border-stone-300"
-          : "border-stone-200 opacity-70"
+          ? "border-gray-800 hover:border-gray-700"
+          : "border-gray-800 opacity-60"
       }`}
     >
       <div className="p-5">
@@ -30,10 +32,10 @@ export function CampaignCard({
             <div className="flex items-center gap-2.5">
               <span
                 className={`h-2 w-2 rounded-full shrink-0 ${
-                  campaign.is_active ? "bg-emerald-500" : "bg-stone-300"
+                  campaign.is_active ? "bg-green-500" : "bg-gray-600"
                 }`}
               />
-              <h3 className="font-semibold text-stone-900 truncate">
+              <h3 className="font-semibold text-white truncate">
                 {campaign.name}
               </h3>
             </div>
@@ -42,7 +44,7 @@ export function CampaignCard({
               {campaign.keywords.map((kw) => (
                 <span
                   key={kw}
-                  className="inline-flex items-center rounded border border-stone-200 bg-stone-50 px-2 py-0.5 text-xs font-mono text-stone-700"
+                  className="inline-flex items-center rounded border border-gray-700 bg-gray-950 px-2 py-0.5 text-xs font-mono text-gray-300"
                 >
                   {kw}
                 </span>
@@ -60,8 +62,8 @@ export function CampaignCard({
                     key={p}
                     className={`h-7 w-7 rounded flex items-center justify-center ${
                       enabled
-                        ? "bg-stone-900 text-white"
-                        : "bg-stone-100 text-stone-300"
+                        ? "bg-green-500 text-black"
+                        : "bg-gray-800 text-gray-600"
                     }`}
                     title={`${p} ${enabled ? "enabled" : "disabled"}`}
                   >
@@ -76,8 +78,9 @@ export function CampaignCard({
               role="switch"
               aria-checked={campaign.is_active}
               className={`relative h-5 w-9 rounded-full transition-colors ${
-                campaign.is_active ? "bg-emerald-500" : "bg-stone-300"
+                campaign.is_active ? "bg-green-500" : "bg-gray-700"
               }`}
+              title={campaign.is_active ? "Pause campaign" : "Activate campaign"}
             >
               <span
                 className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${
@@ -89,21 +92,21 @@ export function CampaignCard({
         </div>
 
         {/* Stats row */}
-        <div className="mt-4 pt-4 border-t border-stone-100 flex items-center justify-between text-xs text-stone-500">
+        <div className="mt-4 pt-4 border-t border-gray-800 flex items-center justify-between text-xs text-gray-500">
           <div className="flex items-center gap-5">
             <span>
-              <span className="font-mono font-semibold text-stone-900">
+              <span className="font-mono font-semibold text-white">
                 {campaign.triggers_count?.toLocaleString() ?? 0}
               </span>{" "}
               triggers
             </span>
             <span>
               Last fired{" "}
-              <span className="text-stone-700 font-medium">{lastTriggered}</span>
+              <span className="text-gray-300 font-medium">{lastTriggered}</span>
             </span>
             <span>
               Target:{" "}
-              <span className="text-stone-700 font-medium">
+              <span className="text-gray-300 font-medium">
                 {campaign.target_mode === "all"
                   ? "All posts"
                   : `${campaign.target_post_ids.length} post${
@@ -115,16 +118,23 @@ export function CampaignCard({
           <div className="flex items-center gap-3">
             <Link
               href={`/admin/auto-reply/edit/${campaign.id}`}
-              className="font-medium text-stone-700 hover:text-stone-900"
+              className="font-medium text-gray-300 hover:text-white"
             >
               Edit
             </Link>
             <Link
               href={`/admin/auto-reply/logs?campaign=${campaign.id}`}
-              className="font-medium text-stone-700 hover:text-stone-900"
+              className="font-medium text-gray-300 hover:text-white"
             >
               Logs
             </Link>
+            <button
+              onClick={onDelete}
+              className="font-medium text-red-400 hover:text-red-300"
+              title="Delete this campaign"
+            >
+              Delete
+            </button>
           </div>
         </div>
       </div>

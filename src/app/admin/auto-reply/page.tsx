@@ -78,51 +78,69 @@ export default function AutoReplyAdminPage() {
     }
   };
 
+  const deleteCampaign = async (id: string) => {
+    const c = campaigns.find((x) => x.id === id);
+    const label = c?.name || "this campaign";
+    if (
+      !confirm(
+        `Delete "${label}"? This removes the campaign permanently — its activity logs stay, but no new replies will fire.`
+      )
+    )
+      return;
+    const prev = campaigns;
+    setCampaigns((p) => p.filter((x) => x.id !== id));
+    const res = await fetch(`/api/admin/auto-reply/campaigns/${id}`, {
+      method: "DELETE",
+    });
+    if (!res.ok) {
+      setCampaigns(prev);
+      const data = await res.json().catch(() => ({}));
+      alert(`Failed to delete: ${data?.error || res.statusText}`);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-stone-50 text-stone-900">
-      <header className="border-b border-stone-200 bg-white">
-        <div className="mx-auto max-w-6xl px-6 py-5 flex items-center justify-between">
+    <div className="min-h-screen bg-gray-950 text-white">
+      <main className="max-w-6xl mx-auto px-8 py-8 space-y-6">
+        <AdminNav />
+
+        <div className="flex items-center justify-between">
           <div>
-            <p className="text-[11px] uppercase tracking-[0.2em] text-stone-500 font-medium">
-              Pickleball Playbook
+            <h1 className="text-4xl font-bold">Auto-Reply Campaigns</h1>
+            <p className="text-gray-400 mt-1">
+              Match comments by keyword, fire a reply + optional DM.
             </p>
-            <h1 className="text-2xl font-semibold tracking-tight mt-0.5">
-              Auto-Reply Campaigns
-            </h1>
           </div>
           <Link
             href="/admin/auto-reply/new"
-            className="inline-flex items-center gap-2 rounded-md bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-stone-800 transition"
+            className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-400 text-black font-bold px-5 py-2.5 rounded-xl text-sm"
           >
             <span className="text-base leading-none">+</span> New Campaign
           </Link>
         </div>
-      </header>
 
-      <main className="mx-auto max-w-6xl px-6 py-8 space-y-8">
-        <AdminNav />
         <ConnectionStatus connections={connections} />
 
         {error && (
-          <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-            <strong>Couldn't load campaigns:</strong> {error}
+          <div className="bg-red-950 border border-red-800 text-red-300 rounded-xl p-4">
+            <strong>Couldn&apos;t load campaigns:</strong> {error}
           </div>
         )}
 
         <div className="flex items-center justify-between">
-          <div className="inline-flex rounded-md border border-stone-200 bg-white p-0.5">
+          <div className="inline-flex bg-gray-900 border border-gray-800 rounded-xl p-1">
             {(["all", "active", "paused"] as const).map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
-                className={`px-4 py-1.5 text-sm font-medium rounded capitalize transition ${
+                className={`px-4 py-1.5 text-sm font-medium rounded-lg capitalize transition ${
                   filter === f
-                    ? "bg-stone-900 text-white"
-                    : "text-stone-600 hover:text-stone-900"
+                    ? "bg-green-500 text-black"
+                    : "text-gray-400 hover:text-white"
                 }`}
               >
                 {f}
-                <span className="ml-1.5 text-[11px] opacity-60">
+                <span className="ml-1.5 text-[11px] opacity-70">
                   {f === "all"
                     ? campaigns.length
                     : f === "active"
@@ -134,17 +152,17 @@ export default function AutoReplyAdminPage() {
           </div>
           <Link
             href="/admin/auto-reply/logs"
-            className="text-sm font-medium text-stone-600 hover:text-stone-900 underline-offset-4 hover:underline"
+            className="text-sm font-medium text-gray-400 hover:text-white underline-offset-4 hover:underline"
           >
             View activity logs →
           </Link>
         </div>
 
         {loading ? (
-          <div className="text-stone-500 text-sm">Loading...</div>
+          <div className="text-gray-500 text-sm">Loading...</div>
         ) : filtered.length === 0 ? (
-          <div className="rounded-lg border border-stone-200 bg-white p-12 text-center text-stone-500">
-            No campaigns yet. Click "New Campaign" to create one.
+          <div className="rounded-2xl border border-gray-800 bg-gray-900 p-12 text-center text-gray-500">
+            No campaigns yet. Click &quot;New Campaign&quot; to create one.
           </div>
         ) : (
           <div className="space-y-3">
@@ -153,6 +171,7 @@ export default function AutoReplyAdminPage() {
                 key={c.id}
                 campaign={c}
                 onToggle={() => toggleActive(c.id)}
+                onDelete={() => deleteCampaign(c.id)}
               />
             ))}
           </div>

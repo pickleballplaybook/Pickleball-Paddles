@@ -16,19 +16,19 @@ export function ConnectionStatus({
   ];
 
   return (
-    <div className="rounded-lg border border-stone-200 bg-white">
-      <div className="px-5 py-3 border-b border-stone-100 flex items-center justify-between">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-stone-600">
+    <div className="rounded-2xl border border-gray-800 bg-gray-900">
+      <div className="px-5 py-3 border-b border-gray-800 flex items-center justify-between">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-gray-400">
           Connected Accounts
         </h2>
         <Link
           href="/admin/auto-reply/connections"
-          className="text-xs font-medium text-stone-500 hover:text-stone-900"
+          className="text-xs font-medium text-gray-400 hover:text-white"
         >
           Manage →
         </Link>
       </div>
-      <div className="grid grid-cols-3 divide-x divide-stone-100">
+      <div className="grid grid-cols-3 divide-x divide-gray-800">
         {platforms.map((platform) => {
           const conn = connections.find((c) => c.platform === platform);
           const connected = conn?.is_active;
@@ -37,7 +37,9 @@ export function ConnectionStatus({
             <div key={platform} className="px-5 py-4 flex items-center gap-3">
               <div
                 className={`shrink-0 h-9 w-9 rounded-md flex items-center justify-center ${
-                  connected ? "bg-stone-900 text-white" : "bg-stone-100 text-stone-400"
+                  connected
+                    ? "bg-green-500 text-black"
+                    : "bg-gray-800 text-gray-600"
                 }`}
               >
                 <PlatformIcon platform={platform} className="h-4 w-4" />
@@ -46,13 +48,13 @@ export function ConnectionStatus({
                 <p className="text-sm font-medium capitalize truncate">
                   {platform === "youtube" ? "YouTube" : platform}
                 </p>
-                <p className="text-xs text-stone-500 truncate">
+                <p className="text-xs text-gray-500 truncate">
                   {connected ? conn.account_name : "Not connected"}
                 </p>
               </div>
               <div
                 className={`shrink-0 h-1.5 w-1.5 rounded-full ${
-                  connected ? "bg-emerald-500" : "bg-stone-300"
+                  connected ? "bg-green-500" : "bg-gray-700"
                 }`}
               />
             </div>

@@ -58,63 +58,61 @@ export default function ConnectionsPage() {
   const yt = connections.filter((c) => c.platform === "youtube" && c.is_active);
 
   return (
-    <div className="min-h-screen bg-stone-50 text-stone-900">
-      <header className="border-b border-stone-200 bg-white">
-        <div className="mx-auto max-w-4xl px-6 py-5 flex items-center gap-3">
+    <div className="min-h-screen bg-gray-950 text-white">
+      <main className="max-w-4xl mx-auto px-8 py-8 space-y-6">
+        <div className="flex items-center gap-3">
           <Link
             href="/admin/auto-reply"
-            className="text-sm text-stone-500 hover:text-stone-900"
+            className="text-sm text-gray-400 hover:text-white"
           >
             ← Campaigns
           </Link>
-          <span className="text-stone-300">/</span>
-          <h1 className="text-xl font-semibold tracking-tight">Connections</h1>
+          <span className="text-gray-700">/</span>
+          <h1 className="text-2xl font-bold tracking-tight">Connections</h1>
         </div>
-      </header>
 
-      <main className="mx-auto max-w-4xl px-6 py-8 space-y-6">
         {/* Flash message from OAuth callback */}
         {status && message && (
           <div
-            className={`rounded-lg border px-4 py-3 text-sm ${
+            className={`rounded-xl border px-4 py-3 text-sm ${
               status === "ok"
-                ? "border-emerald-200 bg-emerald-50 text-emerald-900"
-                : "border-rose-200 bg-rose-50 text-rose-900"
+                ? "border-green-800 bg-green-950 text-green-300"
+                : "border-red-800 bg-red-950 text-red-300"
             }`}
           >
             {status === "ok" ? "✓ " : "⚠️ "} {message}
           </div>
         )}
 
-        <p className="text-sm text-stone-600">
+        <p className="text-sm text-gray-400">
           Connect your Instagram and Facebook accounts to enable auto-replies.
           One click handles both — Meta lets you authorize the linked Page and
           Instagram account together.
         </p>
 
         {/* Big primary action */}
-        <div className="rounded-lg border border-stone-200 bg-white p-6">
+        <div className="rounded-2xl border border-gray-800 bg-gray-900 p-6">
           <div className="flex items-start gap-4">
             <div className="flex -space-x-2 shrink-0">
-              <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-fuchsia-500 to-orange-400 flex items-center justify-center ring-2 ring-white">
+              <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-fuchsia-500 to-orange-400 flex items-center justify-center ring-2 ring-gray-900">
                 <PlatformIcon platform="instagram" className="h-5 w-5 text-white" />
               </div>
-              <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center ring-2 ring-white">
+              <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center ring-2 ring-gray-900">
                 <PlatformIcon platform="facebook" className="h-5 w-5 text-white" />
               </div>
             </div>
 
             <div className="flex-1">
               <h2 className="font-semibold">Instagram + Facebook</h2>
-              <p className="text-sm text-stone-600 mt-0.5">
-                Authorize via Facebook Login. We'll automatically connect any
+              <p className="text-sm text-gray-400 mt-0.5">
+                Authorize via Facebook Login. We&apos;ll automatically connect any
                 linked Pages and IG Business accounts.
               </p>
             </div>
 
             <a
               href="/api/auth/meta/start"
-              className="rounded-md bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-stone-800 shrink-0"
+              className="bg-green-500 hover:bg-green-400 text-black font-bold px-4 py-2 rounded-xl text-sm shrink-0"
             >
               {ig.length + fb.length === 0 ? "Connect" : "Reconnect"}
             </a>
@@ -123,16 +121,16 @@ export default function ConnectionsPage() {
 
         {/* Connected accounts */}
         <section>
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-3">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">
             Connected ({ig.length + fb.length})
           </h3>
 
           {loading ? (
-            <div className="rounded-lg border border-stone-200 bg-white p-6 text-sm text-stone-500">
+            <div className="rounded-2xl border border-gray-800 bg-gray-900 p-6 text-sm text-gray-500">
               Loading…
             </div>
           ) : ig.length + fb.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-stone-300 bg-white p-6 text-sm text-stone-500">
+            <div className="rounded-2xl border border-dashed border-gray-700 bg-gray-900 p-6 text-sm text-gray-500">
               No accounts connected yet. Click <strong>Connect</strong> above to
               get started.
             </div>
@@ -141,19 +139,19 @@ export default function ConnectionsPage() {
               {[...fb, ...ig].map((c) => (
                 <li
                   key={c.id}
-                  className="rounded-lg border border-stone-200 bg-white p-4 flex items-center gap-4"
+                  className="rounded-xl border border-gray-800 bg-gray-900 p-4 flex items-center gap-4"
                 >
-                  <PlatformIcon platform={c.platform} className="h-5 w-5" />
+                  <PlatformIcon platform={c.platform} className="h-5 w-5 text-gray-300" />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="font-medium truncate">
                         {c.account_name || c.account_id}
                       </span>
-                      <span className="text-[10px] uppercase tracking-wider text-stone-500">
+                      <span className="text-[10px] uppercase tracking-wider text-gray-500">
                         {c.platform}
                       </span>
                     </div>
-                    <div className="text-xs text-stone-500 mt-0.5">
+                    <div className="text-xs text-gray-500 mt-0.5">
                       ID: {c.account_id}
                       {c.token_expires_at && (
                         <>
@@ -165,7 +163,7 @@ export default function ConnectionsPage() {
                   </div>
                   <button
                     onClick={() => disconnect(c)}
-                    className="text-xs font-medium text-stone-500 hover:text-rose-600"
+                    className="text-xs font-medium text-gray-400 hover:text-red-400"
                   >
                     Disconnect
                   </button>
@@ -175,21 +173,21 @@ export default function ConnectionsPage() {
           )}
         </section>
 
-        <div className="rounded-lg border border-stone-200 bg-white p-6">
+        <div className="rounded-2xl border border-gray-800 bg-gray-900 p-6">
           <div className="flex items-center gap-4">
             <div className="h-10 w-10 rounded-full bg-red-600 flex items-center justify-center shrink-0">
               <PlatformIcon platform="youtube" className="h-5 w-5 text-white" />
             </div>
             <div className="flex-1">
               <h2 className="font-semibold">YouTube</h2>
-              <p className="text-sm text-stone-600 mt-0.5">
+              <p className="text-sm text-gray-400 mt-0.5">
                 Authorize via Google OAuth. To add a second channel, click
                 below — Google will show an account/channel picker.
               </p>
             </div>
             <a
               href="/api/auth/youtube/start"
-              className="rounded-md bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-stone-800 shrink-0"
+              className="bg-green-500 hover:bg-green-400 text-black font-bold px-4 py-2 rounded-xl text-sm shrink-0"
             >
               {yt.length === 0 ? "Connect" : "Add channel"}
             </a>
@@ -197,15 +195,15 @@ export default function ConnectionsPage() {
         </div>
 
         <section>
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-3">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">
             YouTube channels ({yt.length})
           </h3>
           {loading ? (
-            <div className="rounded-lg border border-stone-200 bg-white p-6 text-sm text-stone-500">
+            <div className="rounded-2xl border border-gray-800 bg-gray-900 p-6 text-sm text-gray-500">
               Loading…
             </div>
           ) : yt.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-stone-300 bg-white p-6 text-sm text-stone-500">
+            <div className="rounded-2xl border border-dashed border-gray-700 bg-gray-900 p-6 text-sm text-gray-500">
               No YouTube channels connected. Click <strong>Connect</strong> above.
             </div>
           ) : (
@@ -213,19 +211,19 @@ export default function ConnectionsPage() {
               {yt.map((c) => (
                 <li
                   key={c.id}
-                  className="rounded-lg border border-stone-200 bg-white p-4 flex items-center gap-4"
+                  className="rounded-xl border border-gray-800 bg-gray-900 p-4 flex items-center gap-4"
                 >
-                  <PlatformIcon platform={c.platform} className="h-5 w-5" />
+                  <PlatformIcon platform={c.platform} className="h-5 w-5 text-gray-300" />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="font-medium truncate">
                         {c.account_name || c.account_id}
                       </span>
-                      <span className="text-[10px] uppercase tracking-wider text-stone-500">
+                      <span className="text-[10px] uppercase tracking-wider text-gray-500">
                         {c.platform}
                       </span>
                     </div>
-                    <div className="text-xs text-stone-500 mt-0.5">
+                    <div className="text-xs text-gray-500 mt-0.5">
                       ID: {c.account_id}
                       {c.token_expires_at && (
                         <>
@@ -237,7 +235,7 @@ export default function ConnectionsPage() {
                   </div>
                   <button
                     onClick={() => disconnect(c)}
-                    className="text-xs font-medium text-stone-500 hover:text-rose-600"
+                    className="text-xs font-medium text-gray-400 hover:text-red-400"
                   >
                     Disconnect
                   </button>
