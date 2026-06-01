@@ -77,22 +77,38 @@ function normalize(value: number, min: number, max: number): number {
   return Math.max(0, Math.min(1, (value - min) / (max - min)));
 }
 
-function StatBar({ label, value, displayValue, min, max, color }: {
-  label: string; value: number; displayValue: string; min: number; max: number; color: string;
+function StatBar({ label, value, displayValue, min, max, fill, glow }: {
+  label: string; value: number; displayValue: string; min: number; max: number; fill: string; glow: string;
 }) {
   const pct = normalize(value, min, max) * 100;
   return (
     <div className="flex items-center gap-3">
-      <span className="text-[11px] font-bold uppercase tracking-wide w-[72px] text-right flex-shrink-0" style={{ color: "rgba(148,195,215,0.6)" }}>
+      <span
+        className="text-[10px] font-bold uppercase tracking-[0.18em] w-[72px] text-right flex-shrink-0"
+        style={{ color: "rgba(186,212,228,0.55)" }}
+      >
         {label}
       </span>
-      <div className="flex-1 h-2.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
+      <div
+        className="flex-1 h-2 rounded-full overflow-hidden relative"
+        style={{
+          background: "rgba(255,255,255,0.04)",
+          boxShadow: "inset 0 1px 2px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.03)",
+        }}
+      >
         <div
           className="h-full rounded-full transition-all duration-500"
-          style={{ width: `${pct}%`, background: color }}
+          style={{
+            width: `${pct}%`,
+            background: fill,
+            boxShadow: glow,
+          }}
         />
       </div>
-      <span className="text-xs font-bold font-mono w-[52px] flex-shrink-0" style={{ color: "rgba(255,255,255,0.7)" }}>
+      <span
+        className="text-[11px] font-extrabold font-mono w-[52px] flex-shrink-0 tabular-nums"
+        style={{ color: "rgba(255,255,255,0.88)", letterSpacing: "0.02em" }}
+      >
         {displayValue}
       </span>
     </div>
@@ -110,86 +126,148 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
     ? paddle.playStyle === "all-court" ? "All-Court" : paddle.playStyle.charAt(0).toUpperCase() + paddle.playStyle.slice(1)
     : paddle.shape;
   const playColors = {
-    power:     { bg: "rgba(239,68,68,0.2)",  border: "rgba(239,68,68,0.4)",  text: "#f87171" },
-    control:   { bg: "rgba(74,222,128,0.2)", border: "rgba(74,222,128,0.4)", text: "#4ade80" },
-    "all-court": { bg: "rgba(250,204,21,0.2)", border: "rgba(250,204,21,0.4)", text: "#facc15" },
-    spin:      { bg: "rgba(251,146,60,0.2)", border: "rgba(251,146,60,0.4)", text: "#fb923c" },
+    power:       { dot: "#f87171", text: "rgba(248,113,113,0.95)" },
+    control:     { dot: "#4ade80", text: "rgba(74,222,128,0.95)" },
+    "all-court": { dot: "#facc15", text: "rgba(250,204,21,0.95)" },
+    spin:        { dot: "#fb923c", text: "rgba(251,146,60,0.95)" },
+  } as const;
+  const pc = playColors[paddle.playStyle as keyof typeof playColors] ?? { dot: "#2dd4bf", text: "rgba(45,212,191,0.95)" };
+
+  // Premium rank badge: gold for #1, teal otherwise.
+  const isTopRank = rank === 1;
+  const rankBg = isTopRank
+    ? "linear-gradient(135deg, #f4d28a 0%, #d4a35a 100%)"
+    : "linear-gradient(135deg, rgba(20,184,166,0.55) 0%, rgba(13,148,136,0.30) 100%)";
+  const rankBorder = isTopRank ? "rgba(244,210,138,0.75)" : "rgba(45,212,191,0.55)";
+  const rankShadow = isTopRank
+    ? "0 8px 24px rgba(212,163,90,0.40), inset 0 1px 0 rgba(255,255,255,0.45)"
+    : "0 6px 20px rgba(20,184,166,0.28), inset 0 1px 0 rgba(255,255,255,0.18)";
+  const rankNumColor = isTopRank ? "#1a0f00" : "#fff";
+
+  // Refined stat-bar palette — champagne gold replaces the old orange for twist.
+  const BARS = {
+    weight: {
+      fill: "linear-gradient(90deg, #64748b 0%, #94a3b8 60%, #cbd5e1 100%)",
+      glow: "0 0 6px rgba(203,213,225,0.25)",
+    },
+    swing: {
+      fill: "linear-gradient(90deg, #0d9488 0%, #14b8a6 50%, #5eead4 100%)",
+      glow: "0 0 8px rgba(45,212,191,0.40)",
+    },
+    twist: {
+      fill: "linear-gradient(90deg, #b8895a 0%, #d4a574 50%, #f4c980 100%)",
+      glow: "0 0 8px rgba(240,201,128,0.38)",
+    },
   };
-  const pc = playColors[paddle.playStyle as keyof typeof playColors] ?? { bg: "rgba(20,184,166,0.2)", border: "rgba(20,184,166,0.4)", text: "#2dd4bf" };
 
   return (
     <div
       className="relative rounded-3xl overflow-hidden"
       style={{
         aspectRatio: "1 / 1",
-        background: "linear-gradient(160deg, #0a1628 0%, #0c1e35 35%, #0d2a3a 60%, #081820 100%)",
+        background: [
+          // Soft teal aurora top
+          "radial-gradient(ellipse 90% 55% at 50% -10%, rgba(20,184,166,0.16) 0%, transparent 65%)",
+          // Subtle warm vignette bottom-right
+          "radial-gradient(ellipse 70% 50% at 95% 95%, rgba(212,163,90,0.05) 0%, transparent 60%)",
+          // Base gradient
+          "linear-gradient(160deg, #0a1628 0%, #0c1e35 35%, #0d2a3a 60%, #08182a 100%)",
+        ].join(", "),
+        boxShadow: [
+          "inset 0 1px 0 rgba(255,255,255,0.08)",
+          "inset 0 0 0 1px rgba(255,255,255,0.04)",
+          "inset 0 -60px 100px rgba(0,0,0,0.35)",
+          "0 20px 50px rgba(0,0,0,0.45)",
+        ].join(", "),
       }}
     >
-      {/* Rank badge */}
+      {/* Rank badge — premium */}
       <div
-        className="absolute top-4 left-4 w-12 h-12 rounded-full flex items-center justify-center z-10"
-        style={{ background: "rgba(20,184,166,0.25)", border: "2px solid rgba(20,184,166,0.5)" }}
+        className="absolute top-5 left-5 w-14 h-14 rounded-full flex items-center justify-center z-10"
+        style={{
+          background: rankBg,
+          border: `1.5px solid ${rankBorder}`,
+          boxShadow: rankShadow,
+        }}
       >
-        <span className="text-lg font-extrabold text-white">#{rank}</span>
+        <span
+          className="text-xl font-extrabold tabular-nums"
+          style={{ color: rankNumColor, letterSpacing: "-0.02em", textShadow: isTopRank ? "0 1px 0 rgba(255,255,255,0.25)" : "none" }}
+        >
+          #{rank}
+        </span>
       </div>
 
-      {/* Header branding */}
-      <div className="absolute top-4 left-0 right-0 text-center pointer-events-none z-10">
-        <p className="text-xs font-extrabold uppercase tracking-[0.3em] text-white/70">
+      {/* Header branding — with thin decorative rules either side */}
+      <div className="absolute top-7 left-0 right-0 flex items-center justify-center gap-3 pointer-events-none z-10">
+        <span className="h-px w-6" style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.25))" }} />
+        <p className="text-[10px] font-extrabold uppercase tracking-[0.35em]" style={{ color: "rgba(255,255,255,0.55)" }}>
           Playbook Reviews
         </p>
+        <span className="h-px w-6" style={{ background: "linear-gradient(90deg, rgba(255,255,255,0.25), transparent)" }} />
       </div>
 
       {/* ── Top half: paddle image with play style label ────────────────── */}
       <div className="absolute inset-x-0 top-0 h-[52%] flex items-center justify-center">
-        {/* Subtle radial glow */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{ background: "radial-gradient(ellipse at center 60%, rgba(20,184,166,0.06) 0%, transparent 60%)" }}
-        />
         {paddle.image && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={paddle.image}
             alt={`${paddle.brand} ${paddle.name}`}
-            className="relative z-[1] max-h-[80%] w-auto object-contain"
-            style={{ filter: "drop-shadow(0 10px 28px rgba(0,0,0,0.5))" }}
+            className="relative z-[1] max-h-[82%] w-auto object-contain"
+            style={{ filter: "drop-shadow(0 18px 30px rgba(0,0,0,0.55)) drop-shadow(0 4px 10px rgba(0,0,0,0.35))" }}
           />
         )}
-        {/* Play style badge on the image */}
+        {/* Pedestal glow under the paddle */}
+        <div
+          className="absolute left-1/2 -translate-x-1/2 bottom-8 w-[55%] h-3 rounded-full pointer-events-none"
+          style={{ background: "radial-gradient(ellipse, rgba(0,0,0,0.55) 0%, transparent 75%)", filter: "blur(6px)" }}
+        />
+        {/* Play style badge */}
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-[2]">
           <span
-            className="text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full"
+            className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.18em] px-3 py-1 rounded-full"
             style={{
-              background: pc.bg,
-              border: `1px solid ${pc.border}`,
+              background: "rgba(8,18,32,0.7)",
+              border: "1px solid rgba(255,255,255,0.10)",
               color: pc.text,
-              backdropFilter: "blur(8px)",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)",
             }}
           >
+            <span className="w-1.5 h-1.5 rounded-full" style={{ background: pc.dot, boxShadow: `0 0 6px ${pc.dot}` }} />
             {playLabel}
           </span>
         </div>
       </div>
 
-      {/* ── Bottom half: specs panel ────────────────────────────────────── */}
+      {/* ── Bottom half: specs panel — glassy with subtle top highlight ── */}
       <div className="absolute inset-x-0 bottom-0 h-[48%] flex flex-col justify-center px-6 pb-10 pt-2">
         <div
           className="rounded-2xl p-5 flex flex-col gap-3"
-          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+          style={{
+            background: "linear-gradient(180deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 100%)",
+            border: "1px solid rgba(255,255,255,0.09)",
+            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.07), 0 8px 24px rgba(0,0,0,0.25)",
+          }}
         >
           {/* Brand + name */}
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: "rgba(148,195,215,0.6)" }}>
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.25em]" style={{ color: "rgba(45,212,191,0.85)" }}>
               {paddle.brand}
             </p>
-            <h2 className="text-xl font-extrabold text-white leading-tight">
-              {paddle.name} {paddle.thickness}
+            <h2
+              className="text-xl font-extrabold text-white leading-tight mt-0.5"
+              style={{ letterSpacing: "-0.01em" }}
+            >
+              {paddle.name}
             </h2>
-            <p className="text-xs mt-0.5" style={{ color: "rgba(148,195,215,0.5)" }}>
+            <p className="text-[11px] mt-1 font-medium uppercase tracking-[0.12em]" style={{ color: "rgba(186,212,228,0.45)" }}>
               {paddle.shape} · {paddle.thickness}
             </p>
           </div>
+
+          {/* Hairline divider */}
+          <div className="h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)" }} />
 
           {/* Stat bars */}
           <div className="flex flex-col gap-2">
@@ -199,7 +277,8 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
               displayValue={paddle.weight}
               min={RANGES.weight.min}
               max={RANGES.weight.max}
-              color="#94a3b8"
+              fill={BARS.weight.fill}
+              glow={BARS.weight.glow}
             />
             {paddle.swingWeight > 0 && (
               <StatBar
@@ -208,7 +287,8 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
                 displayValue={paddle.swingWeight.toFixed(1)}
                 min={RANGES.swingWeight.min}
                 max={RANGES.swingWeight.max}
-                color="#14b8a6"
+                fill={BARS.swing.fill}
+                glow={BARS.swing.glow}
               />
             )}
             {paddle.twistWeight > 0 && (
@@ -218,20 +298,27 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
                 displayValue={paddle.twistWeight.toFixed(2)}
                 min={RANGES.twistWeight.min}
                 max={RANGES.twistWeight.max}
-                color="#f59e0b"
+                fill={BARS.twist.fill}
+                glow={BARS.twist.glow}
               />
             )}
           </div>
 
-          {/* Discount code */}
+          {/* Discount code — refined glassy chip */}
           {hasDiscount && (
             <div
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg self-start"
-              style={{ background: "rgba(20,184,166,0.1)", border: "1px solid rgba(20,184,166,0.25)" }}
+              className="inline-flex items-center gap-2 pl-3 pr-3 py-1.5 rounded-lg self-start"
+              style={{
+                background: "linear-gradient(135deg, rgba(20,184,166,0.20) 0%, rgba(20,184,166,0.06) 100%)",
+                border: "1px solid rgba(45,212,191,0.30)",
+                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06), 0 2px 8px rgba(20,184,166,0.10)",
+              }}
             >
-              <span className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>Code:</span>
-              <span className="text-xs font-extrabold font-mono" style={{ color: "#2dd4bf" }}>{code}</span>
-              <span className="text-[10px] font-bold" style={{ color: "rgba(255,255,255,0.35)" }}>({paddle.amountOff} off)</span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: "rgba(255,255,255,0.45)" }}>
+                Code
+              </span>
+              <span className="text-xs font-extrabold font-mono tracking-wider" style={{ color: "#5eead4" }}>{code}</span>
+              <span className="text-[10px] font-bold" style={{ color: "rgba(255,255,255,0.4)" }}>· {paddle.amountOff} off</span>
             </div>
           )}
         </div>
@@ -239,21 +326,27 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
 
       {/* Footer branding */}
       <div className="absolute bottom-3 left-5 right-5 flex items-center justify-between pointer-events-none z-10">
-        <p className="text-[11px] font-bold" style={{ color: "rgba(148,195,215,0.55)" }}>
+        <p className="text-[10px] font-extrabold uppercase tracking-[0.18em]" style={{ color: "rgba(186,212,228,0.5)" }}>
           Playbook Reviews
         </p>
-        <p className="text-[11px] font-semibold" style={{ color: "rgba(148,195,215,0.5)" }}>
+        <p className="text-[10px] font-semibold" style={{ color: "rgba(186,212,228,0.4)" }}>
           playbookpaddles.com
         </p>
       </div>
 
-      {/* Dot indicators */}
+      {/* Dot indicators — refined oval shape */}
       <div className="absolute bottom-3 left-0 right-0 flex items-center justify-center gap-1 pointer-events-none z-10">
         {Array.from({ length: totalCards }).map((_, i) => (
           <div
             key={i}
-            className="w-1.5 h-1.5 rounded-full"
-            style={{ background: i === rank - 1 ? "#14b8a6" : "rgba(255,255,255,0.15)" }}
+            className="rounded-full transition-all"
+            style={{
+              width: i === rank - 1 ? 12 : 4,
+              height: 3,
+              background: i === rank - 1
+                ? (isTopRank ? "linear-gradient(90deg, #f4d28a, #d4a35a)" : "linear-gradient(90deg, #2dd4bf, #14b8a6)")
+                : "rgba(255,255,255,0.18)",
+            }}
           />
         ))}
       </div>
