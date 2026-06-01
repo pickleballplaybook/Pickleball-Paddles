@@ -1,31 +1,22 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Download, Loader2, RefreshCw } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { Download, Loader2 } from "lucide-react";
 import { toPng } from "html-to-image";
 import { Paddle } from "@/types";
 
 interface Props {
-  paddle: Paddle;
-  weekDate: string; // YYYY-MM-DD
+  paddles: Paddle[]; // up to 3 — middle paddle gets the elevated hero slot
 }
 
-// ── Dimensions (16:9 standard YouTube / widescreen thumbnail) ────────────────
 const W = 1280;
 const H = 720;
 
-function formatWeek(date: string): string {
-  return new Date(date + "T12:00:00Z").toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-    timeZone: "UTC",
-  });
+function monthYear(): string {
+  return new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
 }
 
-export default function WeeklyThumbnail({ paddle, weekDate }: Props) {
-  const router = useRouter();
+export default function WeeklyThumbnail({ paddles }: Props) {
   const thumbRef = useRef<HTMLDivElement>(null);
   const [busy, setBusy] = useState(false);
 
@@ -41,12 +32,11 @@ export default function WeeklyThumbnail({ paddle, weekDate }: Props) {
         width: W,
         height: H,
       };
-      // Warm-up pass — html-to-image's first capture sometimes misses fonts/images.
-      await toPng(thumbRef.current, opts);
+      await toPng(thumbRef.current, opts); // warm-up
       const dataUrl = await toPng(thumbRef.current, opts);
       const a = document.createElement("a");
       a.href = dataUrl;
-      a.download = `weekly-top1-${weekDate}-${paddle.slug}.png`;
+      a.download = `new-launches-${new Date().toISOString().slice(0, 10)}.png`;
       a.click();
     } catch (err) {
       console.error("Thumbnail export failed:", err);
@@ -56,13 +46,7 @@ export default function WeeklyThumbnail({ paddle, weekDate }: Props) {
     }
   }
 
-  const dateFormatted = formatWeek(weekDate);
-  const specs = [
-    paddle.swingWeight > 0 ? `SW ${paddle.swingWeight}` : null,
-    paddle.twistWeight > 0 ? `TW ${paddle.twistWeight}` : null,
-    paddle.weight || null,
-    paddle.thickness || null,
-  ].filter(Boolean) as string[];
+  const launchMonth = monthYear();
 
   return (
     <div className="flex flex-col gap-5">
@@ -76,26 +60,17 @@ export default function WeeklyThumbnail({ paddle, weekDate }: Props) {
           {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
           {busy ? "Building…" : `Download PNG (${W}×${H} @ 2×)`}
         </button>
-        <button
-          onClick={() => router.refresh()}
-          className="inline-flex items-center gap-2 font-bold text-sm px-5 py-2.5 rounded-xl bg-gray-800 text-gray-200 hover:bg-gray-700 transition"
-          title="Refresh — pulls the latest weekly_rankings row in case the cron just ran"
-        >
-          <RefreshCw className="w-4 h-4" /> Refresh data
-        </button>
         <p className="text-xs text-gray-500">
-          Week of <span className="text-gray-300 font-semibold">{dateFormatted}</span> ·
-          Featured: <span className="text-gray-300 font-semibold">{paddle.brand} {paddle.name}</span>
+          Featuring: <span className="text-gray-300 font-semibold">
+            {paddles.map((p) => `${p.brand} ${p.name}`).join(" · ")}
+          </span>
         </p>
       </div>
 
-      {/* Live preview — exactly what the PNG will look like, sized down to fit on screen */}
+      {/* Live preview — scaled to fit the screen */}
       <div
         className="rounded-2xl overflow-hidden border border-gray-800"
-        style={{
-          width: "min(100%, 1100px)",
-          aspectRatio: `${W} / ${H}`,
-        }}
+        style={{ width: "min(100%, 1100px)", aspectRatio: `${W} / ${H}` }}
       >
         <div
           style={{
@@ -105,44 +80,33 @@ export default function WeeklyThumbnail({ paddle, weekDate }: Props) {
             transformOrigin: "top left",
           }}
         >
-          <ThumbDesign paddle={paddle} dateFormatted={dateFormatted} specs={specs} />
+          <ThumbDesign paddles={paddles} launchMonth={launchMonth} />
         </div>
       </div>
 
-      {/* The capture source — full-size, off-screen, identical markup */}
+      {/* The capture source — full-size, off-screen */}
       <div aria-hidden style={{ position: "fixed", top: 0, left: -99999, pointerEvents: "none" }}>
         <div ref={thumbRef} style={{ width: W, height: H }}>
-          <ThumbDesign paddle={paddle} dateFormatted={dateFormatted} specs={specs} />
+          <ThumbDesign paddles={paddles} launchMonth={launchMonth} />
         </div>
       </div>
     </div>
   );
 }
 
-// ── The thumbnail itself ─────────────────────────────────────────────────────
-// Premium editorial-magazine treatment: navy + champagne + teal palette,
-// paddle on the LEFT (mirrors the typical YouTube thumbnail flow), text on the
-// RIGHT, no headshot, no "TOP 10" wordmark — focuses on the single #1 paddle.
+// ── The thumbnail design ─────────────────────────────────────────────────────
+// Premium editorial: navy + champagne gold + teal palette.
+// 3 paddles fanned center-stage (middle = elevated hero), Austin headshot
+// badge bottom-left, "NEW LAUNCHES" headline upper-right.
 
-function ThumbDesign({
-  paddle,
-  dateFormatted,
-  specs,
-}: {
-  paddle: Paddle;
-  dateFormatted: string;
-  specs: string[];
-}) {
+function ThumbDesign({ paddles, launchMonth }: { paddles: Paddle[]; launchMonth: string }) {
   return (
     <div
       className="relative w-full h-full overflow-hidden"
       style={{
         background: [
-          // Soft teal aurora — upper-left
-          "radial-gradient(ellipse 70% 60% at 25% -10%, rgba(20,184,166,0.20) 0%, transparent 65%)",
-          // Champagne warm accent — lower-right
-          "radial-gradient(ellipse 60% 55% at 105% 110%, rgba(212,163,90,0.13) 0%, transparent 60%)",
-          // Base navy gradient
+          "radial-gradient(ellipse 70% 60% at 25% -10%, rgba(20,184,166,0.22) 0%, transparent 65%)",
+          "radial-gradient(ellipse 60% 55% at 105% 110%, rgba(212,163,90,0.14) 0%, transparent 60%)",
           "linear-gradient(160deg, #0a1628 0%, #0c1e35 35%, #0d2a3a 60%, #08182a 100%)",
         ].join(", "),
         boxShadow: [
@@ -152,16 +116,9 @@ function ThumbDesign({
         ].join(", "),
       }}
     >
-      {/* Top branding bar with thin gold accent rule */}
-      <div className="absolute" style={{ top: 36, left: 60, right: 60, display: "flex", alignItems: "center", gap: 16 }}>
-        <span
-          style={{
-            display: "inline-block",
-            width: 32,
-            height: 1.5,
-            background: "linear-gradient(90deg, transparent, #d4a574)",
-          }}
-        />
+      {/* Top branding bar */}
+      <div style={{ position: "absolute", top: 36, left: 60, right: 60, display: "flex", alignItems: "center", gap: 16 }}>
+        <span style={{ display: "inline-block", width: 32, height: 1.5, background: "linear-gradient(90deg, transparent, #d4a574)" }} />
         <span
           style={{
             fontSize: 14,
@@ -183,133 +140,167 @@ function ThumbDesign({
             textTransform: "uppercase",
           }}
         >
-          Week of {dateFormatted}
+          {launchMonth}
         </span>
       </div>
 
-      {/* Two-column grid: paddle LEFT, headline block RIGHT */}
+      {/* NEW LAUNCHES headline — upper right */}
+      <div style={{ position: "absolute", top: 110, right: 60, textAlign: "right" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 12, marginBottom: 14 }}>
+          <span
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: 999,
+              background: "#f4d28a",
+              boxShadow: "0 0 12px rgba(244,210,138,0.6)",
+            }}
+          />
+          <span
+            style={{
+              fontSize: 18,
+              fontWeight: 800,
+              letterSpacing: "0.32em",
+              color: "rgba(244,210,138,0.95)",
+              textTransform: "uppercase",
+            }}
+          >
+            New Launches
+          </span>
+        </div>
+        <h2
+          style={{
+            fontSize: 84,
+            fontWeight: 900,
+            lineHeight: 0.93,
+            letterSpacing: "-0.025em",
+            color: "#ffffff",
+            margin: 0,
+            textShadow: "0 6px 30px rgba(0,0,0,0.5)",
+          }}
+        >
+          Fresh Drops
+        </h2>
+        <p
+          style={{
+            margin: "10px 0 0 0",
+            fontSize: 18,
+            fontWeight: 700,
+            letterSpacing: "0.05em",
+            color: "rgba(94,234,212,0.95)",
+          }}
+        >
+          {paddles.map((p) => p.brand).join(" · ")}
+        </p>
+      </div>
+
+      {/* 3 paddles fanned — center stage, middle paddle elevated */}
       <div
         style={{
           position: "absolute",
-          top: 100,
-          left: 60,
-          right: 60,
-          bottom: 80,
-          display: "grid",
-          gridTemplateColumns: "45% 55%",
-          gap: 40,
+          left: 0,
+          right: 0,
+          bottom: 110,
+          display: "flex",
+          alignItems: "flex-end",
+          justifyContent: "center",
+          gap: 0,
+          perspective: "800px",
         }}
       >
-        {/* LEFT — paddle image */}
-        <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          {paddle.image && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={paddle.image}
-              alt={`${paddle.brand} ${paddle.name}`}
+        {paddles.map((p, i) => {
+          const isCenter = i === 1 && paddles.length >= 3;
+          const isLeft = i === 0 && paddles.length >= 2;
+          const isRight = i === paddles.length - 1 && paddles.length >= 2 && !isCenter;
+          const rotate = isLeft ? 6 : isRight ? -6 : 0;
+          const translateY = isCenter ? -36 : 0;
+          const z = isCenter ? 3 : 1;
+          const widthPx = isCenter ? 260 : 220;
+          return (
+            <div
+              key={p.slug}
               style={{
-                maxHeight: "100%",
-                width: "auto",
                 position: "relative",
-                zIndex: 1,
-                filter: "drop-shadow(0 30px 50px rgba(0,0,0,0.65)) drop-shadow(0 8px 16px rgba(0,0,0,0.4))",
-              }}
-            />
-          )}
-          {/* Pedestal glow under the paddle */}
-          <div
-            style={{
-              position: "absolute",
-              left: "50%",
-              transform: "translateX(-50%)",
-              bottom: 32,
-              width: "62%",
-              height: 12,
-              borderRadius: 999,
-              background: "radial-gradient(ellipse, rgba(0,0,0,0.55) 0%, transparent 75%)",
-              filter: "blur(10px)",
-              pointerEvents: "none",
-            }}
-          />
-        </div>
-
-        {/* RIGHT — editorial headline block */}
-        <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", gap: 18 }}>
-          {/* Eyebrow */}
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <span
-              style={{
-                width: 8,
-                height: 8,
-                borderRadius: 999,
-                background: "#f4d28a",
-                boxShadow: "0 0 12px rgba(244,210,138,0.6)",
-              }}
-            />
-            <span
-              style={{
-                fontSize: 16,
-                fontWeight: 800,
-                letterSpacing: "0.32em",
-                color: "rgba(244,210,138,0.95)",
-                textTransform: "uppercase",
+                width: widthPx,
+                marginLeft: i > 0 ? -28 : 0,
+                transform: `translateY(${translateY}px) rotate(${rotate}deg)`,
+                zIndex: z,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
               }}
             >
-              This Week&apos;s #1
-            </span>
-          </div>
-
-          {/* Brand */}
-          <p
-            style={{
-              fontSize: 22,
-              fontWeight: 700,
-              letterSpacing: "0.18em",
-              color: "rgba(94,234,212,0.95)",
-              textTransform: "uppercase",
-              margin: 0,
-            }}
-          >
-            {paddle.brand}
-          </p>
-
-          {/* Paddle name — the hero */}
-          <h2
-            style={{
-              fontSize: 96,
-              fontWeight: 900,
-              lineHeight: 0.93,
-              letterSpacing: "-0.025em",
-              color: "#ffffff",
-              margin: 0,
-              textShadow: "0 6px 30px rgba(0,0,0,0.5)",
-            }}
-          >
-            {paddle.name}
-          </h2>
-
-          {/* Spec pills */}
-          {specs.length > 0 && (
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 8 }}>
-              {specs.map((s) => (
-                <span
-                  key={s}
+              {p.image && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={p.image}
+                  alt={`${p.brand} ${p.name}`}
                   style={{
-                    fontSize: 14,
-                    fontWeight: 700,
-                    fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
-                    color: "rgba(255,255,255,0.7)",
-                    padding: "6px 12px",
-                    borderRadius: 999,
-                    background: "rgba(255,255,255,0.04)",
-                    border: "1px solid rgba(255,255,255,0.09)",
+                    width: "100%",
+                    height: "auto",
+                    maxHeight: isCenter ? 460 : 410,
+                    objectFit: "contain",
+                    filter: `drop-shadow(0 ${isCenter ? 30 : 22}px ${isCenter ? 50 : 40}px rgba(0,0,0,0.65)) drop-shadow(0 8px 16px rgba(0,0,0,0.4))`,
                   }}
-                >
-                  {s}
-                </span>
-              ))}
+                />
+              )}
+              {/* Pedestal glow under each paddle */}
+              <div
+                style={{
+                  position: "absolute",
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  bottom: -8,
+                  width: "70%",
+                  height: 10,
+                  borderRadius: 999,
+                  background: "radial-gradient(ellipse, rgba(0,0,0,0.5) 0%, transparent 75%)",
+                  filter: "blur(8px)",
+                }}
+              />
             </div>
-          )}
+          );
+        })}
+      </div>
+
+      {/* Austin badge — bottom left */}
+      <div style={{ position: "absolute", bottom: 92, left: 60, display: "flex", alignItems: "center", gap: 16 }}>
+        <div
+          style={{
+            width: 86,
+            height: 86,
+            borderRadius: 20,
+            overflow: "hidden",
+            border: "2.5px solid rgba(45,212,191,0.55)",
+            boxShadow: "0 8px 24px rgba(20,184,166,0.28), inset 0 1px 0 rgba(255,255,255,0.10)",
+            background: "#0a1628",
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/Austin-head-shot.png"
+            alt="Austin Hardy"
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        </div>
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <span
+            style={{
+              fontSize: 11,
+              fontWeight: 800,
+              letterSpacing: "0.28em",
+              textTransform: "uppercase",
+              color: "rgba(45,212,191,0.9)",
+            }}
+          >
+            Reviewed By
+          </span>
+          <span style={{ fontSize: 22, fontWeight: 900, color: "#ffffff", letterSpacing: "-0.01em", lineHeight: 1.1 }}>
+            Austin Hardy
+          </span>
+          <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.45)" }}>
+            Founder · Pickleball Playbook
+          </span>
         </div>
       </div>
 
@@ -325,13 +316,7 @@ function ThumbDesign({
           gap: 16,
         }}
       >
-        <span
-          style={{
-            flex: 1,
-            height: 1,
-            background: "linear-gradient(90deg, transparent, rgba(20,184,166,0.30), transparent)",
-          }}
-        />
+        <span style={{ flex: 1, height: 1, background: "linear-gradient(90deg, transparent, rgba(20,184,166,0.30), transparent)" }} />
         <span
           style={{
             fontSize: 14,
@@ -343,13 +328,7 @@ function ThumbDesign({
         >
           PlaybookPaddles.com
         </span>
-        <span
-          style={{
-            flex: 1,
-            height: 1,
-            background: "linear-gradient(90deg, transparent, rgba(20,184,166,0.30), transparent)",
-          }}
-        />
+        <span style={{ flex: 1, height: 1, background: "linear-gradient(90deg, transparent, rgba(20,184,166,0.30), transparent)" }} />
       </div>
     </div>
   );
