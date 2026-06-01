@@ -2103,25 +2103,6 @@ export const paddles: Paddle[] = [
     trendingScore: 55,
     playStyle: "power",
   },
-  {
-    id: "118",
-    slug: "aireo-cyclone-hybrid",
-    brand: "Aireo",
-    name: "Cyclone",
-    shape: "Hybrid",
-    weight: "7.6 oz",
-    swingWeight: 107.65,
-    twistWeight: 6.58,
-    thickness: "16mm",
-    image: "/images/paddles/Aireo-Cyclone-Nanograph-Hybrid-16mm.png",
-    amountOff: "10%",
-    price: "$199.00",
-    discountLink: "https://www.aireo-sports.com?sca_ref=11106871.iVssdtBF6PakUq4Q",
-    addedAt: "2026-05-27",
-    trendingScore: 50,
-    playStyle: "power",
-  },
-
   // ── Gruvn (Muvn) ─────────────────────────────────────────────────────────
   {
     id: "97",
