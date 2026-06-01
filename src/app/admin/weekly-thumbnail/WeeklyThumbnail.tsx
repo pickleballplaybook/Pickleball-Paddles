@@ -71,16 +71,19 @@ export default function WeeklyThumbnail({ paddles }: Props) {
         </p>
       </div>
 
-      {/* Live preview — scaled to fit screen */}
+      {/* Live preview — fixed 540×540 with a clean 0.5 scale of the 1080 source.
+          Using a static scale instead of calc(min(100%, …) / 1080) because that
+          mixed-unit calc doesn't resolve inside transform:scale() and was
+          rendering the inner div at full 1080×1080 (so it got clipped). */}
       <div
         className="rounded-2xl overflow-hidden border border-gray-800"
-        style={{ width: "min(100%, 720px)", aspectRatio: "1 / 1" }}
+        style={{ width: 540, height: 540 }}
       >
         <div
           style={{
             width: SIZE,
             height: SIZE,
-            transform: "scale(calc(min(100%, 720px) / 1080))",
+            transform: "scale(0.5)",
             transformOrigin: "top left",
           }}
         >
