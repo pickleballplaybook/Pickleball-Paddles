@@ -21,6 +21,7 @@ export function engagementScore(hearts: number, ratings: number, views: number):
 // Filter BEFORE slicing the top N so excluded paddles don't consume slots.
 export const TRENDING_EXCLUDED_SLUGS = new Set<string>([
   "selkirk-boomstik-elongated",
+  "joola-pro-v-perseus-elongated",
 ]);
 
 export function isTrendingExcluded(slug: string): boolean {
