@@ -106,7 +106,7 @@ export default function WeeklyThumbnail({ paddles }: Props) {
 // so no overflow) → 3 paddles fanned → Austin badge → footer URL.
 
 function ThumbDesign({ paddles, weekOf }: { paddles: Paddle[]; weekOf: string }) {
-  const PAD = 70; // outer padding
+  const PAD = 60;
 
   return (
     <div
@@ -116,23 +116,29 @@ function ThumbDesign({ paddles, weekOf }: { paddles: Paddle[]; weekOf: string })
         height: SIZE,
         overflow: "hidden",
         background: [
-          "radial-gradient(ellipse 75% 55% at 50% -5%, rgba(20,184,166,0.22) 0%, transparent 65%)",
-          "radial-gradient(ellipse 65% 55% at 110% 110%, rgba(212,163,90,0.14) 0%, transparent 60%)",
+          // Top-center teal aurora — focuses attention on headline
+          "radial-gradient(ellipse 80% 50% at 50% -5%, rgba(20,184,166,0.28) 0%, transparent 70%)",
+          // Mid-canvas champagne spotlight under paddles
+          "radial-gradient(ellipse 55% 35% at 50% 62%, rgba(212,163,90,0.10) 0%, transparent 70%)",
+          // Bottom-right warm vignette
+          "radial-gradient(ellipse 60% 50% at 110% 110%, rgba(212,163,90,0.12) 0%, transparent 60%)",
+          // Base
           "linear-gradient(160deg, #0a1628 0%, #0c1e35 35%, #0d2a3a 60%, #08182a 100%)",
         ].join(", "),
         boxShadow: [
-          "inset 0 1px 0 rgba(255,255,255,0.06)",
-          "inset 0 0 0 1px rgba(255,255,255,0.03)",
-          "inset 0 -100px 160px rgba(0,0,0,0.35)",
+          "inset 0 1px 0 rgba(255,255,255,0.07)",
+          "inset 0 0 0 1px rgba(255,255,255,0.04)",
+          "inset 0 -120px 180px rgba(0,0,0,0.40)",
         ].join(", "),
-        display: "flex",
-        flexDirection: "column",
       }}
     >
       {/* TOP — branding bar */}
       <div
         style={{
-          padding: `40px ${PAD}px 0 ${PAD}px`,
+          position: "absolute",
+          top: 36,
+          left: PAD,
+          right: PAD,
           display: "flex",
           alignItems: "center",
           gap: 14,
@@ -154,17 +160,19 @@ function ThumbDesign({ paddles, weekOf }: { paddles: Paddle[]; weekOf: string })
         <span style={{ flex: 1, height: 1, background: "linear-gradient(90deg, rgba(212,163,90,0.18), transparent)" }} />
       </div>
 
-      {/* HEADLINE BLOCK — centered with explicit max-width to prevent overflow */}
+      {/* HEADLINE BLOCK */}
       <div
         style={{
-          padding: `40px ${PAD}px 0 ${PAD}px`,
+          position: "absolute",
+          top: 88,
+          left: PAD,
+          right: PAD,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           textAlign: "center",
         }}
       >
-        {/* Eyebrow */}
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
           <span
             style={{
@@ -188,26 +196,24 @@ function ThumbDesign({ paddles, weekOf }: { paddles: Paddle[]; weekOf: string })
           </span>
         </div>
 
-        {/* Main headline */}
         <h1
           style={{
-            fontSize: 96,
+            fontSize: 100,
             fontWeight: 900,
             lineHeight: 0.95,
             letterSpacing: "-0.025em",
             color: "#ffffff",
             margin: 0,
             maxWidth: SIZE - PAD * 2,
-            textShadow: "0 6px 30px rgba(0,0,0,0.5)",
+            textShadow: "0 6px 36px rgba(0,0,0,0.6)",
           }}
         >
           The Top 10 Paddles
         </h1>
 
-        {/* Subhead */}
         <p
           style={{
-            margin: "16px 0 0 0",
+            margin: "18px 0 0 0",
             fontSize: 22,
             fontWeight: 700,
             letterSpacing: "0.10em",
@@ -217,35 +223,48 @@ function ThumbDesign({ paddles, weekOf }: { paddles: Paddle[]; weekOf: string })
         >
           Week of {weekOf}
         </p>
+
+        {/* Hairline gold divider under headline */}
+        <span
+          style={{
+            display: "block",
+            width: 120,
+            height: 1.5,
+            marginTop: 20,
+            background: "linear-gradient(90deg, transparent, rgba(212,163,90,0.55), transparent)",
+          }}
+        />
       </div>
 
-      {/* MIDDLE — 3 paddles fanned (middle = elevated hero) */}
+      {/* PADDLES — center stage, MUCH bigger, middle paddle = hero with gold #1 badge */}
       <div
         style={{
-          flex: 1,
+          position: "absolute",
+          left: 0,
+          right: 0,
+          top: 360,
+          bottom: 220,
           display: "flex",
-          alignItems: "flex-end",
+          alignItems: "center",
           justifyContent: "center",
-          padding: `30px ${PAD}px 0 ${PAD}px`,
-          perspective: "800px",
+          perspective: "1100px",
         }}
       >
         {paddles.slice(0, 3).map((p, i, arr) => {
           const isCenter = i === 1 && arr.length >= 3;
           const isLeft = i === 0 && arr.length >= 2;
           const isRight = i === arr.length - 1 && arr.length >= 2 && !isCenter;
-          const rotate = isLeft ? 6 : isRight ? -6 : 0;
-          const translateY = isCenter ? -30 : 0;
+          const rotate = isLeft ? 7 : isRight ? -7 : 0;
+          const translateY = isCenter ? -28 : 0;
           const z = isCenter ? 3 : 1;
-          const widthPx = isCenter ? 240 : 200;
-          const maxH = isCenter ? 420 : 370;
+          const widthPx = isCenter ? 380 : 320;
           return (
             <div
               key={p.slug}
               style={{
                 position: "relative",
                 width: widthPx,
-                marginLeft: i > 0 ? -24 : 0,
+                marginLeft: i > 0 ? -56 : 0,
                 transform: `translateY(${translateY}px) rotate(${rotate}deg)`,
                 zIndex: z,
                 display: "flex",
@@ -261,69 +280,118 @@ function ThumbDesign({ paddles, weekOf }: { paddles: Paddle[]; weekOf: string })
                   style={{
                     width: "100%",
                     height: "auto",
-                    maxHeight: maxH,
+                    maxHeight: "100%",
                     objectFit: "contain",
-                    filter: `drop-shadow(0 ${isCenter ? 30 : 22}px ${isCenter ? 50 : 40}px rgba(0,0,0,0.65)) drop-shadow(0 8px 16px rgba(0,0,0,0.4))`,
+                    filter: `drop-shadow(0 ${isCenter ? 36 : 26}px ${isCenter ? 56 : 44}px rgba(0,0,0,0.70)) drop-shadow(0 10px 18px rgba(0,0,0,0.45))`,
                   }}
                 />
               )}
+              {/* Pedestal glow */}
               <div
                 style={{
                   position: "absolute",
                   left: "50%",
                   transform: "translateX(-50%)",
-                  bottom: -10,
-                  width: "70%",
-                  height: 10,
+                  bottom: -16,
+                  width: "72%",
+                  height: 14,
                   borderRadius: 999,
-                  background: "radial-gradient(ellipse, rgba(0,0,0,0.5) 0%, transparent 75%)",
-                  filter: "blur(8px)",
+                  background: "radial-gradient(ellipse, rgba(0,0,0,0.55) 0%, transparent 75%)",
+                  filter: "blur(12px)",
                 }}
               />
+              {/* Gold #1 badge on the hero paddle */}
+              {isCenter && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: -22,
+                    right: -22,
+                    width: 76,
+                    height: 76,
+                    borderRadius: 999,
+                    background: "linear-gradient(135deg, #f4d28a 0%, #d4a35a 100%)",
+                    border: "2px solid rgba(244,210,138,0.85)",
+                    boxShadow: "0 10px 30px rgba(212,163,90,0.50), inset 0 1px 0 rgba(255,255,255,0.45)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    zIndex: 5,
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: 30,
+                      fontWeight: 900,
+                      color: "#1a0f00",
+                      letterSpacing: "-0.04em",
+                      textShadow: "0 1px 0 rgba(255,255,255,0.3)",
+                      lineHeight: 1,
+                    }}
+                  >
+                    #1
+                  </span>
+                </div>
+              )}
             </div>
           );
         })}
       </div>
 
-      {/* AUSTIN BADGE — bottom-left */}
+      {/* AUSTIN BADGE — bigger, glassier, refined */}
       <div
         style={{
-          padding: `0 ${PAD}px 20px ${PAD}px`,
+          position: "absolute",
+          left: PAD,
+          bottom: 92,
           display: "flex",
           alignItems: "center",
-          gap: 16,
-          marginTop: 30,
+          gap: 20,
         }}
       >
         <div
           style={{
-            width: 78,
-            height: 78,
-            borderRadius: 18,
+            position: "relative",
+            width: 130,
+            height: 130,
+            borderRadius: 26,
             overflow: "hidden",
-            border: "2.5px solid rgba(45,212,191,0.55)",
-            boxShadow: "0 8px 24px rgba(20,184,166,0.28), inset 0 1px 0 rgba(255,255,255,0.10)",
+            border: "3px solid rgba(45,212,191,0.65)",
+            boxShadow: "0 14px 36px rgba(20,184,166,0.35), inset 0 1px 0 rgba(255,255,255,0.12), 0 0 0 1px rgba(0,0,0,0.4)",
             background: "#0a1628",
             flexShrink: 0,
           }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/images/Austin-head-shot.png" alt="Austin Hardy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          {/* Subtle inner edge highlight on the photo */}
+          <span
+            style={{
+              position: "absolute",
+              inset: 0,
+              borderRadius: 23,
+              boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.10)",
+              pointerEvents: "none",
+            }}
+          />
         </div>
         <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.15 }}>
           <span
             style={{
-              fontSize: 11,
+              fontSize: 13,
               fontWeight: 800,
-              letterSpacing: "0.28em",
+              letterSpacing: "0.30em",
               textTransform: "uppercase",
-              color: "rgba(45,212,191,0.9)",
+              color: "rgba(45,212,191,0.95)",
+              marginBottom: 4,
             }}
           >
             Reviewed By
           </span>
-          <span style={{ fontSize: 22, fontWeight: 900, color: "#ffffff", letterSpacing: "-0.01em" }}>Austin Hardy</span>
-          <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.45)" }}>
+          <span style={{ fontSize: 34, fontWeight: 900, color: "#ffffff", letterSpacing: "-0.015em", lineHeight: 1.05 }}>
+            Austin Hardy
+          </span>
+          <span style={{ fontSize: 15, fontWeight: 600, color: "rgba(255,255,255,0.55)", marginTop: 4 }}>
             Founder · Pickleball Playbook
           </span>
         </div>
@@ -332,7 +400,10 @@ function ThumbDesign({ paddles, weekOf }: { paddles: Paddle[]; weekOf: string })
       {/* FOOTER — URL with teal rules */}
       <div
         style={{
-          padding: `0 ${PAD}px 32px ${PAD}px`,
+          position: "absolute",
+          bottom: 36,
+          left: PAD,
+          right: PAD,
           display: "flex",
           alignItems: "center",
           gap: 16,
@@ -341,7 +412,7 @@ function ThumbDesign({ paddles, weekOf }: { paddles: Paddle[]; weekOf: string })
         <span style={{ flex: 1, height: 1, background: "linear-gradient(90deg, transparent, rgba(20,184,166,0.30), transparent)" }} />
         <span
           style={{
-            fontSize: 13,
+            fontSize: 14,
             fontWeight: 800,
             letterSpacing: "0.30em",
             color: "rgba(94,234,212,0.85)",
