@@ -202,13 +202,14 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
       <div className="absolute top-7 left-0 right-0 flex items-center justify-center gap-3 pointer-events-none z-10">
         <span className="h-px w-6" style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.25))" }} />
         <p className="text-[10px] font-extrabold uppercase tracking-[0.35em]" style={{ color: "rgba(255,255,255,0.55)" }}>
-          Playbook Reviews
+          PlaybookPaddles.com
         </p>
         <span className="h-px w-6" style={{ background: "linear-gradient(90deg, rgba(255,255,255,0.25), transparent)" }} />
       </div>
 
-      {/* ── Top half: paddle image with play style label ────────────────── */}
-      <div className="absolute inset-x-0 top-0 h-[56%] flex items-center justify-center">
+      {/* ── Top half: paddle image with play style label ──────────────────
+          pt-10 pushes the centered paddle down so it clears the header above. */}
+      <div className="absolute inset-x-0 top-0 h-[56%] flex items-center justify-center pt-10">
         {paddle.image && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
