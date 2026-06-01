@@ -54,9 +54,10 @@ function PaddleCard({ paddle }: { paddle: Paddle }) {
         scrollSnapAlign: "start",
       }}
     >
-      {/* Image area */}
+      {/* Image area — minimal padding so source images (especially 1000x1000
+          paddle photos with built-in whitespace) fill more of the card. */}
       <div
-        className="relative w-full flex items-center justify-center p-7 flex-shrink-0"
+        className="relative w-full flex items-center justify-center p-3 flex-shrink-0 overflow-hidden"
         style={{
           background: "var(--bg-alt)",
           aspectRatio: "1 / 1",
