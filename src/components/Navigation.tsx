@@ -10,11 +10,12 @@ import { paddles } from "@/data/paddles";
 import PaddleQuiz from "@/components/PaddleQuiz";
 
 const navLinks = [
-  { label: "Paddles",     href: "/paddles" },
-  { label: "Best Paddles", href: "/best-pickleball-paddles" },
-  { label: "Reviews",     href: "/reviews" },
-  { label: "Compare",     href: "/compare" },
-  { label: "Gear",        href: "/gear"    },
+  { label: "Paddles",        href: "/paddles" },
+  { label: "Best Paddles",   href: "/best-pickleball-paddles" },
+  { label: "Reviews",        href: "/reviews" },
+  { label: "Compare",        href: "/compare" },
+  { label: "Gear",           href: "/gear"    },
+  { label: "Discount Codes", href: "/discount-codes" },
 ];
 
 // ── Global Search ─────────────────────────────────────────────────────────────
