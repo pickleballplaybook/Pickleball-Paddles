@@ -217,7 +217,7 @@ export default function BestPaddlesUnder125Page() {
 
           {/* ── Featured video ───────────────────────────────────────────── */}
           <div className="mb-16 max-w-3xl">
-            <YouTubeEmbed videoId="adyIo1SJKXg" title="Best Pickleball Paddles Under $125 — Video Review" />
+            <YouTubeEmbed videoId="CkrJVwTKk94" title="Best Pickleball Paddles Under $125 — Video Review" />
           </div>
 
           {/* ── Top 5 picks ─────────────────────────────────────────────── */}
