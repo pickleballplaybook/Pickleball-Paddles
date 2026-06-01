@@ -2441,6 +2441,46 @@ export const paddles: Paddle[] = [
     trendingScore: 50,
     playStyle: "power",
   },
+
+  // ── 11SIX24 Ultré Power 2 (joins the Power 2 series) ──────────────────────
+  {
+    id: "126",
+    slug: "11six24-ultre-power-2-elongated",
+    brand: "11SIX24",
+    name: "Ultré Power 2",
+    shape: "Elongated",
+    weight: "7.9 oz",
+    swingWeight: 114.12,
+    twistWeight: 6.36,
+    thickness: "16mm",
+    image: "/images/paddles/11SIX24-Ultre-Power-2-Elongated-16mm.png",
+    amountOff: "$10",
+    price: "$209.99",
+    discountLink: "https://11six24.com/?sca_ref=10762081.CP7l7DxvM7",
+    addedAt: "2026-06-01",
+    trendingScore: 50,
+    playStyle: "power",
+    seriesSlug: "11six24-power-2",
+  },
+
+  // ── Scoop ─────────────────────────────────────────────────────────────────
+  {
+    id: "127",
+    slug: "scoop-sidewinder-f2e-elongated",
+    brand: "Scoop",
+    name: "Sidewinder F2E",
+    shape: "Elongated",
+    weight: "7.6 oz",
+    swingWeight: 109.3,
+    twistWeight: 5.88,
+    thickness: "16mm",
+    image: "/images/paddles/Scoop-Sidewinder-F2E-16mm.png",
+    amountOff: "10%",
+    discountLink: "https://scooppickleball.com/discount/PLAYBOOK?redirect=/collections/all",
+    addedAt: "2026-06-01",
+    trendingScore: 50,
+    playStyle: "all-court",
+  },
 ];
 
 // Review dates — ISO publish dates for Latest Reviews sort (newest-first)
