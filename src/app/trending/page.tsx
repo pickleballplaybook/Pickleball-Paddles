@@ -6,7 +6,7 @@ import { toPng } from "html-to-image";
 import JSZip from "jszip";
 import { paddles } from "@/data/paddles";
 import { Paddle } from "@/types";
-import { getTrendingPaddles, engagementScore, HeartRecord } from "@/lib/trending";
+import { getTrendingPaddles, engagementScore, isTrendingExcluded, HeartRecord } from "@/lib/trending";
 import { siteConfig } from "@/config/site";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -313,6 +313,7 @@ export default function TrendingPage() {
     }))
     .sort((a, b) => b.engagement - a.engagement || b.totalHearts - a.totalHearts)
     .filter((t) => (hasHearts || hasRatings || hasViews) ? t.engagement > 0 : true)
+    .filter((t) => !isTrendingExcluded(t.paddle.slug))
     .slice(0, 10);
 
   // ── PNG export ────────────────────────────────────────────────────────────

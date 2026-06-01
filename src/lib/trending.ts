@@ -15,6 +15,18 @@ export function engagementScore(hearts: number, ratings: number, views: number):
   );
 }
 
+// Paddle slugs that should never appear on any trending surface (homepage
+// Trending Paddles, /trending page, weekly cron snapshot). Useful when a paddle
+// dominates engagement for reasons we don't want reflected in editorial rankings.
+// Filter BEFORE slicing the top N so excluded paddles don't consume slots.
+export const TRENDING_EXCLUDED_SLUGS = new Set<string>([
+  "selkirk-boomstik-elongated",
+]);
+
+export function isTrendingExcluded(slug: string): boolean {
+  return TRENDING_EXCLUDED_SLUGS.has(slug);
+}
+
 // ── Time-decay weight by age bucket ───────────────────────────────────────────
 
 export function getHeartWeight(createdAt: Date | string | number): number {

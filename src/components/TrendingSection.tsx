@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowRight, TrendingUp, Star, Heart, Eye, ExternalLink } from "lucide-react";
 import { Paddle } from "@/types";
-import { getTrendingPaddles, getRisingBrands, engagementScore, HeartRecord } from "@/lib/trending";
+import { getTrendingPaddles, getRisingBrands, engagementScore, isTrendingExcluded, HeartRecord } from "@/lib/trending";
 import { siteConfig } from "@/config/site";
 import { supabase } from "@/lib/supabaseClient";
 import { getBrandByName } from "@/data/brands";
@@ -152,6 +152,7 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
     }))
     .sort((a, b) => b.engagement - a.engagement || b.totalHearts - a.totalHearts)
     .filter((t) => (hasHearts || hasRatings || hasViews) ? t.engagement > 0 : true)
+    .filter((t) => !isTrendingExcluded(t.paddle.slug))
     .slice(0, 10);
 
   // Re-sort brands by total hearts + total rating counts

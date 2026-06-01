@@ -3,7 +3,7 @@ import { revalidatePath } from "next/cache";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { paddles } from "@/data/paddles";
 import { submitToIndexNow } from "@/lib/indexnow";
-import { engagementScore } from "@/lib/trending";
+import { engagementScore, isTrendingExcluded } from "@/lib/trending";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -73,7 +73,8 @@ export async function GET(req: NextRequest) {
     });
 
     scored.sort((a, b) => b.composite - a.composite);
-    const top10 = scored.slice(0, 10);
+    // Drop excluded slugs before slicing so they don't take a top-10 spot.
+    const top10 = scored.filter((s) => !isTrendingExcluded(s.paddle.slug)).slice(0, 10);
 
     // ── 3. Determine this week's Monday ──────────────────────────────────
     const now = new Date();
