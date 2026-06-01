@@ -2417,7 +2417,7 @@ export const paddles: Paddle[] = [
     thickness: "16mm",
     image: "/images/paddles/Luzz-Glider-Hybrid-16mm.png",
     amountOff: "15%",
-    price: "$119.00",
+    price: "$109.00",
     discountLink: "https://luzzpickleball.com/discount/PLAYBOOK?redirect=/products/luzz-glider-2026",
     addedAt: "2026-06-01",
     trendingScore: 50,
