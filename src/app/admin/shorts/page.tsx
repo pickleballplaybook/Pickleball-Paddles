@@ -57,7 +57,29 @@ type Job = {
   progress?: number;
   clips?: Clip[];
   error?: string;
+  youtubeUrl?: string;
 };
+
+const REEL_TAG_OPTIONS = [
+  { handle: "pickleballdrillsapp", label: "@pickleballdrillsapp" },
+  { handle: "pickleballplaybook", label: "@pickleballplaybook" },
+  { handle: "playbookreviews", label: "@playbookreviews" },
+];
+
+function buildReelDescription(
+  clip: Clip,
+  youtubeUrl: string | undefined,
+  enabledHandles: string[]
+): string {
+  const lines: string[] = [];
+  if (clip.title) lines.push(clip.title);
+  if (clip.reason) lines.push("", clip.reason);
+  lines.push("", "Full video on YouTube: " + (youtubeUrl || "(unknown)"));
+  if (enabledHandles.length > 0) {
+    lines.push("", enabledHandles.map((h) => "@" + h).join(" "));
+  }
+  return lines.join("\n");
+}
 
 type JobSummary = {
   jobId: string;
@@ -457,6 +479,38 @@ export default function ShortsPage() {
 
   const [editingClipIdx, setEditingClipIdx] = useState<number | null>(null);
 
+  // Per-clip tag toggles for the reel description. Keyed by clip index;
+  // entries that are false mean the user explicitly disabled that tag.
+  // Default (entry absent) = enabled.
+  const [clipTagState, setClipTagState] = useState<
+    Record<number, Record<string, boolean>>
+  >({});
+  const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
+
+  function isTagEnabled(clipIdx: number, handle: string): boolean {
+    return clipTagState[clipIdx]?.[handle] !== false;
+  }
+  function toggleClipTag(clipIdx: number, handle: string) {
+    setClipTagState((prev) => {
+      const cur = prev[clipIdx] || {};
+      return {
+        ...prev,
+        [clipIdx]: { ...cur, [handle]: !(cur[handle] !== false) },
+      };
+    });
+  }
+  async function copyClipDescription(clipIdx: number, text: string) {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedIdx(clipIdx);
+      setTimeout(() => {
+        setCopiedIdx((cur) => (cur === clipIdx ? null : cur));
+      }, 1500);
+    } catch {
+      alert("Copy failed — your browser may have blocked clipboard access.");
+    }
+  }
+
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
@@ -702,6 +756,63 @@ export default function ShortsPage() {
                           >
                             Download
                           </a>
+                        </div>
+
+                        {/* Reel / Short description + copy */}
+                        <div className="mt-4 pt-4 border-t border-gray-800">
+                          <div className="flex flex-wrap gap-1.5 mb-2">
+                            {REEL_TAG_OPTIONS.map((t) => {
+                              const on = isTagEnabled(i, t.handle);
+                              return (
+                                <button
+                                  key={t.handle}
+                                  type="button"
+                                  onClick={() => toggleClipTag(i, t.handle)}
+                                  className={`text-[11px] px-2 py-0.5 rounded-full border transition ${
+                                    on
+                                      ? "bg-green-500/15 border-green-500/50 text-green-300"
+                                      : "bg-gray-800 border-gray-700 text-gray-500 line-through"
+                                  }`}
+                                  title={on ? "Click to remove" : "Click to include"}
+                                >
+                                  {t.label}
+                                </button>
+                              );
+                            })}
+                          </div>
+                          <textarea
+                            readOnly
+                            value={buildReelDescription(
+                              clip,
+                              job.youtubeUrl,
+                              REEL_TAG_OPTIONS.filter((t) =>
+                                isTagEnabled(i, t.handle)
+                              ).map((t) => t.handle)
+                            )}
+                            rows={5}
+                            className="w-full bg-gray-950 border border-gray-800 rounded-lg p-2 text-xs text-gray-300 font-mono resize-y"
+                          />
+                          <button
+                            onClick={() =>
+                              copyClipDescription(
+                                i,
+                                buildReelDescription(
+                                  clip,
+                                  job.youtubeUrl,
+                                  REEL_TAG_OPTIONS.filter((t) =>
+                                    isTagEnabled(i, t.handle)
+                                  ).map((t) => t.handle)
+                                )
+                              )
+                            }
+                            className={`w-full mt-2 py-1.5 rounded-lg text-xs font-medium transition ${
+                              copiedIdx === i
+                                ? "bg-green-500 text-black"
+                                : "border border-gray-700 text-gray-300 hover:bg-gray-800"
+                            }`}
+                          >
+                            {copiedIdx === i ? "Copied ✓" : "Copy description"}
+                          </button>
                         </div>
                       </div>
                     </div>
