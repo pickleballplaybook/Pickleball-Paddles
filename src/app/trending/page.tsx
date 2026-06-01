@@ -208,23 +208,23 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
       </div>
 
       {/* ── Top half: paddle image with play style label ────────────────── */}
-      <div className="absolute inset-x-0 top-0 h-[52%] flex items-center justify-center">
+      <div className="absolute inset-x-0 top-0 h-[56%] flex items-center justify-center">
         {paddle.image && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={paddle.image}
             alt={`${paddle.brand} ${paddle.name}`}
-            className="relative z-[1] max-h-[82%] w-auto object-contain"
-            style={{ filter: "drop-shadow(0 18px 30px rgba(0,0,0,0.55)) drop-shadow(0 4px 10px rgba(0,0,0,0.35))" }}
+            className="relative z-[1] max-h-[92%] w-auto object-contain"
+            style={{ filter: "drop-shadow(0 20px 34px rgba(0,0,0,0.58)) drop-shadow(0 4px 12px rgba(0,0,0,0.38))" }}
           />
         )}
         {/* Pedestal glow under the paddle */}
         <div
-          className="absolute left-1/2 -translate-x-1/2 bottom-8 w-[55%] h-3 rounded-full pointer-events-none"
+          className="absolute left-1/2 -translate-x-1/2 bottom-6 w-[58%] h-3 rounded-full pointer-events-none"
           style={{ background: "radial-gradient(ellipse, rgba(0,0,0,0.55) 0%, transparent 75%)", filter: "blur(6px)" }}
         />
         {/* Play style badge */}
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-[2]">
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-[2]">
           <span
             className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.18em] px-3 py-1 rounded-full"
             style={{
@@ -241,7 +241,7 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
       </div>
 
       {/* ── Bottom half: specs panel — glassy with subtle top highlight ── */}
-      <div className="absolute inset-x-0 bottom-0 h-[48%] flex flex-col justify-center px-6 pb-10 pt-2">
+      <div className="absolute inset-x-0 bottom-0 h-[44%] flex flex-col justify-center px-6 pb-10 pt-2">
         <div
           className="rounded-2xl p-5 flex flex-col gap-3"
           style={{
