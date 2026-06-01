@@ -3,7 +3,7 @@ import { revalidatePath } from "next/cache";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { paddles } from "@/data/paddles";
 import { submitToIndexNow } from "@/lib/indexnow";
-import { engagementScore, isTrendingExcluded } from "@/lib/trending";
+import { engagementScore, isTrendingExcluded, takeTopBySeriesDedup } from "@/lib/trending";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -73,8 +73,10 @@ export async function GET(req: NextRequest) {
     });
 
     scored.sort((a, b) => b.composite - a.composite);
-    // Drop excluded slugs before slicing so they don't take a top-10 spot.
-    const top10 = scored.filter((s) => !isTrendingExcluded(s.paddle.slug)).slice(0, 10);
+    // Drop excluded slugs, then dedupe by series so the top 10 has at most one
+    // paddle per series (e.g., never both Honolulu J2CR and J6CR Crystal Blue).
+    const eligibleSorted = scored.filter((s) => !isTrendingExcluded(s.paddle.slug));
+    const top10 = takeTopBySeriesDedup(eligibleSorted, 10);
 
     // ── 3. Determine this week's Monday ──────────────────────────────────
     const now = new Date();

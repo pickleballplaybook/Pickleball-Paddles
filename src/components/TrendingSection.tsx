@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowRight, TrendingUp, Star, Heart, Eye, ExternalLink } from "lucide-react";
 import { Paddle } from "@/types";
-import { getTrendingPaddles, getRisingBrands, engagementScore, isTrendingExcluded, HeartRecord } from "@/lib/trending";
+import { getTrendingPaddles, getRisingBrands, engagementScore, isTrendingExcluded, takeTopBySeriesDedup, HeartRecord } from "@/lib/trending";
 import { siteConfig } from "@/config/site";
 import { supabase } from "@/lib/supabaseClient";
 import { getBrandByName } from "@/data/brands";
@@ -141,19 +141,19 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
   const hasViews = Object.values(viewCounts).some((v) => v > 0);
 
   // Re-sort trending by hearts + star rating count + views combined
-  const trendingSorted = allTrending
+  const trendingPre = allTrending
     .map((t) => ({
       ...t,
       ratingCount: ratingCounts[t.paddle.id]?.count ?? 0,
       ratingAvg: ratingCounts[t.paddle.id]?.average ?? 0,
       views: viewCounts[t.paddle.slug] ?? 0,
-      // Combined engagement score: hearts + rating count + views (views weighted less)
       engagement: engagementScore(t.totalHearts, ratingCounts[t.paddle.id]?.count ?? 0, viewCounts[t.paddle.slug] ?? 0),
     }))
     .sort((a, b) => b.engagement - a.engagement || b.totalHearts - a.totalHearts)
     .filter((t) => (hasHearts || hasRatings || hasViews) ? t.engagement > 0 : true)
-    .filter((t) => !isTrendingExcluded(t.paddle.slug))
-    .slice(0, 10);
+    .filter((t) => !isTrendingExcluded(t.paddle.slug));
+  // Dedupe by series so a single series can't fill multiple slots.
+  const trendingSorted = takeTopBySeriesDedup(trendingPre, 10);
 
   // Re-sort brands by total hearts + total rating counts
   const brandRatings = new Map<string, number>();

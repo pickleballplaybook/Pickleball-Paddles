@@ -6,7 +6,7 @@ import { toPng } from "html-to-image";
 import JSZip from "jszip";
 import { paddles } from "@/data/paddles";
 import { Paddle } from "@/types";
-import { getTrendingPaddles, engagementScore, isTrendingExcluded, HeartRecord } from "@/lib/trending";
+import { getTrendingPaddles, engagementScore, isTrendingExcluded, takeTopBySeriesDedup, HeartRecord } from "@/lib/trending";
 import { siteConfig } from "@/config/site";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -405,15 +405,15 @@ export default function TrendingPage() {
   const dataReady = heartsLoaded && (hasViews || (!hasHearts && !hasRatings));
 
   // Same scoring as homepage: hearts + ratings + views/10
-  const top10 = allTrending
+  const top10Pre = allTrending
     .map((t) => ({
       ...t,
       engagement: engagementScore(t.totalHearts, ratingCounts[t.paddle.id]?.count ?? 0, viewCounts[t.paddle.slug] ?? 0),
     }))
     .sort((a, b) => b.engagement - a.engagement || b.totalHearts - a.totalHearts)
     .filter((t) => (hasHearts || hasRatings || hasViews) ? t.engagement > 0 : true)
-    .filter((t) => !isTrendingExcluded(t.paddle.slug))
-    .slice(0, 10);
+    .filter((t) => !isTrendingExcluded(t.paddle.slug));
+  const top10 = takeTopBySeriesDedup(top10Pre, 10);
 
   // ── PNG export ────────────────────────────────────────────────────────────
   // Hidden, fixed-size copies of every card (below) are the capture source, so

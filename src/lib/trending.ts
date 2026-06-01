@@ -28,6 +28,26 @@ export function isTrendingExcluded(slug: string): boolean {
   return TRENDING_EXCLUDED_SLUGS.has(slug);
 }
 
+// Walks an already-score-sorted list and returns the top N with at most ONE
+// paddle per series (later/lower-scoring paddles in the same series are
+// skipped). Paddles without a seriesSlug always pass. Use this in place of
+// .slice(0, N) on any trending list so a single series can't fill multiple
+// slots (e.g., Honolulu J2CR + J6CR Crystal Blue both making the top 10).
+export function takeTopBySeriesDedup<T extends { paddle: Paddle }>(items: T[], n: number): T[] {
+  const seenSeries = new Set<string>();
+  const out: T[] = [];
+  for (const it of items) {
+    const series = it.paddle.seriesSlug;
+    if (series) {
+      if (seenSeries.has(series)) continue;
+      seenSeries.add(series);
+    }
+    out.push(it);
+    if (out.length >= n) break;
+  }
+  return out;
+}
+
 // ── Time-decay weight by age bucket ───────────────────────────────────────────
 
 export function getHeartWeight(createdAt: Date | string | number): number {
