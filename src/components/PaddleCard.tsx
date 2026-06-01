@@ -211,16 +211,29 @@ export default function PaddleCard({ paddle, index = 0, heartCount = 0 }: Paddle
           ))}
         </div>
 
-        {/* Discount badge */}
-        {paddle.amountOff && paddle.amountOff !== "$0" && paddle.amountOff !== "" && (
-          <div className="flex items-center gap-1.5 mb-3">
-            <span className="text-xs font-mono font-bold text-brand-600 bg-brand-50 border border-brand-200 px-2 py-0.5 rounded tracking-widest">
-              {(paddle.brand === "Selkirk" || paddle.brand === "SLK") && !paddle.discountLink?.includes("lockerroompickleball.com") ? "INF-PLAYBOOK" : "PLAYBOOK"}
-            </span>
-            <span className="text-xs" style={{ color: "var(--text-muted)" }}>·</span>
-            <span className="text-xs font-semibold" style={{ color: "var(--discount-text)" }}>Save {paddle.amountOff}</span>
-          </div>
-        )}
+        {/* Discount badge — show the code for any paddle that has a usable code:
+            (a) real $/% discount, OR
+            (b) Selkirk paddle on selkirk.com (gift-card perks via INF-PLAYBOOK). */}
+        {(() => {
+          const hasRealDiscount = !!paddle.amountOff && paddle.amountOff !== "$0" && paddle.amountOff !== "";
+          const isSelkirk = paddle.brand === "Selkirk" || paddle.brand === "SLK";
+          const isSelkirkGiftCard = isSelkirk && !hasRealDiscount && !!paddle.discountLink?.trim() && !paddle.discountLink.includes("lockerroompickleball.com");
+          if (!hasRealDiscount && !isSelkirkGiftCard) return null;
+          const code = isSelkirk && !paddle.discountLink?.includes("lockerroompickleball.com") ? "INF-PLAYBOOK" : "PLAYBOOK";
+          return (
+            <div className="flex items-center gap-1.5 mb-3">
+              <span className="text-xs font-mono font-bold text-brand-600 bg-brand-50 border border-brand-200 px-2 py-0.5 rounded tracking-widest">
+                {code}
+              </span>
+              {hasRealDiscount && (
+                <>
+                  <span className="text-xs" style={{ color: "var(--text-muted)" }}>·</span>
+                  <span className="text-xs font-semibold" style={{ color: "var(--discount-text)" }}>Save {paddle.amountOff}</span>
+                </>
+              )}
+            </div>
+          );
+        })()}
 
         {/* ── CTAs ──────────────────────────────────────────────────────────── */}
         <div className="space-y-2">
