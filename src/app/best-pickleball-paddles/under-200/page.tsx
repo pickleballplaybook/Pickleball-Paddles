@@ -6,6 +6,7 @@ import { siteConfig } from "@/config/site";
 import { getPaddlesUnder } from "@/lib/price";
 import type { Paddle } from "@/types";
 import PaddleBudgetGrid from "@/components/PaddleBudgetGrid";
+import InlineNewsletterCTA from "@/components/InlineNewsletterCTA";
 
 const PAGE_URL = `${siteConfig.siteUrl}/best-pickleball-paddles/under-200`;
 const ACCENT = "#60a5fa";
@@ -316,6 +317,12 @@ export default function BestPaddlesUnder200Page() {
             or play style, and sort by price or swing weight to find the right paddle for your game and budget.
           </p>
           <PaddleBudgetGrid paddles={under200} maxPrice={MAX_PRICE} />
+
+          {/* ── Newsletter CTA — peak-intent placement between grid and guide */}
+          <InlineNewsletterCTA
+            headline="Get our paddle picks delivered weekly"
+            subline="New mid-range reviews, exclusive discount codes, and weekly trending paddles — straight to your inbox."
+          />
 
           {/* ── Buying guide ────────────────────────────────────────────── */}
           <div className="mt-24 max-w-3xl">

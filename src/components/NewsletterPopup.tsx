@@ -37,7 +37,9 @@ export default function NewsletterPopup() {
 
   const dismiss = useCallback(() => {
     setVisible(false);
-    try { localStorage.setItem(storageKey, "1"); } catch { /* private mode */ }
+    // Store a TIMESTAMP so we can re-ask engaged returners after 14 days
+    // instead of silencing forever after one dismissal.
+    try { localStorage.setItem(storageKey, String(Date.now())); } catch { /* private mode */ }
     // Remove from DOM after the leave transition completes.
     setTimeout(() => setRendered(false), 380);
   }, [storageKey]);
@@ -54,9 +56,12 @@ export default function NewsletterPopup() {
   useEffect(() => {
     if (!enabled) return;
 
-    // Already seen this session → do nothing.
+    // Already dismissed within the last 14 days → do nothing. After 14 days
+    // an engaged returner gets re-asked (lots of buyers research a paddle for
+    // weeks before pulling the trigger).
     try {
-      if (localStorage.getItem(storageKey)) return;
+      const ts = parseInt(localStorage.getItem(storageKey) ?? "", 10);
+      if (!Number.isNaN(ts) && Date.now() - ts < 14 * 86400000) return;
     } catch { /* private mode — proceed */ }
 
     // ── 1. Timer ──────────────────────────────────────────────────────────────

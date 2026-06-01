@@ -5,6 +5,7 @@ import "./globals.css";
 import Navigation from "@/components/Navigation";
 import TopBar from "@/components/TopBar";
 import Footer from "@/components/Footer";
+import StickyNewsletterBar from "@/components/StickyNewsletterBar";
 import ThemeProvider from "@/components/ThemeProvider";
 import { siteConfig } from "@/config/site";
 
@@ -124,6 +125,7 @@ export default function RootLayout({
           )}
           <main>{children}</main>
           {!isAdmin && <Footer />}
+          {!isAdmin && <StickyNewsletterBar />}
         </ThemeProvider>
       </body>
     </html>

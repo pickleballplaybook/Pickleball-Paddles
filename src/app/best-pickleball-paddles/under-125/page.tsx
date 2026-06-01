@@ -7,6 +7,7 @@ import { getPaddlesUnder } from "@/lib/price";
 import type { Paddle } from "@/types";
 import PaddleBudgetGrid from "@/components/PaddleBudgetGrid";
 import YouTubeEmbed from "@/components/YouTubeEmbed";
+import InlineNewsletterCTA from "@/components/InlineNewsletterCTA";
 
 const PAGE_URL = `${siteConfig.siteUrl}/best-pickleball-paddles/under-125`;
 const ACCENT = "#4ade80";
@@ -327,6 +328,12 @@ export default function BestPaddlesUnder125Page() {
             or play style, and sort by price or swing weight to find the right budget paddle for your game.
           </p>
           <PaddleBudgetGrid paddles={under125} maxPrice={MAX_PRICE} />
+
+          {/* ── Newsletter CTA — peak-intent placement between grid and guide */}
+          <InlineNewsletterCTA
+            headline="Want budget picks like these in your inbox?"
+            subline="Get exclusive sub-$125 discount codes + new value paddles before they hit the site."
+          />
 
           {/* ── Buying guide ────────────────────────────────────────────── */}
           <div className="mt-24 max-w-3xl">

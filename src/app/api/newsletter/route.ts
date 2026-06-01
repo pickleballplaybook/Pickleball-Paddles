@@ -63,11 +63,48 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // TODO: Send `trimmed` to your email provider here (see comments above).
-    // For now we log server-side and return success.
-    console.log(`[Newsletter] New signup: ${trimmed}`);
+    // ── Substack subscribe (unofficial endpoint, widely used) ───────────────
+    // POSTs the email to the Substack publication's free-subscribe API.
+    // If this ever breaks (Substack changes the endpoint), the client falls
+    // back to opening the Substack subscribe URL in a new tab.
+    const SUBSTACK_API = "https://pickleballplaybook.substack.com/api/v1/free";
+    let provider = "substack";
+    let subscribed = false;
+    try {
+      const res = await fetch(SUBSTACK_API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: trimmed,
+          first_url: req.headers.get("referer") || "https://playbookpaddles.com/",
+          first_referrer: req.headers.get("referer") || "",
+          current_url: req.headers.get("referer") || "https://playbookpaddles.com/",
+          current_referrer: req.headers.get("referer") || "",
+          referral_code: "",
+          source: "playbookpaddles.com",
+        }),
+      });
+      subscribed = res.ok;
+      if (!res.ok) {
+        const body = await res.text().catch(() => "");
+        console.warn(`[Newsletter] Substack returned ${res.status}: ${body.slice(0, 200)}`);
+      }
+    } catch (err) {
+      console.warn("[Newsletter] Substack POST failed:", err);
+    }
 
-    return NextResponse.json({ success: true });
+    if (!subscribed) {
+      // Soft-fail: tell the client to redirect the user to the Substack
+      // subscribe page with the email prefilled (one-click finish).
+      return NextResponse.json({
+        success: false,
+        fallbackUrl: `https://pickleballplaybook.substack.com/subscribe?email=${encodeURIComponent(trimmed)}&utm_source=playbookpaddles`,
+        error: "Direct subscribe failed — please confirm on the next page.",
+      }, { status: 502 });
+    }
+
+    console.log(`[Newsletter] Subscribed via ${provider}: ${trimmed}`);
+    return NextResponse.json({ success: true, provider });
   } catch {
     return NextResponse.json(
       { error: "Something went wrong. Please try again." },

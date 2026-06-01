@@ -541,9 +541,16 @@ async function processVideo(jobId, jobDir, youtubeUrl) {
   if (lastErr) throw lastErr;
 
   // 2. Extract audio for Whisper
+  // Whisper has a hard 25 MB file cap. -q:a 0 (highest VBR quality) was
+  // producing ~245 kbps MP3s that blew past 25 MB for any video >~14 min.
+  // Speech transcription doesn't need anywhere near that quality:
+  //   mono + 16 kHz + 32 kbps = ~14 MB per hour of audio.
+  // Comfortably fits videos up to ~2 hours under the cap.
   setJobStatus(jobId, { status: 'transcribing', message: 'Extracting audio…', progress: 20 });
   const audioPath = path.join(jobDir, 'audio.mp3');
-  await execAsync(`ffmpeg -i "${videoPath}" -q:a 0 -map a "${audioPath}" -y`);
+  await execAsync(
+    `ffmpeg -i "${videoPath}" -vn -ac 1 -ar 16000 -b:a 32k "${audioPath}" -y`
+  );
 
   // 3. Transcribe with Whisper (verbose_json gives word-level timestamps)
   setJobStatus(jobId, { status: 'transcribing', message: 'Transcribing with Whisper…', progress: 30 });
@@ -623,15 +630,17 @@ Respond ONLY with valid JSON — no preamble, no markdown fences. Format:
   );
   const { width, height } = JSON.parse(probeOut).streams[0];
 
-  // Output is 9:16 portrait (1080x1920) for IG/FB Reels. The full landscape
-  // video is preserved (no cropping), scaled to fit the portrait width, and
-  // centered vertically. Empty space above/below is filled with a zoomed +
-  // blurred copy of the same frame.
+  // Output is 9:16 portrait (1080x1920) for IG/FB Reels. The landscape source
+  // is center-cropped to a SQUARE (1080x1080) — feels more zoomed-in than
+  // letterboxed landscape — then placed in the middle of the portrait frame.
+  // The background fills the full 1080x1920 with the same frame zoomed to
+  // cover and heavily blurred (radius 60, 3 passes = noticeably soft, no
+  // sharp edges leaking through).
   void width; void height;
   const reelFilter =
     `[0:v]split=2[bg][fg];` +
-    `[bg]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=30:1[bg];` +
-    `[fg]scale=1080:-2[fg];` +
+    `[bg]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=60:3[bg];` +
+    `[fg]crop=ih:ih,scale=1080:1080[fg];` +
     `[bg][fg]overlay=(W-w)/2:(H-h)/2,setsar=1`;
 
   const clipOutputDir = path.join(OUTPUT_DIR, jobId);
