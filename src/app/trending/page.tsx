@@ -120,7 +120,10 @@ function StatBar({ label, value, displayValue, min, max, fill, glow }: {
 function TrendingCard({ paddle, rank, code, totalCards }: {
   paddle: Paddle; rank: number; code: string; totalCards: number;
 }) {
-  const hasDiscount = !!paddle.discountLink?.trim() && paddle.amountOff && paddle.amountOff !== "$0";
+  const hasRealDiscount = !!paddle.discountLink?.trim() && !!paddle.amountOff && paddle.amountOff !== "$0" && paddle.amountOff !== "";
+  const isSelkirk = paddle.brand === "Selkirk" || paddle.brand === "SLK";
+  const isSelkirkGiftCard = isSelkirk && !hasRealDiscount && !!paddle.discountLink?.trim() && !paddle.discountLink.includes("lockerroompickleball.com");
+  const showCodeChip = hasRealDiscount || isSelkirkGiftCard;
   const weightNum = parseFloat(paddle.weight) || 0;
   const playLabel = paddle.playStyle
     ? paddle.playStyle === "all-court" ? "All-Court" : paddle.playStyle.charAt(0).toUpperCase() + paddle.playStyle.slice(1)
@@ -306,7 +309,7 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
           </div>
 
           {/* Discount code — refined glassy chip */}
-          {hasDiscount && (
+          {showCodeChip && (
             <div
               className="inline-flex items-center gap-2 pl-3 pr-3 py-1.5 rounded-lg self-start"
               style={{
@@ -319,7 +322,9 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
                 Code
               </span>
               <span className="text-xs font-extrabold font-mono tracking-wider" style={{ color: "#5eead4" }}>{code}</span>
-              <span className="text-[10px] font-bold" style={{ color: "rgba(255,255,255,0.4)" }}>· {paddle.amountOff} off</span>
+              <span className="text-[10px] font-bold" style={{ color: "rgba(255,255,255,0.4)" }}>
+                · {hasRealDiscount ? `${paddle.amountOff} off` : "Free gift card"}
+              </span>
             </div>
           )}
         </div>
