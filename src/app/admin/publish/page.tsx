@@ -183,6 +183,55 @@ Save on paddles & gear with code PLAYBOOK - Link in bio.`,
   },
 ];
 
+// Scale + re-encode an image File so its base64 representation stays well
+// under Vercel's 4.5 MB request body cap. Mirrors the renderFrame()
+// compression loop used by the "Capture from video" path.
+function compressImageToDataUrl(
+  file: File,
+  maxDim = 960,
+  maxBytes = 700 * 1024
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const objectUrl = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const scale = Math.min(
+          1,
+          maxDim / Math.max(img.naturalWidth, img.naturalHeight)
+        );
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.round(img.naturalWidth * scale);
+        canvas.height = Math.round(img.naturalHeight * scale);
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          URL.revokeObjectURL(objectUrl);
+          reject(new Error("canvas 2d context unavailable"));
+          return;
+        }
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        URL.revokeObjectURL(objectUrl);
+
+        let quality = 0.82;
+        let dataUrl = canvas.toDataURL("image/jpeg", quality);
+        while (dataUrl.length > maxBytes && quality > 0.35) {
+          quality -= 0.08;
+          dataUrl = canvas.toDataURL("image/jpeg", quality);
+        }
+        resolve(dataUrl);
+      } catch (err) {
+        URL.revokeObjectURL(objectUrl);
+        reject(err);
+      }
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error("could not decode image"));
+    };
+    img.src = objectUrl;
+  });
+}
+
 function fileToDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -1806,12 +1855,19 @@ function SharedThumbnailPicker({
       onChange(null);
       return;
     }
-    if (file.size > 2 * 1024 * 1024) {
-      alert("Thumbnail images must be 2 MB or smaller.");
-      return;
+    // Compress through a canvas instead of accepting raw bytes: scales to
+    // 960px longest dim and JPEG-encodes with a quality loop targeting
+    // <700KB. Stays well under Vercel's 4.5 MB body cap regardless of
+    // what the user uploads (4K phone screenshots, etc.).
+    try {
+      const url = await compressImageToDataUrl(file);
+      onChange(url);
+    } catch (err) {
+      alert(
+        "Could not process this image. Try a different file. " +
+          (err instanceof Error ? `(${err.message})` : "")
+      );
     }
-    const url = await fileToDataUrl(file);
-    onChange(url);
   }
   if (videoUrl) {
     return (
