@@ -608,17 +608,37 @@ export default function PublishPage() {
         return Object.keys(options).length > 0 ? { ...t, options } : t;
       });
 
+      const bodyJson = JSON.stringify({
+        videoPath,
+        title: title.trim(),
+        description,
+        targets: targetsWithOptions,
+        scheduledAt,
+        thumbnailDataUrl: thumbnailDataUrl || undefined,
+      });
+
+      // Pre-flight size check. Vercel's body cap is 4.5 MB; we refuse at
+      // 4.0 MB so the error message can clearly identify what's huge
+      // instead of letting Vercel return an opaque 413.
+      const bodyKB = Math.round(bodyJson.length / 1024);
+      const thumbKB = thumbnailDataUrl
+        ? Math.round(thumbnailDataUrl.length / 1024)
+        : 0;
+      if (bodyJson.length > 4 * 1024 * 1024) {
+        throw new Error(
+          `Publish payload is ${bodyKB} KB (over Vercel's 4.5 MB cap). ` +
+            `Thumbnail is ${thumbKB} KB. ` +
+            (thumbKB > 800
+              ? "Re-pick the thumbnail (compression should bring it under 700 KB) — you may have an old uncompressed one in state."
+              : "Description/tags are unusually large.")
+        );
+      }
+      console.log(`[publish] body=${bodyKB}KB thumb=${thumbKB}KB`);
+
       const r = await fetch("/api/admin/publish/publish", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          videoPath,
-          title: title.trim(),
-          description,
-          targets: targetsWithOptions,
-          scheduledAt,
-          thumbnailDataUrl: thumbnailDataUrl || undefined,
-        }),
+        body: bodyJson,
       });
       // The publish proxy sometimes returns a non-JSON HTML error (e.g. Vercel 413
       // when the request body is too large). Catch that cleanly.
