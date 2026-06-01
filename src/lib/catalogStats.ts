@@ -1,7 +1,8 @@
 import { paddles } from "@/data/paddles";
 
-/** Returns a rounded paddle count label like "100+" based on the total paddle count.
- *  - Under 500: rounds down to nearest 25
+/** Returns a rounded paddle count label like "120+" based on the total paddle count.
+ *  Rounds DOWN so the label is always conservative (never claims more than we have):
+ *  - Under 500: rounds down to nearest 10 (123 → "120+")
  *  - 500–999: rounds down to nearest 50
  *  - 1000+: rounds down to nearest 100
  */
@@ -10,7 +11,7 @@ export function getPaddleCountLabel(): string {
   let step: number;
   if (count >= 1000) step = 100;
   else if (count >= 500) step = 50;
-  else step = 25;
+  else step = 10;
   const rounded = Math.floor(count / step) * step;
   return `${rounded}+`;
 }

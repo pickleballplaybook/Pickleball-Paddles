@@ -6,6 +6,7 @@ import { siteConfig } from "@/config/site";
 import { getPaddlesUnder } from "@/lib/price";
 import type { Paddle } from "@/types";
 import PaddleBudgetGrid from "@/components/PaddleBudgetGrid";
+import YouTubeEmbed from "@/components/YouTubeEmbed";
 
 const PAGE_URL = `${siteConfig.siteUrl}/best-pickleball-paddles/under-125`;
 const ACCENT = "#4ade80";
@@ -31,11 +32,23 @@ interface Pick {
 
 const PICKS: Pick[] = [
   {
+    slug: "enhance-turbo-mpp-elongated",
+    seriesSlugs: ["enhance-turbo-mpp-elongated", "enhance-turbo-mpp-hybrid"],
+    seriesName: "Enhance Turbo MPP",
+    label: "Best Overall",
+    why: "MPP stands for Max Power Polymer, and the Turbo MPP delivers exactly that — but it earns the #1 spot because the rest of the spec sheet keeps up. A floating foam core and SW 116.06 (Elongated) put real heat on drives and serves, while the Hybrid (SW 114.24, TW 6.48) trades a little power for added stability. At $119.99 with $20 off using PLAYBOOK — under $100 — it's the most paddle-for-the-money in this bracket.",
+  },
+  {
     slug: "beyond-measure-ronin-hybrid",
     seriesSlugs: ["beyond-measure-ronin-hybrid", "beyond-measure-ronin-elongated"],
     seriesName: "Beyond Measure Ronin",
-    label: "Best Overall",
-    why: "The Beyond Measure Ronin is the best all-around paddle under $125 — period. Both shapes pair a genuinely high swing weight (Hybrid 115.65, Elongated 114.98) with the kind of twist weight (6.36–6.53) that keeps off-center hits stable — numbers you'd normally pay $200+ for. The thermoformed 16mm build feels premium in hand, with enough pop to drive and enough touch to reset. At $117 with 10% off using code PLAYBOOK (about $105), nothing in this bracket matches its spec sheet.",
+    label: "Best All-Court",
+    why: "The Beyond Measure Ronin pairs a genuinely high swing weight (Hybrid 115.65, Elongated 114.98) with the kind of twist weight (6.36–6.53) that keeps off-center hits stable — numbers you'd normally pay $200+ for. The thermoformed 16mm build feels premium in hand, with enough pop to drive and enough touch to reset. At $117 with 10% off using code PLAYBOOK (about $105), nothing all-court in this bracket matches its spec sheet.",
+  },
+  {
+    slug: "luzz-cannon-elongated",
+    label: "Best for Power",
+    why: "The Luzz Cannon lives up to its name with a SW of 119.19 — among the highest in our entire database — at the lowest price of any pick here. If you want to overpower opponents from the baseline and don't mind a heavier swing, nothing else under $125 hits this hard. At $109 with 15% off using PLAYBOOK (about $93), it's the budget power play.",
   },
   {
     slug: "friday-aura-elongated",
@@ -51,25 +64,13 @@ const PICKS: Pick[] = [
     label: "Best Under $100",
     why: "Ronbus built its reputation on absurd value, and the Quanta proves it. The R3 Elongated (SW 115.40) brings real driving power, while the R4 Hybrid (SW 105.00) is maneuverable and forgiving for all-court play — both on a clean 16mm thermoformed build. At $119.99 with $20 off using PLAYBOOK, you're getting genuine sub-$100 performance that competes with paddles at twice the price.",
   },
-  {
-    slug: "enhance-turbo-mpp-elongated",
-    seriesSlugs: ["enhance-turbo-mpp-elongated", "enhance-turbo-mpp-hybrid"],
-    seriesName: "Enhance Turbo MPP",
-    label: "Best for Power",
-    why: "MPP stands for Max Power Polymer, and the Turbo MPP delivers exactly that. A floating foam core and SW 116.06 (Elongated) put real heat on drives and serves, while the Hybrid (SW 114.24, TW 6.48) trades a little power for added stability. At $119.99 with $20 off using PLAYBOOK — under $100 — it's the most raw power you can buy at this price.",
-  },
-  {
-    slug: "luzz-cannon-elongated",
-    label: "Best Budget Power Value",
-    why: "The Luzz Cannon lives up to its name with a SW of 119.19 — among the highest in our entire database — at the lowest price of any pick here. If you want to overpower opponents from the baseline and don't mind a heavier swing, nothing else under $125 hits this hard. At $109 with 15% off using PLAYBOOK (about $93), it's the budget power play.",
-  },
 ];
 
 // ── FAQ ────────────────────────────────────────────────────────────────────────
 const FAQ = [
   {
     q: "What is the best pickleball paddle under $125?",
-    a: "Our top pick is the Beyond Measure Ronin (about $105 with code PLAYBOOK) — it has the best all-around spec sheet at the price, with a high swing weight and stable twist weight in both elongated and hybrid shapes. For control players, the Friday Aura is the best touch paddle, and for raw power the Luzz Cannon and Enhance Turbo MPP lead the budget category.",
+    a: "Our top pick is the Enhance Turbo MPP (about $99.99 with code PLAYBOOK) — floating foam core, SW 116.06 in the elongated, and tour-level specs for under $100. For all-court versatility, the Beyond Measure Ronin is the spec leader at this price. For control players the Friday Aura is the budget touch king, and for pure power the Luzz Cannon delivers the highest swing weight in the bracket.",
   },
   {
     q: "Are cheap pickleball paddles any good?",
@@ -212,6 +213,11 @@ export default function BestPaddlesUnder125Page() {
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* ── Featured video ───────────────────────────────────────────── */}
+          <div className="mb-16 max-w-3xl">
+            <YouTubeEmbed videoId="adyIo1SJKXg" title="Best Pickleball Paddles Under $125 — Video Review" />
           </div>
 
           {/* ── Top 5 picks ─────────────────────────────────────────────── */}
