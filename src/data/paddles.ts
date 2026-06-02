@@ -2318,9 +2318,14 @@ export const paddles: Paddle[] = [
     twistWeight: 7.87,
     thickness: "16mm",
     image: "/images/paddles/Selkirk-Omni-Widebody-16mm.png",
-    amountOff: "$0",
+    // TEMP lockerroom promo — when done, revert ALL of these together:
+    //   amountOff -> "$0"
+    //   discountLink -> "https://www.selkirk.com/discount/inf-playbook"
+    // (Reverting the link automatically flips the displayed code back from
+    //  PLAYBOOK to INF-PLAYBOOK via the existing getCode() helper.)
+    amountOff: "10%",
     price: "$299.99",
-    discountLink: "https://www.selkirk.com/discount/inf-playbook",
+    discountLink: "https://lockerroompickleball.com/products/omni?sca_ref=8334840.yY4rLJi7oU9HDNHD",
     reviewUrl: "https://youtu.be/2jXKJrCH9iI",
     addedAt: "2026-05-29",
     trendingScore: 50,
