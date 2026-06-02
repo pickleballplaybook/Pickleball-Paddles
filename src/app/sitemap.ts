@@ -95,5 +95,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.75,
   }));
 
-  return [...staticPages, ...paddlePages, ...blogPages, ...seriesPages, ...brandPages, ...weeklyPages];
+  // Programmatic head-to-head comparison pages — shares the exact same builder
+  // as /compare/[matchup]/generateStaticParams so sitemap stays in sync.
+  const { buildStaticMatchups } = await import("./compare/[matchup]/helpers");
+  const comparePages: MetadataRoute.Sitemap = buildStaticMatchups().map((matchup) => ({
+    url: `${siteConfig.siteUrl}/compare/${matchup}`,
+    lastModified: now,
+    changeFrequency: "monthly" as const,
+    priority: 0.7,
+  }));
+
+  return [...staticPages, ...paddlePages, ...blogPages, ...seriesPages, ...brandPages, ...weeklyPages, ...comparePages];
 }
