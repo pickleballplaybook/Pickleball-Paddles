@@ -8,8 +8,8 @@ import { Mail, X, Loader2, Check, ArrowRight } from "lucide-react";
 const STORAGE_DISMISS = "ppb_stickynl_dismissed";
 const STORAGE_SUBSCRIBED = "ppb_subscribed";
 const DISMISS_DAYS = 14;
-const SHOW_DELAY_MS = 8000;          // show after 8s on page
-const SHOW_SCROLL_PCT = 25;          // OR after 25% scroll, whichever fires first
+const SHOW_DELAY_MS = 4000;          // 4s — gives the popup at 3s a head start so they don't compete
+const SHOW_SCROLL_PCT = 15;          // OR after 15% scroll, whichever fires first
 
 // Routes where this bar should NEVER render (already-converting pages, admin,
 // paddle detail pages that already use StickyBottomBar, the newsletter page itself).

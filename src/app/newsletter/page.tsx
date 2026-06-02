@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { Mail, ArrowRight, CheckCircle2, Youtube } from "lucide-react";
+import SubstackEmbed from "@/components/SubstackEmbed";
 import { siteConfig } from "@/config/site";
 
 const SUBSTACK_URL = "https://pickleballplaybookreviews.substack.com/";
@@ -54,19 +55,10 @@ export default function NewsletterPage() {
             Written by Austin Hardy, 5.5+ player and independent reviewer.
           </p>
 
-          {/* Subscribe button */}
-          <a
-            href={SUBSTACK_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 font-bold text-lg px-10 py-4 rounded-2xl text-white transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] mb-12"
-            style={{
-              background: "linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)",
-              boxShadow: "0 0 40px rgba(20,184,166,0.35), 0 4px 12px rgba(0,0,0,0.25)",
-            }}
-          >
-            Subscribe Free <ArrowRight className="w-5 h-5" />
-          </a>
+          {/* Substack official embed — true 1-click signup, no redirect. */}
+          <div className="flex justify-center mb-12">
+            <SubstackEmbed height={360} />
+          </div>
 
           {/* Benefits */}
           <div

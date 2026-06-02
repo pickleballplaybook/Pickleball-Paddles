@@ -75,10 +75,11 @@ export const siteConfig = {
     enabled: true,
 
     // Seconds after page load before the popup is shown (if scroll hasn't fired first).
-    delaySeconds: 6,
+    // Cut to 3s so every visitor gets a shot well within the first minute on any page.
+    delaySeconds: 3,
 
     // Scroll depth (0–100) that triggers the popup, whichever comes first.
-    scrollThreshold: 40,
+    scrollThreshold: 25,
 
     // localStorage key — changing this resets "already seen" for all visitors.
     storageKey: "ppb_popup_v1",
