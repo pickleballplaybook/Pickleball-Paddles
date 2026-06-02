@@ -507,20 +507,21 @@ async function processVideo(jobId, jobDir, youtubeUrl) {
   // - `ios` + format 18 (360p muxed) is the most reliable on datacenter IPs
   // - `android` is a fallback that also often serves muxed
   // - `tv,web_safari` with merge is the last resort for HD when SABR isn't on
+  // Format selectors that yield a single muxed file (no merge needed) — these
+  // sidestep YouTube's SABR-only experiment which breaks bestvideo+bestaudio
+  // merges. Format 22 is 720p mp4 muxed; 18 is 360p mp4 muxed; both have
+  // been being phased out for some videos so we have to try several clients.
+  const MUXED = '-f "best[ext=mp4][protocol^=http]/22/18/best[ext=mp4]/best"';
   const attempts = [
-    {
-      label: 'ios muxed',
-      args: '--extractor-args "youtube:player_client=ios" -f "best[ext=mp4][protocol^=http]/best[ext=mp4]/18/best"',
-    },
-    {
-      label: 'android muxed',
-      args: '--extractor-args "youtube:player_client=android" -f "best[ext=mp4][protocol^=http]/best[ext=mp4]/18/best"',
-    },
-    {
-      label: 'tv,web_safari hd',
-      args: '--extractor-args "youtube:player_client=tv,web_safari" -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best" --merge-output-format mp4',
-    },
+    { label: 'ios muxed',          args: `--extractor-args "youtube:player_client=ios" ${MUXED}` },
+    { label: 'android muxed',      args: `--extractor-args "youtube:player_client=android" ${MUXED}` },
+    { label: 'mweb muxed',         args: `--extractor-args "youtube:player_client=mweb" ${MUXED}` },
+    { label: 'web muxed',          args: `--extractor-args "youtube:player_client=web" ${MUXED}` },
+    { label: 'web_creator muxed',  args: `--extractor-args "youtube:player_client=web_creator" ${MUXED}` },
+    // Last resort: explicit HD merge. Will fail on SABR-only accounts.
+    { label: 'tv,web_safari hd',   args: '--extractor-args "youtube:player_client=tv,web_safari" -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best" --merge-output-format mp4' },
   ];
+  const attemptErrors = [];
   let lastErr;
   for (const attempt of attempts) {
     try {
@@ -532,13 +533,20 @@ async function processVideo(jobId, jobDir, youtubeUrl) {
       lastErr = null;
       break;
     } catch (err) {
-      console.warn(`[yt-dlp] failed with ${attempt.label}:`, err.message.slice(0, 200));
+      const shortMsg = err.message.split('\n').filter(Boolean).pop()?.slice(0, 200) || err.message.slice(0, 200);
+      console.warn(`[yt-dlp] failed with ${attempt.label}:`, shortMsg);
+      attemptErrors.push(`${attempt.label}: ${shortMsg}`);
       lastErr = err;
-      // Clean partial output before next attempt
       try { fs.rmSync(videoPath, { force: true }); } catch {}
     }
   }
-  if (lastErr) throw lastErr;
+  if (lastErr) {
+    // Surface ALL attempt errors so we can see what's actually failing per
+    // client, not just the last (least informative) one.
+    throw new Error(
+      `yt-dlp failed all ${attempts.length} client attempts:\n` + attemptErrors.join('\n')
+    );
+  }
 
   // 2. Extract audio for Whisper
   // Whisper has a hard 25 MB file cap. -q:a 0 (highest VBR quality) was

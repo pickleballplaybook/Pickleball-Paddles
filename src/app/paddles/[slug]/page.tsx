@@ -22,6 +22,8 @@ import ExternalReviewBadge from "@/components/ExternalReviewBadge";
 import { getReviewSource } from "@/lib/externalReviews";
 import ViewCounter from "@/components/ViewCounter";
 import { getBlogPostForPaddle, BlogSection } from "@/data/blogPosts";
+import { canonicalMatchup } from "@/app/compare/[matchup]/helpers";
+import { getBrandByName } from "@/data/brands";
 
 interface Props {
   params: { slug: string };
@@ -226,6 +228,34 @@ export default async function PaddleDetailPage({ params }: Props) {
     related.push(p);
     brandCount[p.brand] = bc + 1;
   }
+
+  // ── Compare-to internal links ───────────────────────────────────────────
+  // For SEO link graph: each detail page links to up to 8 /compare/[matchup]
+  // pages. We reuse the same scored ranking but go deeper than the 4-card
+  // related grid and enforce stronger brand diversity (max 1 per brand) so
+  // the link set surfaces a wider competitive landscape.
+  const compareLinks: typeof paddles = [];
+  const compareBrandSeen = new Set<string>();
+  for (const { paddle: p } of scored) {
+    if (compareLinks.length >= 8) break;
+    if (compareBrandSeen.has(p.brand)) continue;
+    compareLinks.push(p);
+    compareBrandSeen.add(p.brand);
+  }
+
+  // ── Same-brand paddles ──────────────────────────────────────────────────
+  // "Also from {brand}" section — surfaces other paddles in the same brand
+  // family for cross-shopping. Excludes the current paddle, sorted by
+  // trending score, capped at 6 to keep the section compact.
+  const sameBrandPaddles = paddles
+    .filter((p) => p.brand === paddle.brand && p.id !== paddle.id)
+    .sort((a, b) => (b.trendingScore ?? 0) - (a.trendingScore ?? 0))
+    .slice(0, 6);
+
+  // Look up the brand slug from the brand registry (slugs aren't a clean
+  // lowercase-dash transform — "Bread & Butter" → "bread-and-butter", etc.).
+  // Falls back to undefined if brand isn't registered; the link is omitted.
+  const brandRecord = getBrandByName(paddle.brand);
 
   // Rotate gear products per paddle so each page shows different items
   const gearPool = gearProducts.filter((g) => g.id !== "academy");
@@ -1058,6 +1088,81 @@ export default async function PaddleDetailPage({ params }: Props) {
           </div>
         </div>
       </section>
+
+      {/* ── COMPARE HEAD-TO-HEAD ──────────────────────────────────────────── */}
+      {/* Direct internal links into the /compare/[matchup] graph. Each link is */}
+      {/* a permanent SEO asset — it routes crawlers from this detail page into */}
+      {/* a programmatic comparison page targeting "{a} vs {b}" search queries. */}
+      <section className="py-16" style={{ background: "var(--flip-bg-card)" }}>
+        <div className="container-xl">
+          <div className="flex items-center gap-3 mb-2">
+            <BarChart2 size={22} style={{ color: "#2dd4bf" }} />
+            <h2 className="text-2xl font-extrabold" style={{ color: "var(--flip-text-head)" }}>
+              Compare {paddle.brand} {paddle.name} Head-to-Head
+            </h2>
+          </div>
+          <p className="text-sm mb-8" style={{ color: "var(--flip-text-muted)" }}>
+            Side-by-side spec breakdowns against the closest alternatives — drill into specs, price, feel, and who each one is for.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {compareLinks.map((p) => {
+              const matchup = canonicalMatchup(paddle.slug, p.slug);
+              return (
+                <Link
+                  key={p.id}
+                  href={`/compare/${matchup}`}
+                  className="group flex items-center justify-between gap-3 rounded-xl px-4 py-3 transition-all hover:border-teal-400/50"
+                  style={{
+                    background: "var(--flip-bg)",
+                    border: "1px solid var(--flip-card-border)",
+                  }}
+                >
+                  <div className="min-w-0">
+                    <p className="text-[11px] uppercase tracking-wider mb-0.5" style={{ color: "var(--flip-text-muted)" }}>
+                      vs.
+                    </p>
+                    <p className="text-sm font-bold truncate group-hover:text-teal-400 transition-colors" style={{ color: "var(--flip-text-head)" }}>
+                      {p.brand} {p.name}
+                    </p>
+                    <p className="text-[11px] truncate" style={{ color: "var(--flip-text-muted)" }}>
+                      {p.shape} · {p.thickness}{p.price ? ` · ${p.price}` : ""}
+                    </p>
+                  </div>
+                  <ArrowRight size={16} className="shrink-0 group-hover:translate-x-0.5 transition-transform" style={{ color: "#2dd4bf" }} />
+                </Link>
+              );
+            })}
+          </div>
+          <div className="mt-6 text-sm" style={{ color: "var(--flip-text-muted)" }}>
+            See all <Link href="/compare" className="font-bold hover:text-teal-400" style={{ color: "#2dd4bf" }}>head-to-head paddle comparisons →</Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ── ALSO FROM THIS BRAND ──────────────────────────────────────────── */}
+      {/* Brand-family cross-shopping. Only renders if the brand has 2+ other paddles in the catalog. */}
+      {sameBrandPaddles.length >= 2 && (
+        <section className="py-16">
+          <div className="container-xl">
+            <h2 className="text-2xl font-extrabold mb-2" style={{ color: "var(--flip-text-head)" }}>
+              Also From {paddle.brand}
+            </h2>
+            <p className="text-sm mb-8" style={{ color: "var(--flip-text-muted)" }}>
+              Other paddles in the {paddle.brand} lineup — different shapes, cores, and price points to consider.
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+              {sameBrandPaddles.map((p) => (
+                <PaddleCard key={p.id} paddle={p} />
+              ))}
+            </div>
+            {brandRecord && (
+              <div className="mt-6 text-sm" style={{ color: "var(--flip-text-muted)" }}>
+                Browse the full <Link href={`/brands/${brandRecord.slug}`} className="font-bold hover:text-teal-400" style={{ color: "#2dd4bf" }}>{paddle.brand} brand page →</Link>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* ── FEEL (tab: feel) ──────────────────────────────────────────────── */}
       <section id="feel" className="py-16" style={{ background: "var(--flip-bg-card)" }}>
