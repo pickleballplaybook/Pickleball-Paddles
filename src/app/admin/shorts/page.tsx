@@ -66,50 +66,57 @@ const REEL_TAG_OPTIONS = [
   { handle: "playbookreviews", label: "@playbookreviews" },
 ];
 
-// Words we strip out when deriving hashtags from a clip's title / reason —
-// they're either fillers or too generic to be useful as a hashtag.
-const HASHTAG_STOP_WORDS = new Set([
-  "a","an","the","is","are","was","were","be","been","am","being",
-  "and","or","but","so","yet","as","if","then","than",
-  "in","on","at","to","of","for","with","by","from","about","into","onto","off","out","over","under",
-  "this","that","these","those","there","here","such",
-  "you","your","my","our","we","they","i","me","us","them","it","its","their",
-  "how","what","when","where","why","who","which","whose",
-  "can","will","shall","should","could","would","may","might","must","do","does","did","done",
-  "get","got","gets","give","gave","take","took","make","made","goes","gone",
-  "just","not","no","yes","also","more","most","very","much","some","any","all","one","two",
-  "vs","via","new","best","top","good","great","really",
-]);
-
-function deriveHashtags(text: string | undefined, max: number): string[] {
-  if (!text) return [];
-  const seen = new Set<string>();
-  const out: string[] = [];
-  const words = text
-    .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, " ")
-    .split(/\s+/);
-  for (const w of words) {
-    if (w.length < 3) continue;
-    if (HASHTAG_STOP_WORDS.has(w)) continue;
-    if (seen.has(w)) continue;
-    seen.add(w);
-    out.push(w);
-    if (out.length >= max) break;
-  }
-  return out;
-}
+// Curated pickleball-only hashtags. Each entry: the hashtag itself plus the
+// content keywords that, when present in a clip's title/reason, mark it as
+// relevant. Tags without `keywords` are general-purpose fillers used to
+// round out a description that didn't match enough content-specific tags.
+const PICKLEBALL_HASHTAGS: Array<{ tag: string; keywords?: string[] }> = [
+  { tag: "pickleballtips",         keywords: ["tip", "tips", "improve", "better", "guide", "how", "advice"] },
+  { tag: "pickleballinstruction",  keywords: ["instruction", "lesson", "lessons", "learn", "teach", "tutorial"] },
+  { tag: "pickleballdrills",       keywords: ["drill", "drills", "practice", "exercise", "warmup"] },
+  { tag: "pickleballtechnique",    keywords: ["technique", "form", "stance", "grip", "swing", "footwork", "mechanic"] },
+  { tag: "pickleballskills",       keywords: ["skill", "skills", "shot", "shots", "serve", "return", "dink", "drop", "lob", "smash", "volley", "reset"] },
+  { tag: "pickleballstrategy",     keywords: ["strategy", "tactic", "tactics", "play", "position", "stack", "doubles", "singles"] },
+  { tag: "pickleballspin",         keywords: ["spin", "topspin", "backspin", "slice"] },
+  { tag: "pickleballpower",        keywords: ["power", "smash", "drive", "putaway"] },
+  { tag: "pickleballcontrol",      keywords: ["control", "soft", "touch", "placement", "accuracy"] },
+  { tag: "pickleballpaddles",      keywords: ["paddle", "paddles", "selkirk", "joola", "paddletek", "honolulu", "gear", "equipment", "weight", "moi", "tuning", "core"] },
+  { tag: "pickleballreview",       keywords: ["review", "reviews", "comparison", "vs", "versus", "test", "tested"] },
+  { tag: "pickleballtournament",   keywords: ["tournament", "championship", "competition", "tour", "ppa", "app"] },
+  { tag: "pickleballcoach",        keywords: ["coach", "pro", "training", "training"] },
+  // Always-on baseline
+  { tag: "pickleball" },
+  // Generic fillers (no keywords)
+  { tag: "pickleballislife" },
+  { tag: "pickleballaddict" },
+  { tag: "pickleballnation" },
+  { tag: "pickleballcommunity" },
+  { tag: "pickleballlife" },
+];
 
 function buildHashtagLine(clip: Clip): string {
-  // Always-on baseline. #pickleball is required; the others are
-  // broadly useful for short-form pickleball content.
-  const tags: string[] = ["pickleball", "pickleballshorts", "shorts"];
-  const fromTitle = deriveHashtags(clip.title, 4);
-  const fromReason = deriveHashtags(clip.reason, 3);
-  for (const w of [...fromTitle, ...fromReason]) {
-    if (!tags.includes(w)) tags.push(w);
+  const MAX = 5;
+  const text = ((clip.title || "") + " " + (clip.reason || "")).toLowerCase();
+  // #pickleball is always first.
+  const tags: string[] = ["pickleball"];
+
+  // Add content-matched hashtags by keyword presence.
+  for (const { tag, keywords } of PICKLEBALL_HASHTAGS) {
+    if (tags.length >= MAX) break;
+    if (!keywords || keywords.length === 0) continue;
+    if (tags.includes(tag)) continue;
+    if (keywords.some((k) => text.includes(k))) tags.push(tag);
   }
-  return tags.slice(0, 10).map((t) => "#" + t).join(" ");
+
+  // Fill any remaining slots with general-purpose pickleball tags.
+  for (const { tag, keywords } of PICKLEBALL_HASHTAGS) {
+    if (tags.length >= MAX) break;
+    if (keywords && keywords.length > 0) continue;
+    if (tags.includes(tag)) continue;
+    tags.push(tag);
+  }
+
+  return tags.map((t) => "#" + t).join(" ");
 }
 
 function buildReelDescription(

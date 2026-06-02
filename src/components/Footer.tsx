@@ -13,6 +13,16 @@ const NAV_LINKS = [
   { label: "Join Newsletter", href: siteConfig.substackUrl, external: true },
 ];
 
+// Trust-signal links — separate column for E-E-A-T pages. Splitting these
+// out gives them visual weight on every page and tells Google their internal
+// link weight comes from genuine site-wide presence, not buried hub links.
+const TRUST_LINKS = [
+  { label: "About Austin",   href: "/about"        },
+  { label: "How We Test",    href: "/how-we-test"  },
+  { label: "Discount Codes", href: "/discount-codes" },
+  { label: "Contact",        href: "/contact"      },
+];
+
 export default function Footer() {
   return (
     <footer style={{ borderTop: "1px solid var(--border)" }}>
@@ -67,6 +77,25 @@ export default function Footer() {
                 </Link>
               )
             )}
+          </nav>
+        </div>
+
+        {/* Middle — trust / about / methodology links */}
+        <div>
+          <p className="text-sm font-bold tracking-wide mb-4" style={{ color: "var(--text-primary)" }}>
+            Trust &amp; Transparency
+          </p>
+          <nav className="flex flex-col gap-2">
+            {TRUST_LINKS.map(({ label, href }) => (
+              <Link
+                key={label}
+                href={href}
+                className="text-sm transition-colors hover:text-brand-500"
+                style={{ color: "var(--text-muted)" }}
+              >
+                {label}
+              </Link>
+            ))}
           </nav>
         </div>
 

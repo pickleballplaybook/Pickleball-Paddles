@@ -66,6 +66,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${siteConfig.siteUrl}/discount-codes`, lastModified: now, changeFrequency: "weekly", priority: 0.85 },
     { url: `${siteConfig.siteUrl}/newsletter`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
     { url: `${siteConfig.siteUrl}/brands`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
+    // Trust / E-E-A-T pages — referenced from JSON-LD author and editorial
+    // schemas, so they need to be crawlable for Google to associate authorship
+    // and methodology with every review on the site.
+    { url: `${siteConfig.siteUrl}/about`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${siteConfig.siteUrl}/how-we-test`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
   ];
 
   // All paddle pages
