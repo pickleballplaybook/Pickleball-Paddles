@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
     // POSTs the email to the Substack publication's free-subscribe API.
     // If this ever breaks (Substack changes the endpoint), the client falls
     // back to opening the Substack subscribe URL in a new tab.
-    const SUBSTACK_API = "https://pickleballplaybook.substack.com/api/v1/free";
+    const SUBSTACK_API = "https://pickleballplaybookreviews.substack.com/api/v1/free";
     let provider = "substack";
     let subscribed = false;
     try {
@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
       // subscribe page with the email prefilled (one-click finish).
       return NextResponse.json({
         success: false,
-        fallbackUrl: `https://pickleballplaybook.substack.com/subscribe?email=${encodeURIComponent(trimmed)}&utm_source=playbookpaddles`,
+        fallbackUrl: `https://pickleballplaybookreviews.substack.com/subscribe?email=${encodeURIComponent(trimmed)}&utm_source=playbookpaddles`,
         error: "Direct subscribe failed — please confirm on the next page.",
       }, { status: 502 });
     }

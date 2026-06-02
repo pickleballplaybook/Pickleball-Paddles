@@ -67,7 +67,7 @@ export const siteConfig = {
 
   // ── Newsletter / Substack ────────────────────────────────────────────────────
   // Primary newsletter destination. Used by the popup and SubstackCard.
-  substackUrl: "https://pickleballplaybook.substack.com/",
+  substackUrl: "https://pickleballplaybookreviews.substack.com/",
 
   // ── Newsletter popup ─────────────────────────────────────────────────────────
   newsletterPopup: {

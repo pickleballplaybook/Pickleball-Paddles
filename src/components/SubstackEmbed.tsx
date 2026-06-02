@@ -18,7 +18,7 @@ interface Props {
   className?: string;
 }
 
-const DEFAULT_SRC = "https://pickleballplaybook.substack.com/embed";
+const DEFAULT_SRC = "https://pickleballplaybookreviews.substack.com/embed";
 
 export default function SubstackEmbed({
   src = DEFAULT_SRC,
