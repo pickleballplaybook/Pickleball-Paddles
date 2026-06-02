@@ -157,30 +157,38 @@ const PICKS: Pick[] = [
 ];
 
 // ── FAQ ────────────────────────────────────────────────────────────────────────
+// Each answer is structured for Google's featured snippet eligibility:
+// direct answer in sentence 1, reason in sentence 2, optional cross-link in
+// sentence 3. Target length 40–80 words per answer. Yes/no questions lead
+// with the word; "best" questions lead with the pick.
 const FAQ = [
   {
     q: "What is the best pickleball paddle for beginners?",
-    a: "For beginners, look for a paddle with a forgiving sweet spot and solid build quality. Our top beginner pick is the Selkirk Boomstik — the high TW of 6.84 forgives off-center hits, the SW of 120.09 generates natural power without over-swinging, and Selkirk's build quality ensures it lasts. The Nox JC6 and Flik F3 Triple Core are also excellent starter paddles.",
+    a: "The best pickleball paddle for beginners is the Chorus Coda Harmony Grit Widebody — it pairs an elite twist weight of 7.41 (extreme forgiveness on mishits) with an easy-to-swing 111.8 swing weight. Widebody shape is the right choice for any beginner because it has the largest sweet spot in pickleball. See the full beginner picks list for 4 more widebody options across every price point.",
   },
   {
-    q: "Should I get a 13mm or 16mm paddle?",
-    a: "16mm paddles are softer and more forgiving, with better control and touch — great for kitchen play and resets. 13mm paddles have a livelier feel with more power and pop off drives. Most players should start with 16mm. Once you have consistent mechanics, a 13mm is worth exploring for added pop.",
+    q: "Should I get a 13mm or 16mm pickleball paddle?",
+    a: "Pick 16mm for control, touch, and forgiveness; pick 13mm for maximum pop and a livelier feel. 16mm is the default thickness in pickleball for most players because it has longer dwell time and is more forgiving on off-center hits. 13mm is a specialist choice for advanced power players who reliably hit center. Beginners should always start at 16mm.",
   },
   {
-    q: "What's the difference between a power and control paddle?",
-    a: "Power paddles have higher swing weights and an aggressive surface texture, generating more pace and spin on drives. Control paddles are softer with more dwell time — easier to reset, dink, and place the ball precisely. All-court paddles sit in the middle and work well for most recreational and intermediate players.",
+    q: "What's the difference between a power and control pickleball paddle?",
+    a: "Power paddles have higher swing weights (115+) and stiffer faces — they generate more pace on drives but feel jumpy at the kitchen. Control paddles have softer cores (usually 16mm) and longer dwell time — they're plusher on dinks and resets but generate less easy power. All-court paddles sit in the middle and work for most recreational players.",
   },
   {
     q: "How much should I spend on a pickleball paddle?",
-    a: "Good paddles start around $100 and top out near $300. The sweet spot for performance-to-dollar ratio is $130–$200. That said, our best value pick — the Enhance Turbo MPP — comes in under $100 after discount with a SW of 116.06 that competes with paddles at twice the price. Don't overspend until you know what specs you prefer.",
+    a: "Spend $100–$200 for the best performance-per-dollar in pickleball. Below $100 the build quality drops fast. The $100–$200 tier covers real foam cores, legitimate spec tuning, and competitive paddles that can carry you to 4.0+ play. Above $200 you're paying for marginal spec optimization most players can't take advantage of yet.",
   },
   {
-    q: "What is swing weight and why does it matter?",
-    a: "Swing weight measures how heavy a paddle feels when you swing it — not just its static weight. A higher swing weight generates more power but is slower to move. A lower swing weight is easier to control and maneuver at the kitchen. We measure every paddle with standardized lab equipment before writing a single word of review.",
+    q: "What is swing weight in a pickleball paddle?",
+    a: "Swing weight measures how heavy a paddle feels in motion — the rotational moment around the hand, not just the static weight on a scale. Higher swing weight (115+) generates more power on full swings but is slower to react. Lower swing weight (105–110) is easier to maneuver at the kitchen. Every paddle on this site is measured on calibrated lab equipment before review.",
   },
   {
-    q: "Are these reviews sponsored?",
-    a: "No. Every paddle in our database was purchased or obtained independently. No brand pays to be featured or ranked higher. Austin tests each paddle on a real court, measures the specs himself, and writes honest assessments — including what a paddle doesn't do well.",
+    q: "What is twist weight in a pickleball paddle?",
+    a: "Twist weight measures how much a paddle resists twisting on off-center hits — the spec that determines how forgiving a paddle is on mishits. Higher TW (6.5+) keeps mishits on target; lower TW (under 6.0) punishes off-center contact. Most buyers don't even know this spec exists, but it's the single most important number for everyday players. We measure every paddle on lab equipment.",
+  },
+  {
+    q: "Are these pickleball paddle reviews sponsored?",
+    a: "No — brands do not pay for reviews, star ratings, or placement on Pickleball Playbook. Negative reviews get published the same way positive ones do. We use affiliate links and discount codes to fund the site, but the discount partnership has zero influence on which paddles get reviewed or how they're rated. Full editorial standards on the About page.",
   },
 ];
 

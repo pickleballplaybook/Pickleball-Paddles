@@ -445,7 +445,7 @@ app.post('/api/clips/:jobId/:filename/edit', async (req, res) => {
   const tmpOut = path.join(clipDir, `__edit_${Date.now()}_${filename}`);
   const cmd =
     `ffmpeg ${ssArg} -i "${origPath}" ${tArg} ${vfArg} ` +
-    `-c:v libx264 -preset fast -crf 23 -c:a aac -b:a 128k "${tmpOut}" -y`;
+    `-c:v libx264 -preset medium -crf 19 -pix_fmt yuv420p -c:a aac -b:a 192k "${tmpOut}" -y`;
   try {
     await execAsync(cmd, { maxBuffer: 1024 * 1024 * 200 });
   } catch (err) {
@@ -647,10 +647,12 @@ Respond ONLY with valid JSON — no preamble, no markdown fences. Format:
   // cover and heavily blurred (radius 60, 3 passes = noticeably soft, no
   // sharp edges leaking through).
   void width; void height;
+  // flags=lanczos on every scale = sharper rescaling than ffmpeg's default
+  // (bilinear). Noticeable on 720p sources that have to upscale to 1080.
   const reelFilter =
     `[0:v]split=2[bg][fg];` +
-    `[bg]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=60:3[bg];` +
-    `[fg]crop=ih:ih,scale=1080:1080[fg];` +
+    `[bg]scale=1080:1920:force_original_aspect_ratio=increase:flags=lanczos,crop=1080:1920,boxblur=60:3[bg];` +
+    `[fg]crop=ih:ih,scale=1080:1080:flags=lanczos[fg];` +
     `[bg][fg]overlay=(W-w)/2:(H-h)/2,setsar=1`;
 
   const clipOutputDir = path.join(OUTPUT_DIR, jobId);
@@ -670,10 +672,13 @@ Respond ONLY with valid JSON — no preamble, no markdown fences. Format:
       progress: 65 + Math.round((i / clipMoments.length) * 30)
     });
 
+    // -preset medium + crf 19 is a much higher-quality target than the old
+    // fast/23 (visually near-lossless H264). Encode is ~2-3x slower but
+    // these are short clips so it's still seconds, not minutes.
     await execAsync(
       `ffmpeg -ss ${clip.start} -i "${videoPath}" -t ${duration} ` +
-      `-filter_complex "${reelFilter}" -c:v libx264 -preset fast -crf 23 ` +
-      `-c:a aac -b:a 128k "${outPath}" -y`,
+      `-filter_complex "${reelFilter}" -c:v libx264 -preset medium -crf 19 ` +
+      `-pix_fmt yuv420p -c:a aac -b:a 192k "${outPath}" -y`,
       { maxBuffer: 1024 * 1024 * 200 }
     );
 

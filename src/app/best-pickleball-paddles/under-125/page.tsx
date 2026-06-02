@@ -69,30 +69,32 @@ const PICKS: Pick[] = [
 ];
 
 // ── FAQ ────────────────────────────────────────────────────────────────────────
+// Snippet-optimized: direct answer in sentence 1, reason in sentence 2,
+// optional alternative in sentence 3. Target 40–80 words per answer.
 const FAQ = [
   {
     q: "What is the best pickleball paddle under $125?",
-    a: "Our top pick is the Enhance Turbo MPP (about $99.99 with code PLAYBOOK) — floating foam core, SW 116.06 in the elongated, and tour-level specs for under $100. For all-court versatility, the Beyond Measure Ronin is the spec leader at this price. For control players the Friday Aura is the budget touch king, and for pure power the Luzz Cannon delivers the highest swing weight in the bracket.",
+    a: "The best pickleball paddle under $125 is the Enhance Turbo MPP — about $99.99 with code PLAYBOOK, with a floating foam core, SW 116.06 in the elongated shape, and tour-level specs for under $100. For all-court versatility the Beyond Measure Ronin leads the spec sheet at this price; for control the Friday Aura is the budget touch king; for pure power the Luzz Cannon delivers the highest swing weight in the bracket.",
   },
   {
     q: "Are cheap pickleball paddles any good?",
-    a: "Yes — the gap between budget and premium paddles has narrowed dramatically. Brands like Ronbus, Enhance, Beyond Measure, and Friday now sell thermoformed and foam-core paddles with swing weights and twist weights that rival $200+ models. With code PLAYBOOK, several of our picks land under $100.",
+    a: "Yes — the gap between budget and premium pickleball paddles has narrowed dramatically since 2024. Brands like Ronbus, Enhance, Beyond Measure, and Friday now sell thermoformed and foam-core paddles with swing weights and twist weights that rival $200+ models. With code PLAYBOOK, several picks on this page land under $100 with no meaningful compromise.",
   },
   {
     q: "Can you get a good pickleball paddle under $100?",
-    a: "Absolutely. The Ronbus Quanta and Enhance Turbo MPP both drop to $99.99 with code PLAYBOOK, and the Luzz Cannon is around $93 — all with competition-level specs and full thermoformed or foam-core builds.",
+    a: "Yes — the Ronbus Quanta and Enhance Turbo MPP both drop to $99.99 with code PLAYBOOK, and the Luzz Cannon is around $93. All three are full thermoformed or foam-core builds with competition-level specs. Build quality starts dropping rapidly below $80, so $90–$100 is the realistic floor for a serious paddle.",
   },
   {
     q: "What should I look for in a budget pickleball paddle?",
-    a: "Three specs matter most: swing weight (higher = more power, lower = more maneuverable), twist weight (higher = a more stable, forgiving sweet spot), and core thickness (16mm leans control, 14mm leans pop). After that, pick a shape — elongated for reach and power, hybrid for an all-around feel, widebody for the biggest sweet spot.",
+    a: "Look for three specs first: swing weight (110–118 is the easy-to-handle sweet spot), twist weight (6.0+ for forgiveness on mishits), and core thickness (16mm for control, 14mm for pop). Then pick a shape — widebody for the biggest sweet spot, elongated for reach and power, hybrid for the middle ground.",
   },
   {
     q: "How much should you spend on a pickleball paddle?",
-    a: "The $100–$150 range is the sweet spot for performance-per-dollar. Most recreational and intermediate players will never out-grow a well-specced ~$120 paddle. Spend more only once you know exactly which specs you prefer — and even then, several paddles on this page hold up against $250 flagships.",
+    a: "Spend $100–$150 for the best performance-per-dollar in pickleball. Most recreational and intermediate players will never out-grow a well-specced ~$120 paddle. Spend more only once you know which specs you prefer — and several paddles on this page hold up against $250 flagships in measured testing.",
   },
   {
-    q: "Do the listed prices include a discount?",
-    a: "The lower (green) price is what you pay after applying code PLAYBOOK at checkout on each brand's site; the crossed-out price is the retail price. Every paddle on this page is unsponsored — no brand pays to be ranked higher.",
+    q: "Do the listed prices include the PLAYBOOK discount?",
+    a: "Yes. The lower (green) price is what you pay after applying code PLAYBOOK at checkout on the brand's official site. The crossed-out price is retail. Every paddle on this page is unsponsored — no brand pays to be featured or ranked higher on Pickleball Playbook.",
   },
 ];
 

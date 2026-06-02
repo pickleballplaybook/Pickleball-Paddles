@@ -64,30 +64,32 @@ const PICKS: Pick[] = [
 ];
 
 // ── FAQ ────────────────────────────────────────────────────────────────────────
+// Snippet-optimized: direct answer in sentence 1, reason in sentence 2,
+// optional alternative in sentence 3. Target 40–80 words per answer.
 const FAQ = [
   {
     q: "What is the best pickleball paddle under $200?",
-    a: "Our top pick is the Gruvn LAZR-16HD Full Foam (about $152 with code PLAYBOOK) — the best all-court feel and sweet spot at the price. For shape options go with the Honolulu Crystal Blue series, for raw power the Friday Aura Pro or Bread & Butter Loco, and for spin the Thrive Ignite Pro Series.",
+    a: "The best pickleball paddle under $200 is the Gruvn LAZR-16HD Full Foam — about $152 with code PLAYBOOK, with the best all-court feel and sweet spot at this price. For shape variety the Honolulu Crystal Blue series leads, for raw power the Friday Aura Pro or Bread & Butter Loco are the top picks, and for spin the Thrive Ignite Pro Series stands out.",
   },
   {
     q: "Is a $200 pickleball paddle worth it?",
-    a: "The $150–$200 range is where you get full thermoformed and foam-core builds, premium carbon faces, and pro-level specs. For most players it's the ceiling of meaningful returns — paddles above $200 rarely outperform the best in this bracket, they just cost more.",
+    a: "Yes — the $150–$200 range is where you get full thermoformed and foam-core builds, premium carbon faces, and pro-level specs. For most players it's the ceiling of meaningful returns. Paddles above $200 rarely outperform the best in this bracket in measured testing — they just cost more.",
   },
   {
     q: "What's the difference between a $125 paddle and a $200 paddle?",
-    a: "Mostly materials and face durability. $200 paddles tend to use higher-grade carbon faces, foam-injected edges, and surfaces that hold their spin texture longer. If you want to spend less, our best pickleball paddles under $125 page covers the strongest budget options.",
+    a: "Mostly materials and face durability. $200 paddles tend to use higher-grade carbon faces, foam-injected edges, and surfaces that hold their spin texture longer. If you want to spend less, the best pickleball paddles under $125 page covers the strongest budget options with most of the same core construction.",
   },
   {
-    q: "Are these paddles good for intermediate and advanced players?",
+    q: "Are pickleball paddles under $200 good for intermediate and advanced players?",
     a: "Yes — every paddle on this page has competition-level specs, and several are used by 4.5–5.5+ players. Swing weight, twist weight, and face texture in this price range are right in line with what you'll find on the pro tour.",
   },
   {
     q: "How much should you spend on a pickleball paddle?",
-    a: "The $130–$200 range is the sweet spot for performance-per-dollar. Most recreational and intermediate players will never out-grow a well-specced paddle in this bracket. Spend more only once you know exactly which specs you prefer.",
+    a: "Spend $130–$200 for the best performance-per-dollar in pickleball. Most recreational and intermediate players will never out-grow a well-specced paddle in this bracket. Spend more only once you know exactly which specs you prefer — the marginal gains above $200 are small for most players.",
   },
   {
-    q: "Do the listed prices include a discount?",
-    a: "The lower (green) price is what you pay after applying code PLAYBOOK at checkout on each brand's site; the crossed-out price is retail. Every paddle on this page is unsponsored — no brand pays to be ranked higher.",
+    q: "Do the listed prices include the PLAYBOOK discount?",
+    a: "Yes. The lower (green) price is what you pay after applying code PLAYBOOK at checkout on the brand's official site. The crossed-out price is retail. Every paddle on this page is unsponsored — no brand pays to be featured or ranked higher on Pickleball Playbook.",
   },
 ];
 
