@@ -435,12 +435,38 @@ export default async function PaddleDetailPage({ params }: Props) {
     ],
   };
 
+  // ── VideoObject schema ───────────────────────────────────────────────────
+  // Emitted only when this paddle has a real YouTube review video. VideoObject
+  // schema makes Google eligible to show a video thumbnail in the SERP for
+  // this page — high-impact for click-through rate.
+  const videoSchema = videoId
+    ? {
+        "@context": "https://schema.org",
+        "@type": "VideoObject",
+        name: `${paddle.brand} ${paddle.name} Pickleball Paddle Review`,
+        description: `On-court review of the ${paddle.brand} ${paddle.name} — ${paddle.shape} shape, ${paddle.thickness} core${paddle.swingWeight ? `, swing weight ${paddle.swingWeight}` : ""}. Tested by Austin Hardy at Pickleball Playbook.`,
+        thumbnailUrl: [`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`],
+        uploadDate: paddle.addedAt,
+        contentUrl: `https://www.youtube.com/watch?v=${videoId}`,
+        embedUrl: `https://www.youtube.com/embed/${videoId}`,
+        publisher: {
+          "@type": "Organization",
+          "@id": `${siteConfig.siteUrl}#organization`,
+          name: "Pickleball Playbook",
+          logo: { "@type": "ImageObject", url: `${siteConfig.siteUrl}/images/Logo.svg` },
+        },
+      }
+    : null;
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      {videoSchema && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(videoSchema) }} />
+      )}
 
       <div className="min-h-screen pt-[156px] pb-16" style={{ background: "var(--flip-bg)" }}>
 

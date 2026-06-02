@@ -210,12 +210,63 @@ const faqSchema = {
   })),
 };
 
+// ── HowTo schema: "How to choose the right pickleball paddle" ────────────
+// Google sometimes surfaces HowTo schemas as step-by-step SERP boxes — high
+// real-estate placement for any "how to choose..." query. Each step is
+// snippet-eligible independently.
+const howToChooseSchema = {
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  name: "How to choose the right pickleball paddle",
+  description:
+    "A five-step decision framework for choosing a pickleball paddle that fits your game — shape, weight, twist weight, core thickness, and price.",
+  totalTime: "PT15M",
+  step: [
+    {
+      "@type": "HowToStep",
+      position: 1,
+      name: "Pick the right shape for your skill level",
+      text:
+        "Widebody paddles have the biggest sweet spot and are the most forgiving — the right answer for beginners. Hybrid paddles balance reach and forgiveness for intermediates. Elongated paddles add reach and leverage for advanced players who reliably hit center.",
+    },
+    {
+      "@type": "HowToStep",
+      position: 2,
+      name: "Match the swing weight to your style",
+      text:
+        "Swing weight 105–115 is easy to swing and quick at the kitchen — best for control players and beginners. 115–120 generates natural power on full swings — best for baseline-heavy players. 120+ is for power players who can handle a heavier moment of inertia.",
+    },
+    {
+      "@type": "HowToStep",
+      position: 3,
+      name: "Prioritize twist weight for forgiveness",
+      text:
+        "Twist weight measures how forgiving the paddle is on off-center hits. TW 6.0+ is good, 6.5+ is great, 7.0+ is elite. Most beginner buyers don't even know this spec exists — make it your top priority.",
+    },
+    {
+      "@type": "HowToStep",
+      position: 4,
+      name: "Choose the core thickness for your touch needs",
+      text:
+        "16mm cores are softer, plusher, and more forgiving on mishits — best for control and touch players. 13–14mm cores are stiffer and livelier — more pop, less dwell time, less forgiving. Beginners should always start at 16mm.",
+    },
+    {
+      "@type": "HowToStep",
+      position: 5,
+      name: "Set a realistic budget",
+      text:
+        "Under $100: real foam-core paddles exist but build quality drops. $100–$200: the sweet spot for serious play — every paddle in this range can be a forever paddle. $200–$300: premium builds with measurable spec tuning. Above $300: diminishing returns for most players.",
+    },
+  ],
+};
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function BestPaddlesPage() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(listSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(howToChooseSchema) }} />
 
       <div className="min-h-screen pt-[156px]" style={{ background: "var(--bg-page)" }}>
         <div className="container-xl py-16">
