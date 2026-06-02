@@ -24,6 +24,7 @@ import ViewCounter from "@/components/ViewCounter";
 import { getBlogPostForPaddle, BlogSection } from "@/data/blogPosts";
 import { canonicalMatchup } from "@/app/compare/[matchup]/helpers";
 import { getBrandByName } from "@/data/brands";
+import TestingMethodologyBlock from "@/components/TestingMethodologyBlock";
 
 interface Props {
   params: { slug: string };
@@ -294,8 +295,21 @@ export default async function PaddleDetailPage({ params }: Props) {
     "review": {
       "@type": "Review",
       "reviewRating": { "@type": "Rating", "ratingValue": starRating, "bestRating": "5", "worstRating": "1" },
-      "author": { "@type": "Person", "name": "Austin Hardy", "url": siteConfig.siteUrl },
-      "publisher": { "@type": "Organization", "name": "Pickleball Playbook", "url": siteConfig.siteUrl },
+      // Reference the @id'd Person entity defined on /about — this resolves
+      // every per-paddle review's author back to the same Person, which is
+      // the E-E-A-T signal Google uses to consolidate authorship.
+      "author": {
+        "@type": "Person",
+        "@id": `${siteConfig.siteUrl}/about#austin-hardy`,
+        "name": "Austin Hardy",
+        "url": `${siteConfig.siteUrl}/about`,
+      },
+      "publisher": {
+        "@type": "Organization",
+        "@id": `${siteConfig.siteUrl}#organization`,
+        "name": "Pickleball Playbook",
+        "url": siteConfig.siteUrl,
+      },
       "datePublished": paddle.addedAt,
       "reviewBody": reviewSummary,
     },
@@ -316,9 +330,15 @@ export default async function PaddleDetailPage({ params }: Props) {
     "image": paddle.image ? `${siteConfig.siteUrl}${paddle.image}` : undefined,
     "datePublished": paddle.addedAt,
     "dateModified": new Date().toISOString().split("T")[0],
-    "author": { "@type": "Person", "name": "Austin Hardy", "url": siteConfig.siteUrl },
+    "author": {
+      "@type": "Person",
+      "@id": `${siteConfig.siteUrl}/about#austin-hardy`,
+      "name": "Austin Hardy",
+      "url": `${siteConfig.siteUrl}/about`,
+    },
     "publisher": {
       "@type": "Organization",
+      "@id": `${siteConfig.siteUrl}#organization`,
       "name": "Pickleball Playbook",
       "url": siteConfig.siteUrl,
       "logo": { "@type": "ImageObject", "url": `${siteConfig.siteUrl}/images/Logo.svg` },
@@ -537,19 +557,27 @@ export default async function PaddleDetailPage({ params }: Props) {
           <div className="lg:pt-2">
 
             {/* Reviewer line */}
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-9 h-9 rounded-full flex items-center justify-center" style={{ background: "rgba(20,184,166,0.15)" }}>
-                <User className="w-4 h-4" style={{ color: "#14b8a6" }} />
-              </div>
+            <Link
+              href="/about"
+              className="flex items-center gap-3 mb-4 group"
+              aria-label="About Austin Hardy"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/images/Austin-head-shot.png"
+                alt="Austin Hardy"
+                className="w-9 h-9 rounded-full object-cover flex-shrink-0"
+                style={{ border: "2px solid rgba(20,184,166,0.4)" }}
+              />
               <div>
-                <p className="text-sm font-semibold" style={{ color: "var(--flip-text-head)" }}>
+                <p className="text-sm font-semibold group-hover:text-teal-400 transition-colors" style={{ color: "var(--flip-text-head)" }}>
                   Tested by <span style={{ color: "#2dd4bf" }}>Austin Hardy</span>
                 </p>
                 <p className="text-xs" style={{ color: "var(--flip-text-muted)" }}>
-                  5.5+ player &middot; Independent reviewer
+                  PPR Certified Coach &middot; Pro Player &middot; 12+ years coaching
                 </p>
               </div>
-            </div>
+            </Link>
 
             <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#14b8a6" }}>
               {paddle.brand}
@@ -1071,6 +1099,11 @@ export default async function PaddleDetailPage({ params }: Props) {
           </div>
         </div>
       </section>
+
+      {/* ── HOW WE TESTED THIS PADDLE ─────────────────────────────────────── */}
+      {/* E-E-A-T signal block. Tells reader + Google exactly how this paddle */}
+      {/* was reviewed, and routes link weight to the /how-we-test methodology. */}
+      <TestingMethodologyBlock brand={paddle.brand} name={paddle.name} />
 
       {/* ── HOW IT COMPARES ───────────────────────────────────────────────── */}
       <section className="py-16">
