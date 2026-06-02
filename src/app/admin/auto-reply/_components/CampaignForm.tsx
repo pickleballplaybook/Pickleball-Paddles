@@ -127,7 +127,7 @@ export function CampaignForm({
             <button
               onClick={handleSubmit}
               disabled={submitting}
-              className="rounded-xl bg-green-500 hover:bg-green-400 disabled:bg-gray-700 disabled:text-gray-500 px-4 py-2 text-sm font-bold text-black"
+              className="rounded-xl bg-accent-500 hover:bg-accent-400 disabled:bg-gray-700 disabled:text-gray-500 px-4 py-2 text-sm font-bold text-black"
             >
               {submitting
                 ? "Saving..."
@@ -208,7 +208,7 @@ export function CampaignForm({
                     onClick={() => togglePlatform(p)}
                     className={`flex items-center gap-3 rounded-xl border p-4 text-left transition ${
                       on
-                        ? "border-green-500 bg-green-500/10 text-white"
+                        ? "border-accent-500 bg-accent-500/10 text-white"
                         : "border-gray-800 bg-gray-950 text-gray-400 hover:border-gray-700 hover:text-gray-200"
                     }`}
                   >
@@ -236,7 +236,7 @@ export function CampaignForm({
                     onClick={() => update("target_mode", m)}
                     className={`rounded-xl border p-3 text-left text-sm transition ${
                       form.target_mode === m
-                        ? "border-green-500 bg-green-500/10"
+                        ? "border-accent-500 bg-accent-500/10"
                         : "border-gray-800 bg-gray-950 hover:border-gray-700"
                     }`}
                   >
@@ -372,7 +372,7 @@ export function CampaignForm({
                 type="checkbox"
                 checked={form.match_once_per_user}
                 onChange={(e) => update("match_once_per_user", e.target.checked)}
-                className="mt-0.5 accent-green-500"
+                className="mt-0.5 accent-accent-500"
               />
               <div>
                 <div className="text-sm font-medium">Only fire once per user</div>
@@ -387,7 +387,7 @@ export function CampaignForm({
                 type="checkbox"
                 checked={form.is_active}
                 onChange={(e) => update("is_active", e.target.checked)}
-                className="mt-0.5 accent-green-500"
+                className="mt-0.5 accent-accent-500"
               />
               <div>
                 <div className="text-sm font-medium">Active</div>
@@ -414,7 +414,7 @@ export function CampaignForm({
             </div>
 
             <div className="text-xs text-gray-500 pt-2">Your auto-reply</div>
-            <div className="rounded bg-green-500/20 border border-green-500/40 text-green-100 px-3 py-2 text-sm">
+            <div className="rounded bg-accent-500/20 border border-accent-500/40 text-accent-100 px-3 py-2 text-sm">
               {form.reply_text || (
                 <span className="text-gray-500">Your reply text...</span>
               )}
@@ -471,8 +471,8 @@ export function CampaignForm({
           transition: border-color 0.15s, box-shadow 0.15s;
         }
         .input:focus {
-          border-color: rgb(34 197 94);
-          box-shadow: 0 0 0 3px rgb(34 197 94 / 0.15);
+          border-color: rgb(60 172 174);
+          box-shadow: 0 0 0 3px rgb(60 172 174 / 0.18);
         }
         .input::placeholder {
           color: rgb(75 85 99);

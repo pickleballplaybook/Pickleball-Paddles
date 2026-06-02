@@ -60,7 +60,7 @@ export default function WeeklyThumbnail({ paddles }: Props) {
         <button
           onClick={download}
           disabled={busy}
-          className="inline-flex items-center gap-2 font-bold text-sm px-5 py-2.5 rounded-xl bg-green-500 text-black hover:bg-green-400 disabled:opacity-60 transition"
+          className="inline-flex items-center gap-2 font-bold text-sm px-5 py-2.5 rounded-xl bg-accent-500 text-black hover:bg-accent-400 disabled:opacity-60 transition"
         >
           {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
           {busy ? "Building…" : `Download PNG (${SIZE}×${SIZE} @ 2×)`}

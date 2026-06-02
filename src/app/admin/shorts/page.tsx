@@ -148,7 +148,7 @@ function formatDate(iso: string) {
 }
 
 function statusBadgeClass(status: string) {
-  if (status === "done") return "bg-green-500/10 text-green-400 border-green-500/30";
+  if (status === "done") return "bg-accent-500/10 text-accent-400 border-accent-500/30";
   if (status === "error") return "bg-red-500/10 text-red-400 border-red-500/30";
   return "bg-yellow-500/10 text-yellow-400 border-yellow-500/30";
 }
@@ -405,7 +405,7 @@ function ClipEditor({
                 <h3 className="font-semibold">Text overlays</h3>
                 <button
                   onClick={addText}
-                  className="text-sm bg-green-500 hover:bg-green-400 text-black font-semibold px-3 py-1.5 rounded-lg"
+                  className="text-sm bg-accent-500 hover:bg-accent-400 text-black font-semibold px-3 py-1.5 rounded-lg"
                 >
                   + Add text
                 </button>
@@ -484,7 +484,7 @@ function ClipEditor({
               <button
                 onClick={save}
                 disabled={saving || resetting}
-                className="flex-1 bg-green-500 hover:bg-green-400 disabled:bg-gray-700 text-black font-bold py-2.5 rounded-xl"
+                className="flex-1 bg-accent-500 hover:bg-accent-400 disabled:bg-gray-700 text-black font-bold py-2.5 rounded-xl"
               >
                 {saving ? "Saving…" : "Save edit"}
               </button>
@@ -698,7 +698,7 @@ export default function ShortsPage() {
                 key={t}
                 onClick={() => setTab(t)}
                 className={`px-5 py-2 rounded-lg text-sm font-medium capitalize transition ${
-                  tab === t ? "bg-green-500 text-black" : "text-gray-400 hover:text-white"
+                  tab === t ? "bg-accent-500 text-black" : "text-gray-400 hover:text-white"
                 }`}
               >
                 {t === "new" ? "New" : "History"}
@@ -727,7 +727,7 @@ export default function ShortsPage() {
                 <button
                   onClick={handleSubmit}
                   disabled={loading || !url.trim()}
-                  className="bg-green-500 hover:bg-green-400 disabled:bg-gray-700 text-black font-bold px-6 rounded-xl"
+                  className="bg-accent-500 hover:bg-accent-400 disabled:bg-gray-700 text-black font-bold px-6 rounded-xl"
                 >
                   Cut It
                 </button>
@@ -743,12 +743,12 @@ export default function ShortsPage() {
             {inProgress && (
               <div className="bg-gray-900 rounded-2xl p-6 mb-8">
                 <div className="flex justify-between mb-2">
-                  <span className="text-green-400">{job?.message || "Working..."}</span>
-                  <span className="text-green-400 font-bold">{job?.progress || 0}%</span>
+                  <span className="text-accent-400">{job?.message || "Working..."}</span>
+                  <span className="text-accent-400 font-bold">{job?.progress || 0}%</span>
                 </div>
                 <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-green-500 rounded-full transition-all"
+                    className="h-full bg-accent-500 rounded-full transition-all"
                     style={{ width: `${job?.progress || 0}%` }}
                   />
                 </div>
@@ -762,7 +762,7 @@ export default function ShortsPage() {
                   {jobId && (
                     <a
                       href={`/api/admin/shorts/jobs/${jobId}/zip`}
-                      className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-400 text-black font-bold px-5 py-2.5 rounded-xl text-sm"
+                      className="inline-flex items-center gap-2 bg-accent-500 hover:bg-accent-400 text-black font-bold px-5 py-2.5 rounded-xl text-sm"
                     >
                       Download all (.zip)
                     </a>
@@ -799,7 +799,7 @@ export default function ShortsPage() {
                           <a
                             href={clipSrc(jobId, clip)}
                             download
-                            className="block text-center border border-green-500 text-green-500 hover:bg-green-500 hover:text-black rounded-lg py-2 text-sm font-medium"
+                            className="block text-center border border-accent-500 text-accent-500 hover:bg-accent-500 hover:text-black rounded-lg py-2 text-sm font-medium"
                           >
                             Download
                           </a>
@@ -817,7 +817,7 @@ export default function ShortsPage() {
                                   onClick={() => toggleClipTag(i, t.handle)}
                                   className={`text-[11px] px-2 py-0.5 rounded-full border transition ${
                                     on
-                                      ? "bg-green-500/15 border-green-500/50 text-green-300"
+                                      ? "bg-accent-500/15 border-accent-500/50 text-accent-300"
                                       : "bg-gray-800 border-gray-700 text-gray-500 line-through"
                                   }`}
                                   title={on ? "Click to remove" : "Click to include"}
@@ -854,7 +854,7 @@ export default function ShortsPage() {
                             }
                             className={`w-full mt-2 py-1.5 rounded-lg text-xs font-medium transition ${
                               copiedIdx === i
-                                ? "bg-green-500 text-black"
+                                ? "bg-accent-500 text-black"
                                 : "border border-gray-700 text-gray-300 hover:bg-gray-800"
                             }`}
                           >
@@ -966,13 +966,13 @@ export default function ShortsPage() {
                         <>
                           <button
                             onClick={() => viewPastJob(h.jobId)}
-                            className="bg-green-500 hover:bg-green-400 text-black text-sm font-semibold px-4 py-2 rounded-lg"
+                            className="bg-accent-500 hover:bg-accent-400 text-black text-sm font-semibold px-4 py-2 rounded-lg"
                           >
                             View
                           </button>
                           <a
                             href={`/api/admin/shorts/jobs/${h.jobId}/zip`}
-                            className="border border-green-500 text-green-500 hover:bg-green-500 hover:text-black text-sm font-semibold px-4 py-2 rounded-lg"
+                            className="border border-accent-500 text-accent-500 hover:bg-accent-500 hover:text-black text-sm font-semibold px-4 py-2 rounded-lg"
                           >
                             .zip
                           </a>

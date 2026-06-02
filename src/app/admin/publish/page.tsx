@@ -764,7 +764,7 @@ export default function PublishPage() {
                 onClick={() => setSourceMode(m)}
                 className={`px-4 py-1.5 rounded text-sm font-medium transition ${
                   sourceMode === m
-                    ? "bg-green-500 text-black"
+                    ? "bg-accent-500 text-black"
                     : "text-gray-400 hover:text-white"
                 }`}
               >
@@ -836,7 +836,7 @@ export default function PublishPage() {
                   key={p.label}
                   type="button"
                   onClick={() => setDescription(p.text)}
-                  className="text-xs px-2.5 py-1 rounded border border-gray-700 text-gray-300 hover:border-green-500 hover:text-white"
+                  className="text-xs px-2.5 py-1 rounded border border-gray-700 text-gray-300 hover:border-accent-500 hover:text-white"
                 >
                   {p.label}
                 </button>
@@ -972,7 +972,7 @@ export default function PublishPage() {
           <button
             onClick={handlePublish}
             disabled={publishing}
-            className="bg-green-500 hover:bg-green-400 disabled:bg-gray-700 disabled:text-gray-400 text-black font-bold px-6 py-3 rounded-xl"
+            className="bg-accent-500 hover:bg-accent-400 disabled:bg-gray-700 disabled:text-gray-400 text-black font-bold px-6 py-3 rounded-xl"
           >
             {publishing
               ? "Publishing..."
@@ -997,7 +997,7 @@ export default function PublishPage() {
                     key={`${r.platform}-${r.id}`}
                     className={`flex items-center justify-between rounded-lg border px-4 py-3 text-sm ${
                       ok
-                        ? "border-green-500/30 bg-green-500/5 text-green-300"
+                        ? "border-accent-500/30 bg-accent-500/5 text-accent-300"
                         : "border-red-500/30 bg-red-500/5 text-red-300"
                     }`}
                   >
@@ -1051,7 +1051,7 @@ function ConnectionGroup({
         {hasAny ? children : <p className="px-4 py-3 text-sm text-gray-500">{empty}</p>}
         <button
           onClick={onConnect}
-          className="block w-full text-left px-4 py-2.5 text-sm text-green-400 hover:bg-gray-800"
+          className="block w-full text-left px-4 py-2.5 text-sm text-accent-400 hover:bg-gray-800"
         >
           {connectLabel}
         </button>
@@ -1123,7 +1123,7 @@ function YouTubeOptionsExpander({
             type="checkbox"
             checked={!!opts.madeForKids}
             onChange={(e) => onChange({ madeForKids: e.target.checked })}
-            className="accent-green-500"
+            className="accent-accent-500"
           />
           <span>Made for kids</span>
         </label>
@@ -1158,7 +1158,7 @@ function YouTubeOptionsExpander({
                   type="checkbox"
                   checked={selectedPlaylists.includes(p.id)}
                   onChange={() => togglePlaylist(p.id)}
-                  className="accent-green-500"
+                  className="accent-accent-500"
                 />
                 <span className="truncate">{p.title}</span>
               </label>
@@ -1225,7 +1225,7 @@ function GroupsPicker({
           {open ? "Hide groups" : "+ Share to FB Groups"}
         </button>
         {selected.length > 0 && (
-          <span className="text-xs text-green-400">
+          <span className="text-xs text-accent-400">
             {selected.length}/9 selected
           </span>
         )}
@@ -1257,7 +1257,7 @@ function GroupsPicker({
                     onClick={() => toggle(g.id)}
                     className={`w-full flex items-center gap-2 text-left px-2 py-1.5 rounded border transition ${
                       on
-                        ? "border-green-500/40 bg-green-500/5"
+                        ? "border-accent-500/40 bg-accent-500/5"
                         : "border-gray-800 bg-gray-900 hover:border-gray-700"
                     }`}
                   >
@@ -1276,7 +1276,7 @@ function GroupsPicker({
                         {g.member_count ? ` · ${g.member_count.toLocaleString()} members` : ""}
                       </p>
                     </div>
-                    <span className={`text-[10px] ${on ? "text-green-400" : "text-gray-500"}`}>
+                    <span className={`text-[10px] ${on ? "text-accent-400" : "text-gray-500"}`}>
                       {on ? "✓" : "+"}
                     </span>
                   </button>
@@ -1343,7 +1343,7 @@ function ProductPicker({
           {open ? "Hide products" : "+ Add products from shop"}
         </button>
         {selected.length > 0 && (
-          <span className="text-xs text-green-400">
+          <span className="text-xs text-accent-400">
             {selected.length} product{selected.length === 1 ? "" : "s"} tagged
           </span>
         )}
@@ -1378,7 +1378,7 @@ function ProductPicker({
                     onClick={() => toggle(p.id)}
                     className={`w-full flex items-center gap-2 text-left px-2 py-1.5 rounded border transition ${
                       on
-                        ? "border-green-500/40 bg-green-500/5"
+                        ? "border-accent-500/40 bg-accent-500/5"
                         : "border-gray-800 bg-gray-900 hover:border-gray-700"
                     }`}
                   >
@@ -1400,7 +1400,7 @@ function ProductPicker({
                     </div>
                     <span
                       className={`text-[10px] ${
-                        on ? "text-green-400" : "text-gray-500"
+                        on ? "text-accent-400" : "text-gray-500"
                       }`}
                     >
                       {on ? "✓" : "+"}
@@ -1436,7 +1436,7 @@ function PresetChips({
             onClick={() => onToggle(p.value)}
             className={`text-xs px-2 py-1 rounded-full border transition ${
               on
-                ? "bg-green-500/15 border-green-500/50 text-green-200"
+                ? "bg-accent-500/15 border-accent-500/50 text-accent-200"
                 : "border-gray-700 text-gray-300 hover:border-gray-500"
             }`}
           >
@@ -1468,7 +1468,7 @@ function FacebookOptionsExpander({
           type="checkbox"
           checked={postAsReel}
           onChange={(e) => onChange({ postAsReel: e.target.checked })}
-          className="accent-green-500 mt-0.5"
+          className="accent-accent-500 mt-0.5"
         />
         <span>
           Post as Reel
@@ -1689,8 +1689,8 @@ function FilmerCreditPicker({
           onClick={() => setOpen((v) => !v)}
           className={`text-xs px-2.5 py-1 rounded border transition ${
             currentCredit
-              ? "border-green-500/40 text-green-200 bg-green-500/5"
-              : "border-gray-700 text-gray-300 hover:border-green-500 hover:text-white"
+              ? "border-accent-500/40 text-accent-200 bg-accent-500/5"
+              : "border-gray-700 text-gray-300 hover:border-accent-500 hover:text-white"
           }`}
         >
           🎥 {currentCredit ? `@${currentCredit}` : "Filmer credit"}
@@ -1726,7 +1726,7 @@ function FilmerCreditPicker({
                   type="button"
                   onClick={() => apply(h)}
                   className={`w-full text-left text-xs px-2 py-1.5 rounded hover:bg-gray-800 ${
-                    h === currentCredit ? "text-green-300" : "text-gray-300"
+                    h === currentCredit ? "text-accent-300" : "text-gray-300"
                   }`}
                 >
                   @{h}
@@ -1772,7 +1772,7 @@ function UploadQueue({
         }}
         className={`border-2 border-dashed rounded-lg p-4 mb-2 transition ${
           isDragOver
-            ? "border-green-500 bg-green-500/5"
+            ? "border-accent-500 bg-accent-500/5"
             : "border-gray-700 hover:border-gray-500"
         }`}
       >
@@ -1803,20 +1803,20 @@ function UploadQueue({
                 onClick={() => u.status === "ready" && onSelect(u.id)}
                 className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition ${
                   selected
-                    ? "border-green-500/40 bg-green-500/5"
+                    ? "border-accent-500/40 bg-accent-500/5"
                     : "border-gray-800 bg-gray-800"
                 } ${u.status === "ready" ? "cursor-pointer hover:border-gray-600" : ""}`}
               >
                 <div className="flex-1 min-w-0">
                   <p className="text-white truncate">
-                    {selected && <span className="text-green-400 mr-1">●</span>}
+                    {selected && <span className="text-accent-400 mr-1">●</span>}
                     {u.file.name}{" "}
                     <span className="text-gray-500 text-xs">· {sizeMb} MB</span>
                   </p>
                   {u.status === "uploading" && (
                     <div className="mt-1 h-1 bg-gray-700 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-green-500 transition-all"
+                        className="h-full bg-accent-500 transition-all"
                         style={{ width: `${u.progress}%` }}
                       />
                     </div>
@@ -1832,7 +1832,7 @@ function UploadQueue({
                     <span className="text-gray-400">{u.progress}%</span>
                   )}
                   {u.status === "ready" && (
-                    <span className="text-green-400">Ready</span>
+                    <span className="text-accent-400">Ready</span>
                   )}
                   {u.status === "error" && (
                     <span className="text-red-400">Error</span>
@@ -2073,7 +2073,7 @@ function ThumbnailFromVideo({
             onClick={() => setMode(m)}
             className={`px-3 py-1 rounded text-xs font-medium transition ${
               mode === m
-                ? "bg-green-500 text-black"
+                ? "bg-accent-500 text-black"
                 : "text-gray-400 hover:text-white"
             }`}
           >
@@ -2139,7 +2139,7 @@ function ThumbnailFromVideo({
                 type="checkbox"
                 checked={outline}
                 onChange={(e) => setOutline(e.target.checked)}
-                className="accent-green-500"
+                className="accent-accent-500"
               />
               <span>Outline</span>
             </label>
@@ -2159,7 +2159,7 @@ function ThumbnailFromVideo({
                 <button
                   type="button"
                   onClick={useThisFrame}
-                  className="bg-green-500 hover:bg-green-400 text-black text-xs font-semibold px-3 py-1.5 rounded"
+                  className="bg-accent-500 hover:bg-accent-400 text-black text-xs font-semibold px-3 py-1.5 rounded"
                 >
                   Use this thumbnail
                 </button>
@@ -2176,7 +2176,7 @@ function ThumbnailFromVideo({
             </div>
           )}
           {currentPreview && (
-            <div className="text-xs text-green-400">
+            <div className="text-xs text-accent-400">
               ✓ Thumbnail set (will be applied on publish)
             </div>
           )}
@@ -2222,7 +2222,7 @@ function DestinationCheckbox({
     <label
       className={`flex items-center gap-3 rounded-lg border px-3 py-2 text-sm cursor-pointer transition ${
         checked
-          ? "border-green-500/40 bg-green-500/5"
+          ? "border-accent-500/40 bg-accent-500/5"
           : "border-gray-800 bg-gray-800 hover:border-gray-700"
       }`}
     >
@@ -2230,7 +2230,7 @@ function DestinationCheckbox({
         type="checkbox"
         checked={checked}
         onChange={onChange}
-        className="accent-green-500"
+        className="accent-accent-500"
       />
       <span className="text-white">{label}</span>
     </label>

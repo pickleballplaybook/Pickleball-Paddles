@@ -38,7 +38,7 @@ export function ConnectionStatus({
               <div
                 className={`shrink-0 h-9 w-9 rounded-md flex items-center justify-center ${
                   connected
-                    ? "bg-green-500 text-black"
+                    ? "bg-accent-500 text-black"
                     : "bg-gray-800 text-gray-600"
                 }`}
               >
@@ -54,7 +54,7 @@ export function ConnectionStatus({
               </div>
               <div
                 className={`shrink-0 h-1.5 w-1.5 rounded-full ${
-                  connected ? "bg-green-500" : "bg-gray-700"
+                  connected ? "bg-accent-500" : "bg-gray-700"
                 }`}
               />
             </div>

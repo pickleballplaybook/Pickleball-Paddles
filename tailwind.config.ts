@@ -14,6 +14,22 @@ const config: Config = {
         display: ["var(--font-inter)", "system-ui", "sans-serif"],
       },
       colors: {
+        // ── Admin accent (#3cacae) — used across /admin/* dark pages in place
+        //    of the old green-* utilities. Public/marketing pages keep the
+        //    existing `brand` teal palette.
+        accent: {
+          50:  "#eaf7f7",
+          100: "#cfeded",
+          200: "#a7dfdf",
+          300: "#7dd0d1",
+          400: "#5cbfc1",
+          500: "#3cacae",
+          600: "#338f91",
+          700: "#2a7375",
+          800: "#205758",
+          900: "#173e3f",
+          950: "#0c2222",
+        },
         // ── Teal accent (replaces all previous green / emerald) ──────────────
         brand: {
           50:  "#f0fdfa",

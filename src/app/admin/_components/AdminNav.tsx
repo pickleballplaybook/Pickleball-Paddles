@@ -22,7 +22,7 @@ export function AdminNav() {
             href={t.href}
             className={`px-5 py-2 rounded-lg text-sm font-medium transition ${
               active
-                ? "bg-green-500 text-black"
+                ? "bg-accent-500 text-black"
                 : "text-gray-400 hover:text-white"
             }`}
           >

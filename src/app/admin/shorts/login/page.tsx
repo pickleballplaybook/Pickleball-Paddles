@@ -47,7 +47,7 @@ export default function ShortsLoginPage() {
         <button
           onClick={submit}
           disabled={loading || !password}
-          className="w-full bg-green-500 hover:bg-green-400 disabled:bg-gray-700 text-black font-bold py-3 rounded-lg"
+          className="w-full bg-accent-500 hover:bg-accent-400 disabled:bg-gray-700 text-black font-bold py-3 rounded-lg"
         >
           {loading ? "Checking..." : "Enter"}
         </button>

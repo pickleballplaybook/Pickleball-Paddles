@@ -113,7 +113,7 @@ export default function AutoReplyAdminPage() {
           </div>
           <Link
             href="/admin/auto-reply/new"
-            className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-400 text-black font-bold px-5 py-2.5 rounded-xl text-sm"
+            className="inline-flex items-center gap-2 bg-accent-500 hover:bg-accent-400 text-black font-bold px-5 py-2.5 rounded-xl text-sm"
           >
             <span className="text-base leading-none">+</span> New Campaign
           </Link>
@@ -135,7 +135,7 @@ export default function AutoReplyAdminPage() {
                 onClick={() => setFilter(f)}
                 className={`px-4 py-1.5 text-sm font-medium rounded-lg capitalize transition ${
                   filter === f
-                    ? "bg-green-500 text-black"
+                    ? "bg-accent-500 text-black"
                     : "text-gray-400 hover:text-white"
                 }`}
               >

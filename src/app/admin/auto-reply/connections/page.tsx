@@ -76,7 +76,7 @@ export default function ConnectionsPage() {
           <div
             className={`rounded-xl border px-4 py-3 text-sm ${
               status === "ok"
-                ? "border-green-800 bg-green-950 text-green-300"
+                ? "border-accent-800 bg-accent-950 text-accent-300"
                 : "border-red-800 bg-red-950 text-red-300"
             }`}
           >
@@ -112,7 +112,7 @@ export default function ConnectionsPage() {
 
             <a
               href="/api/auth/meta/start"
-              className="bg-green-500 hover:bg-green-400 text-black font-bold px-4 py-2 rounded-xl text-sm shrink-0"
+              className="bg-accent-500 hover:bg-accent-400 text-black font-bold px-4 py-2 rounded-xl text-sm shrink-0"
             >
               {ig.length + fb.length === 0 ? "Connect" : "Reconnect"}
             </a>
@@ -187,7 +187,7 @@ export default function ConnectionsPage() {
             </div>
             <a
               href="/api/auth/youtube/start"
-              className="bg-green-500 hover:bg-green-400 text-black font-bold px-4 py-2 rounded-xl text-sm shrink-0"
+              className="bg-accent-500 hover:bg-accent-400 text-black font-bold px-4 py-2 rounded-xl text-sm shrink-0"
             >
               {yt.length === 0 ? "Connect" : "Add channel"}
             </a>

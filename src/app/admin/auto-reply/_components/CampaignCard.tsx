@@ -32,7 +32,7 @@ export function CampaignCard({
             <div className="flex items-center gap-2.5">
               <span
                 className={`h-2 w-2 rounded-full shrink-0 ${
-                  campaign.is_active ? "bg-green-500" : "bg-gray-600"
+                  campaign.is_active ? "bg-accent-500" : "bg-gray-600"
                 }`}
               />
               <h3 className="font-semibold text-white truncate">
@@ -62,7 +62,7 @@ export function CampaignCard({
                     key={p}
                     className={`h-7 w-7 rounded flex items-center justify-center ${
                       enabled
-                        ? "bg-green-500 text-black"
+                        ? "bg-accent-500 text-black"
                         : "bg-gray-800 text-gray-600"
                     }`}
                     title={`${p} ${enabled ? "enabled" : "disabled"}`}
@@ -78,7 +78,7 @@ export function CampaignCard({
               role="switch"
               aria-checked={campaign.is_active}
               className={`relative h-5 w-9 rounded-full transition-colors ${
-                campaign.is_active ? "bg-green-500" : "bg-gray-700"
+                campaign.is_active ? "bg-accent-500" : "bg-gray-700"
               }`}
               title={campaign.is_active ? "Pause campaign" : "Activate campaign"}
             >
