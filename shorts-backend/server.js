@@ -507,19 +507,21 @@ async function processVideo(jobId, jobDir, youtubeUrl) {
   // - `ios` + format 18 (360p muxed) is the most reliable on datacenter IPs
   // - `android` is a fallback that also often serves muxed
   // - `tv,web_safari` with merge is the last resort for HD when SABR isn't on
-  // Format selectors that yield a single muxed file (no merge needed) — these
-  // sidestep YouTube's SABR-only experiment which breaks bestvideo+bestaudio
-  // merges. Format 22 is 720p mp4 muxed; 18 is 360p mp4 muxed; both have
-  // been being phased out for some videos so we have to try several clients.
+  // Try HD merge (1080p source) FIRST across multiple clients — gives sharp
+  // 1080x1080 foreground squares with no upscaling. If all HD attempts fail
+  // (e.g. SABR-only experiment is on for this account, breaking merges),
+  // fall back to muxed single-file formats — usually 720p, sometimes 360p,
+  // which the encoder has to upscale (visibly softer but always works).
+  const HD = '-f "bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[height<=1080][ext=mp4]/best" --merge-output-format mp4';
   const MUXED = '-f "best[ext=mp4][protocol^=http]/22/18/best[ext=mp4]/best"';
   const attempts = [
+    { label: 'android HD',         args: `--extractor-args "youtube:player_client=android" ${HD}` },
+    { label: 'ios HD',             args: `--extractor-args "youtube:player_client=ios" ${HD}` },
+    { label: 'web HD',             args: `--extractor-args "youtube:player_client=web" ${HD}` },
+    { label: 'tv,web_safari HD',   args: `--extractor-args "youtube:player_client=tv,web_safari" ${HD}` },
     { label: 'ios muxed',          args: `--extractor-args "youtube:player_client=ios" ${MUXED}` },
     { label: 'android muxed',      args: `--extractor-args "youtube:player_client=android" ${MUXED}` },
-    { label: 'mweb muxed',         args: `--extractor-args "youtube:player_client=mweb" ${MUXED}` },
     { label: 'web muxed',          args: `--extractor-args "youtube:player_client=web" ${MUXED}` },
-    { label: 'web_creator muxed',  args: `--extractor-args "youtube:player_client=web_creator" ${MUXED}` },
-    // Last resort: explicit HD merge. Will fail on SABR-only accounts.
-    { label: 'tv,web_safari hd',   args: '--extractor-args "youtube:player_client=tv,web_safari" -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best" --merge-output-format mp4' },
   ];
   const attemptErrors = [];
   let lastErr;

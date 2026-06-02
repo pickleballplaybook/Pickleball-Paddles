@@ -375,13 +375,21 @@ export default function BestPaddlesPage() {
             >
               Under $200 →
             </Link>
-            {/* Audience pillar pages — high-intent long-tail */}
+            {/* Audience pillar pages + spec collection pages — high-intent long-tail */}
             {[
               { href: "/best-pickleball-paddles/for-beginners", label: "For Beginners →", color: "#4ade80" },
               { href: "/best-pickleball-paddles/for-intermediate", label: "For Intermediate →", color: "#60a5fa" },
               { href: "/best-pickleball-paddles/for-tennis-players", label: "For Tennis Players →", color: "#ef4444" },
               { href: "/best-pickleball-paddles/for-women", label: "For Women →", color: "#f472b6" },
               { href: "/best-pickleball-paddles/for-elbow-pain", label: "For Elbow Pain →", color: "#f59e0b" },
+              { href: "/best-pickleball-paddles/widebody", label: "Widebody →", color: "#22d3ee" },
+              { href: "/best-pickleball-paddles/elongated", label: "Elongated →", color: "#ef4444" },
+              { href: "/best-pickleball-paddles/hybrid", label: "Hybrid →", color: "#a78bfa" },
+              { href: "/best-pickleball-paddles/16mm", label: "16mm →", color: "#10b981" },
+              { href: "/best-pickleball-paddles/14mm", label: "14mm →", color: "#f97316" },
+              { href: "/best-pickleball-paddles/13mm", label: "13mm →", color: "#dc2626" },
+              { href: "/best-pickleball-paddles/under-150", label: "Under $150 →", color: "#facc15" },
+              { href: "/best-pickleball-paddles/all-court", label: "All-Court →", color: "#fbbf24" },
             ].map((c) => (
               <Link
                 key={c.href}

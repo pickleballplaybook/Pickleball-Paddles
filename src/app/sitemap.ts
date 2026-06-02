@@ -56,6 +56,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${siteConfig.siteUrl}/best-pickleball-paddles/for-tennis-players`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
     { url: `${siteConfig.siteUrl}/best-pickleball-paddles/for-women`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
     { url: `${siteConfig.siteUrl}/best-pickleball-paddles/for-elbow-pain`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    // Spec-driven collection pages — programmatic SEO targeting shape, core
+    // thickness, budget tier, and play style. All ranked from real catalog
+    // data; refresh as catalog changes.
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/widebody`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/elongated`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/hybrid`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/16mm`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/14mm`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/13mm`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/under-150`, lastModified: now, changeFrequency: "weekly", priority: 0.85 },
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/all-court`, lastModified: now, changeFrequency: "weekly", priority: 0.85 },
     { url: `${siteConfig.siteUrl}/reviews`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
     { url: `${siteConfig.siteUrl}/blog`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
     { url: `${siteConfig.siteUrl}/compare`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
