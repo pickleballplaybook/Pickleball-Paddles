@@ -66,6 +66,52 @@ const REEL_TAG_OPTIONS = [
   { handle: "playbookreviews", label: "@playbookreviews" },
 ];
 
+// Words we strip out when deriving hashtags from a clip's title / reason —
+// they're either fillers or too generic to be useful as a hashtag.
+const HASHTAG_STOP_WORDS = new Set([
+  "a","an","the","is","are","was","were","be","been","am","being",
+  "and","or","but","so","yet","as","if","then","than",
+  "in","on","at","to","of","for","with","by","from","about","into","onto","off","out","over","under",
+  "this","that","these","those","there","here","such",
+  "you","your","my","our","we","they","i","me","us","them","it","its","their",
+  "how","what","when","where","why","who","which","whose",
+  "can","will","shall","should","could","would","may","might","must","do","does","did","done",
+  "get","got","gets","give","gave","take","took","make","made","goes","gone",
+  "just","not","no","yes","also","more","most","very","much","some","any","all","one","two",
+  "vs","via","new","best","top","good","great","really",
+]);
+
+function deriveHashtags(text: string | undefined, max: number): string[] {
+  if (!text) return [];
+  const seen = new Set<string>();
+  const out: string[] = [];
+  const words = text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .split(/\s+/);
+  for (const w of words) {
+    if (w.length < 3) continue;
+    if (HASHTAG_STOP_WORDS.has(w)) continue;
+    if (seen.has(w)) continue;
+    seen.add(w);
+    out.push(w);
+    if (out.length >= max) break;
+  }
+  return out;
+}
+
+function buildHashtagLine(clip: Clip): string {
+  // Always-on baseline. #pickleball is required; the others are
+  // broadly useful for short-form pickleball content.
+  const tags: string[] = ["pickleball", "pickleballshorts", "shorts"];
+  const fromTitle = deriveHashtags(clip.title, 4);
+  const fromReason = deriveHashtags(clip.reason, 3);
+  for (const w of [...fromTitle, ...fromReason]) {
+    if (!tags.includes(w)) tags.push(w);
+  }
+  return tags.slice(0, 10).map((t) => "#" + t).join(" ");
+}
+
 function buildReelDescription(
   clip: Clip,
   youtubeUrl: string | undefined,
@@ -78,6 +124,7 @@ function buildReelDescription(
   if (enabledHandles.length > 0) {
     lines.push("", enabledHandles.map((h) => "@" + h).join(" "));
   }
+  lines.push("", buildHashtagLine(clip));
   return lines.join("\n");
 }
 
