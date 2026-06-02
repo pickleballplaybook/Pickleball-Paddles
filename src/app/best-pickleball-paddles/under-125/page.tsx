@@ -8,6 +8,7 @@ import type { Paddle } from "@/types";
 import PaddleBudgetGrid from "@/components/PaddleBudgetGrid";
 import YouTubeEmbed from "@/components/YouTubeEmbed";
 import InlineNewsletterCTA from "@/components/InlineNewsletterCTA";
+import { currentYear } from "@/lib/year";
 
 const PAGE_URL = `${siteConfig.siteUrl}/best-pickleball-paddles/under-125`;
 const ACCENT = "#4ade80";
@@ -99,7 +100,7 @@ const FAQ = [
 const topPick = getPaddleBySlug(PICKS[0].slug);
 
 export const metadata: Metadata = {
-  title: "Best Pickleball Paddles Under $125 (2026) — Tested & Ranked",
+  title: `Best Pickleball Paddles Under $125 (${currentYear()}) — Tested & Ranked`,
   description:
     "The best pickleball paddles under $125 in 2026, tested on court with lab-measured swing weight and twist weight. Top 5 budget picks plus every sub-$125 paddle, filterable by brand, shape, and play style. Unsponsored.",
   keywords: [
@@ -111,7 +112,7 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: PAGE_URL },
   openGraph: {
-    title: "Best Pickleball Paddles Under $125 (2026) — Tested & Ranked",
+    title: `Best Pickleball Paddles Under $125 (${currentYear()}) — Tested & Ranked`,
     description:
       "Top 5 budget pickleball paddles plus every sub-$125 paddle on the site, ranked by a pro player with lab-measured specs. Unsponsored.",
     url: PAGE_URL,

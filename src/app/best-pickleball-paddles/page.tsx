@@ -1,18 +1,19 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, TrendingUp } from "lucide-react";
+import { currentYear } from "@/lib/year";
 import { getPaddleBySlug } from "@/data/paddles";
 import { siteConfig } from "@/config/site";
 import { getPaddleCountLabel } from "@/lib/catalogStats";
 import YouTubeEmbed from "@/components/YouTubeEmbed";
 
 export const metadata: Metadata = {
-  title: "Best Pickleball Paddles of 2026 — Tested & Ranked",
+  title: `Best Pickleball Paddles of ${currentYear()} — Tested & Ranked`,
   description:
     "We tested 100+ pickleball paddles on a real court in 2026 and ranked the best by category — power, control, all-court, spin, value, and beginners. Every pick is unsponsored.",
   alternates: { canonical: `${siteConfig.siteUrl}/best-pickleball-paddles` },
   openGraph: {
-    title: "Best Pickleball Paddles of 2026 — Tested & Ranked",
+    title: `Best Pickleball Paddles of ${currentYear()} — Tested & Ranked`,
     description:
       "100+ paddles tested. Ranked by a PPR-certified pro player with 12+ years coaching. Find the best paddle for your game.",
     url: `${siteConfig.siteUrl}/best-pickleball-paddles`,
@@ -21,7 +22,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Best Pickleball Paddles of 2026 — Tested & Ranked",
+    title: `Best Pickleball Paddles of ${currentYear()} — Tested & Ranked`,
     description: "100+ paddles tested and ranked. Power, control, all-court, spin, value, and beginner picks.",
   },
 };
@@ -323,6 +324,27 @@ export default function BestPaddlesPage() {
             >
               Under $200 →
             </Link>
+            {/* Audience pillar pages — high-intent long-tail */}
+            {[
+              { href: "/best-pickleball-paddles/for-beginners", label: "For Beginners →", color: "#4ade80" },
+              { href: "/best-pickleball-paddles/for-intermediate", label: "For Intermediate →", color: "#60a5fa" },
+              { href: "/best-pickleball-paddles/for-tennis-players", label: "For Tennis Players →", color: "#ef4444" },
+              { href: "/best-pickleball-paddles/for-women", label: "For Women →", color: "#f472b6" },
+              { href: "/best-pickleball-paddles/for-elbow-pain", label: "For Elbow Pain →", color: "#f59e0b" },
+            ].map((c) => (
+              <Link
+                key={c.href}
+                href={c.href}
+                className="text-sm font-bold px-4 py-2 rounded-xl transition-all hover:scale-[1.02]"
+                style={{
+                  background: `${c.color}1f`,
+                  border: `1px solid ${c.color}66`,
+                  color: c.color,
+                }}
+              >
+                {c.label}
+              </Link>
+            ))}
           </div>
 
           {/* ── Picks ─────────────────────────────────────────────────────── */}

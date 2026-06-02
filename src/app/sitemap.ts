@@ -50,6 +50,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Real 200 page now (was a redirect). lastmod tracks the latest week_date;
     // priority raised to 0.9 — it's a primary, frequently-refreshed landing page.
     { url: `${siteConfig.siteUrl}/best-pickleball-paddles/weekly`, lastModified: bestPaddlesLastMod, changeFrequency: "weekly", priority: 0.9 },
+    // Audience pillar pages — long-tail intent magnets.
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/for-beginners`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/for-intermediate`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/for-tennis-players`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/for-women`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/for-elbow-pain`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
     { url: `${siteConfig.siteUrl}/reviews`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
     { url: `${siteConfig.siteUrl}/blog`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
     { url: `${siteConfig.siteUrl}/compare`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
