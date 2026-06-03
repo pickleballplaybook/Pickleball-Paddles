@@ -21,26 +21,43 @@ export default function DiscountCodeBox({ code, giftCard, savings, compact }: Pr
   }
 
   if (compact) {
+    // Subtitle under the code badge — mirrors what big retailers show.
+    // Gift card paddles (Selkirk via INF-PLAYBOOK on selkirk.com) get the
+    // free-eGift-card line; everything else with a real % or $ discount
+    // gets the "$X off at checkout" reinforcement.
+    const subtitle = giftCard
+      ? "Free eGift Card after purchase"
+      : savings
+        ? `${savings.replace(/^Save\s*/i, "")} off at checkout`
+        : null;
+
     return (
-      <button
-        onClick={handleCopy}
-        className="inline-flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-150 active:scale-[0.98]"
-        style={{
-          border: "2px dashed rgba(45,212,191,0.5)",
-          background: "rgba(20,184,166,0.06)",
-        }}
-      >
-        <span className="font-mono font-extrabold text-sm tracking-widest" style={{ color: "#2dd4bf" }}>
-          {code}
-        </span>
-        <span className="text-[10px] font-semibold" style={{ color: copied ? "#4ade80" : "#94a3b8" }}>
-          {copied ? (
-            <><Check className="w-3.5 h-3.5 inline" strokeWidth={2.5} /> Copied</>
-          ) : (
-            <><Copy className="w-3.5 h-3.5 inline" strokeWidth={2} /> Copy</>
-          )}
-        </span>
-      </button>
+      <div className="inline-flex flex-col items-end gap-1">
+        <button
+          onClick={handleCopy}
+          className="inline-flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-150 active:scale-[0.98]"
+          style={{
+            border: "2px dashed rgba(45,212,191,0.5)",
+            background: "rgba(20,184,166,0.06)",
+          }}
+        >
+          <span className="font-mono font-extrabold text-sm tracking-widest" style={{ color: "#2dd4bf" }}>
+            {code}
+          </span>
+          <span className="text-[10px] font-semibold" style={{ color: copied ? "#4ade80" : "#94a3b8" }}>
+            {copied ? (
+              <><Check className="w-3.5 h-3.5 inline" strokeWidth={2.5} /> Copied</>
+            ) : (
+              <><Copy className="w-3.5 h-3.5 inline" strokeWidth={2} /> Copy</>
+            )}
+          </span>
+        </button>
+        {subtitle && (
+          <p className="text-[11px] font-medium" style={{ color: "var(--flip-text-muted)" }}>
+            {subtitle}
+          </p>
+        )}
+      </div>
     );
   }
 
@@ -59,10 +76,10 @@ export default function DiscountCodeBox({ code, giftCard, savings, compact }: Pr
           </div>
           <div className="flex-1">
             <p className="font-bold text-sm mb-2" style={{ color: "var(--flip-text-head)" }}>
-              Free Store Credit with Purchase
+              Free eGift Card with Purchase
             </p>
             <p className="text-sm mb-3" style={{ color: "var(--flip-text-body)" }}>
-              Use code below at checkout to receive free Selkirk store credit with your purchase.
+              Enter the code below at checkout to receive a free Selkirk eGift Card with your order.
             </p>
             <button
               onClick={handleCopy}

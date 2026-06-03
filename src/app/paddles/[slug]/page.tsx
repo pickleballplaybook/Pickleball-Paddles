@@ -710,6 +710,8 @@ export default async function PaddleDetailPage({ params }: Props) {
 
               {/* Buy button — AffiliateBuyButton auto-copies the code to clipboard */}
               {/* and shows a confirmation toast so users know to paste it at checkout. */}
+              {/* Button label is "Buy at {brand}" everywhere — clearer than the old */}
+              {/* "Buy with Discount" which implied automatic application. */}
               {hasLink ? (
                 <AffiliateBuyButton
                   href={paddle.discountLink}
@@ -718,7 +720,7 @@ export default async function PaddleDetailPage({ params }: Props) {
                   style={{ background: "#14b8a6" }}
                   ariaLabel={noCode ? `Buy ${paddle.brand} ${paddle.name}` : `Buy ${paddle.brand} ${paddle.name} with discount code ${code}`}
                 >
-                  {noCode ? "Buy Now" : `Buy with Discount`}
+                  Buy at {paddle.brand}
                   <ArrowRight className="w-5 h-5" />
                 </AffiliateBuyButton>
               ) : (
@@ -734,14 +736,13 @@ export default async function PaddleDetailPage({ params }: Props) {
                   Link Coming Soon
                 </button>
               )}
-              {/* Post-click instruction — replaces the previous "Click link to support us" */}
-              {/* with a direct, action-clear sentence so users know what happens next. */}
-              {hasLink && (
+              {/* For no-code paddles only — a small "support us" line. The previous */}
+              {/* "Enter code X at checkout to get this price" was removed per request: */}
+              {/* the new subtitle under the promo code badge ("$X off at checkout" / */}
+              {/* "Free eGift Card after purchase") already communicates the same info. */}
+              {hasLink && noCode && (
                 <p className="text-xs mt-3 text-center leading-relaxed" style={{ color: "var(--flip-text-muted)" }}>
-                  {noCode
-                    ? <>Click link to <strong style={{ color: "#2dd4bf" }}>support Playbook Reviews</strong></>
-                    : <>Enter code <strong style={{ color: "#2dd4bf" }}>{code}</strong> at checkout to get this price. <span style={{ color: "rgba(148,195,215,0.55)" }}>(We&apos;ll copy it for you when you click.)</span></>
-                  }
+                  Click link to <strong style={{ color: "#2dd4bf" }}>support Playbook Reviews</strong>
                 </p>
               )}
               <p className="text-[11px] mt-1.5 text-center" style={{ color: "rgba(148,195,215,0.35)" }}>
@@ -982,7 +983,7 @@ export default async function PaddleDetailPage({ params }: Props) {
                     style={{ background: "#14b8a6" }}
                     ariaLabel={noCode ? `Buy ${paddle.brand} ${paddle.name}` : `Buy ${paddle.brand} ${paddle.name} with discount code ${code}`}
                   >
-                    {noCode ? `Buy at ${paddle.brand}` : "Apply Discount"} <ExternalLink className="w-3.5 h-3.5" />
+                    Buy at {paddle.brand} <ExternalLink className="w-3.5 h-3.5" />
                   </AffiliateBuyButton>
                 )}
               </div>
