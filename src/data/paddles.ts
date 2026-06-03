@@ -2317,16 +2317,16 @@ export const paddles: Paddle[] = [
     swingWeight: 115.24,
     twistWeight: 7.87,
     thickness: "16mm",
-    // TEMP lockerroom promo — when done, revert ALL of these together:
-    //   image        -> "/images/paddles/Selkirk-Omni-Widebody-16mm.png"
-    //   amountOff    -> "$0"
-    //   discountLink -> "https://www.selkirk.com/discount/inf-playbook"
-    // (Reverting the link automatically flips the displayed code back from
-    //  PLAYBOOK to INF-PLAYBOOK via the existing getCode() helper.)
+    // Back on Selkirk's site with the INF-PLAYBOOK gift-card flow.
+    // The variant + discount params pre-apply the code so the user gets a
+    // free gift card at checkout. amountOff stays "$0" so isSelkirkGiftCard()
+    // returns true and the special gift-card badge treatment kicks in.
+    // (Image still using the Selkirk-Omno- file — swap to Selkirk-Omni- if
+    //  needed later.)
     image: "/images/paddles/Selkirk-Omno-Widebody-16mm.png",
-    amountOff: "15%",
+    amountOff: "$0",
     price: "$299.99",
-    discountLink: "https://lockerroompickleball.com/products/omni?sca_ref=8334840.yY4rLJi7oU9HDNHD",
+    discountLink: "https://www.selkirk.com/pages/omni-pickleball-paddle?variant=45607806173286&discount=INF-PLAYBOOK",
     reviewUrl: "https://youtu.be/2jXKJrCH9iI",
     addedAt: "2026-05-29",
     trendingScore: 50,
