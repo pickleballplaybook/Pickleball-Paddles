@@ -25,6 +25,7 @@ import { getBlogPostForPaddle, BlogSection } from "@/data/blogPosts";
 import { canonicalMatchup } from "@/app/compare/[matchup]/helpers";
 import { getBrandByName } from "@/data/brands";
 import TestingMethodologyBlock from "@/components/TestingMethodologyBlock";
+import AffiliateBuyButton from "@/components/AffiliateBuyButton";
 
 interface Props {
   params: { slug: string };
@@ -645,8 +646,11 @@ export default async function PaddleDetailPage({ params }: Props) {
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
                 {/* Left: price */}
                 <div>
+                  {/* Label was previously "Retail Price" for both the discounted and non-discounted */}
+                  {/* state — which read as a contradiction next to a green post-discount number. */}
+                  {/* Now the label matches what's actually being shown. */}
                   <p className="text-xs font-bold uppercase tracking-widest font-mono mb-1" style={{ color: "var(--flip-text-muted)" }}>
-                    Retail Price
+                    {discountedPrice ? `Price with ${code}` : "Retail Price"}
                   </p>
                   {paddle.price && (
                     <div className="flex items-baseline gap-2">
@@ -688,18 +692,19 @@ export default async function PaddleDetailPage({ params }: Props) {
                 </div>
               </div>
 
-              {/* Buy button */}
+              {/* Buy button — AffiliateBuyButton auto-copies the code to clipboard */}
+              {/* and shows a confirmation toast so users know to paste it at checkout. */}
               {hasLink ? (
-                <a
+                <AffiliateBuyButton
                   href={paddle.discountLink}
-                  target="_blank"
-                  rel="noopener noreferrer sponsored"
+                  code={noCode ? undefined : code}
                   className="flex items-center justify-between w-full font-bold text-base py-4 px-6 rounded-2xl text-white transition-all duration-200 active:scale-[0.98]"
                   style={{ background: "#14b8a6" }}
+                  ariaLabel={noCode ? `Buy ${paddle.brand} ${paddle.name}` : `Buy ${paddle.brand} ${paddle.name} with discount code ${code}`}
                 >
                   {noCode ? "Buy Now" : `Buy with Discount`}
                   <ArrowRight className="w-5 h-5" />
-                </a>
+                </AffiliateBuyButton>
               ) : (
                 <button
                   disabled
@@ -713,11 +718,13 @@ export default async function PaddleDetailPage({ params }: Props) {
                   Link Coming Soon
                 </button>
               )}
+              {/* Post-click instruction — replaces the previous "Click link to support us" */}
+              {/* with a direct, action-clear sentence so users know what happens next. */}
               {hasLink && (
-                <p className="text-xs mt-3 text-center" style={{ color: "var(--flip-text-muted)" }}>
+                <p className="text-xs mt-3 text-center leading-relaxed" style={{ color: "var(--flip-text-muted)" }}>
                   {noCode
                     ? <>Click link to <strong style={{ color: "#2dd4bf" }}>support Playbook Reviews</strong></>
-                    : <>Use code <strong style={{ color: "#2dd4bf" }}>{code}</strong> &middot; <span style={{ color: "rgba(148,195,215,0.5)" }}>Click link to support us</span></>
+                    : <>Enter code <strong style={{ color: "#2dd4bf" }}>{code}</strong> at checkout to get this price. <span style={{ color: "rgba(148,195,215,0.55)" }}>(We&apos;ll copy it for you when you click.)</span></>
                   }
                 </p>
               )}
@@ -952,15 +959,15 @@ export default async function PaddleDetailPage({ params }: Props) {
                 </p>
                 {!noCode && <DiscountCodeBox code={code} giftCard={giftCard} savings={savings} />}
                 {hasLink && (
-                  <a
+                  <AffiliateBuyButton
                     href={paddle.discountLink}
-                    target="_blank"
-                    rel="noopener noreferrer sponsored"
+                    code={noCode ? undefined : code}
                     className="flex items-center justify-center gap-2 w-full font-bold text-sm py-3 rounded-xl text-white mt-3 transition-all active:scale-[0.98]"
                     style={{ background: "#14b8a6" }}
+                    ariaLabel={noCode ? `Buy ${paddle.brand} ${paddle.name}` : `Buy ${paddle.brand} ${paddle.name} with discount code ${code}`}
                   >
                     {noCode ? `Buy at ${paddle.brand}` : "Apply Discount"} <ExternalLink className="w-3.5 h-3.5" />
-                  </a>
+                  </AffiliateBuyButton>
                 )}
               </div>
 
@@ -1488,6 +1495,7 @@ export default async function PaddleDetailPage({ params }: Props) {
       price={discountedPrice ?? paddle.price}
       discountLink={paddle.discountLink}
       slug={paddle.slug}
+      code={noCode ? undefined : code}
     />
     </>
   );

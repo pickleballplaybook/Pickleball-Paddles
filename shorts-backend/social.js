@@ -72,21 +72,37 @@ export async function uploadToYouTube({
 
   // Custom thumbnail (best-effort; channel needs verification for non-default thumbnails).
   if (thumbnailDataUrl && videoId) {
-    try {
-      const match = /^data:(image\/[a-z0-9.+-]+);base64,(.+)$/i.exec(thumbnailDataUrl);
-      if (match) {
-        const buf = Buffer.from(match[2], 'base64');
-        const tmp = path.join('/tmp', `yt-thumb-${videoId}.${match[1].includes('png') ? 'png' : 'jpg'}`);
+    const match = /^data:(image\/[a-z0-9.+-]+);base64,(.+)$/i.exec(thumbnailDataUrl);
+    if (!match) {
+      console.warn(`[youtube ${videoId}] thumbnail skipped: malformed data URL`);
+    } else {
+      const mime = match[1];
+      const buf = Buffer.from(match[2], 'base64');
+      const tmp = path.join('/tmp', `yt-thumb-${videoId}.${mime.includes('png') ? 'png' : 'jpg'}`);
+      try {
         fs.writeFileSync(tmp, buf);
-        await youtube.thumbnails.set({
+        console.log(`[youtube ${videoId}] uploading thumbnail (${mime}, ${buf.length} bytes)`);
+        const setRes = await youtube.thumbnails.set({
           videoId,
           media: { body: fs.createReadStream(tmp) },
         });
+        console.log(`[youtube ${videoId}] thumbnail set OK status=${setRes.status}`);
+      } catch (err) {
+        // Surface the FULL Google API error — most common is 403
+        // `customThumbnailsRequireVerification` (channel not phone-verified)
+        // or `mediaBodyRequired` (image rejected). Without this detail you
+        // can't tell why YT silently kept the auto-generated thumbnail.
+        const apiErr = err?.response?.data?.error || {};
+        const code = apiErr.code || err?.response?.status;
+        const reason = apiErr.errors?.[0]?.reason || 'unknown';
+        const msg = apiErr.message || err.message;
+        console.error(`[youtube ${videoId}] thumbnail FAILED code=${code} reason=${reason} msg=${msg}`);
+      } finally {
         try { fs.unlinkSync(tmp); } catch {}
       }
-    } catch (err) {
-      console.error('[youtube] thumbnail failed:', err?.response?.data || err.message);
     }
+  } else if (!thumbnailDataUrl && videoId) {
+    console.log(`[youtube ${videoId}] no thumbnail sent (thumbnailDataUrl was falsy)`);
   }
 
   // Add to playlists (best-effort per playlist).

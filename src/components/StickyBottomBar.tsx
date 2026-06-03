@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
+import AffiliateBuyButton from "@/components/AffiliateBuyButton";
 
 interface Props {
   name: string;
@@ -9,10 +10,12 @@ interface Props {
   price?: string;
   discountLink?: string;
   slug: string;
+  code?: string;            // Discount code to auto-copy on click (omit for no-code paddles)
 }
 
-export default function StickyBottomBar({ name, brand, price, discountLink, slug }: Props) {
+export default function StickyBottomBar({ name, brand, price, discountLink, slug, code }: Props) {
   const hasLink = !!discountLink?.trim();
+  const hasCode = !!code?.trim();
 
   return (
     <div
@@ -51,15 +54,15 @@ export default function StickyBottomBar({ name, brand, price, discountLink, slug
             Compare
           </Link>
           {hasLink ? (
-            <a
-              href={discountLink}
-              target="_blank"
-              rel="noopener noreferrer sponsored"
+            <AffiliateBuyButton
+              href={discountLink as string}
+              code={hasCode ? code : undefined}
               className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-bold text-white transition-all active:scale-[0.97]"
               style={{ background: "#14b8a6" }}
+              ariaLabel={hasCode ? `Buy ${name} with discount code ${code}` : `Buy ${name}`}
             >
               Apply Discount <ExternalLink className="w-3.5 h-3.5" />
-            </a>
+            </AffiliateBuyButton>
           ) : (
             <span
               className="inline-flex items-center px-5 py-2.5 rounded-xl text-sm font-bold"

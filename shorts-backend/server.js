@@ -512,27 +512,58 @@ async function processVideo(jobId, jobDir, youtubeUrl) {
   // (e.g. SABR-only experiment is on for this account, breaking merges),
   // fall back to muxed single-file formats — usually 720p, sometimes 360p,
   // which the encoder has to upscale (visibly softer but always works).
-  const HD = '-f "bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[height<=1080][ext=mp4]/best" --merge-output-format mp4';
+  // No height cap — if the source has 4K/2K available, grab it. Downscaling
+  // a 4K source to a 1080x1080 square (with lanczos) is visibly sharper than
+  // a 1080p source at 1080x1080 because every output pixel gets averaged
+  // from multiple source pixels instead of mapped 1:1.
+  const HD = '-f "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best" --merge-output-format mp4';
   const MUXED = '-f "best[ext=mp4][protocol^=http]/22/18/best[ext=mp4]/best"';
+  // Order matters: clients with the best SABR-bypass behavior go first.
+  // YouTube's SABR experiment hides URLs for higher-res streams, leaving
+  // only muxed 360p/720p — so even when yt-dlp reports "success" it may
+  // only have 360p. We re-probe after each download and treat <720p as a
+  // failure so we keep trying.
+  const MIN_HEIGHT = 720;
   const attempts = [
+    { label: 'tv_embedded HD',     args: `--extractor-args "youtube:player_client=tv_embedded" ${HD}` },
+    { label: 'web_creator HD',     args: `--extractor-args "youtube:player_client=web_creator" ${HD}` },
+    { label: 'tv,web_safari HD',   args: `--extractor-args "youtube:player_client=tv,web_safari" ${HD}` },
+    { label: 'web HD',             args: `--extractor-args "youtube:player_client=web" ${HD}` },
+    { label: 'mweb HD',            args: `--extractor-args "youtube:player_client=mweb" ${HD}` },
     { label: 'android HD',         args: `--extractor-args "youtube:player_client=android" ${HD}` },
     { label: 'ios HD',             args: `--extractor-args "youtube:player_client=ios" ${HD}` },
-    { label: 'web HD',             args: `--extractor-args "youtube:player_client=web" ${HD}` },
-    { label: 'tv,web_safari HD',   args: `--extractor-args "youtube:player_client=tv,web_safari" ${HD}` },
-    { label: 'ios muxed',          args: `--extractor-args "youtube:player_client=ios" ${MUXED}` },
-    { label: 'android muxed',      args: `--extractor-args "youtube:player_client=android" ${MUXED}` },
-    { label: 'web muxed',          args: `--extractor-args "youtube:player_client=web" ${MUXED}` },
+    // Last-resort muxed fallbacks (will be 360p–720p; accepted unconditionally)
+    { label: 'ios muxed',          args: `--extractor-args "youtube:player_client=ios" ${MUXED}`,     acceptLow: true },
+    { label: 'android muxed',      args: `--extractor-args "youtube:player_client=android" ${MUXED}`, acceptLow: true },
+    { label: 'web muxed',          args: `--extractor-args "youtube:player_client=web" ${MUXED}`,     acceptLow: true },
   ];
   const attemptErrors = [];
   let lastErr;
+  let downloadedOk = false;
   for (const attempt of attempts) {
     try {
       await execAsync(
         `${YTDLP_BIN} ${cookiesArg}${attempt.args} -o "${videoPath}" "${youtubeUrl}"`,
         { maxBuffer: 1024 * 1024 * 100 }
       );
-      console.log(`[yt-dlp] succeeded with ${attempt.label}`);
+      // Probe the resolution. If below MIN_HEIGHT and this isn't a fallback
+      // attempt, treat as failure and try the next client.
+      let h = 0;
+      try {
+        const { stdout: pOut } = await execAsync(
+          `ffprobe -v error -select_streams v:0 -show_entries stream=height -of csv=p=0 "${videoPath}"`
+        );
+        h = parseInt(pOut.trim(), 10) || 0;
+      } catch {}
+      if (!attempt.acceptLow && h > 0 && h < MIN_HEIGHT) {
+        console.warn(`[yt-dlp] ${attempt.label} returned only ${h}p — rejecting, trying next client`);
+        attemptErrors.push(`${attempt.label}: returned ${h}p (below ${MIN_HEIGHT}p)`);
+        try { fs.rmSync(videoPath, { force: true }); } catch {}
+        continue;
+      }
+      console.log(`[yt-dlp] succeeded with ${attempt.label} at ${h || '?'}p`);
       lastErr = null;
+      downloadedOk = true;
       break;
     } catch (err) {
       const shortMsg = err.message.split('\n').filter(Boolean).pop()?.slice(0, 200) || err.message.slice(0, 200);
@@ -542,9 +573,7 @@ async function processVideo(jobId, jobDir, youtubeUrl) {
       try { fs.rmSync(videoPath, { force: true }); } catch {}
     }
   }
-  if (lastErr) {
-    // Surface ALL attempt errors so we can see what's actually failing per
-    // client, not just the last (least informative) one.
+  if (!downloadedOk) {
     throw new Error(
       `yt-dlp failed all ${attempts.length} client attempts:\n` + attemptErrors.join('\n')
     );
@@ -639,6 +668,7 @@ Respond ONLY with valid JSON — no preamble, no markdown fences. Format:
     `-of json "${videoPath}"`
   );
   const { width, height } = JSON.parse(probeOut).streams[0];
+  console.log(`[${jobId}] source video: ${width}x${height}`);
 
   // Output is 9:16 portrait (1080x1920) for IG/FB Reels. The landscape source
   // is center-cropped to a SQUARE (1080x1080) — feels more zoomed-in than
