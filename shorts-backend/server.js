@@ -491,10 +491,20 @@ app.delete('/api/clips/:jobId/:filename/edit', (req, res) => {
 
 // ─── PIPELINE ────────────────────────────────────────────────────────────────
 
+// Wipe everything in a job's working dir and re-create it. Used between
+// yt-dlp attempts so leftover .part / .fXXX intermediate streams don't
+// pile up and fill the volume.
+function cleanJobDir(jobDir) {
+  try { fs.rmSync(jobDir, { recursive: true, force: true }); } catch {}
+  try { fs.mkdirSync(jobDir, { recursive: true }); } catch {}
+}
+
 async function processVideo(jobId, jobDir, youtubeUrl) {
 
   // Make sure the volume has space before pulling a potentially-large video.
   try { diskCleanup(); } catch (err) { console.error('[cleanup] pre-job sweep failed:', err.message); }
+  // Also clear this job's own dir of any stale state from prior runs.
+  cleanJobDir(jobDir);
 
   // 1. Download video with yt-dlp
   setJobStatus(jobId, { status: 'downloading', message: 'Downloading video…', progress: 5 });
@@ -558,7 +568,7 @@ async function processVideo(jobId, jobDir, youtubeUrl) {
       if (!attempt.acceptLow && h > 0 && h < MIN_HEIGHT) {
         console.warn(`[yt-dlp] ${attempt.label} returned only ${h}p — rejecting, trying next client`);
         attemptErrors.push(`${attempt.label}: returned ${h}p (below ${MIN_HEIGHT}p)`);
-        try { fs.rmSync(videoPath, { force: true }); } catch {}
+        cleanJobDir(jobDir);
         continue;
       }
       console.log(`[yt-dlp] succeeded with ${attempt.label} at ${h || '?'}p`);
@@ -570,7 +580,10 @@ async function processVideo(jobId, jobDir, youtubeUrl) {
       console.warn(`[yt-dlp] failed with ${attempt.label}:`, shortMsg);
       attemptErrors.push(`${attempt.label}: ${shortMsg}`);
       lastErr = err;
-      try { fs.rmSync(videoPath, { force: true }); } catch {}
+      // Nuke the job dir entirely between attempts — yt-dlp leaves .part
+      // and .fXXX intermediate streams that pile up. Without this, after a
+      // few HD-merge failures the volume fills to ENOSPC.
+      cleanJobDir(jobDir);
     }
   }
   if (!downloadedOk) {
