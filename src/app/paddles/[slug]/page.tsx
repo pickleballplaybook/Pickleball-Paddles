@@ -670,6 +670,20 @@ export default async function PaddleDetailPage({ params }: Props) {
                       )}
                     </div>
                   )}
+                  {/* "You save $X" — Walmart-style savings reinforcement. Always shows */}
+                  {/* the dollar amount even when the discount is expressed as a % in the */}
+                  {/* CSV (e.g. amountOff = "15%"), since $ savings read as more concrete. */}
+                  {discountedPrice && paddle.price && (() => {
+                    const retail = parseFloat(paddle.price.replace(/[^0-9.]/g, ""));
+                    const sale   = parseFloat(discountedPrice.replace(/[^0-9.]/g, ""));
+                    if (isNaN(retail) || isNaN(sale) || retail <= sale) return null;
+                    const saved = retail - sale;
+                    return (
+                      <p className="text-sm font-bold mt-1.5" style={{ color: "#22c55e" }}>
+                        You save ${saved.toFixed(2)}
+                      </p>
+                    );
+                  })()}
                 </div>
 
                 {/* Right: promo code */}
