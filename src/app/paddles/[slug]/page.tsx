@@ -650,7 +650,7 @@ export default async function PaddleDetailPage({ params }: Props) {
                   {/* state — which read as a contradiction next to a green post-discount number. */}
                   {/* Now the label matches what's actually being shown. */}
                   <p className="text-xs font-bold uppercase tracking-widest font-mono mb-1" style={{ color: "var(--flip-text-muted)" }}>
-                    {discountedPrice ? `Price with ${code}` : "Retail Price"}
+                    {discountedPrice ? "Discount Price" : "Retail Price"}
                   </p>
                   {paddle.price && (
                     <div className="flex items-baseline gap-2">
