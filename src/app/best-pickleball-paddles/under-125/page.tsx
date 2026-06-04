@@ -306,7 +306,7 @@ export default function BestPaddlesUnder125Page() {
                           </Link>
                           {paddle.discountLink && (
                             <a href={paddle.discountLink} target="_blank" rel="noopener noreferrer sponsored" className="inline-flex items-center gap-2 font-bold text-sm px-6 py-3 rounded-xl transition-all duration-200 hover:scale-[1.02]" style={{ border: `1.5px solid ${ACCENT}66`, color: ACCENT }}>
-                              {noDiscount ? "Buy Now" : `Get Discount · ${code}`}
+                              Buy at {paddle.brand}
                               <ExternalLink className="w-3.5 h-3.5" />
                             </a>
                           )}

@@ -249,7 +249,7 @@ export default function PaddleCard({ paddle, index = 0, heartCount = 0 }: Paddle
                 rel="noopener noreferrer sponsored"
                 className="flex-1 inline-flex items-center justify-center gap-1.5 btn-primary text-sm py-2.5"
               >
-                Get Discount
+                Buy at {paddle.brand}
               </a>
             ) : hasReview ? (
               <a

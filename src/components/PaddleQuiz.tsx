@@ -213,7 +213,7 @@ function ResultCard({ paddle, rank }: { paddle: Paddle; rank: number }) {
             className="text-xs font-semibold px-3 py-1.5 rounded-lg inline-flex items-center gap-1 transition-colors"
             style={{ background: "rgba(20,184,166,0.9)", color: "#fff" }}
           >
-            Get Discount <ExternalLink className="w-3 h-3" />
+            Buy at {paddle.brand} <ExternalLink className="w-3 h-3" />
           </a>
         )}
       </div>

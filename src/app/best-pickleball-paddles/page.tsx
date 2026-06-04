@@ -574,7 +574,7 @@ export default function BestPaddlesPage() {
                                 color: "#2dd4bf",
                               }}
                             >
-                              Get Discount
+                              Buy at {paddle.brand}
                             </a>
                           )}
                         </div>

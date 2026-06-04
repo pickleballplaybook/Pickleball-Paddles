@@ -214,7 +214,7 @@ export default function CategoryPage({ category, accent, headline, intro, picks 
                             className="inline-flex items-center gap-2 font-bold text-sm px-6 py-3 rounded-xl transition-all duration-200 hover:scale-[1.02]"
                             style={{ border: `1.5px solid ${accent}66`, color: accent }}
                           >
-                            {noDiscount ? "Buy Now" : `Get Discount · ${code}`}
+                            Buy at {paddle.brand}
                             <ExternalLink className="w-3.5 h-3.5" />
                           </a>
                         )}

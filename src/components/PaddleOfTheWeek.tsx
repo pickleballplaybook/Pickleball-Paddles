@@ -249,7 +249,7 @@ export default function PaddleOfTheWeek({ paddle }: Props) {
                   className="flex-1 flex items-center justify-center gap-2 font-bold text-sm py-3.5 rounded-2xl text-white transition-all duration-200 active:scale-[0.98]"
                   style={{ background: "#14b8a6" }}
                 >
-                  Get Discount
+                  Buy at {paddle.brand}
                   <ExternalLink className="w-4 h-4" strokeWidth={2.5} />
                 </a>
               ) : (

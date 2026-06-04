@@ -251,7 +251,7 @@ export default function SeriesPage({ params }: Props) {
                         className="flex-1 flex items-center justify-center gap-2 font-bold text-sm py-3 rounded-xl text-white transition-all active:scale-[0.98]"
                         style={{ background: "#14b8a6" }}
                       >
-                        Buy with Discount
+                        Buy at {paddle.brand}
                         <ExternalLink className="w-3.5 h-3.5" />
                       </a>
                     ) : (
