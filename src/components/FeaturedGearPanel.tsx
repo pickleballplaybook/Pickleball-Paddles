@@ -10,21 +10,30 @@ interface Props {
 /**
  * pickFeaturedGear
  * ----------------
- * Deterministic per-paddle gear selection, weighted heavily toward the
- * Titan Ball Machine (60% of paddles show Titan; the other 40% rotate
- * through the remaining gear). Same paddleId → same gear pick every load.
+ * Deterministic per-paddle gear selection. Weighted heavily toward the two
+ * highest-value affiliate products: Titan Ball Machine and the Joola R4LLY
+ * court shoe. Same paddleId → same gear pick every load.
+ *
+ * Distribution (out of every 20 paddles):
+ *   • 7  → Titan Ball Machine    (35%)
+ *   • 7  → Joola R4LLY shoe      (35%)
+ *   • 6  → rotate through others (30%)
  */
 function pickFeaturedGear(paddleId: string): GearProduct | undefined {
   const offset = parseInt(paddleId, 10) || 0;
 
-  // Exclude the "academy" entry — it's a course product, not gear.
-  const others = gearProducts.filter((g) => g.id !== "titan" && g.id !== "academy");
-  const titan  = gearProducts.find((g) => g.id === "titan");
+  // Exclude "academy" (course product, not gear) plus the two priority items.
+  const others = gearProducts.filter(
+    (g) => g.id !== "titan" && g.id !== "r4lly" && g.id !== "academy",
+  );
+  const titan = gearProducts.find((g) => g.id === "titan");
+  const r4lly = gearProducts.find((g) => g.id === "r4lly");
 
-  // 60% Titan / 40% rotate through others. `offset % 5 < 3` → 3-of-5 = 60%.
-  if (titan && offset % 5 < 3) return titan;
-  if (others.length === 0) return titan ?? gearProducts[0];
-  return others[Math.floor(offset / 5) % others.length];
+  const bucket = offset % 20;
+  if (bucket < 7 && titan) return titan;
+  if (bucket < 14 && r4lly) return r4lly;
+  if (others.length === 0) return titan ?? r4lly ?? gearProducts[0];
+  return others[Math.floor(offset / 20) % others.length];
 }
 
 /**
@@ -45,10 +54,10 @@ export default function FeaturedGearPanel({ paddleId }: Props) {
       className="rounded-2xl overflow-hidden"
       style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}
     >
-      {/* Image header */}
+      {/* Image header — image fills the card (was previously sized way too small) */}
       <Link href={`/gear/${gear.id}`} className="block group">
         <div
-          className="relative aspect-square flex items-center justify-center p-6"
+          className="relative aspect-square flex items-center justify-center p-2"
           style={{ background: gear.bg || "var(--flip-bg)" }}
         >
           {gear.image && (
@@ -56,7 +65,7 @@ export default function FeaturedGearPanel({ paddleId }: Props) {
             <img
               src={gear.image}
               alt={`${gear.brand} ${gear.name}`}
-              className="max-h-[180px] w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+              className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
             />
           )}
           <span
@@ -102,8 +111,8 @@ export default function FeaturedGearPanel({ paddleId }: Props) {
           href={gear.link}
           target="_blank"
           rel="noopener noreferrer sponsored"
-          className="flex items-center justify-center gap-2 w-full font-bold text-sm py-3 rounded-xl text-white mb-2 transition-all active:scale-[0.98]"
-          style={{ background: "#14b8a6" }}
+          className="flex items-center justify-center gap-2 w-full font-bold text-sm py-3 rounded-xl mb-2 transition-all active:scale-[0.98]"
+          style={{ background: "var(--btn-buy-bg)", color: "var(--btn-buy-text)" }}
         >
           Buy at {gear.brand} <ExternalLink className="w-3.5 h-3.5" />
         </a>

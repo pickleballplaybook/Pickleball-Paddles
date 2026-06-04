@@ -242,13 +242,14 @@ export default function PaddleCard({ paddle, index = 0, heartCount = 0 }: Paddle
           {/* Primary CTA + compact reactions */}
           <div className="flex items-center gap-2">
 
-            {/* Primary */}
+            {/* Primary — theme-responsive bg (black in light mode, white in dark) */}
             {hasDiscount ? (
               <a
                 href={paddle.discountLink}
                 target="_blank"
                 rel="noopener noreferrer sponsored"
-                className="flex-1 inline-flex items-center justify-center gap-1.5 btn-primary text-sm py-2.5"
+                className="flex-1 inline-flex items-center justify-center gap-1.5 font-semibold rounded-xl text-sm py-2.5 transition-all active:scale-[0.98]"
+                style={{ background: "var(--btn-buy-bg)", color: "var(--btn-buy-text)" }}
               >
                 {buyAtLabel(paddle.brand)}
               </a>

@@ -718,8 +718,8 @@ export default async function PaddleDetailPage({ params }: Props) {
                 <AffiliateBuyButton
                   href={paddle.discountLink}
                   code={noCode ? undefined : code}
-                  className="flex items-center justify-between w-full font-bold text-base py-4 px-6 rounded-2xl text-white transition-all duration-200 active:scale-[0.98]"
-                  style={{ background: "#14b8a6" }}
+                  className="flex items-center justify-between w-full font-bold text-base py-4 px-6 rounded-2xl transition-all duration-200 active:scale-[0.98]"
+                  style={{ background: "var(--btn-buy-bg)", color: "var(--btn-buy-text)" }}
                   ariaLabel={noCode ? `Buy ${paddle.brand} ${paddle.name}` : `Buy ${paddle.brand} ${paddle.name} with discount code ${code}`}
                 >
                   {buyAtLabel(paddle.brand)}

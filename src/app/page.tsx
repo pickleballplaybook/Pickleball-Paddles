@@ -175,13 +175,13 @@ export default async function HomePage() {
 
       <GearScroll />
 
-      {/* Rotating gear promo A */}
+      {/* Rotating gear promo A — prefer wide featuredImage for banner format */}
       <PromoBar
         title={`${promoA.brand} ${promoA.name}`}
         subtitle={promoA.subtitle}
         ctaText={promoA.ctaText}
         ctaHref={promoA.link}
-        image={promoA.image || undefined}
+        image={promoA.featuredImage || promoA.image || undefined}
         imageAlt={`${promoA.brand} ${promoA.name}`}
         badge={promoA.badge || undefined}
         icon={!promoA.image ? <GraduationCap className="w-5 h-5" strokeWidth={2} /> : undefined}
@@ -220,13 +220,13 @@ export default async function HomePage() {
         </Link>
       </section>
 
-      {/* Rotating gear promo B */}
+      {/* Rotating gear promo B — prefer wide featuredImage for banner format */}
       <PromoBar
         title={`${promoB.brand} ${promoB.name}`}
         subtitle={promoB.subtitle}
         ctaText={promoB.ctaText}
         ctaHref={promoB.link}
-        image={promoB.image || undefined}
+        image={promoB.featuredImage || promoB.image || undefined}
         imageAlt={`${promoB.brand} ${promoB.name}`}
         badge={promoB.badge || undefined}
         icon={!promoB.image ? <GraduationCap className="w-5 h-5" strokeWidth={2} /> : undefined}
@@ -237,13 +237,13 @@ export default async function HomePage() {
 
       <NewsletterSignup />
 
-      {/* Rotating gear promo C */}
+      {/* Rotating gear promo C — prefer wide featuredImage for banner format */}
       <PromoBar
         title={`${promoC.brand} ${promoC.name}`}
         subtitle={promoC.subtitle}
         ctaText={promoC.ctaText}
         ctaHref={promoC.link}
-        image={promoC.image || undefined}
+        image={promoC.featuredImage || promoC.image || undefined}
         imageAlt={`${promoC.brand} ${promoC.name}`}
         badge={promoC.badge || undefined}
         icon={!promoC.image ? <GraduationCap className="w-5 h-5" strokeWidth={2} /> : undefined}

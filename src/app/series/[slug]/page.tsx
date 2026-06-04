@@ -249,8 +249,8 @@ export default function SeriesPage({ params }: Props) {
                         href={paddle.discountLink}
                         target="_blank"
                         rel="noopener noreferrer sponsored"
-                        className="flex-1 flex items-center justify-center gap-2 font-bold text-sm py-3 rounded-xl text-white transition-all active:scale-[0.98]"
-                        style={{ background: "#14b8a6" }}
+                        className="flex-1 flex items-center justify-center gap-2 font-bold text-sm py-3 rounded-xl transition-all active:scale-[0.98]"
+                        style={{ background: "var(--btn-buy-bg)", color: "var(--btn-buy-text)" }}
                       >
                         {buyAtLabel(paddle.brand)}
                         <ExternalLink className="w-3.5 h-3.5" />

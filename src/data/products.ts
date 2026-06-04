@@ -6,6 +6,9 @@ export interface GearProduct {
   badge: string;
   link: string;
   image: string;
+  // Optional wide/banner crop — used by PromoBar on the homepage (45%-width
+  // image column) and any other banner-style context. Falls back to `image`.
+  featuredImage?: string;
   imageAspect: "square" | "wide" | "none";
   subtitle: string;
   features?: string;
@@ -44,6 +47,20 @@ export const gearProducts: GearProduct[] = [
     bg: "#163a6a",
     ctaText: "Get $250 Off",
     videoId: "H7ylk_NQYUQ",
+  },
+  {
+    id: "r4lly",
+    brand: "Joola",
+    name: "R4LLY Pickleball Court Shoe",
+    price: "$129.95",
+    badge: "15% Off",
+    link: "https://lockerroompickleball.com/products/r4lly?_pos=3&_sid=6232e6191&_ss=r&sca_ref=8334840.yY4rLJi7oU9HDNHD",
+    image: "/images/products/Joola-R4LLY-Pickleball-Court-Shoe.png",
+    featuredImage: "/images/products/Joola-R4LLY-Pickleball-Court-Shoe-featured.png",
+    imageAspect: "square",
+    subtitle: "Joola's dedicated pickleball court shoe — built for the lateral movement, quick stops, and explosive starts the kitchen demands.",
+    bg: "#1a2942",
+    ctaText: "Get Discount",
   },
   {
     id: "tennibot",

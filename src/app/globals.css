@@ -68,6 +68,12 @@
   /* ── Discount savings text — dark teal for legibility on white cards ──── */
   --discount-text: #0d9488;
 
+  /* ── Buy button — inverted from page bg for maximum contrast ──────────── */
+  /* Light mode: black button, white text. */
+  --btn-buy-bg:       #0a1628;
+  --btn-buy-bg-hover: #1e293b;
+  --btn-buy-text:     #ffffff;
+
   /* ── TopBar height — JS in TopBar.tsx keeps this in sync ───────────────── */
   --topbar-h: 32px;
   --shell-offset: 156px;
@@ -107,6 +113,12 @@ html.dark {
 
   /* ── Discount savings text — yellow-green pops on dark cards ─────────── */
   --discount-text: #defa32;
+
+  /* ── Buy button — inverted from page bg in dark mode. */
+  /* Dark mode: white button, dark text. */
+  --btn-buy-bg:       #ffffff;
+  --btn-buy-bg-hover: #e2e8f0;
+  --btn-buy-text:     #0a1628;
 }
 
 @layer base {
