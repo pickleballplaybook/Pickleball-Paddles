@@ -2396,11 +2396,11 @@ export const paddles: Paddle[] = [
   // ── Luzz Glider / Tornazo ─────────────────────────────────────────────────
   {
     id: "124",
-    // Slug retained as "luzz-glider-elongated" — it was set during launch
-    // and changing it would break inbound links + Google indexing. The
-    // shape itself is now correctly classified as Hybrid (matches the
-    // image filename, which was always "Luzz-Glider-Hybrid-16mm.png").
-    slug: "luzz-glider-elongated",
+    // Slug + shape both corrected to Hybrid (the image filename was always
+    // Luzz-Glider-Hybrid-16mm.png). The old "luzz-glider-elongated" URL
+    // 301-redirects to this new one via next.config.js — Google transfers
+    // any existing ranking signal to the new canonical URL.
+    slug: "luzz-glider-hybrid",
     brand: "Luzz",
     name: "Glider",
     shape: "Hybrid",
