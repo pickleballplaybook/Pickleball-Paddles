@@ -5,6 +5,7 @@ import { Heart, ThumbsDown } from "lucide-react";
 import { Paddle } from "@/types";
 import { useReactions } from "@/hooks/useReactions";
 import { buyAtLabel } from "@/lib/buyAtLabel";
+import { isPreLaunch } from "@/lib/launchStatus";
 
 interface PaddleCardProps {
   paddle: Paddle;
@@ -65,6 +66,7 @@ export default function PaddleCard({ paddle, index = 0, heartCount = 0 }: Paddle
   const hasDiscount = !!paddle.discountLink?.trim();
   const reviewLink  = paddle.reviewUrl ?? (paddle.manualVideoId ? `https://youtu.be/${paddle.manualVideoId}` : null);
   const hasReview   = !!reviewLink;
+  const preLaunch   = isPreLaunch(paddle);
 
   const staggerDelay = `${Math.min(index, 10) * 50}ms`;
 
@@ -243,7 +245,18 @@ export default function PaddleCard({ paddle, index = 0, heartCount = 0 }: Paddle
           <div className="flex items-center gap-2">
 
             {/* Primary — theme-responsive bg (black in light mode, white in dark) */}
-            {hasDiscount ? (
+            {preLaunch ? (
+              <span
+                className="flex-1 inline-flex items-center justify-center gap-1.5 font-semibold rounded-xl text-sm py-2.5"
+                style={{
+                  background: "var(--flip-bg-card)",
+                  color: "var(--flip-text-muted)",
+                  border: "1px dashed var(--code-border)",
+                }}
+              >
+                Coming Soon
+              </span>
+            ) : hasDiscount ? (
               <a
                 href={paddle.discountLink}
                 target="_blank"

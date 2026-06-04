@@ -52,6 +52,11 @@ export interface Paddle {
   // ── Catalog metadata ──────────────────────────────────────────────────────
   addedAt: string;        // ISO date — powers "Just Added"
   trendingScore: number;  // 0–100 — powers "What's Trending"
+
+  // Optional launch date. When set AND in the future, the buy buttons swap
+  // to a "Coming Soon" state. Use a full ISO string with timezone offset
+  // (e.g. "2026-06-15T00:00:00-04:00" for midnight ET). Helper: isPreLaunch().
+  launchAt?: string;
 }
 
 // ── Filter types ──────────────────────────────────────────────────────────────

@@ -11,10 +11,11 @@ interface Props {
   discountLink?: string;
   slug: string;
   code?: string;            // Discount code to auto-copy on click (omit for no-code paddles)
+  preLaunch?: boolean;      // When true, replaces the Apply Discount button with "Coming Soon"
 }
 
-export default function StickyBottomBar({ name, brand, price, discountLink, slug, code }: Props) {
-  const hasLink = !!discountLink?.trim();
+export default function StickyBottomBar({ name, brand, price, discountLink, slug, code, preLaunch }: Props) {
+  const hasLink = !!discountLink?.trim() && !preLaunch;
   const hasCode = !!code?.trim();
 
   return (
@@ -69,7 +70,11 @@ export default function StickyBottomBar({ name, brand, price, discountLink, slug
           ) : (
             <span
               className="inline-flex items-center px-5 py-2.5 rounded-xl text-sm font-bold"
-              style={{ background: "var(--flip-bg-card)", color: "var(--flip-text-muted)" }}
+              style={{
+                background: "var(--flip-bg-card)",
+                color: "var(--flip-text-muted)",
+                border: preLaunch ? "1px dashed var(--code-border)" : undefined,
+              }}
             >
               Coming Soon
             </span>

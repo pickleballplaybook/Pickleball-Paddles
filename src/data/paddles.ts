@@ -2450,6 +2450,9 @@ export const paddles: Paddle[] = [
     trendingScore: 50,
     playStyle: "power",
     seriesSlug: "11six24-power-2",
+    // Launches at 12am ET on June 15, 2026 — until then the buy buttons
+    // render as "Coming Soon" via isPreLaunch() in lib/launchStatus.ts.
+    launchAt: "2026-06-15T00:00:00-04:00",
   },
 
   // ── Scoop ─────────────────────────────────────────────────────────────────

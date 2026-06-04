@@ -28,6 +28,7 @@ import TestingMethodologyBlock from "@/components/TestingMethodologyBlock";
 import AffiliateBuyButton from "@/components/AffiliateBuyButton";
 import { buyAtLabel } from "@/lib/buyAtLabel";
 import FeaturedGearPanel from "@/components/FeaturedGearPanel";
+import { isPreLaunch, formatLaunchDate } from "@/lib/launchStatus";
 
 interface Props {
   params: { slug: string };
@@ -158,6 +159,8 @@ export default async function PaddleDetailPage({ params }: Props) {
   const code           = getDiscountCode(paddle.brand, paddle.discountLink);
   const giftCard       = isSelkirkGiftCard(paddle.brand, paddle.amountOff, paddle.discountLink);
   const savings        = savingsDisplay(paddle.amountOff);
+  const preLaunch      = isPreLaunch(paddle);
+  const launchDateLong = formatLaunchDate(paddle.launchAt);
   const hasLink        = !!paddle.discountLink?.trim();
   // No code applies when there's no discount AND it's not a Selkirk gift card
   const noCode         = (!paddle.amountOff || paddle.amountOff === "$0" || paddle.amountOff === "") && !giftCard;
@@ -608,9 +611,23 @@ export default async function PaddleDetailPage({ params }: Props) {
               </div>
             </Link>
 
-            <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#14b8a6" }}>
-              {paddle.brand}
-            </p>
+            <div className="flex items-center gap-2 flex-wrap mb-2">
+              <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "#14b8a6" }}>
+                {paddle.brand}
+              </p>
+              {preLaunch && launchDateLong && (
+                <span
+                  className="inline-flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-full"
+                  style={{
+                    background: "var(--code-bg)",
+                    color: "var(--code-text)",
+                    border: "1px solid var(--code-border)",
+                  }}
+                >
+                  Launches {launchDateLong}
+                </span>
+              )}
+            </div>
             <h1
               className="text-4xl md:text-5xl font-extrabold tracking-tight leading-[1.05] mb-1"
               style={{ color: "var(--flip-text-head)" }}
@@ -729,11 +746,24 @@ export default async function PaddleDetailPage({ params }: Props) {
                 </div>
               </div>
 
-              {/* Buy button — AffiliateBuyButton auto-copies the code to clipboard */}
-              {/* and shows a confirmation toast so users know to paste it at checkout. */}
-              {/* Button label is "Buy at {brand}" everywhere — clearer than the old */}
-              {/* "Buy with Discount" which implied automatic application. */}
-              {hasLink ? (
+              {/* Buy button — three states: */}
+              {/*   1. preLaunch  → disabled "Coming Soon" + launch date */}
+              {/*   2. hasLink    → real AffiliateBuyButton (the normal path) */}
+              {/*   3. otherwise  → "Link Coming Soon" placeholder (no URL yet) */}
+              {preLaunch ? (
+                <button
+                  disabled
+                  className="flex items-center justify-center gap-2 w-full font-bold text-base py-4 rounded-2xl cursor-not-allowed"
+                  style={{
+                    background: "var(--flip-bg-card)",
+                    color: "var(--flip-text-muted)",
+                    border: "1px dashed var(--code-border)",
+                  }}
+                  aria-label={`${paddle.brand} ${paddle.name} launches ${launchDateLong ?? "soon"}`}
+                >
+                  Coming Soon{launchDateLong ? ` · ${launchDateLong}` : ""}
+                </button>
+              ) : hasLink ? (
                 <AffiliateBuyButton
                   href={paddle.discountLink}
                   code={noCode ? undefined : code}
@@ -1528,6 +1558,7 @@ export default async function PaddleDetailPage({ params }: Props) {
       discountLink={paddle.discountLink}
       slug={paddle.slug}
       code={noCode ? undefined : code}
+      preLaunch={preLaunch}
     />
     </>
   );
