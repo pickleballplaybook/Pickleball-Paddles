@@ -21,7 +21,10 @@ export default function StickyBottomBar({ name, brand, price, discountLink, slug
     <div
       className="fixed bottom-0 left-0 right-0 z-40 border-t backdrop-blur-xl"
       style={{
-        background: "rgba(var(--flip-bg-rgb, 15,23,42), 0.92)",
+        // Use theme-aware --sticky-bg-rgb so the bar is white in light mode
+        // and navy in dark. Before, --flip-bg-rgb was never defined and the
+        // fallback always rendered dark navy — invisible text in light mode.
+        background: "rgba(var(--sticky-bg-rgb), 0.92)",
         borderColor: "var(--flip-card-border)",
       }}
     >

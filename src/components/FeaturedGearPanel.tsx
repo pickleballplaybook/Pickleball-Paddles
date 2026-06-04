@@ -55,10 +55,16 @@ export default function FeaturedGearPanel({ paddleId }: Props) {
       style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}
     >
       {/* Image header — image fills the card (was previously sized way too small) */}
+      {/* Background uses a soft "showroom spotlight" radial gradient that's */}
+      {/* theme-aware (white-ish in light, subtle dark in dark) — feels like */}
+      {/* a product photo studio instead of a flat navy block. */}
       <Link href={`/gear/${gear.id}`} className="block group">
         <div
           className="relative aspect-square flex items-center justify-center p-2"
-          style={{ background: gear.bg || "var(--flip-bg)" }}
+          style={{
+            background:
+              "radial-gradient(circle at 50% 35%, var(--product-bg-spotlight) 0%, var(--product-bg-base) 100%)",
+          }}
         >
           {gear.image && (
             // eslint-disable-next-line @next/next/no-img-element

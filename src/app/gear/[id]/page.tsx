@@ -124,7 +124,11 @@ export default function GearProductPage({ params }: Props) {
             {/* Image */}
             <div
               className="rounded-3xl overflow-hidden w-full"
-              style={{ background: product.bg, aspectRatio: "1/1" }}
+              style={{
+                background:
+                  "radial-gradient(circle at 50% 35%, var(--product-bg-spotlight) 0%, var(--product-bg-base) 100%)",
+                aspectRatio: "1/1",
+              }}
             >
               {product.imageAspect !== "none" && product.image ? (
                 // eslint-disable-next-line @next/next/no-img-element

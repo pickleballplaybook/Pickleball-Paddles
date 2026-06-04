@@ -82,6 +82,14 @@
   --code-border: rgba(60,172,174,0.55);
   --code-muted:  #64748b;
 
+  /* ── Product photography background — radial "showroom spotlight" effect. */
+  /* Light: soft off-white center, slightly cooler edges = clean product photo. */
+  --product-bg-spotlight: #ffffff;
+  --product-bg-base:      #eef2f7;
+
+  /* ── Sticky bar bg components — RGB triples so the bar can use rgba() blur. */
+  --sticky-bg-rgb: 255,255,255;
+
   /* ── TopBar height — JS in TopBar.tsx keeps this in sync ───────────────── */
   --topbar-h: 32px;
   --shell-offset: 156px;
@@ -134,6 +142,14 @@ html.dark {
   --code-bg:     rgba(20,184,166,0.06);
   --code-border: rgba(45,212,191,0.5);
   --code-muted:  rgba(255,255,255,0.4);
+
+  /* ── Product photography background — subtle dark gradient with center spotlight. */
+  /* Dark: very slight tonal lift in the center mimics showroom lighting. */
+  --product-bg-spotlight: #1a2540;
+  --product-bg-base:      #0a1628;
+
+  /* ── Sticky bar bg components — dark navy in dark mode. */
+  --sticky-bg-rgb: 15,23,42;
 }
 
 @layer base {

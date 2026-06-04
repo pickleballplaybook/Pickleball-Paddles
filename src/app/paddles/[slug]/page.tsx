@@ -1037,7 +1037,7 @@ export default async function PaddleDetailPage({ params }: Props) {
                           src={gear.image}
                           alt={gear.name}
                           className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
-                          style={{ background: gear.bg }}
+                          style={{ background: "var(--product-bg-base)" }}
                         />
                       )}
                       <div className="min-w-0 flex-1">
@@ -1123,7 +1123,13 @@ export default async function PaddleDetailPage({ params }: Props) {
                 style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}
               >
                 {gear.image && (
-                  <div className="aspect-[16/10] relative overflow-hidden" style={{ background: gear.bg }}>
+                  <div
+                    className="aspect-[16/10] relative overflow-hidden"
+                    style={{
+                      background:
+                        "radial-gradient(circle at 50% 35%, var(--product-bg-spotlight) 0%, var(--product-bg-base) 100%)",
+                    }}
+                  >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={gear.image}

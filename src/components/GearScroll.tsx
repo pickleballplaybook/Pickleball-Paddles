@@ -48,7 +48,11 @@ export default function GearScroll() {
               {/* Image */}
               <div
                 className="w-full flex items-center justify-center overflow-hidden flex-shrink-0"
-                style={{ height: "160px", background: p.bg }}
+                style={{
+                  height: "160px",
+                  background:
+                    "radial-gradient(circle at 50% 35%, var(--product-bg-spotlight) 0%, var(--product-bg-base) 100%)",
+                }}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
