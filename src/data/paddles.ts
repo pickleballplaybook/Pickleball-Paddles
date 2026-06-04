@@ -2326,7 +2326,7 @@ export const paddles: Paddle[] = [
     image: "/images/paddles/Selkirk-Omno-Widebody-16mm.png",
     amountOff: "$0",
     price: "$299.99",
-    discountLink: "https://www.selkirk.com/pages/omni-pickleball-paddle?variant=45607806173286&discount=INF-PLAYBOOK",
+    discountLink: "https://www.selkirk.com/discount/INF-PLAYBOOK?redirect=/pages/omni-pickleball-paddle?variant=45607806173286",
     reviewUrl: "https://youtu.be/2jXKJrCH9iI",
     addedAt: "2026-05-29",
     trendingScore: 50,
