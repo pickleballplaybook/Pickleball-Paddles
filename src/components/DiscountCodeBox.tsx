@@ -37,14 +37,14 @@ export default function DiscountCodeBox({ code, giftCard, savings, compact }: Pr
           onClick={handleCopy}
           className="inline-flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-150 active:scale-[0.98]"
           style={{
-            border: "2px dashed rgba(45,212,191,0.5)",
-            background: "rgba(20,184,166,0.06)",
+            border: "2px dashed var(--code-border)",
+            background: "var(--code-bg)",
           }}
         >
-          <span className="font-mono font-extrabold text-sm tracking-widest" style={{ color: "#2dd4bf" }}>
+          <span className="font-mono font-extrabold text-sm tracking-widest" style={{ color: "var(--code-text)" }}>
             {code}
           </span>
-          <span className="text-[10px] font-semibold" style={{ color: copied ? "#4ade80" : "#94a3b8" }}>
+          <span className="text-[10px] font-semibold" style={{ color: copied ? "#16a34a" : "var(--code-muted)" }}>
             {copied ? (
               <><Check className="w-3.5 h-3.5 inline" strokeWidth={2.5} /> Copied</>
             ) : (
@@ -85,14 +85,14 @@ export default function DiscountCodeBox({ code, giftCard, savings, compact }: Pr
               onClick={handleCopy}
               className="flex items-center justify-between w-full px-4 py-3 rounded-xl transition-all duration-150 active:scale-[0.98]"
               style={{
-                border: "2px dashed rgba(45,212,191,0.5)",
-                background: "rgba(20,184,166,0.06)",
+                border: "2px dashed var(--code-border)",
+                background: "var(--code-bg)",
               }}
             >
-              <span className="font-mono font-extrabold text-lg tracking-widest" style={{ color: "#2dd4bf" }}>
+              <span className="font-mono font-extrabold text-lg tracking-widest" style={{ color: "var(--code-text)" }}>
                 {code}
               </span>
-              <span className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: copied ? "#4ade80" : "#2dd4bf" }}>
+              <span className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: copied ? "#16a34a" : "var(--code-text)" }}>
                 {copied ? (
                   <><Check className="w-4 h-4" strokeWidth={2.5} /> Copied!</>
                 ) : (
@@ -124,7 +124,7 @@ export default function DiscountCodeBox({ code, giftCard, savings, compact }: Pr
               Discount Code
             </p>
             {savings && (
-              <p className="text-sm font-bold" style={{ color: "#2dd4bf" }}>{savings} off</p>
+              <p className="text-sm font-bold" style={{ color: "var(--code-text)" }}>{savings} off</p>
             )}
           </div>
         </div>
@@ -134,16 +134,16 @@ export default function DiscountCodeBox({ code, giftCard, savings, compact }: Pr
         onClick={handleCopy}
         className="flex items-center justify-between w-full px-4 py-3 rounded-xl transition-all duration-150 hover:opacity-90 active:scale-[0.98]"
         style={{
-          border: "2px dashed rgba(45,212,191,0.5)",
-          background: "rgba(20,184,166,0.06)",
+          border: "2px dashed var(--code-border)",
+          background: "var(--code-bg)",
         }}
       >
-        <span className="font-mono font-extrabold text-xl tracking-widest" style={{ color: "#2dd4bf" }}>
+        <span className="font-mono font-extrabold text-xl tracking-widest" style={{ color: "var(--code-text)" }}>
           {code}
         </span>
         <span
           className="flex items-center gap-1.5 text-xs font-semibold whitespace-nowrap"
-          style={{ color: copied ? "#4ade80" : "#94a3b8" }}
+          style={{ color: copied ? "#16a34a" : "var(--code-muted)" }}
         >
           {copied ? (
             <><Check className="w-4 h-4" strokeWidth={2.5} /> Copied!</>

@@ -75,6 +75,13 @@
   --btn-buy-text:     #ffffff;
   --btn-buy-shadow:   0 4px 16px rgba(60,172,174,0.28), 0 2px 4px rgba(60,172,174,0.18);
 
+  /* ── Code chip + price accent — theme-responsive for legibility in both modes. */
+  /* Light: deeper teal on slightly tinted bg; dark: bright teal on faint tint. */
+  --code-text:   #0d9488;
+  --code-bg:     rgba(60,172,174,0.10);
+  --code-border: rgba(60,172,174,0.55);
+  --code-muted:  #64748b;
+
   /* ── TopBar height — JS in TopBar.tsx keeps this in sync ───────────────── */
   --topbar-h: 32px;
   --shell-offset: 156px;
@@ -121,6 +128,12 @@ html.dark {
   --btn-buy-bg-hover: #e2e8f0;
   --btn-buy-text:     #0a1628;
   --btn-buy-shadow:   0 4px 24px rgba(255,255,255,0.10), 0 0 0 1px rgba(255,255,255,0.04);
+
+  /* ── Code chip tokens — bright teal pops on dark cards. */
+  --code-text:   #2dd4bf;
+  --code-bg:     rgba(20,184,166,0.06);
+  --code-border: rgba(45,212,191,0.5);
+  --code-muted:  rgba(255,255,255,0.4);
 }
 
 @layer base {

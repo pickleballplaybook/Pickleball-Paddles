@@ -667,10 +667,12 @@ export default async function PaddleDetailPage({ params }: Props) {
                       {discountedPrice ? (
                         <>
                           {/* Bumped to text-4xl + subtle teal glow for editorial-grade emphasis. */}
+                          {/* Uses --code-text so it pops in both themes (deeper teal in light, */}
+                          {/* bright teal in dark — same value drove the prev hardcoded #2dd4bf). */}
                           <span
                             className="text-3xl sm:text-4xl font-extrabold tracking-tight"
                             style={{
-                              color: "#2dd4bf",
+                              color: "var(--code-text)",
                               textShadow: "0 0 24px rgba(20,184,166,0.35)",
                             }}
                           >
@@ -715,9 +717,9 @@ export default async function PaddleDetailPage({ params }: Props) {
                   {noCode ? (
                     <div
                       className="inline-flex items-center px-3 py-2 rounded-lg"
-                      style={{ border: "2px dashed rgba(148,195,215,0.25)", background: "rgba(148,195,215,0.04)" }}
+                      style={{ border: "2px dashed var(--flip-card-border)", background: "var(--flip-bg)" }}
                     >
-                      <span className="font-mono font-bold text-sm tracking-wide" style={{ color: "rgba(148,195,215,0.5)" }}>
+                      <span className="font-mono font-bold text-sm tracking-wide" style={{ color: "var(--flip-text-muted)" }}>
                         No Code Use Link
                       </span>
                     </div>
@@ -765,10 +767,12 @@ export default async function PaddleDetailPage({ params }: Props) {
               {/* "Free eGift Card after purchase") already communicates the same info. */}
               {hasLink && noCode && (
                 <p className="text-xs mt-3 text-center leading-relaxed" style={{ color: "var(--flip-text-muted)" }}>
-                  Click link to <strong style={{ color: "#2dd4bf" }}>support Playbook Reviews</strong>
+                  Click link to <strong style={{ color: "var(--code-text)" }}>support Playbook Reviews</strong>
                 </p>
               )}
-              <p className="text-[11px] mt-1.5 text-center" style={{ color: "rgba(148,195,215,0.35)" }}>
+              {/* Affiliate disclaimer — uses --flip-text-faint so it stays visible */}
+              {/* in light mode (was hardcoded to a dark-mode-only blue tint before). */}
+              <p className="text-[11px] mt-1.5 text-center" style={{ color: "var(--flip-text-faint)" }}>
                 Affiliate links. We may earn a commission — it never affects our ratings.
               </p>
             </div>
