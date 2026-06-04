@@ -639,10 +639,18 @@ export default async function PaddleDetailPage({ params }: Props) {
               <ReactionButtons paddleId={paddle.id} />
             </div>
 
-            {/* Price + promo code box */}
+            {/* Price + promo code box — premium card treatment */}
+            {/* Layered teal-tinted gradient + soft drop shadow give it a */}
+            {/* "floating editorial card" feel instead of the flat panel it was. */}
             <div
-              className="rounded-2xl p-5 mb-5"
-              style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}
+              className="rounded-2xl p-6 mb-5 relative overflow-hidden"
+              style={{
+                background:
+                  "linear-gradient(135deg, rgba(60,172,174,0.06) 0%, var(--flip-bg-card) 50%, var(--flip-bg-card) 100%)",
+                border: "1px solid rgba(60,172,174,0.18)",
+                boxShadow:
+                  "0 12px 40px rgba(60,172,174,0.06), 0 2px 8px rgba(15,23,42,0.06), inset 0 1px 0 rgba(255,255,255,0.04)",
+              }}
             >
               {/* Price row with code on the right — stacks on mobile */}
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
@@ -658,15 +666,22 @@ export default async function PaddleDetailPage({ params }: Props) {
                     <div className="flex items-baseline gap-2">
                       {discountedPrice ? (
                         <>
-                          <span className="text-3xl font-extrabold" style={{ color: "#2dd4bf" }}>
+                          {/* Bumped to text-4xl + subtle teal glow for editorial-grade emphasis. */}
+                          <span
+                            className="text-3xl sm:text-4xl font-extrabold tracking-tight"
+                            style={{
+                              color: "#2dd4bf",
+                              textShadow: "0 0 24px rgba(20,184,166,0.35)",
+                            }}
+                          >
                             {discountedPrice}
                           </span>
-                          <span className="text-2xl font-semibold line-through" style={{ color: "var(--flip-text-muted)" }}>
+                          <span className="text-xl sm:text-2xl font-semibold line-through" style={{ color: "var(--flip-text-muted)" }}>
                             {paddle.price}
                           </span>
                         </>
                       ) : (
-                        <span className="text-3xl font-extrabold" style={{ color: "var(--flip-text-head)" }}>
+                        <span className="text-3xl sm:text-4xl font-extrabold tracking-tight" style={{ color: "var(--flip-text-head)" }}>
                           {paddle.price}
                         </span>
                       )}
@@ -721,7 +736,11 @@ export default async function PaddleDetailPage({ params }: Props) {
                   href={paddle.discountLink}
                   code={noCode ? undefined : code}
                   className="flex items-center justify-between w-full font-bold text-base py-4 px-6 rounded-2xl transition-all duration-200 active:scale-[0.98]"
-                  style={{ background: "var(--btn-buy-bg)", color: "var(--btn-buy-text)" }}
+                  style={{
+                    background: "var(--btn-buy-bg)",
+                    color: "var(--btn-buy-text)",
+                    boxShadow: "var(--btn-buy-shadow)",
+                  }}
                   ariaLabel={noCode ? `Buy ${paddle.brand} ${paddle.name}` : `Buy ${paddle.brand} ${paddle.name} with discount code ${code}`}
                 >
                   {buyAtLabel(paddle.brand)}

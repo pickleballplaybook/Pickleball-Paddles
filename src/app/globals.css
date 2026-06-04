@@ -68,11 +68,12 @@
   /* ── Discount savings text — dark teal for legibility on white cards ──── */
   --discount-text: #0d9488;
 
-  /* ── Buy button — inverted from page bg for maximum contrast ──────────── */
-  /* Light mode: black button, white text. */
-  --btn-buy-bg:       #0a1628;
-  --btn-buy-bg-hover: #1e293b;
+  /* ── Buy button — brand teal in light mode (warmer than black, on-brand). */
+  /* Subtle gradient + lifted shadow give it a premium "floating" feel. */
+  --btn-buy-bg:       #3cacae;
+  --btn-buy-bg-hover: #2a9596;
   --btn-buy-text:     #ffffff;
+  --btn-buy-shadow:   0 4px 16px rgba(60,172,174,0.28), 0 2px 4px rgba(60,172,174,0.18);
 
   /* ── TopBar height — JS in TopBar.tsx keeps this in sync ───────────────── */
   --topbar-h: 32px;
@@ -114,11 +115,12 @@ html.dark {
   /* ── Discount savings text — yellow-green pops on dark cards ─────────── */
   --discount-text: #defa32;
 
-  /* ── Buy button — inverted from page bg in dark mode. */
-  /* Dark mode: white button, dark text. */
+  /* ── Buy button — clean white in dark mode (premium editorial CTA). */
+  /* Soft glow gives it the "high-end membership card" feel. */
   --btn-buy-bg:       #ffffff;
   --btn-buy-bg-hover: #e2e8f0;
   --btn-buy-text:     #0a1628;
+  --btn-buy-shadow:   0 4px 24px rgba(255,255,255,0.10), 0 0 0 1px rgba(255,255,255,0.04);
 }
 
 @layer base {
