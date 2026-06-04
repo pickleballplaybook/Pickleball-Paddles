@@ -2489,6 +2489,7 @@ export const paddles: Paddle[] = [
     price: "$99.99",
     amountOff: "10%",
     discountLink: "https://warpingpoint.com/discount/PLAYBOOK?redirect=/products/16mm-phoenix-pickleball-paddle",
+    reviewUrl: "https://youtu.be/7KrcRprApZo",
     addedAt: "2026-06-04",
     trendingScore: 50,
     playStyle: "all-court",
@@ -2507,6 +2508,7 @@ export const paddles: Paddle[] = [
     price: "$149.99",
     amountOff: "10%",
     discountLink: "https://warpingpoint.com/discount/PLAYBOOK?redirect=/products/sophon-pickleball-paddle-16mm",
+    reviewUrl: "https://youtu.be/7KrcRprApZo",
     addedAt: "2026-06-04",
     trendingScore: 50,
     playStyle: "power",
@@ -2525,6 +2527,7 @@ export const paddles: Paddle[] = [
     price: "$219.99",
     amountOff: "10%",
     discountLink: "https://warpingpoint.com/discount/PLAYBOOK?redirect=/products/16mm-dual-tone-pickleball-paddle",
+    reviewUrl: "https://youtu.be/7KrcRprApZo",
     addedAt: "2026-06-04",
     trendingScore: 50,
     playStyle: "power",
@@ -2534,6 +2537,8 @@ export const paddles: Paddle[] = [
 // Review dates — ISO publish dates for Latest Reviews sort (newest-first)
 // Set youtubeApiKey in site.ts to auto-fetch real dates; or fill in manually.
 export const reviewDates: Record<string, string> = {
+  "7KrcRprApZo": "2026-06-04",  // Warping Point (Neon, Sophon, Phoenix)  ← newest
+  CkrJVwTKk94:   "2026-06-03",  // Best Pickleball Paddles Under $125
   "2jXKJrCH9iI": "2026-05-30",  // Selkirk Omni
   azQ81arW72g:   "2026-05-19",  // Joola Pro V Line (Scorpeus, Agassi, Graf, Hyperion)
   tLtBiz9bNWc:   "2026-05-18",  // Thrive Ignite Pro Series
