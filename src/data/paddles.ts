@@ -2396,10 +2396,14 @@ export const paddles: Paddle[] = [
   // ── Luzz Glider / Tornazo ─────────────────────────────────────────────────
   {
     id: "124",
+    // Slug retained as "luzz-glider-elongated" — it was set during launch
+    // and changing it would break inbound links + Google indexing. The
+    // shape itself is now correctly classified as Hybrid (matches the
+    // image filename, which was always "Luzz-Glider-Hybrid-16mm.png").
     slug: "luzz-glider-elongated",
     brand: "Luzz",
     name: "Glider",
-    shape: "Elongated",
+    shape: "Hybrid",
     weight: "7.8 oz",
     swingWeight: 107.94,
     twistWeight: 6.21,
