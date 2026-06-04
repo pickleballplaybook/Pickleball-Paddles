@@ -3,6 +3,7 @@ import Image from "next/image";
 import { ArrowRight, Award, ExternalLink, Tag } from "lucide-react";
 import { Paddle } from "@/types";
 import PerformanceBar from "./PerformanceBar";
+import { buyAtLabel } from "@/lib/buyAtLabel";
 
 interface PaddleOfTheMonthProps {
   paddle: Paddle;
@@ -111,7 +112,7 @@ export default function PaddleOfTheMonth({ paddle }: PaddleOfTheMonthProps) {
                   rel="noopener noreferrer sponsored"
                   className="inline-flex items-center gap-2 text-sm font-semibold text-white/70 hover:text-white border border-white/20 hover:border-white/40 px-6 py-3 rounded-xl transition-all"
                 >
-                  Buy at {paddle.brand}
+                  {buyAtLabel(paddle.brand)}
                   <ExternalLink className="w-3.5 h-3.5" />
                 </a>
               )}

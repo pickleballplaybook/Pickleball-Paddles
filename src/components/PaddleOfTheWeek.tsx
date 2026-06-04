@@ -3,6 +3,7 @@ import { ExternalLink, Tag, Gift, Award } from "lucide-react";
 import { Paddle } from "@/types";
 import { siteConfig } from "@/config/site";
 import PerformanceBar from "@/components/PerformanceBar";
+import { buyAtLabel } from "@/lib/buyAtLabel";
 
 interface Props {
   paddle: Paddle;
@@ -249,7 +250,7 @@ export default function PaddleOfTheWeek({ paddle }: Props) {
                   className="flex-1 flex items-center justify-center gap-2 font-bold text-sm py-3.5 rounded-2xl text-white transition-all duration-200 active:scale-[0.98]"
                   style={{ background: "#14b8a6" }}
                 >
-                  Buy at {paddle.brand}
+                  {buyAtLabel(paddle.brand)}
                   <ExternalLink className="w-4 h-4" strokeWidth={2.5} />
                 </a>
               ) : (

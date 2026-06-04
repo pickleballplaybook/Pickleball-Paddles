@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Heart, ThumbsDown } from "lucide-react";
 import { Paddle } from "@/types";
 import { useReactions } from "@/hooks/useReactions";
+import { buyAtLabel } from "@/lib/buyAtLabel";
 
 interface PaddleCardProps {
   paddle: Paddle;
@@ -249,7 +250,7 @@ export default function PaddleCard({ paddle, index = 0, heartCount = 0 }: Paddle
                 rel="noopener noreferrer sponsored"
                 className="flex-1 inline-flex items-center justify-center gap-1.5 btn-primary text-sm py-2.5"
               >
-                Buy at {paddle.brand}
+                {buyAtLabel(paddle.brand)}
               </a>
             ) : hasReview ? (
               <a

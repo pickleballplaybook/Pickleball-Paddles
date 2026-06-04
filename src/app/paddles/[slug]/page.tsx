@@ -26,6 +26,8 @@ import { canonicalMatchup } from "@/app/compare/[matchup]/helpers";
 import { getBrandByName } from "@/data/brands";
 import TestingMethodologyBlock from "@/components/TestingMethodologyBlock";
 import AffiliateBuyButton from "@/components/AffiliateBuyButton";
+import { buyAtLabel } from "@/lib/buyAtLabel";
+import FeaturedGearPanel from "@/components/FeaturedGearPanel";
 
 interface Props {
   params: { slug: string };
@@ -720,7 +722,7 @@ export default async function PaddleDetailPage({ params }: Props) {
                   style={{ background: "#14b8a6" }}
                   ariaLabel={noCode ? `Buy ${paddle.brand} ${paddle.name}` : `Buy ${paddle.brand} ${paddle.name} with discount code ${code}`}
                 >
-                  Buy at {paddle.brand}
+                  {buyAtLabel(paddle.brand)}
                   <ArrowRight className="w-5 h-5" />
                 </AffiliateBuyButton>
               ) : (
@@ -965,28 +967,10 @@ export default async function PaddleDetailPage({ params }: Props) {
 
             {/* Sidebar — sticky, hidden on mobile (price already in hero) */}
             <div className="hidden lg:block space-y-6 lg:sticky lg:top-[140px] self-start">
-              {/* Price card */}
-              <div
-                className="rounded-2xl p-5"
-                style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}
-              >
-                <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: "var(--flip-text-muted)" }}>Price</p>
-                <p className="text-3xl font-extrabold mb-3" style={{ color: "var(--flip-text-head)" }}>
-                  {discountedPrice ?? paddle.price ?? "TBD"}
-                </p>
-                {!noCode && <DiscountCodeBox code={code} giftCard={giftCard} savings={savings} />}
-                {hasLink && (
-                  <AffiliateBuyButton
-                    href={paddle.discountLink}
-                    code={noCode ? undefined : code}
-                    className="flex items-center justify-center gap-2 w-full font-bold text-sm py-3 rounded-xl text-white mt-3 transition-all active:scale-[0.98]"
-                    style={{ background: "#14b8a6" }}
-                    ariaLabel={noCode ? `Buy ${paddle.brand} ${paddle.name}` : `Buy ${paddle.brand} ${paddle.name} with discount code ${code}`}
-                  >
-                    Buy at {paddle.brand} <ExternalLink className="w-3.5 h-3.5" />
-                  </AffiliateBuyButton>
-                )}
-              </div>
+              {/* Featured gear panel — replaces the old duplicate price/buy card. */}
+              {/* Weighted toward the Titan Ball Machine (60% of paddles); other 40% */}
+              {/* rotate through remaining gear. Deterministic per paddle.id. */}
+              <FeaturedGearPanel paddleId={paddle.id} />
 
               {/* Featured in guides */}
               <div

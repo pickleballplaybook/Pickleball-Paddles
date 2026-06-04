@@ -5,6 +5,7 @@ import Link from "next/link";
 import { X, ChevronRight, RotateCcw, ExternalLink } from "lucide-react";
 import { Paddle } from "@/types";
 import { paddles as allPaddles } from "@/data/paddles";
+import { buyAtLabel } from "@/lib/buyAtLabel";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -213,7 +214,7 @@ function ResultCard({ paddle, rank }: { paddle: Paddle; rank: number }) {
             className="text-xs font-semibold px-3 py-1.5 rounded-lg inline-flex items-center gap-1 transition-colors"
             style={{ background: "rgba(20,184,166,0.9)", color: "#fff" }}
           >
-            Buy at {paddle.brand} <ExternalLink className="w-3 h-3" />
+            {buyAtLabel(paddle.brand)} <ExternalLink className="w-3 h-3" />
           </a>
         )}
       </div>

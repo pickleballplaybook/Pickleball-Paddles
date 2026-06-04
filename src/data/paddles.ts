@@ -748,20 +748,22 @@ export const paddles: Paddle[] = [
     id: "36",
     slug: "joola-pro-v-perseus-elongated",
     brand: "Joola",
-    name: "Pro V Perseus",
+    // Renamed from "Pro V Perseus" → "Perseus Rally Rocket" per the Joola
+    // Rally Rocket limited-edition naming. Slug is intentionally NOT changed
+    // (would break existing inbound links + Google indexing).
+    name: "Perseus Rally Rocket",
     shape: "Elongated",
     weight: "8.1 oz",
     swingWeight: 116.29,
     twistWeight: 6.35,
     thickness: "16mm",
-    // TEMP limited-edition promo — revert ALL of these together when out of stock:
-    //   image       -> "/images/paddles/Pro-V-16mm.png"
-    //   discountLink -> "https://lockerroompickleball.com/search?q=Joola&sca_ref=8334840.yY4rLJi7oU9HDNHD"
-    //   price        -> "$299.95"
     image: "/images/limited-edition/Joola-Pro-V-Perseus-16mm.png",
-    amountOff: "15%",
+    // No discount on this paddle — Awin affiliate flow to joola.com directly,
+    // so amountOff stays at "$0" and the CTA reads "Buy at Joola Pickleball"
+    // with no code badge or savings line.
+    amountOff: "$0",
     price: "$329.95",
-    discountLink: "https://lockerroompickleball.com/products/limited-edition-rocket-rally-perseus-pro-v?sca_ref=8334840.yY4rLJi7oU9HDNHD",
+    discountLink: "https://www.awin1.com/cread.php?awinmid=124160&awinaffid=2831454&ued=https%3A%2F%2Fjoola.com%2Fcollections%2Frocket-pop%2Fproducts%2Fjoola-perseus-pro-v-pickleball-paddle-rally-rocket%3Fvariant%3D48148274774230",
     reviewUrl: "https://youtu.be/gRU_Zwn2iwQ",
     addedAt: "2025-06-01",
     trendingScore: 68,

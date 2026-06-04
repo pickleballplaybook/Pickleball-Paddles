@@ -7,6 +7,7 @@ import { ArrowRight, ExternalLink, ChevronRight } from "lucide-react";
 import type { Paddle } from "@/types";
 import { extractYouTubeId } from "@/lib/youtube";
 import YouTubeEmbed from "@/components/YouTubeEmbed";
+import { buyAtLabel } from "@/lib/buyAtLabel";
 
 interface Props {
   params: { slug: string };
@@ -251,7 +252,7 @@ export default function SeriesPage({ params }: Props) {
                         className="flex-1 flex items-center justify-center gap-2 font-bold text-sm py-3 rounded-xl text-white transition-all active:scale-[0.98]"
                         style={{ background: "#14b8a6" }}
                       >
-                        Buy at {paddle.brand}
+                        {buyAtLabel(paddle.brand)}
                         <ExternalLink className="w-3.5 h-3.5" />
                       </a>
                     ) : (

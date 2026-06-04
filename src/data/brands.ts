@@ -5,6 +5,9 @@ export interface Brand {
   description: string;
   founded?: string;
   headquarters?: string;
+  // Optional override — when set, the brand page hero features this paddle
+  // instead of auto-picking the highest trendingScore. Use the paddle slug.
+  featuredPaddleSlug?: string;
 }
 
 export const brands: Brand[] = [
@@ -37,7 +40,7 @@ export const brands: Brand[] = [
   { name: "Selkirk", slug: "selkirk", logo: "/images/brands/selkirk-pickleball.png", description: "Selkirk is one of pickleball's most recognized brands. Their Labs Project line pushes engineering boundaries with paddles like the Boomstik and Tesla Plaid." },
   { name: "Speedup", slug: "speedup", logo: "/images/brands/Speedup-Pickleball.png", description: "Speedup enters the foam core market with the Tide series — two shapes, one mission: balanced all-court performance at a price point that's hard to beat." },
   { name: "Thrive", slug: "thrive", logo: "/images/brands/Thrive-Pickleball.png", description: "Thrive Pickleball brings the Ignite Pro Series with a textured 15.5mm face that excels at spin generation for all-court play." },
-  { name: "Warping Point", slug: "warping-point", logo: "/images/brands/Warping-Point-Pickleball.png", description: "Warping Point delivers competitive specs at honest prices — the Neon at $99.99 brings all-court touch, while the Sophon and Phoenix push into serious power territory with swing weights of 120 and 122." },
+  { name: "Warping Point", slug: "warping-point", logo: "/images/brands/Warping-Point-Pickleball.png", description: "Warping Point delivers competitive specs at honest prices — the Neon at $99.99 brings all-court touch, while the Sophon and Phoenix push into serious power territory with swing weights of 120 and 122.", featuredPaddleSlug: "warping-point-sophon-elongated" },
 ];
 
 export function getBrandBySlug(slug: string): Brand | undefined {

@@ -66,11 +66,16 @@ export default function BrandPage({ params }: Props) {
   const code = getCode(brand.name, brandPaddles[0]?.discountLink);
 
   // ── Featured paddle ─────────────────────────────────────────────────────
-  // The highest-trending paddle in the brand. Skipped for tiny brand lineups
-  // (1 paddle) since the featured hero just duplicates the grid below.
-  const featured = brandPaddles.length >= 2
-    ? [...brandPaddles].sort((a, b) => (b.trendingScore ?? 0) - (a.trendingScore ?? 0))[0]
+  // Brand entry can override the auto-pick via featuredPaddleSlug. Otherwise
+  // the highest-trending paddle wins. Skipped for tiny lineups (1 paddle)
+  // since the featured hero just duplicates the grid below.
+  const override = brand.featuredPaddleSlug
+    ? brandPaddles.find((p) => p.slug === brand.featuredPaddleSlug)
     : null;
+  const featured = override
+    ?? (brandPaddles.length >= 2
+      ? [...brandPaddles].sort((a, b) => (b.trendingScore ?? 0) - (a.trendingScore ?? 0))[0]
+      : null);
 
   // ── Price stats for FAQ + meta ─────────────────────────────────────────
   const pricePoints = brandPaddles
