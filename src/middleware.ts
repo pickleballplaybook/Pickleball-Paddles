@@ -7,16 +7,20 @@ const SHORTS_COOKIE = "shorts_auth";
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // ── Admin gating (unchanged behavior) ─────────────────────────────────
+  // ── Admin gating ──────────────────────────────────────────────────────
   const isShortsApi = pathname.startsWith("/api/admin/shorts/");
   const isShortsPage = pathname.startsWith("/admin/shorts");
   const isPublishApi = pathname.startsWith("/api/admin/publish/");
   const isPublishPage = pathname.startsWith("/admin/publish");
   const isPublishOAuth =
     pathname.startsWith("/auth/youtube") || pathname.startsWith("/auth/meta");
-  const isApiGated = isShortsApi || isPublishApi;
+  // Newsletter admin export — uses the same shorts_auth cookie gating.
+  const isNewsletterApi  = pathname.startsWith("/api/admin/newsletter-emails");
+  const isNewsletterPage = pathname.startsWith("/admin/newsletter-emails");
+  const isApiGated = isShortsApi || isPublishApi || isNewsletterApi;
   const isGated =
-    isShortsPage || isShortsApi || isPublishPage || isPublishApi || isPublishOAuth;
+    isShortsPage || isShortsApi || isPublishPage || isPublishApi || isPublishOAuth ||
+    isNewsletterApi || isNewsletterPage;
 
   if (isGated) {
     const isLoginPage = pathname === "/admin/shorts/login";

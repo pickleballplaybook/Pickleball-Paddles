@@ -6,6 +6,8 @@ import { Plus, Trash2, ArrowRight, TrendingUp, Sparkles, Loader2, LogOut, Upload
 import { aggregate, totals, getMatches as getLocalMatches, clearAllMatches as clearLocalMatches, type SavedMatch } from "@/lib/matchHistory";
 import { getMatchesDb, deleteMatchDb, migrateLocalMatches } from "@/lib/matchHistoryDb";
 import { getSupabaseBrowser } from "@/lib/supabase/browser";
+import { syncPendingOptIn, bannerDismissed } from "@/lib/newsletterOptIn";
+import NewsletterConfirmBanner from "@/components/NewsletterConfirmBanner";
 
 // ── Hand-rolled HorizontalBar ─────────────────────────────────────────────
 function BarRow({ label, value, max, color }: { label: string; value: number; max: number; color: string }) {
@@ -139,6 +141,39 @@ export default function MatchHistoryPage() {
   const [localMatches, setLocalMatches] = useState<SavedMatch[]>([]);
   const [migrating, setMigrating]     = useState(false);
   const [migrateMsg, setMigrateMsg]   = useState<string | null>(null);
+  const [showNewsletter, setShowNewsletter] = useState(false);
+
+  // Shared post-signin work: load matches, sync any pending newsletter
+  // opt-in choice from /login to the user's profile, and decide whether
+  // the post-signup newsletter banner should appear.
+  async function onSignedIn() {
+    try {
+      const cloud = await getMatchesDb();
+      setMatches(cloud);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to load matches.");
+    }
+    setLocalMatches(getLocalMatches());
+
+    // Persist the opt-in pre-signin choice (if any) into the profile,
+    // then decide if we should show the banner.
+    await syncPendingOptIn();
+
+    if (!bannerDismissed()) {
+      const supabase = getSupabaseBrowser();
+      const { data: userRes } = await supabase.auth.getUser();
+      if (userRes.user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("newsletter_opt_in, newsletter_subscribed_at")
+          .eq("id", userRes.user.id)
+          .maybeSingle();
+        if (profile?.newsletter_opt_in && !profile.newsletter_subscribed_at) {
+          setShowNewsletter(true);
+        }
+      }
+    }
+  }
 
   // Load auth state + matches on mount
   useEffect(() => {
@@ -147,17 +182,7 @@ export default function MatchHistoryPage() {
       const email = data.user?.email ?? null;
       setAuthEmail(email);
       setAuthLoading(false);
-
-      if (email) {
-        try {
-          const cloud = await getMatchesDb();
-          setMatches(cloud);
-        } catch (e) {
-          setError(e instanceof Error ? e.message : "Failed to load matches.");
-        }
-        // Surface local matches for optional migration
-        setLocalMatches(getLocalMatches());
-      }
+      if (email) await onSignedIn();
       setLoading(false);
     });
 
@@ -165,18 +190,14 @@ export default function MatchHistoryPage() {
       const email = session?.user?.email ?? null;
       setAuthEmail(email);
       if (email) {
-        try {
-          const cloud = await getMatchesDb();
-          setMatches(cloud);
-        } catch (e) {
-          setError(e instanceof Error ? e.message : "Failed to load matches.");
-        }
-        setLocalMatches(getLocalMatches());
+        await onSignedIn();
       } else {
         setMatches([]);
+        setShowNewsletter(false);
       }
     });
     return () => sub.subscription.unsubscribe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function handleDelete(id: string) {
@@ -293,6 +314,14 @@ export default function MatchHistoryPage() {
             </Link>
           </div>
         </div>
+
+        {/* Newsletter confirm banner — shows after first sign-in if they opted in */}
+        {showNewsletter && authEmail && (
+          <NewsletterConfirmBanner
+            email={authEmail}
+            onDismiss={() => setShowNewsletter(false)}
+          />
+        )}
 
         {/* Migration prompt for users with local matches */}
         {localMatches.length > 0 && !migrateMsg && (

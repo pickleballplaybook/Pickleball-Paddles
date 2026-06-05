@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Mail, Loader2, Check, ArrowRight, AlertCircle } from "lucide-react";
 import { getSupabaseBrowser } from "@/lib/supabase/browser";
+import { setPendingOptIn } from "@/lib/newsletterOptIn";
 
 function LoginForm() {
   const searchParams = useSearchParams();
@@ -16,12 +17,18 @@ function LoginForm() {
   const [magicSent,   setMagicSent]   = useState(false);
   const [googleBusy,  setGoogleBusy]  = useState(false);
   const [error,       setError]       = useState<string | null>(initialError);
+  // Default-on: signing up for a paddle review site, the weekly picks
+  // are core value. Easy to uncheck. Synced to profile post-sign-in.
+  const [optIn,       setOptIn]       = useState(true);
 
   async function sendMagicLink(e: React.FormEvent) {
     e.preventDefault();
     if (!email.trim()) return;
     setSending(true);
     setError(null);
+    // Stash the opt-in choice in localStorage so the post-signin flow
+    // can write it to the user's profile after the magic-link round trip.
+    setPendingOptIn(optIn);
     try {
       const supabase = getSupabaseBrowser();
       const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
@@ -44,6 +51,8 @@ function LoginForm() {
   async function signInWithGoogle() {
     setGoogleBusy(true);
     setError(null);
+    // Same opt-in stash before the OAuth bounce.
+    setPendingOptIn(optIn);
     try {
       const supabase = getSupabaseBrowser();
       const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
@@ -116,6 +125,20 @@ function LoginForm() {
         </div>
       ) : (
         <>
+          {/* Newsletter opt-in — applies to whichever auth method is used */}
+          <label className="flex items-start gap-2.5 mb-4 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={optIn}
+              onChange={(e) => setOptIn(e.target.checked)}
+              className="mt-0.5 flex-shrink-0 w-4 h-4 accent-teal-500 cursor-pointer"
+            />
+            <span className="text-xs leading-snug" style={{ color: "var(--text-muted)" }}>
+              <strong style={{ color: "var(--text-primary)" }}>Send me the weekly newsletter</strong> —
+              this week&apos;s paddle picks, drops, and discount codes. One-click unsubscribe anytime.
+            </span>
+          </label>
+
           {/* Google */}
           <button
             type="button"
