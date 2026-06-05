@@ -1,258 +1,172 @@
-"use client";
-
-import { useState } from "react";
+import Link from "next/link";
 import { AdminNav } from "../_components/AdminNav";
-import RichTextBlock from "./_components/RichTextBlock";
+import { getFirebaseFirestore } from "@/lib/firebase-admin";
 
-const CATEGORIES = [
-  "Dinks",
-  "Drops",
-  "Drives",
-  "Volleys",
-  "Ball Machine",
-  "Wall",
-] as const;
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-export default function DrillsAdminPage() {
-  const [name, setName] = useState("");
-  const [descBeginner, setDescBeginner] = useState("");
-  const [descIntermediate, setDescIntermediate] = useState("");
-  const [descAdvanced, setDescAdvanced] = useState("");
-  const [category, setCategory] = useState("");
-  const [weekNumber, setWeekNumber] = useState("");
-  const [videoUrl, setVideoUrl] = useState("");
-  const [image, setImage] = useState<File | null>(null);
-  const [scheduledPublishAt, setScheduledPublishAt] = useState("");
-  const [isPublished, setIsPublished] = useState(false);
+type DrillRow = {
+  id: string;
+  name: string;
+  category?: string;
+  week_number?: number;
+  video_url?: string;
+  image?: string | null;
+  scheduled_publish_at?: string | null;
+  is_published?: boolean;
+};
 
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [successId, setSuccessId] = useState<string | null>(null);
+async function loadDrills(): Promise<DrillRow[]> {
+  const db = getFirebaseFirestore();
+  const snap = await db
+    .collection("programs")
+    .where("multi_level", "==", true)
+    .get();
+  const drills = snap.docs.map((d) => d.data() as DrillRow);
+  drills.sort((a, b) => {
+    const aw = a.week_number ?? 0;
+    const bw = b.week_number ?? 0;
+    if (aw !== bw) return bw - aw;
+    return a.name.localeCompare(b.name);
+  });
+  return drills;
+}
 
-  function resetForm() {
-    setName("");
-    setDescBeginner("");
-    setDescIntermediate("");
-    setDescAdvanced("");
-    setCategory("");
-    setWeekNumber("");
-    setVideoUrl("");
-    setImage(null);
-    setScheduledPublishAt("");
-    setIsPublished(false);
+function formatScheduled(iso: string | null | undefined): string {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+function statusBadge(d: DrillRow): { label: string; className: string } {
+  if (!d.is_published) {
+    return {
+      label: "Draft",
+      className: "bg-gray-800 text-gray-300",
+    };
   }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    setSuccessId(null);
-    setSubmitting(true);
-
-    try {
-      const fd = new FormData();
-      fd.append("name", name);
-      fd.append("description_beginner", descBeginner);
-      fd.append("description_intermediate", descIntermediate);
-      fd.append("description_advanced", descAdvanced);
-      fd.append("category", category);
-      fd.append("week_number", weekNumber);
-      fd.append("video_url", videoUrl);
-      if (scheduledPublishAt) {
-        // datetime-local gives "YYYY-MM-DDTHH:MM" in the user's local time.
-        // Convert to an absolute UTC ISO string so the server stores an
-        // unambiguous instant.
-        fd.append(
-          "scheduled_publish_at",
-          new Date(scheduledPublishAt).toISOString()
-        );
-      }
-      fd.append("is_published", isPublished ? "true" : "false");
-      if (image) fd.append("image", image);
-
-      const res = await fetch("/api/admin/drills", {
-        method: "POST",
-        body: fd,
-      });
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        const detail = json?.fields?.length
-          ? ` (${json.fields.join(", ")})`
-          : "";
-        setError(`${json?.error ?? "Upload failed"}${detail}`);
-        return;
-      }
-      setSuccessId(json.id);
-      resetForm();
-    } catch (err: any) {
-      setError(err?.message ?? "Upload failed");
-    } finally {
-      setSubmitting(false);
+  if (d.scheduled_publish_at) {
+    const when = new Date(d.scheduled_publish_at);
+    if (!Number.isNaN(when.getTime()) && when.getTime() > Date.now()) {
+      return {
+        label: "Scheduled",
+        className: "bg-amber-900/60 text-amber-200 border border-amber-700/60",
+      };
     }
   }
+  return {
+    label: "Live",
+    className: "bg-emerald-900/60 text-emerald-200 border border-emerald-700/60",
+  };
+}
+
+export default async function DrillsListPage() {
+  const drills = await loadDrills();
 
   return (
     <main className="min-h-screen bg-gray-950 text-white px-6 py-8">
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <AdminNav />
 
-        <h1 className="text-2xl font-semibold mb-1">Upload Drill</h1>
-        <p className="text-gray-400 text-sm mb-6">
-          Creates one drill record with separate Beginner / Intermediate /
-          Advanced descriptions and a single video. Saved with{" "}
-          <code className="text-accent-300">multi_level: true</code> so the
-          mobile app can distinguish it from older single-level drills.
-        </p>
-
-        {successId && (
-          <div className="mb-4 p-3 rounded border border-emerald-700 bg-emerald-900/40 text-sm">
-            Drill saved (id: <code>{successId}</code>).
-          </div>
-        )}
-        {error && (
-          <div className="mb-4 p-3 rounded border border-red-700 bg-red-900/40 text-sm">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <FieldLabel label="Name">
-            <input
-              type="text"
-              required
-              maxLength={120}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full bg-gray-900 border border-gray-800 rounded px-3 py-2 text-sm focus:outline-none focus:border-accent-500"
-            />
-          </FieldLabel>
-
-          <FieldLabel label="Description — Beginner">
-            <RichTextBlock
-              value={descBeginner}
-              onChange={setDescBeginner}
-              placeholder="What a beginner should focus on…"
-            />
-          </FieldLabel>
-
-          <FieldLabel label="Description — Intermediate">
-            <RichTextBlock
-              value={descIntermediate}
-              onChange={setDescIntermediate}
-              placeholder="What an intermediate player should focus on…"
-            />
-          </FieldLabel>
-
-          <FieldLabel label="Description — Advanced">
-            <RichTextBlock
-              value={descAdvanced}
-              onChange={setDescAdvanced}
-              placeholder="What an advanced player should focus on…"
-            />
-          </FieldLabel>
-
-          <FieldLabel label="Category">
-            <select
-              required
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="w-full bg-gray-900 border border-gray-800 rounded px-3 py-2 text-sm focus:outline-none focus:border-accent-500"
-            >
-              <option value="" disabled>
-                Select a category
-              </option>
-              {CATEGORIES.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-          </FieldLabel>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FieldLabel label="Week Number">
-              <input
-                type="number"
-                required
-                min={1}
-                step={1}
-                value={weekNumber}
-                onChange={(e) => setWeekNumber(e.target.value)}
-                className="w-full bg-gray-900 border border-gray-800 rounded px-3 py-2 text-sm focus:outline-none focus:border-accent-500"
-              />
-            </FieldLabel>
-            <FieldLabel label="Video URL">
-              <input
-                type="url"
-                required
-                placeholder="https://vimeo.com/…"
-                value={videoUrl}
-                onChange={(e) => setVideoUrl(e.target.value)}
-                className="w-full bg-gray-900 border border-gray-800 rounded px-3 py-2 text-sm focus:outline-none focus:border-accent-500"
-              />
-            </FieldLabel>
-          </div>
-
-          <FieldLabel label="Image (optional)">
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setImage(e.target.files?.[0] ?? null)}
-              className="block w-full text-sm text-gray-300 file:mr-3 file:py-2 file:px-4 file:rounded file:border-0 file:bg-accent-500 file:text-black file:font-medium hover:file:opacity-90"
-            />
-            {image && (
-              <div className="mt-2 text-xs text-gray-400">
-                Selected: {image.name} ({Math.round(image.size / 1024)} KB)
-              </div>
-            )}
-          </FieldLabel>
-
-          <FieldLabel label="Schedule (optional)">
-            <input
-              type="datetime-local"
-              value={scheduledPublishAt}
-              onChange={(e) => setScheduledPublishAt(e.target.value)}
-              className="w-full bg-gray-900 border border-gray-800 rounded px-3 py-2 text-sm focus:outline-none focus:border-accent-500"
-            />
-            <p className="mt-1 text-xs text-gray-500">
-              Leave blank to publish immediately. Times are in your local
-              timezone — the server stores an absolute UTC instant.
+        <div className="flex items-end justify-between mb-6">
+          <div>
+            <h1 className="text-2xl font-semibold">Drills</h1>
+            <p className="text-sm text-gray-400 mt-1">
+              {drills.length === 0
+                ? "No drills yet."
+                : `${drills.length} drill${drills.length === 1 ? "" : "s"} uploaded.`}
             </p>
-          </FieldLabel>
-
-          <label className="inline-flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={isPublished}
-              onChange={(e) => setIsPublished(e.target.checked)}
-              className="accent-accent-500"
-            />
-            Published
-          </label>
-
-          <button
-            type="submit"
-            disabled={submitting}
-            className="bg-accent-500 hover:opacity-90 disabled:opacity-50 text-black font-medium px-6 py-2 rounded transition"
+          </div>
+          <Link
+            href="/admin/drills/new"
+            className="bg-accent-500 hover:opacity-90 text-black font-medium px-4 py-2 rounded text-sm"
           >
-            {submitting ? "Saving…" : "Save Drill"}
-          </button>
-        </form>
+            + New drill
+          </Link>
+        </div>
+
+        {drills.length === 0 ? (
+          <div className="rounded border border-gray-800 bg-gray-900 px-6 py-12 text-center text-sm text-gray-400">
+            Upload your first drill with the <strong>New drill</strong>{" "}
+            button above.
+          </div>
+        ) : (
+          <div className="rounded border border-gray-800 overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-900 text-gray-300 text-left text-xs uppercase tracking-wide">
+                <tr>
+                  <th className="px-4 py-3 font-medium">Drill</th>
+                  <th className="px-4 py-3 font-medium">Category</th>
+                  <th className="px-4 py-3 font-medium">Week</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium">Scheduled</th>
+                  <th className="px-4 py-3 font-medium text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-gray-950">
+                {drills.map((d) => {
+                  const status = statusBadge(d);
+                  return (
+                    <tr
+                      key={d.id}
+                      className="border-t border-gray-800 hover:bg-gray-900/60"
+                    >
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          {d.image ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={d.image}
+                              alt=""
+                              className="h-10 w-10 rounded object-cover bg-gray-800"
+                            />
+                          ) : (
+                            <div className="h-10 w-10 rounded bg-gray-800" />
+                          )}
+                          <div className="font-medium text-white truncate">
+                            {d.name}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-gray-300">
+                        {d.category ?? "—"}
+                      </td>
+                      <td className="px-4 py-3 text-gray-300">
+                        {d.week_number ?? "—"}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`inline-block px-2 py-0.5 rounded text-xs ${status.className}`}
+                        >
+                          {status.label}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-gray-400 text-xs">
+                        {formatScheduled(d.scheduled_publish_at)}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <Link
+                          href={`/admin/drills/${d.id}/edit`}
+                          className="text-accent-300 hover:text-accent-200 text-sm"
+                        >
+                          Edit
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </main>
-  );
-}
-
-function FieldLabel({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <label className="block">
-      <div className="text-sm text-gray-300 mb-1">{label}</div>
-      {children}
-    </label>
   );
 }

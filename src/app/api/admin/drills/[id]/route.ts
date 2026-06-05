@@ -10,36 +10,11 @@ export const dynamic = "force-dynamic";
 
 // Admin-gated by the shorts_auth cookie in src/middleware.ts.
 //
-// POST: write a new "multi-level" drill document to Firestore. The mobile
-// app distinguishes these from older single-level drills by the
-// `multi_level: true` flag, so existing records stay untouched.
-//
-// GET: list all multi-level drills, sorted by week_number desc.
+// GET    /api/admin/drills/[id]  — fetch a single drill doc
+// PUT    /api/admin/drills/[id]  — update a drill (multipart/form-data)
+// DELETE /api/admin/drills/[id]  — delete a drill doc
 
 const COLLECTION = "programs";
-
-export async function GET() {
-  try {
-    const db = getFirebaseFirestore();
-    const snap = await db
-      .collection(COLLECTION)
-      .where("multi_level", "==", true)
-      .get();
-    const drills = snap.docs.map((d) => d.data());
-    drills.sort((a, b) => {
-      const aw = (a.week_number as number | undefined) ?? 0;
-      const bw = (b.week_number as number | undefined) ?? 0;
-      if (aw !== bw) return bw - aw;
-      return ((a.name as string) ?? "").localeCompare((b.name as string) ?? "");
-    });
-    return NextResponse.json({ drills });
-  } catch (err: any) {
-    return NextResponse.json(
-      { error: `Firestore read failed: ${err?.message ?? "unknown error"}` },
-      { status: 500 }
-    );
-  }
-}
 
 const CATEGORIES = new Set([
   "Dinks",
@@ -50,7 +25,28 @@ const CATEGORIES = new Set([
   "Wall",
 ]);
 
-export async function POST(req: NextRequest) {
+type RouteCtx = { params: Promise<{ id: string }> };
+
+export async function GET(_req: NextRequest, { params }: RouteCtx) {
+  const { id } = await params;
+  try {
+    const db = getFirebaseFirestore();
+    const doc = await db.collection(COLLECTION).doc(id).get();
+    if (!doc.exists) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+    return NextResponse.json(doc.data());
+  } catch (err: any) {
+    return NextResponse.json(
+      { error: `Firestore read failed: ${err?.message ?? "unknown error"}` },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(req: NextRequest, { params }: RouteCtx) {
+  const { id } = await params;
+
   let formData: FormData;
   try {
     formData = await req.formData();
@@ -62,32 +58,30 @@ export async function POST(req: NextRequest) {
   }
 
   const name = (formData.get("name") ?? "").toString().trim();
-  const description_beginner = (formData.get("description_beginner") ?? "").toString();
-  const description_intermediate = (formData.get("description_intermediate") ?? "").toString();
-  const description_advanced = (formData.get("description_advanced") ?? "").toString();
+  const description_beginner = (
+    formData.get("description_beginner") ?? ""
+  ).toString();
+  const description_intermediate = (
+    formData.get("description_intermediate") ?? ""
+  ).toString();
+  const description_advanced = (
+    formData.get("description_advanced") ?? ""
+  ).toString();
   const category = (formData.get("category") ?? "").toString().trim();
-  const week_number_raw = (formData.get("week_number") ?? "").toString().trim();
+  const week_number_raw = (formData.get("week_number") ?? "")
+    .toString()
+    .trim();
   const video_url = (formData.get("video_url") ?? "").toString().trim();
   const is_published = formData.get("is_published") === "true";
-  const scheduled_publish_at_raw = (formData.get("scheduled_publish_at") ?? "")
+  const scheduled_publish_at_raw = (
+    formData.get("scheduled_publish_at") ?? ""
+  )
     .toString()
     .trim();
   const imageField = formData.get("image");
-
-  // Optional schedule field. Client converts the datetime-local input to an
-  // ISO string before submitting; we re-parse here to validate and to store
-  // a canonical ISO-8601 UTC instant.
-  let scheduled_publish_at: string | null = null;
-  if (scheduled_publish_at_raw) {
-    const parsed = new Date(scheduled_publish_at_raw);
-    if (Number.isNaN(parsed.getTime())) {
-      return NextResponse.json(
-        { error: "scheduled_publish_at is not a valid date." },
-        { status: 400 }
-      );
-    }
-    scheduled_publish_at = parsed.toISOString();
-  }
+  const existing_image_url = (
+    formData.get("existing_image_url") ?? ""
+  ).toString();
 
   const missing: string[] = [];
   if (!name) missing.push("name");
@@ -116,9 +110,29 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const db = getFirebaseFirestore();
-  const docRef = db.collection(COLLECTION).doc();
+  let scheduled_publish_at: string | null = null;
+  if (scheduled_publish_at_raw) {
+    const parsed = new Date(scheduled_publish_at_raw);
+    if (Number.isNaN(parsed.getTime())) {
+      return NextResponse.json(
+        { error: "scheduled_publish_at is not a valid date." },
+        { status: 400 }
+      );
+    }
+    scheduled_publish_at = parsed.toISOString();
+  }
 
+  const db = getFirebaseFirestore();
+  const docRef = db.collection(COLLECTION).doc(id);
+
+  // Verify the doc exists before updating (returns 404 if not).
+  const existing = await docRef.get();
+  if (!existing.exists) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  // Image: new upload wins; otherwise keep `existing_image_url` from the
+  // client; otherwise (neither provided) clear the field.
   let imageUrl: string | null = null;
   if (imageField instanceof File && imageField.size > 0) {
     try {
@@ -127,12 +141,9 @@ export async function POST(req: NextRequest) {
         ? imageField.name.split(".").pop()!.toLowerCase()
         : "bin";
       const ext = extFromName.replace(/[^a-z0-9]/g, "") || "bin";
-      const objectPath = `drill-images/${docRef.id}.${ext}`;
+      const objectPath = `drill-images/${id}-${randomUUID().slice(0, 8)}.${ext}`;
       const fileRef = bucket.file(objectPath);
       const buffer = Buffer.from(await imageField.arrayBuffer());
-
-      // Tag the upload so it can be served via the standard Firebase
-      // Storage download URL pattern (no signed-URL expiry).
       const downloadToken = randomUUID();
       await fileRef.save(buffer, {
         metadata: {
@@ -150,10 +161,12 @@ export async function POST(req: NextRequest) {
         { status: 500 }
       );
     }
+  } else if (existing_image_url) {
+    imageUrl = existing_image_url;
   }
 
-  const drill = {
-    id: docRef.id,
+  const update = {
+    id,
     name,
     video_url,
     description_beginner,
@@ -169,7 +182,7 @@ export async function POST(req: NextRequest) {
   };
 
   try {
-    await docRef.set(drill);
+    await docRef.set(update, { merge: true });
   } catch (err: any) {
     return NextResponse.json(
       { error: `Firestore write failed: ${err?.message ?? "unknown error"}` },
@@ -177,5 +190,24 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  return NextResponse.json({ ok: true, id: docRef.id });
+  return NextResponse.json({ ok: true, id });
+}
+
+export async function DELETE(_req: NextRequest, { params }: RouteCtx) {
+  const { id } = await params;
+  try {
+    const db = getFirebaseFirestore();
+    const docRef = db.collection(COLLECTION).doc(id);
+    const existing = await docRef.get();
+    if (!existing.exists) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+    await docRef.delete();
+    return NextResponse.json({ ok: true, id });
+  } catch (err: any) {
+    return NextResponse.json(
+      { error: `Firestore delete failed: ${err?.message ?? "unknown error"}` },
+      { status: 500 }
+    );
+  }
 }
