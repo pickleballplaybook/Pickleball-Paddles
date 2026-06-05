@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { RotateCcw, Send, Sparkles, Minus, Plus, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { RotateCcw, Send, Sparkles, Minus, Plus, Loader2, Save, Check, LineChart } from "lucide-react";
+import { saveMatch } from "@/lib/matchHistory";
 
 // ── Tally categories ────────────────────────────────────────────────────────
 const UE_ITEMS = [
@@ -226,6 +228,7 @@ export default function MatchAnalysisPage() {
   const [output, setOutput]     = useState("");
   const [loading, setLoading]   = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [savedFlash, setSavedFlash] = useState(false);
 
   const ueTotal      = sum(ueData);
   const feTotal      = sum(feData);
@@ -245,6 +248,28 @@ export default function MatchAnalysisPage() {
     setNotes("");
     setOutput("");
     setErrorMsg(null);
+  }
+
+  function handleSaveMatch() {
+    const ratioNum =
+      totalErrors === 0 && winnersTotal === 0
+        ? 0
+        : totalErrors === 0
+          ? winnersTotal
+          : winnersTotal / totalErrors;
+    saveMatch({
+      ueData,
+      feData,
+      winData,
+      notes,
+      ueTotal,
+      feTotal,
+      totalErrors,
+      winnersTotal,
+      ratio: ratioNum,
+    });
+    setSavedFlash(true);
+    setTimeout(() => setSavedFlash(false), 2500);
   }
 
   async function submit() {
@@ -300,19 +325,33 @@ export default function MatchAnalysisPage() {
               Tap each item as you re-watch your match film. When you&apos;re done, pick a coach style and get personalized feedback on what to work on next.
             </p>
           </div>
-          <button
-            type="button"
-            onClick={reset}
-            className="flex-shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg transition-colors"
-            style={{
-              background: "var(--flip-bg-card)",
-              border: "1px solid var(--flip-card-border)",
-              color: "var(--text-muted)",
-            }}
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            Reset
-          </button>
+          <div className="flex-shrink-0 flex items-center gap-2">
+            <Link
+              href="/match/history"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg transition-colors"
+              style={{
+                background: "var(--flip-bg-card)",
+                border: "1px solid var(--flip-card-border)",
+                color: "var(--text-muted)",
+              }}
+            >
+              <LineChart className="w-3.5 h-3.5" />
+              History
+            </Link>
+            <button
+              type="button"
+              onClick={reset}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg transition-colors"
+              style={{
+                background: "var(--flip-bg-card)",
+                border: "1px solid var(--flip-card-border)",
+                color: "var(--text-muted)",
+              }}
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              Reset
+            </button>
+          </div>
         </div>
 
         {/* Tally sections */}
@@ -414,31 +453,58 @@ export default function MatchAnalysisPage() {
           </div>
         </div>
 
-        {/* Submit */}
-        <button
-          type="button"
-          onClick={submit}
-          disabled={loading || totalErrors + winnersTotal === 0}
-          className="inline-flex items-center justify-center gap-2 w-full md:w-auto font-bold text-base py-3.5 px-8 rounded-2xl transition-all duration-200 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-          style={{
-            background: "var(--btn-buy-bg)",
-            color: "var(--btn-buy-text)",
-            boxShadow: "var(--btn-buy-shadow)",
-          }}
-        >
-          {loading ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Getting feedback…
-            </>
-          ) : (
-            <>
-              <Sparkles className="w-4 h-4" />
-              Get coach feedback
-              <Send className="w-4 h-4" />
-            </>
-          )}
-        </button>
+        {/* Submit + Save row */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <button
+            type="button"
+            onClick={submit}
+            disabled={loading || totalErrors + winnersTotal === 0}
+            className="inline-flex items-center justify-center gap-2 flex-1 font-bold text-base py-3.5 px-8 rounded-2xl transition-all duration-200 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{
+              background: "var(--btn-buy-bg)",
+              color: "var(--btn-buy-text)",
+              boxShadow: "var(--btn-buy-shadow)",
+            }}
+          >
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Getting feedback…
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4" />
+                Get coach feedback
+                <Send className="w-4 h-4" />
+              </>
+            )}
+          </button>
+
+          {/* Save match — persists tally to localStorage for /match/history */}
+          <button
+            type="button"
+            onClick={handleSaveMatch}
+            disabled={totalErrors + winnersTotal === 0}
+            className="inline-flex items-center justify-center gap-2 font-bold text-base py-3.5 px-6 rounded-2xl transition-all duration-200 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{
+              background: "var(--flip-bg-card)",
+              border: "1px solid var(--flip-card-border)",
+              color: "var(--text-primary)",
+            }}
+          >
+            {savedFlash ? (
+              <>
+                <Check className="w-4 h-4" style={{ color: "#22c55e" }} />
+                Saved
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4" />
+                Save match
+              </>
+            )}
+          </button>
+        </div>
 
         {/* Output */}
         {(output || errorMsg) && (
