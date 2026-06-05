@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { RotateCcw, Send, Sparkles, Minus, Plus, Loader2, Save, Check, LineChart } from "lucide-react";
-import { saveMatch } from "@/lib/matchHistory";
+import { useRouter } from "next/navigation";
+import { RotateCcw, Send, Sparkles, Minus, Plus, Loader2, Save, Check, LineChart, LogOut } from "lucide-react";
+import { saveMatchDb } from "@/lib/matchHistoryDb";
+import { getSupabaseBrowser } from "@/lib/supabase/browser";
 
 // ── Tally categories ────────────────────────────────────────────────────────
 const UE_ITEMS = [
@@ -229,6 +231,23 @@ export default function MatchAnalysisPage() {
   const [loading, setLoading]   = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [savedFlash, setSavedFlash] = useState(false);
+  const [saving, setSaving]     = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  // Auth session — null when signed out, email string when signed in.
+  const [authEmail, setAuthEmail] = useState<string | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    const supabase = getSupabaseBrowser();
+    supabase.auth.getUser().then(({ data }) => {
+      setAuthEmail(data.user?.email ?? null);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_, session) => {
+      setAuthEmail(session?.user?.email ?? null);
+    });
+    return () => sub.subscription.unsubscribe();
+  }, []);
 
   const ueTotal      = sum(ueData);
   const feTotal      = sum(feData);
@@ -250,26 +269,46 @@ export default function MatchAnalysisPage() {
     setErrorMsg(null);
   }
 
-  function handleSaveMatch() {
-    const ratioNum =
-      totalErrors === 0 && winnersTotal === 0
-        ? 0
-        : totalErrors === 0
-          ? winnersTotal
-          : winnersTotal / totalErrors;
-    saveMatch({
-      ueData,
-      feData,
-      winData,
-      notes,
-      ueTotal,
-      feTotal,
-      totalErrors,
-      winnersTotal,
-      ratio: ratioNum,
-    });
-    setSavedFlash(true);
-    setTimeout(() => setSavedFlash(false), 2500);
+  async function handleSaveMatch() {
+    // Not signed in → bounce to /login with return path back here.
+    if (!authEmail) {
+      router.push(`/login?next=${encodeURIComponent("/match/analysis")}`);
+      return;
+    }
+
+    setSaving(true);
+    setSaveError(null);
+    try {
+      const ratioNum =
+        totalErrors === 0 && winnersTotal === 0
+          ? 0
+          : totalErrors === 0
+            ? winnersTotal
+            : winnersTotal / totalErrors;
+      await saveMatchDb({
+        ueData,
+        feData,
+        winData,
+        notes,
+        ueTotal,
+        feTotal,
+        totalErrors,
+        winnersTotal,
+        ratio: ratioNum,
+      });
+      setSavedFlash(true);
+      setTimeout(() => setSavedFlash(false), 2500);
+    } catch (e) {
+      setSaveError(e instanceof Error ? e.message : "Failed to save match.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleSignOut() {
+    const supabase = getSupabaseBrowser();
+    await supabase.auth.signOut();
+    setAuthEmail(null);
   }
 
   async function submit() {
@@ -325,7 +364,32 @@ export default function MatchAnalysisPage() {
               Tap each item as you re-watch your match film. When you&apos;re done, pick a coach style and get personalized feedback on what to work on next.
             </p>
           </div>
-          <div className="flex-shrink-0 flex items-center gap-2">
+          <div className="flex-shrink-0 flex items-center gap-2 flex-wrap justify-end">
+            {/* Auth state */}
+            {authEmail ? (
+              <div className="inline-flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg" style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}>
+                <span className="font-semibold truncate max-w-[140px]" style={{ color: "var(--text-primary)" }}>
+                  {authEmail}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  aria-label="Sign out"
+                  className="ml-1 transition-colors hover:text-red-500"
+                  style={{ color: "var(--text-muted)" }}
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ) : (
+              <Link
+                href={`/login?next=${encodeURIComponent("/match/analysis")}`}
+                className="inline-flex items-center text-xs font-semibold px-3 py-2 rounded-lg transition-colors"
+                style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)", color: "var(--text-primary)" }}
+              >
+                Sign in
+              </Link>
+            )}
             <Link
               href="/match/history"
               className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg transition-colors"
@@ -480,31 +544,44 @@ export default function MatchAnalysisPage() {
             )}
           </button>
 
-          {/* Save match — persists tally to localStorage for /match/history */}
+          {/* Save match — requires sign-in, persists to Supabase for /match/history */}
           <button
             type="button"
             onClick={handleSaveMatch}
-            disabled={totalErrors + winnersTotal === 0}
+            disabled={saving || totalErrors + winnersTotal === 0}
             className="inline-flex items-center justify-center gap-2 font-bold text-base py-3.5 px-6 rounded-2xl transition-all duration-200 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
               background: "var(--flip-bg-card)",
               border: "1px solid var(--flip-card-border)",
               color: "var(--text-primary)",
             }}
+            title={!authEmail ? "Sign in to save matches across devices" : undefined}
           >
             {savedFlash ? (
               <>
                 <Check className="w-4 h-4" style={{ color: "#22c55e" }} />
                 Saved
               </>
+            ) : saving ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Saving…
+              </>
             ) : (
               <>
                 <Save className="w-4 h-4" />
-                Save match
+                {authEmail ? "Save match" : "Sign in to save"}
               </>
             )}
           </button>
         </div>
+
+        {/* Save error */}
+        {saveError && (
+          <p className="text-xs mt-2" style={{ color: "#ef4444" }}>
+            {saveError}
+          </p>
+        )}
 
         {/* Output */}
         {(output || errorMsg) && (

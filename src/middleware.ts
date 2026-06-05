@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { updateSession } from "@/lib/supabase/middleware";
 
 const SHORTS_COOKIE = "shorts_auth";
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // ── Admin gating (unchanged behavior) ─────────────────────────────────
   const isShortsApi = pathname.startsWith("/api/admin/shorts/");
   const isShortsPage = pathname.startsWith("/admin/shorts");
   const isPublishApi = pathname.startsWith("/api/admin/publish/");
@@ -40,7 +42,11 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  const response = NextResponse.next();
+  // ── Supabase user-auth session refresh ────────────────────────────────
+  // Refresh auth cookies on every request so /match/* and other user-
+  // scoped routes see the live session. Must run on the response we
+  // return so Set-Cookie headers from Supabase are preserved.
+  const response = await updateSession(request);
   response.headers.set("x-pathname", pathname);
   return response;
 }
