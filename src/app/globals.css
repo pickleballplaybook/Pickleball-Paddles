@@ -281,3 +281,62 @@ html.dark {
     animation: banner-shimmer 4s ease-in-out infinite;
   }
 }
+
+/* ── CKEditor dark theme (scoped to .ckeditor-host wrapper on /admin/drills) ── */
+.ckeditor-host .ck.ck-editor__main > .ck-editor__editable {
+  background: #111827;
+  color: #ffffff;
+  border-color: #1f2937;
+  min-height: 8rem;
+}
+.ckeditor-host .ck.ck-editor__editable.ck-focused:not(.ck-editor__nested-editable) {
+  border-color: #3cacae;
+  box-shadow: 0 0 0 1px #3cacae inset;
+}
+.ckeditor-host .ck.ck-toolbar {
+  background: #0f172a;
+  border-color: #1f2937;
+  color: #e5e7eb;
+}
+.ckeditor-host .ck.ck-toolbar .ck-button,
+.ckeditor-host .ck.ck-toolbar .ck-dropdown__button,
+.ckeditor-host .ck.ck-toolbar .ck-dropdown__panel .ck-button {
+  color: #d1d5db;
+}
+.ckeditor-host .ck.ck-toolbar .ck-button:hover:not(.ck-disabled),
+.ckeditor-host .ck.ck-toolbar .ck-button.ck-on,
+.ckeditor-host .ck.ck-toolbar .ck-dropdown.ck-on .ck-dropdown__button {
+  background: #1f2937;
+  color: #ffffff;
+}
+.ckeditor-host .ck.ck-button .ck-button__label,
+.ckeditor-host .ck.ck-dropdown .ck-dropdown__panel .ck-button__label {
+  color: inherit;
+}
+.ckeditor-host .ck.ck-icon,
+.ckeditor-host .ck.ck-icon * {
+  color: inherit;
+  fill: currentColor;
+}
+.ckeditor-host .ck.ck-dropdown__panel,
+.ckeditor-host .ck.ck-list,
+.ckeditor-host .ck.ck-balloon-panel {
+  background: #1f2937;
+  border-color: #374151;
+  color: #ffffff;
+}
+.ckeditor-host .ck.ck-list .ck-list__item .ck-button.ck-on {
+  background: #374151;
+}
+.ckeditor-host .ck.ck-input {
+  background: #111827;
+  color: #ffffff;
+  border-color: #374151;
+}
+.ckeditor-host .ck-placeholder::before,
+.ckeditor-host .ck.ck-placeholder::before {
+  color: #6b7280;
+}
+.ckeditor-host .ck.ck-editor__editable a {
+  color: #5eead4;
+}

@@ -22,7 +22,7 @@ export default function DrillsAdminPage() {
   const [weekNumber, setWeekNumber] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
   const [image, setImage] = useState<File | null>(null);
-  const [isFree, setIsFree] = useState(false);
+  const [scheduledPublishAt, setScheduledPublishAt] = useState("");
   const [isPublished, setIsPublished] = useState(false);
 
   const [submitting, setSubmitting] = useState(false);
@@ -38,7 +38,7 @@ export default function DrillsAdminPage() {
     setWeekNumber("");
     setVideoUrl("");
     setImage(null);
-    setIsFree(false);
+    setScheduledPublishAt("");
     setIsPublished(false);
   }
 
@@ -57,7 +57,15 @@ export default function DrillsAdminPage() {
       fd.append("category", category);
       fd.append("week_number", weekNumber);
       fd.append("video_url", videoUrl);
-      fd.append("is_free", isFree ? "true" : "false");
+      if (scheduledPublishAt) {
+        // datetime-local gives "YYYY-MM-DDTHH:MM" in the user's local time.
+        // Convert to an absolute UTC ISO string so the server stores an
+        // unambiguous instant.
+        fd.append(
+          "scheduled_publish_at",
+          new Date(scheduledPublishAt).toISOString()
+        );
+      }
       fd.append("is_published", isPublished ? "true" : "false");
       if (image) fd.append("image", image);
 
@@ -198,26 +206,28 @@ export default function DrillsAdminPage() {
             )}
           </FieldLabel>
 
-          <div className="flex flex-wrap gap-6 text-sm">
-            <label className="inline-flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={isFree}
-                onChange={(e) => setIsFree(e.target.checked)}
-                className="accent-accent-500"
-              />
-              Free
-            </label>
-            <label className="inline-flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={isPublished}
-                onChange={(e) => setIsPublished(e.target.checked)}
-                className="accent-accent-500"
-              />
-              Published
-            </label>
-          </div>
+          <FieldLabel label="Schedule (optional)">
+            <input
+              type="datetime-local"
+              value={scheduledPublishAt}
+              onChange={(e) => setScheduledPublishAt(e.target.value)}
+              className="w-full bg-gray-900 border border-gray-800 rounded px-3 py-2 text-sm focus:outline-none focus:border-accent-500"
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Leave blank to publish immediately. Times are in your local
+              timezone — the server stores an absolute UTC instant.
+            </p>
+          </FieldLabel>
+
+          <label className="inline-flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={isPublished}
+              onChange={(e) => setIsPublished(e.target.checked)}
+              className="accent-accent-500"
+            />
+            Published
+          </label>
 
           <button
             type="submit"
