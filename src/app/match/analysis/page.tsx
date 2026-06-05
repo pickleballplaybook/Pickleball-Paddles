@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { RotateCcw, Send, Sparkles, Minus, Loader2 } from "lucide-react";
+import { RotateCcw, Send, Sparkles, Minus, Plus, Loader2 } from "lucide-react";
 
 // ── Tally categories ────────────────────────────────────────────────────────
 const UE_ITEMS = [
@@ -97,6 +97,7 @@ function TallyRow({
       <button
         type="button"
         onClick={onInc}
+        aria-label={`Increment ${label}`}
         className="flex-1 flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-xl text-left transition-colors active:scale-[0.99]"
         style={{
           background: active ? `${accent}14` : "var(--flip-bg-card)",
@@ -126,6 +127,19 @@ function TallyRow({
         }}
       >
         <Minus className="w-3.5 h-3.5" />
+      </button>
+      <button
+        type="button"
+        onClick={onInc}
+        aria-label={`Add ${label}`}
+        className="w-9 flex items-center justify-center rounded-xl transition-colors active:scale-[0.96]"
+        style={{
+          background: `${accent}14`,
+          border: `1px solid ${accent}55`,
+          color: accent,
+        }}
+      >
+        <Plus className="w-3.5 h-3.5" strokeWidth={2.5} />
       </button>
     </div>
   );
@@ -245,7 +259,11 @@ export default function MatchAnalysisPage() {
       });
 
       if (!response.ok || !response.body) {
-        setErrorMsg("Coach feedback unavailable right now. Try again in a moment.");
+        // Surface the actual server-side error so missing env vars or
+        // upstream API failures are visible to the user instead of being
+        // swallowed by a generic "unavailable" message.
+        const detail = await response.text().catch(() => "");
+        setErrorMsg(detail.trim() || "Coach feedback unavailable right now. Try again in a moment.");
         return;
       }
 
