@@ -43,9 +43,26 @@ export async function POST(req: NextRequest) {
   const category = (formData.get("category") ?? "").toString().trim();
   const week_number_raw = (formData.get("week_number") ?? "").toString().trim();
   const video_url = (formData.get("video_url") ?? "").toString().trim();
-  const is_free = formData.get("is_free") === "true";
   const is_published = formData.get("is_published") === "true";
+  const scheduled_publish_at_raw = (formData.get("scheduled_publish_at") ?? "")
+    .toString()
+    .trim();
   const imageField = formData.get("image");
+
+  // Optional schedule field. Client converts the datetime-local input to an
+  // ISO string before submitting; we re-parse here to validate and to store
+  // a canonical ISO-8601 UTC instant.
+  let scheduled_publish_at: string | null = null;
+  if (scheduled_publish_at_raw) {
+    const parsed = new Date(scheduled_publish_at_raw);
+    if (Number.isNaN(parsed.getTime())) {
+      return NextResponse.json(
+        { error: "scheduled_publish_at is not a valid date." },
+        { status: 400 }
+      );
+    }
+    scheduled_publish_at = parsed.toISOString();
+  }
 
   const missing: string[] = [];
   if (!name) missing.push("name");
@@ -121,7 +138,7 @@ export async function POST(req: NextRequest) {
     category,
     week_number,
     image: imageUrl,
-    is_free,
+    scheduled_publish_at,
     is_published,
     multi_level: true,
   };

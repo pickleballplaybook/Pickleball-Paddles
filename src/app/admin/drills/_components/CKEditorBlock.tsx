@@ -60,11 +60,14 @@ export default function CKEditorBlock({
 
   const { CKEditor, ClassicEditor } = loaded;
   return (
-    <div className="ckeditor-host bg-white text-gray-900 rounded overflow-hidden">
+    <div className="ckeditor-host rounded overflow-hidden border border-gray-800">
       <CKEditor
         editor={ClassicEditor}
         data={value}
         config={{
+          // Acknowledge the GPL license — without this CKEditor 5 v38+ falls
+          // back to read-only mode and the editor silently ignores keystrokes.
+          licenseKey: "GPL",
           placeholder,
           mediaEmbed: { previewsInData: true },
         }}
