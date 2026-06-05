@@ -9,9 +9,12 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@ckeditor/ckeditor5-build-classic": "^41.4.2",
+    "@ckeditor/ckeditor5-react": "^6.3.0",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.101.1",
     "clsx": "^2.1.1",
+    "firebase-admin": "^12.7.0",
     "framer-motion": "^11.3.0",
     "html-to-image": "^1.11.13",
     "jszip": "^3.10.1",

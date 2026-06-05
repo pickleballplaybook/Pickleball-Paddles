@@ -8,6 +8,7 @@ const TABS = [
   { href: "/admin/publish", label: "Publish" },
   { href: "/admin/auto-reply", label: "Auto Reply" },
   { href: "/admin/weekly-thumbnail", label: "Weekly Thumbnail" },
+  { href: "/admin/drills", label: "Drills" },
 ];
 
 export function AdminNav() {

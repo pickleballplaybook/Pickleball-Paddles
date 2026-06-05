@@ -17,10 +17,13 @@ export async function middleware(request: NextRequest) {
   // Newsletter admin export — uses the same shorts_auth cookie gating.
   const isNewsletterApi  = pathname.startsWith("/api/admin/newsletter-emails");
   const isNewsletterPage = pathname.startsWith("/admin/newsletter-emails");
-  const isApiGated = isShortsApi || isPublishApi || isNewsletterApi;
+  // Drills upload — same shorts_auth cookie gating.
+  const isDrillsApi  = pathname.startsWith("/api/admin/drills");
+  const isDrillsPage = pathname.startsWith("/admin/drills");
+  const isApiGated = isShortsApi || isPublishApi || isNewsletterApi || isDrillsApi;
   const isGated =
     isShortsPage || isShortsApi || isPublishPage || isPublishApi || isPublishOAuth ||
-    isNewsletterApi || isNewsletterPage;
+    isNewsletterApi || isNewsletterPage || isDrillsApi || isDrillsPage;
 
   if (isGated) {
     const isLoginPage = pathname === "/admin/shorts/login";
