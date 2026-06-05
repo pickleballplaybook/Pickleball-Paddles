@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { AdminNav } from "../_components/AdminNav";
-import CKEditorBlock from "./_components/CKEditorBlock";
+import RichTextBlock from "./_components/RichTextBlock";
 
 const CATEGORIES = [
   "Dinks",
@@ -127,7 +127,7 @@ export default function DrillsAdminPage() {
           </FieldLabel>
 
           <FieldLabel label="Description — Beginner">
-            <CKEditorBlock
+            <RichTextBlock
               value={descBeginner}
               onChange={setDescBeginner}
               placeholder="What a beginner should focus on…"
@@ -135,7 +135,7 @@ export default function DrillsAdminPage() {
           </FieldLabel>
 
           <FieldLabel label="Description — Intermediate">
-            <CKEditorBlock
+            <RichTextBlock
               value={descIntermediate}
               onChange={setDescIntermediate}
               placeholder="What an intermediate player should focus on…"
@@ -143,7 +143,7 @@ export default function DrillsAdminPage() {
           </FieldLabel>
 
           <FieldLabel label="Description — Advanced">
-            <CKEditorBlock
+            <RichTextBlock
               value={descAdvanced}
               onChange={setDescAdvanced}
               placeholder="What an advanced player should focus on…"
