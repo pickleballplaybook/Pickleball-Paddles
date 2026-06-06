@@ -143,6 +143,8 @@ type JobSummary = {
   message?: string;
   progress?: number;
   clipCount: number;
+  /** Source video resolution captured during processing (e.g. "1920x1080"). */
+  sourceResolution?: string | null;
 };
 
 type Tab = "new" | "history";
@@ -966,6 +968,26 @@ export default function ShortsPage() {
                         >
                           {h.status}
                         </span>
+                        {/* Source resolution chip — green when ≥ 1080p, amber when */}
+                        {/* between 720–1079p, red below 720p. One-glance quality check. */}
+                        {h.sourceResolution && (() => {
+                          const ht = parseInt(h.sourceResolution.split("x")[1] ?? "0", 10);
+                          const cls =
+                            ht >= 1080 ? "bg-accent-500/10 text-accent-400 border-accent-500/30"
+                            : ht >= 720 ? "bg-amber-500/10 text-amber-400 border-amber-500/30"
+                            : "bg-red-500/10 text-red-400 border-red-500/30";
+                          return (
+                            <>
+                              <span>·</span>
+                              <span
+                                className={`inline-block px-2 py-0.5 rounded-full border font-mono ${cls}`}
+                                title={`Source video resolution: ${h.sourceResolution}`}
+                              >
+                                {h.sourceResolution}
+                              </span>
+                            </>
+                          );
+                        })()}
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
