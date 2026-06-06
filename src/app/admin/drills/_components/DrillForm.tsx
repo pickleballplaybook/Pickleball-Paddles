@@ -11,11 +11,14 @@ const CATEGORIES = [
   "Volleys",
   "Ball Machine",
   "Wall",
+  "Serves",
+  "Resets",
 ] as const;
 
 export type DrillFormInitial = {
   id?: string;
   name?: string;
+  summary?: string;
   description_beginner?: string;
   description_intermediate?: string;
   description_advanced?: string;
@@ -49,6 +52,7 @@ export default function DrillForm(props: Props) {
   const initial = props.initial ?? {};
 
   const [name, setName] = useState(initial.name ?? "");
+  const [summary, setSummary] = useState(initial.summary ?? "");
   const [descBeginner, setDescBeginner] = useState(
     initial.description_beginner ?? ""
   );
@@ -86,6 +90,7 @@ export default function DrillForm(props: Props) {
     try {
       const fd = new FormData();
       fd.append("name", name);
+      fd.append("summary", summary);
       fd.append("description_beginner", descBeginner);
       fd.append("description_intermediate", descIntermediate);
       fd.append("description_advanced", descAdvanced);
@@ -173,6 +178,20 @@ export default function DrillForm(props: Props) {
           maxLength={120}
           value={name}
           onChange={(e) => setName(e.target.value)}
+          className="w-full bg-gray-900 border border-gray-800 rounded px-3 py-2 text-sm focus:outline-none focus:border-accent-500"
+        />
+      </FieldLabel>
+
+      <FieldLabel
+        label="Summary"
+        hint="Short one-line description shown under the drill name on the drills list (web + mobile)."
+      >
+        <input
+          type="text"
+          maxLength={160}
+          value={summary}
+          onChange={(e) => setSummary(e.target.value)}
+          placeholder="e.g. Lateral movement and crosscourt dinking consistency"
           className="w-full bg-gray-900 border border-gray-800 rounded px-3 py-2 text-sm focus:outline-none focus:border-accent-500"
         />
       </FieldLabel>
@@ -330,15 +349,21 @@ export default function DrillForm(props: Props) {
 
 function FieldLabel({
   label,
+  hint,
   children,
 }: {
   label: string;
+  hint?: string;
   children: React.ReactNode;
 }) {
+  // Using a <div> (not <label>) because some children are contenteditable
+  // rich-text editors — a <label> wrapping a non-labelable control triggers
+  // font-weight quirks in some browsers and is invalid HTML.
   return (
-    <label className="block">
+    <div className="block">
       <div className="text-sm text-gray-300 mb-1">{label}</div>
+      {hint && <div className="text-xs text-gray-500 mb-2">{hint}</div>}
       {children}
-    </label>
+    </div>
   );
 }

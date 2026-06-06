@@ -48,6 +48,8 @@ const CATEGORIES = new Set([
   "Volleys",
   "Ball Machine",
   "Wall",
+  "Serves",
+  "Resets",
 ]);
 
 export async function POST(req: NextRequest) {
@@ -62,6 +64,7 @@ export async function POST(req: NextRequest) {
   }
 
   const name = (formData.get("name") ?? "").toString().trim();
+  const summary = (formData.get("summary") ?? "").toString().trim();
   const description_beginner = (formData.get("description_beginner") ?? "").toString();
   const description_intermediate = (formData.get("description_intermediate") ?? "").toString();
   const description_advanced = (formData.get("description_advanced") ?? "").toString();
@@ -91,11 +94,10 @@ export async function POST(req: NextRequest) {
 
   const missing: string[] = [];
   if (!name) missing.push("name");
-  if (!description_beginner) missing.push("description_beginner");
-  if (!description_intermediate) missing.push("description_intermediate");
-  if (!description_advanced) missing.push("description_advanced");
   if (!category) missing.push("category");
   if (!video_url) missing.push("video_url");
+  // Per-level descriptions are optional: some drills have a description,
+  // others don't. The mobile app already falls back through the levels.
 
   const week_number = Number(week_number_raw);
   if (!Number.isFinite(week_number) || !Number.isInteger(week_number)) {
@@ -155,6 +157,7 @@ export async function POST(req: NextRequest) {
   const drill = {
     id: docRef.id,
     name,
+    summary,
     video_url,
     description_beginner,
     description_intermediate,
@@ -162,7 +165,7 @@ export async function POST(req: NextRequest) {
     level: "All",
     category,
     week_number,
-    image: imageUrl,
+    image: imageUrl ?? "",
     scheduled_publish_at,
     is_published,
     multi_level: true,

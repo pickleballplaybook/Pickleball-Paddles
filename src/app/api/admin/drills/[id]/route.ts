@@ -23,6 +23,8 @@ const CATEGORIES = new Set([
   "Volleys",
   "Ball Machine",
   "Wall",
+  "Serves",
+  "Resets",
 ]);
 
 type RouteCtx = { params: Promise<{ id: string }> };
@@ -58,6 +60,7 @@ export async function PUT(req: NextRequest, { params }: RouteCtx) {
   }
 
   const name = (formData.get("name") ?? "").toString().trim();
+  const summary = (formData.get("summary") ?? "").toString().trim();
   const description_beginner = (
     formData.get("description_beginner") ?? ""
   ).toString();
@@ -85,11 +88,9 @@ export async function PUT(req: NextRequest, { params }: RouteCtx) {
 
   const missing: string[] = [];
   if (!name) missing.push("name");
-  if (!description_beginner) missing.push("description_beginner");
-  if (!description_intermediate) missing.push("description_intermediate");
-  if (!description_advanced) missing.push("description_advanced");
   if (!category) missing.push("category");
   if (!video_url) missing.push("video_url");
+  // Per-level descriptions are optional.
 
   const week_number = Number(week_number_raw);
   if (!Number.isFinite(week_number) || !Number.isInteger(week_number)) {
@@ -168,6 +169,7 @@ export async function PUT(req: NextRequest, { params }: RouteCtx) {
   const update = {
     id,
     name,
+    summary,
     video_url,
     description_beginner,
     description_intermediate,
@@ -175,7 +177,7 @@ export async function PUT(req: NextRequest, { params }: RouteCtx) {
     level: "All",
     category,
     week_number,
-    image: imageUrl,
+    image: imageUrl ?? "",
     scheduled_publish_at,
     is_published,
     multi_level: true,

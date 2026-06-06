@@ -15,6 +15,7 @@ async function loadDrill(id: string): Promise<DrillFormInitial | null> {
   return {
     id,
     name: d.name ?? "",
+    summary: d.summary ?? "",
     description_beginner: d.description_beginner ?? "",
     description_intermediate: d.description_intermediate ?? "",
     description_advanced: d.description_advanced ?? "",
