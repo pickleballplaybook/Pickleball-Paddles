@@ -23,6 +23,8 @@ const CATEGORIES = new Set([
   "Volleys",
   "Ball Machine",
   "Wall",
+  "Serves",
+  "Resets",
 ]);
 
 type RouteCtx = { params: Promise<{ id: string }> };
@@ -86,11 +88,9 @@ export async function PUT(req: NextRequest, { params }: RouteCtx) {
 
   const missing: string[] = [];
   if (!name) missing.push("name");
-  if (!description_beginner) missing.push("description_beginner");
-  if (!description_intermediate) missing.push("description_intermediate");
-  if (!description_advanced) missing.push("description_advanced");
   if (!category) missing.push("category");
   if (!video_url) missing.push("video_url");
+  // Per-level descriptions are optional.
 
   const week_number = Number(week_number_raw);
   if (!Number.isFinite(week_number) || !Number.isInteger(week_number)) {

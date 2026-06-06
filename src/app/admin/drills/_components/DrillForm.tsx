@@ -11,6 +11,8 @@ const CATEGORIES = [
   "Volleys",
   "Ball Machine",
   "Wall",
+  "Serves",
+  "Resets",
 ] as const;
 
 export type DrillFormInitial = {

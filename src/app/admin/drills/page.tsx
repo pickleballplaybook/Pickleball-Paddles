@@ -16,6 +16,21 @@ type DrillRow = {
   is_published?: boolean;
 };
 
+// Order matches the mobile app's drill grid, with Serves and Resets at the
+// end for the newer categories.
+const CATEGORY_TABS = [
+  "Dinks",
+  "Drops",
+  "Drives",
+  "Volleys",
+  "Ball Machine",
+  "Wall",
+  "Serves",
+  "Resets",
+] as const;
+
+type CategoryTab = (typeof CATEGORY_TABS)[number];
+
 async function loadDrills(): Promise<DrillRow[]> {
   const db = getFirebaseFirestore();
   const snap = await db
@@ -67,8 +82,25 @@ function statusBadge(d: DrillRow): { label: string; className: string } {
   };
 }
 
-export default async function DrillsListPage() {
+function isCategoryTab(value: string | undefined): value is CategoryTab {
+  return CATEGORY_TABS.includes(value as CategoryTab);
+}
+
+export default async function DrillsListPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string }>;
+}) {
   const drills = await loadDrills();
+  const { category } = await searchParams;
+  const activeTab: CategoryTab | null = isCategoryTab(category) ? category : null;
+  const filtered = activeTab
+    ? drills.filter((d) => d.category === activeTab)
+    : drills;
+  const countsByCategory = drills.reduce<Record<string, number>>((acc, d) => {
+    if (d.category) acc[d.category] = (acc[d.category] ?? 0) + 1;
+    return acc;
+  }, {});
 
   return (
     <main className="min-h-screen bg-gray-950 text-white px-6 py-8">
@@ -92,10 +124,24 @@ export default async function DrillsListPage() {
           </Link>
         </div>
 
-        {drills.length === 0 ? (
+        <div className="mb-6 flex flex-wrap gap-2 border-b border-gray-800 pb-3">
+          <TabLink label="All" count={drills.length} href="/admin/drills" active={activeTab === null} />
+          {CATEGORY_TABS.map((cat) => (
+            <TabLink
+              key={cat}
+              label={cat}
+              count={countsByCategory[cat] ?? 0}
+              href={`/admin/drills?category=${encodeURIComponent(cat)}`}
+              active={activeTab === cat}
+            />
+          ))}
+        </div>
+
+        {filtered.length === 0 ? (
           <div className="rounded border border-gray-800 bg-gray-900 px-6 py-12 text-center text-sm text-gray-400">
-            Upload your first drill with the <strong>New drill</strong>{" "}
-            button above.
+            {activeTab
+              ? <>No {activeTab.toLowerCase()} drills yet.</>
+              : <>Upload your first drill with the <strong>New drill</strong> button above.</>}
           </div>
         ) : (
           <div className="rounded border border-gray-800 overflow-hidden">
@@ -111,7 +157,7 @@ export default async function DrillsListPage() {
                 </tr>
               </thead>
               <tbody className="bg-gray-950">
-                {drills.map((d) => {
+                {filtered.map((d) => {
                   const status = statusBadge(d);
                   return (
                     <tr
@@ -168,5 +214,33 @@ export default async function DrillsListPage() {
         )}
       </div>
     </main>
+  );
+}
+
+function TabLink({
+  label,
+  count,
+  href,
+  active,
+}: {
+  label: string;
+  count: number;
+  href: string;
+  active: boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      className={
+        active
+          ? "px-3 py-1.5 rounded text-sm font-medium bg-accent-500 text-black"
+          : "px-3 py-1.5 rounded text-sm font-medium text-gray-300 hover:bg-gray-800"
+      }
+    >
+      {label}
+      <span className={active ? "ml-1.5 text-black/70" : "ml-1.5 text-gray-500"}>
+        {count}
+      </span>
+    </Link>
   );
 }
