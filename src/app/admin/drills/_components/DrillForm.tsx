@@ -354,11 +354,14 @@ function FieldLabel({
   hint?: string;
   children: React.ReactNode;
 }) {
+  // Using a <div> (not <label>) because some children are contenteditable
+  // rich-text editors — a <label> wrapping a non-labelable control triggers
+  // font-weight quirks in some browsers and is invalid HTML.
   return (
-    <label className="block">
+    <div className="block">
       <div className="text-sm text-gray-300 mb-1">{label}</div>
       {hint && <div className="text-xs text-gray-500 mb-2">{hint}</div>}
       {children}
-    </label>
+    </div>
   );
 }

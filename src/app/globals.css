@@ -286,9 +286,11 @@ html.dark {
 .tiptap-content {
   color: #ffffff;
   font-size: 0.875rem;
+  font-weight: 400;
   line-height: 1.6;
 }
-.tiptap-content p { margin: 0.5rem 0; }
+.tiptap-content p { font-weight: 400; margin: 0.5rem 0; }
+.tiptap-content strong { font-weight: 700; }
 .tiptap-content p:first-child { margin-top: 0; }
 .tiptap-content p:last-child { margin-bottom: 0; }
 .tiptap-content h1 {
