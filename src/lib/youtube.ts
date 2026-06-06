@@ -266,6 +266,7 @@ export async function getReviewGroups(
     }
   }
 
+  const nowMs = Date.now();
   return Array.from(map.entries())
     .map(([videoId, { brand, paddleMap, topSlug, latestAddedAt }]) => {
       const paddleList = Array.from(paddleMap.entries()).map(([name, slug]) => ({ name, slug }));
@@ -280,6 +281,13 @@ export async function getReviewGroups(
         reviewDate,
         viewCount: viewCounts[videoId],
       };
+    })
+    // Embargo: skip videos whose reviewDate parses to a future moment. ISR
+    // revalidate=3600 means these flip live within an hour of publish.
+    .filter((g) => {
+      if (!g.reviewDate) return true;
+      const t = Date.parse(g.reviewDate);
+      return Number.isNaN(t) || t <= nowMs;
     })
     .sort((a, b) => {
       if (!a.reviewDate && !b.reviewDate) return 0;

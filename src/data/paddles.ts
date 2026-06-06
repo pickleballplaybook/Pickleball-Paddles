@@ -2350,6 +2350,7 @@ export const paddles: Paddle[] = [
     amountOff: "10%",
     price: "$199.00",
     discountLink: "https://www.aireo-sports.com/discount/PLAYBOOK?redirect=/products/aireo-cyclone-hybrid-usap-pbcor-43-certified-16mm-pickleball-paddle-nanograph-grit-surface-with-pulsefoam%E2%84%A2-power-core-for-pro-level-performance",
+    reviewUrl: "https://youtu.be/aCBcaFEP3Wg",
     addedAt: "2026-06-01",
     trendingScore: 50,
     playStyle: "power",
@@ -2368,6 +2369,7 @@ export const paddles: Paddle[] = [
     amountOff: "10%",
     price: "$199.00",
     discountLink: "https://www.aireo-sports.com/discount/PLAYBOOK?redirect=/products/aireo-cyclone-hybrid-usap-pbcor-43-certified-16mm-pickleball-paddle-nanograph-grit-surface-with-pulsefoam%E2%84%A2-power-core-for-pro-level-performance",
+    reviewUrl: "https://youtu.be/aCBcaFEP3Wg",
     addedAt: "2026-06-01",
     trendingScore: 50,
     playStyle: "power",
@@ -2412,6 +2414,7 @@ export const paddles: Paddle[] = [
     amountOff: "15%",
     price: "$109.00",
     discountLink: "https://luzzpickleball.com/discount/PLAYBOOK?redirect=/products/luzz-glider-2026",
+    reviewUrl: "https://youtu.be/M6Z0PhqxecA",
     addedAt: "2026-06-01",
     // Bumped to 70 so it's the top-scoring Luzz paddle — drives both the
     // featured hero (via brand.featuredPaddleSlug override) and the grid's
@@ -2433,6 +2436,10 @@ export const paddles: Paddle[] = [
     amountOff: "15%",
     price: "$229.00",
     discountLink: "https://luzzpickleball.com/discount/PLAYBOOK?redirect=/products/luzzpickleball-pro-4-tornazo-carbon-fiber-pickleball-paddle-dual-layer-core",
+    // Embargoed review video — see reviewDates entry below; the date field
+    // doubles as the publish-at timestamp. Hidden from /reviews + paddle
+    // page embed until 2026-06-07T07:00:00 ET.
+    reviewUrl: "https://youtu.be/YJfOWjPSe3o",
     addedAt: "2026-06-01",
     // 65 keeps Tornazo in the #2 spot on /brands/luzz (under Glider at 70,
     // above Inferno + Cannon at 60).
@@ -2543,10 +2550,18 @@ export const paddles: Paddle[] = [
   },
 ];
 
-// Review dates — ISO publish dates for Latest Reviews sort (newest-first)
-// Set youtubeApiKey in site.ts to auto-fetch real dates; or fill in manually.
+// Review dates — ISO publish dates for Latest Reviews sort (newest-first).
+// Set youtubeApiKey in site.ts to auto-fetch real dates, or fill in manually.
+//
+// EMBARGO: If the date string includes a future time (e.g. "2026-06-07T07:00:00-04:00"),
+// the video is hidden from /reviews and from paddle detail page embeds until
+// that moment passes. ISR (revalidate=3600) flips it live within an hour.
+// Date-only strings ("2026-06-06") are treated as already-published.
 export const reviewDates: Record<string, string> = {
-  "7KrcRprApZo": "2026-06-04",  // Warping Point (Neon, Sophon, Phoenix)  ← newest
+  YJfOWjPSe3o:   "2026-06-07T07:00:00-04:00",  // Luzz Tornazo  ← EMBARGOED until tomorrow 7am ET
+  aCBcaFEP3Wg:   "2026-06-06",  // Aireo Cyclone Hybrid (UPA + USAP)
+  M6Z0PhqxecA:   "2026-06-06",  // Luzz Glider
+  "7KrcRprApZo": "2026-06-04",  // Warping Point (Neon, Sophon, Phoenix)
   CkrJVwTKk94:   "2026-06-03",  // Best Pickleball Paddles Under $125
   "2jXKJrCH9iI": "2026-05-30",  // Selkirk Omni
   azQ81arW72g:   "2026-05-19",  // Joola Pro V Line (Scorpeus, Agassi, Graf, Hyperion)

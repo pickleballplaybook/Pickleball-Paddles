@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import Link from "next/link";
-import { getPaddleBySlug, paddles } from "@/data/paddles";
+import { getPaddleBySlug, paddles, reviewDates } from "@/data/paddles";
 import { fetchPlaylistVideos, getVideoForPaddle } from "@/lib/youtube";
 import { getCatalogStats } from "@/lib/catalogStats";
 import { siteConfig } from "@/config/site";
@@ -150,10 +150,17 @@ export default async function PaddleDetailPage({ params }: Props) {
   if (!paddle) notFound();
 
   const playlistVideos = await fetchPlaylistVideos();
-  const { videoId }    = await getVideoForPaddle(
+  const resolved      = await getVideoForPaddle(
     { ...paddle, manualVideoId: paddle.manualVideoId ?? "" } as Parameters<typeof getVideoForPaddle>[0],
     playlistVideos
   );
+  // Honor video embargo — if reviewDates has a future-dated entry for this
+  // videoId, suppress the embed + VideoObject schema until the publish time.
+  // ISR (revalidate=3600) flips it live within an hour of the moment passing.
+  const videoIdRaw     = resolved.videoId ?? null;
+  const embargoUntilMs = videoIdRaw && reviewDates[videoIdRaw] ? Date.parse(reviewDates[videoIdRaw]) : NaN;
+  const videoEmbargoed = !!videoIdRaw && !Number.isNaN(embargoUntilMs) && embargoUntilMs > Date.now();
+  const videoId        = videoEmbargoed ? null : videoIdRaw;
 
   const blogPost       = getBlogPostForPaddle(params.slug);
   const code           = getDiscountCode(paddle.brand, paddle.discountLink);
