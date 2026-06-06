@@ -62,6 +62,7 @@ export async function POST(req: NextRequest) {
   }
 
   const name = (formData.get("name") ?? "").toString().trim();
+  const summary = (formData.get("summary") ?? "").toString().trim();
   const description_beginner = (formData.get("description_beginner") ?? "").toString();
   const description_intermediate = (formData.get("description_intermediate") ?? "").toString();
   const description_advanced = (formData.get("description_advanced") ?? "").toString();
@@ -155,6 +156,7 @@ export async function POST(req: NextRequest) {
   const drill = {
     id: docRef.id,
     name,
+    summary,
     video_url,
     description_beginner,
     description_intermediate,
@@ -162,7 +164,7 @@ export async function POST(req: NextRequest) {
     level: "All",
     category,
     week_number,
-    image: imageUrl,
+    image: imageUrl ?? "",
     scheduled_publish_at,
     is_published,
     multi_level: true,

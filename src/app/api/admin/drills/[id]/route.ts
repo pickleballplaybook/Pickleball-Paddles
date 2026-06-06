@@ -58,6 +58,7 @@ export async function PUT(req: NextRequest, { params }: RouteCtx) {
   }
 
   const name = (formData.get("name") ?? "").toString().trim();
+  const summary = (formData.get("summary") ?? "").toString().trim();
   const description_beginner = (
     formData.get("description_beginner") ?? ""
   ).toString();
@@ -168,6 +169,7 @@ export async function PUT(req: NextRequest, { params }: RouteCtx) {
   const update = {
     id,
     name,
+    summary,
     video_url,
     description_beginner,
     description_intermediate,
@@ -175,7 +177,7 @@ export async function PUT(req: NextRequest, { params }: RouteCtx) {
     level: "All",
     category,
     week_number,
-    image: imageUrl,
+    image: imageUrl ?? "",
     scheduled_publish_at,
     is_published,
     multi_level: true,
