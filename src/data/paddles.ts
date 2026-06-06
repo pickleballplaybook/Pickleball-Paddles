@@ -2413,7 +2413,10 @@ export const paddles: Paddle[] = [
     price: "$109.00",
     discountLink: "https://luzzpickleball.com/discount/PLAYBOOK?redirect=/products/luzz-glider-2026",
     addedAt: "2026-06-01",
-    trendingScore: 50,
+    // Bumped to 70 so it's the top-scoring Luzz paddle — drives both the
+    // featured hero (via brand.featuredPaddleSlug override) and the grid's
+    // first slot on /brands/luzz, which sorts by trendingScore desc.
+    trendingScore: 70,
     playStyle: "all-court",
   },
   {
@@ -2431,7 +2434,9 @@ export const paddles: Paddle[] = [
     price: "$229.00",
     discountLink: "https://luzzpickleball.com/discount/PLAYBOOK?redirect=/products/luzzpickleball-pro-4-tornazo-carbon-fiber-pickleball-paddle-dual-layer-core",
     addedAt: "2026-06-01",
-    trendingScore: 50,
+    // 65 keeps Tornazo in the #2 spot on /brands/luzz (under Glider at 70,
+    // above Inferno + Cannon at 60).
+    trendingScore: 65,
     playStyle: "power",
   },
 
