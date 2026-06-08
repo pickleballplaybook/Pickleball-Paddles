@@ -231,10 +231,7 @@ export const paddles: Paddle[] = [
     image: "/images/paddles/Loco-Elongated-16mm.png",
     amountOff: "10%",
     price: "$199.00",
-    // TEMP lockerroom promo — set 2026-06-08, REVERT on 2026-06-28 to:
-    //   "https://breadbutterpickleballco.sjv.io/9VL5Le"
-    // All 3 Loco variants share the same lockerroom product URL.
-    discountLink: "https://lockerroompickleball.com/products/the-loco-hybrid?sca_ref=8334840.yY4rLJi7oU9HDNHD",
+    discountLink: "https://breadbutterpickleballco.sjv.io/9VL5Le",
     reviewUrl: "https://youtu.be/fEzgY0ZQGAU",
     addedAt: "2025-06-01",
     trendingScore: 72,
@@ -256,7 +253,8 @@ export const paddles: Paddle[] = [
     price: "$199.00",
     // TEMP lockerroom promo — set 2026-06-08, REVERT on 2026-06-28 to:
     //   "https://breadbutterpickleballco.sjv.io/9VL5Le"
-    // All 3 Loco variants share the same lockerroom product URL.
+    // Only the Hybrid variant is on the lockerroom URL now — Elongated +
+    // Widebody were reverted to the B&B affiliate link.
     discountLink: "https://lockerroompickleball.com/products/the-loco-hybrid?sca_ref=8334840.yY4rLJi7oU9HDNHD",
     reviewUrl: "https://youtu.be/fEzgY0ZQGAU",
     addedAt: "2025-06-01",
@@ -277,10 +275,7 @@ export const paddles: Paddle[] = [
     image: "/images/paddles/Loco-Widebody-16mm.png",
     amountOff: "10%",
     price: "$199.00",
-    // TEMP lockerroom promo — set 2026-06-08, REVERT on 2026-06-28 to:
-    //   "https://breadbutterpickleballco.sjv.io/9VL5Le"
-    // All 3 Loco variants share the same lockerroom product URL.
-    discountLink: "https://lockerroompickleball.com/products/the-loco-hybrid?sca_ref=8334840.yY4rLJi7oU9HDNHD",
+    discountLink: "https://breadbutterpickleballco.sjv.io/9VL5Le",
     reviewUrl: "https://youtu.be/fEzgY0ZQGAU",
     addedAt: "2025-06-01",
     trendingScore: 54,
@@ -539,7 +534,8 @@ export const paddles: Paddle[] = [
     price: "$129.00",
     // TEMP lockerroom promo — set 2026-06-08, REVERT on 2026-06-28 to:
     //   "https://www.fridaypickle.com/PLAYBOOK"
-    // Both Aura variants (Elongated + Hybrid) share the same lockerroom URL.
+    // Only the Elongated variant is on the lockerroom URL now — Hybrid was
+    // reverted to the Friday affiliate link.
     discountLink: "https://lockerroompickleball.com/products/aura?sca_ref=8334840.yY4rLJi7oU9HDNHD",
     reviewUrl: "https://youtu.be/O8555NozXPo",
     addedAt: "2025-06-01",
@@ -560,10 +556,7 @@ export const paddles: Paddle[] = [
     image: "/images/paddles/Aura-Hybrid-16mm.png",
     amountOff: "$10",
     price: "$129.00",
-    // TEMP lockerroom promo — set 2026-06-08, REVERT on 2026-06-28 to:
-    //   "https://www.fridaypickle.com/PLAYBOOK"
-    // Both Aura variants (Elongated + Hybrid) share the same lockerroom URL.
-    discountLink: "https://lockerroompickleball.com/products/aura?sca_ref=8334840.yY4rLJi7oU9HDNHD",
+    discountLink: "https://www.fridaypickle.com/PLAYBOOK",
     reviewUrl: "https://youtu.be/O8555NozXPo",
     addedAt: "2025-06-01",
     trendingScore: 55,
