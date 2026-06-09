@@ -325,30 +325,44 @@ export default function PublishPage() {
   }, [sourceMode, selectedFile, selectedClipPath, clips]);
 
   // ── Auto-fill the description when a source is selected ──────────────────
-  // Two behaviors, both guarded by "only if the field is currently empty"
-  // so the user's typed-in text is never overwritten:
-  //   • Clip mode → use buildReelDescription() with the clip's title +
-  //     reason + source YouTube URL (mirrors the Shorts Generator's
-  //     per-clip description so the user gets a consistent prefilled draft).
-  //   • Upload mode → use the default "🏓 Playbook Paddles" preset since
-  //     fresh uploads have no per-video metadata to draw from.
+  // Three behaviors:
+  //   1. Description is empty                    → always auto-fill
+  //   2. Description matches the last auto-fill  → replace with the new
+  //      auto-fill (user picked another clip without touching the field)
+  //   3. Description has been edited             → leave it alone (user
+  //      changes always win)
+  //
+  // `lastAutoFilled` is the exact string we wrote last time. As long as
+  // the current description equals it, we know the user hasn't edited.
+  // The moment they type anything, the strings diverge and auto-fill
+  // stops touching the field.
+  //
+  // Sources:
+  //   • Clip mode   → buildReelDescription(clip, clip.sourceUrl, []) —
+  //     identical to the Shorts Generator's per-clip description.
+  //   • Upload mode → "🏓 Playbook Paddles" DESCRIPTION_PRESETS default
+  //     since fresh uploads have no per-video metadata.
+  const [lastAutoFilled, setLastAutoFilled] = useState("");
   useEffect(() => {
-    // Don't overwrite anything the user has typed.
-    if (description.trim().length > 0) return;
-
+    let next: string | null = null;
     if (sourceMode === "clip" && selectedClipPath && clips) {
       const clip = clips.find((c) => c.path === selectedClipPath);
-      if (clip) {
-        setDescription(buildReelDescription(clip, clip.sourceUrl, []));
-      }
-      return;
-    }
-    if (sourceMode === "upload" && selectedFile) {
+      if (clip) next = buildReelDescription(clip, clip.sourceUrl, []);
+    } else if (sourceMode === "upload" && selectedFile) {
       const defaultPreset = DESCRIPTION_PRESETS.find((p) => p.label.includes("Playbook Paddles"));
-      if (defaultPreset) setDescription(defaultPreset.text);
+      if (defaultPreset) next = defaultPreset.text;
     }
-    // Intentionally omit `description` from deps — its presence is checked
-    // inside the effect (early return), not used to retrigger the effect.
+    if (next === null) return;
+
+    // Safe to overwrite if the field is empty OR still equal to whatever
+    // we put there last time (user hasn't typed anything).
+    if (description.length === 0 || description === lastAutoFilled) {
+      setDescription(next);
+      setLastAutoFilled(next);
+    }
+    // Intentionally omit `description` + `lastAutoFilled` from deps —
+    // they're read inside the effect but should NOT retrigger it. The
+    // effect should only fire on actual source changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sourceMode, selectedFile, selectedClipPath, clips]);
 
