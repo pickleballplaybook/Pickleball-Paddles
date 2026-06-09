@@ -1100,7 +1100,47 @@ function saveScheduledQueue() {
     console.error('Failed to save scheduled queue:', err.message);
   }
 }
+
+// Reconcile SCHEDULED_DIR with the queue. fireScheduledEntry() schedules
+// the per-entry media wipe via setTimeout(.unref()) one hour after publish,
+// which means every container restart silently drops those pending timers
+// and the persisted videos (50–200 MB each) leak onto the 1 GB volume
+// forever. Called once at startup right after loadScheduledQueue() so we
+// have an authoritative view of which dirs are still in-flight.
+function reapOrphanedScheduledMedia() {
+  if (!fs.existsSync(SCHEDULED_DIR)) return;
+  const keep = new Set(
+    scheduledQueue
+      .filter(e => e.status === 'pending' || e.status === 'publishing')
+      .map(e => e.id)
+  );
+  let freed = 0;
+  let removed = 0;
+  for (const entry of fs.readdirSync(SCHEDULED_DIR, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    if (keep.has(entry.name)) continue;
+    const dir = path.join(SCHEDULED_DIR, entry.name);
+    try {
+      freed += dirSize(dir);
+      fs.rmSync(dir, { recursive: true, force: true });
+      removed++;
+    } catch (err) {
+      console.error(`[scheduled cleanup] failed to remove ${dir}:`, err.message);
+    }
+  }
+  // Also drop queue entries whose media we just wiped (published/error) so
+  // the queue doesn't carry dead references forever.
+  const before = scheduledQueue.length;
+  scheduledQueue = scheduledQueue.filter(
+    e => e.status === 'pending' || e.status === 'publishing'
+  );
+  if (scheduledQueue.length !== before) saveScheduledQueue();
+  console.log(
+    `[scheduled cleanup] freed ${(freed / 1024 / 1024).toFixed(1)} MB across ${removed} orphan dir(s); queue ${before} → ${scheduledQueue.length}`
+  );
+}
 loadScheduledQueue();
+reapOrphanedScheduledMedia();
 const upload = multer({
   storage: multer.diskStorage({
     destination: (_req, _file, cb) => cb(null, UPLOADS_DIR),
