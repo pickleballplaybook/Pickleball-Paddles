@@ -2316,6 +2316,7 @@ export const paddles: Paddle[] = [
     addedAt: "2026-05-27",
     trendingScore: 50,
     playStyle: "power",
+    reviewUrl: "https://youtu.be/gbTkuJsu_08",
   },
 
   // ── Selkirk (Omni) ─────────────────────────────────────────────────────────
@@ -2403,6 +2404,7 @@ export const paddles: Paddle[] = [
     addedAt: "2026-06-01",
     trendingScore: 50,
     playStyle: "power",
+    reviewUrl: "https://youtu.be/T3xpQYYPlsI",
   },
 
   // ── Luzz Glider / Tornazo ─────────────────────────────────────────────────
