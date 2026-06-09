@@ -970,52 +970,78 @@ export default function PublishPage() {
               Connect at least one account above first.
             </p>
           ) : (
-            // ── Brand-grouped columns: ONLY the checkboxes live here ──────
-            // Options expanders are deliberately NOT rendered inline — they
-            // were getting squished into the 220px columns. Instead they
-            // appear in a full-width "Configure selected" panel below.
+            // ── Brand-grouped columns ──────────────────────────────────────
+            // Each destination row holds its checkbox + a chevron toggle.
+            // Options are inline (right next to the checkbox) but collapsed
+            // by default — click the chevron to expand them.
             (() => {
               type Row = { node: React.ReactNode; brand: BrandKey };
               const rows: Row[] = [];
 
               for (const c of connections.youtube) {
+                const key = `youtube:${c.id}`;
                 const checked = selectedTargets.some((t) => t.platform === "youtube" && t.id === c.id);
                 rows.push({
                   brand: brandFor(c.name),
                   node: (
-                    <DestinationCheckbox
+                    <DestinationRow
                       key={`yt-${c.id}`}
                       label={`YouTube · ${c.name}`}
                       checked={checked}
                       onChange={() => toggleTarget({ platform: "youtube", id: c.id })}
+                      options={
+                        <YouTubeOptionsExpander
+                          opts={targetOptions[key] || {}}
+                          playlists={ytPlaylists[c.id] || null}
+                          onChange={(patch) => setOptions(key, patch)}
+                        />
+                      }
                     />
                   ),
                 });
               }
               for (const c of connections.facebook) {
+                const key = `facebook:${c.id}`;
                 const checked = selectedTargets.some((t) => t.platform === "facebook" && t.id === c.id);
                 rows.push({
                   brand: brandFor(c.name),
                   node: (
-                    <DestinationCheckbox
+                    <DestinationRow
                       key={`fb-${c.id}`}
                       label={`Facebook · ${c.name}`}
                       checked={checked}
                       onChange={() => toggleTarget({ platform: "facebook", id: c.id })}
+                      options={
+                        <FacebookOptionsExpander
+                          opts={targetOptions[key] || {}}
+                          onChange={(patch) => setOptions(key, patch)}
+                          otherPages={connections.facebook.filter((p) => p.id !== c.id)}
+                          connectionId={c.id}
+                        />
+                      }
                     />
                   ),
                 });
               }
               for (const c of connections.instagram) {
+                const key = `instagram:${c.id}`;
                 const checked = selectedTargets.some((t) => t.platform === "instagram" && t.id === c.id);
                 rows.push({
                   brand: brandFor(c.username),
                   node: (
-                    <DestinationCheckbox
+                    <DestinationRow
                       key={`ig-${c.id}`}
                       label={`Instagram · @${c.username}`}
                       checked={checked}
                       onChange={() => toggleTarget({ platform: "instagram", id: c.id })}
+                      options={
+                        <InstagramOptionsExpander
+                          opts={targetOptions[key] || {}}
+                          onChange={(patch) => setOptions(key, patch)}
+                          otherAccounts={connections.instagram.filter((a) => a.id !== c.id)}
+                          connectionId={c.id}
+                        />
+                      }
                     />
                   ),
                 });
@@ -1027,9 +1053,11 @@ export default function PublishPage() {
               for (const r of rows) grouped[r.brand].push(r);
               const activeBrands = BRAND_ORDER.filter((b) => grouped[b].length > 0);
 
+              // align-items: start keeps each column's rows from stretching
+              // vertically when a neighboring column expands its options.
               return (
                 <div
-                  className="grid gap-4 mb-4"
+                  className="grid gap-4 mb-6 items-start"
                   style={{ gridTemplateColumns: `repeat(auto-fit, minmax(220px, 1fr))` }}
                 >
                   {activeBrands.map((b) => (
@@ -1046,89 +1074,6 @@ export default function PublishPage() {
                 </div>
               );
             })()
-          )}
-
-          {/* ── Full-width options panel for each selected destination ──── */}
-          {/* Renders below the brand-column grid so option forms get the */}
-          {/* full content width and don't squish into a 220px column. */}
-          {connections && selectedTargets.length > 0 && (
-            <div className="mb-6 space-y-4">
-              {selectedTargets.map((t) => {
-                const key = `${t.platform}:${t.id}`;
-                if (t.platform === "youtube") {
-                  const c = connections.youtube.find((x) => x.id === t.id);
-                  if (!c) return null;
-                  return (
-                    <details
-                      key={key}
-                      open
-                      className="rounded-xl border border-gray-800 bg-gray-900"
-                    >
-                      <summary className="cursor-pointer select-none px-4 py-2.5 text-sm font-semibold text-gray-200 flex items-center justify-between">
-                        <span>YouTube · {c.name}</span>
-                        <span className="text-xs text-gray-500" aria-hidden>▾</span>
-                      </summary>
-                      <div className="px-4 pb-4 border-t border-gray-800">
-                        <YouTubeOptionsExpander
-                          opts={targetOptions[key] || {}}
-                          playlists={ytPlaylists[c.id] || null}
-                          onChange={(patch) => setOptions(key, patch)}
-                        />
-                      </div>
-                    </details>
-                  );
-                }
-                if (t.platform === "facebook") {
-                  const c = connections.facebook.find((x) => x.id === t.id);
-                  if (!c) return null;
-                  return (
-                    <details
-                      key={key}
-                      open
-                      className="rounded-xl border border-gray-800 bg-gray-900"
-                    >
-                      <summary className="cursor-pointer select-none px-4 py-2.5 text-sm font-semibold text-gray-200 flex items-center justify-between">
-                        <span>Facebook · {c.name}</span>
-                        <span className="text-xs text-gray-500" aria-hidden>▾</span>
-                      </summary>
-                      <div className="px-4 pb-4 border-t border-gray-800">
-                        <FacebookOptionsExpander
-                          opts={targetOptions[key] || {}}
-                          onChange={(patch) => setOptions(key, patch)}
-                          otherPages={connections.facebook.filter((p) => p.id !== c.id)}
-                          connectionId={c.id}
-                        />
-                      </div>
-                    </details>
-                  );
-                }
-                if (t.platform === "instagram") {
-                  const c = connections.instagram.find((x) => x.id === t.id);
-                  if (!c) return null;
-                  return (
-                    <details
-                      key={key}
-                      open
-                      className="rounded-xl border border-gray-800 bg-gray-900"
-                    >
-                      <summary className="cursor-pointer select-none px-4 py-2.5 text-sm font-semibold text-gray-200 flex items-center justify-between">
-                        <span>Instagram · @{c.username}</span>
-                        <span className="text-xs text-gray-500" aria-hidden>▾</span>
-                      </summary>
-                      <div className="px-4 pb-4 border-t border-gray-800">
-                        <InstagramOptionsExpander
-                          opts={targetOptions[key] || {}}
-                          onChange={(patch) => setOptions(key, patch)}
-                          otherAccounts={connections.instagram.filter((a) => a.id !== c.id)}
-                          connectionId={c.id}
-                        />
-                      </div>
-                    </details>
-                  );
-                }
-                return null;
-              })}
-            </div>
           )}
 
           <label className="block text-xs uppercase tracking-wide text-gray-500 mb-1">
@@ -2406,5 +2351,62 @@ function DestinationCheckbox({
       />
       <span className="text-white">{label}</span>
     </label>
+  );
+}
+
+// ── DestinationRow ────────────────────────────────────────────────────────
+// Checkbox + collapsed-by-default option panel, both right next to each
+// other. The chevron only appears when the destination is checked; click it
+// to toggle the options inline (no scrolling away from the row).
+function DestinationRow({
+  label,
+  checked,
+  onChange,
+  options,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: () => void;
+  options: React.ReactNode;
+}) {
+  // Collapsed by default — match what the user asked for. Local state
+  // (not lifted) since expansion is purely a per-row visual preference.
+  const [open, setOpen] = useState(false);
+  return (
+    <div>
+      <div
+        className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition ${
+          checked
+            ? "border-accent-500/40 bg-accent-500/5"
+            : "border-gray-800 bg-gray-800 hover:border-gray-700"
+        }`}
+      >
+        <label className="flex flex-1 min-w-0 items-center gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={checked}
+            onChange={onChange}
+            className="accent-accent-500 flex-shrink-0"
+          />
+          <span className="text-white truncate">{label}</span>
+        </label>
+        {checked && (
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            aria-expanded={open}
+            aria-label={open ? "Hide options" : "Show options"}
+            className="flex-shrink-0 w-6 h-6 inline-flex items-center justify-center rounded text-xs text-gray-400 hover:text-white hover:bg-gray-800/80"
+          >
+            {open ? "▾" : "▸"}
+          </button>
+        )}
+      </div>
+      {checked && open && (
+        <div className="mt-1.5 rounded-lg border border-gray-800 bg-gray-950/60 p-3">
+          {options}
+        </div>
+      )}
+    </div>
   );
 }
