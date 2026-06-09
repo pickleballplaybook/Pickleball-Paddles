@@ -577,6 +577,13 @@ export default function PublishPage() {
       f.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 200) || "upload.bin"
     );
 
+    // A 200 MB+ file is ~40 chunks; a single transient network blip on any
+    // one of them used to fail the whole upload. The server now accepts
+    // idempotent retries (truncates any partial bytes from a failed prior
+    // attempt before appending), so it's safe to retry a chunk on network
+    // error. Cap retries so a truly broken connection still surfaces.
+    const MAX_RETRIES_PER_CHUNK = 5;
+
     let finalPath: string | null = null;
     for (let i = 0; i < total; i++) {
       const start = i * CHUNK_SIZE;
@@ -585,12 +592,31 @@ export default function PublishPage() {
 
       const url =
         `${uploadUrl}/chunk?token=${encodeURIComponent(token)}` +
-        `&exp=${exp}&index=${i}&total=${total}&filename=${filename}`;
+        `&exp=${exp}&index=${i}&total=${total}&chunkSize=${CHUNK_SIZE}&filename=${filename}`;
 
-      const body = await sendChunk(url, chunk, (chunkLoaded) => {
-        const done = i * CHUNK_SIZE + chunkLoaded;
-        onProgress(Math.min(100, Math.round((done / f.size) * 100)));
-      });
+      let body: { done?: boolean; path?: string } | null = null;
+      let lastErr: unknown = null;
+      for (let attempt = 0; attempt < MAX_RETRIES_PER_CHUNK; attempt++) {
+        try {
+          body = await sendChunk(url, chunk, (chunkLoaded) => {
+            const done = i * CHUNK_SIZE + chunkLoaded;
+            onProgress(Math.min(100, Math.round((done / f.size) * 100)));
+          });
+          break;
+        } catch (err) {
+          lastErr = err;
+          const msg = err instanceof Error ? err.message : String(err);
+          // Retry only on transient network failures. A 4xx/5xx response is
+          // a logical error (bad token, expired, etc.) and won't get better
+          // by retrying.
+          const isTransient = msg.includes("network error") || msg.includes("aborted");
+          if (!isTransient || attempt === MAX_RETRIES_PER_CHUNK - 1) throw err;
+          // Exponential backoff with jitter: 0.5s, 1s, 2s, 4s, capped at 8s.
+          const delayMs = Math.min(8000, 500 * 2 ** attempt) + Math.random() * 250;
+          await new Promise((r) => setTimeout(r, delayMs));
+        }
+      }
+      if (!body) throw lastErr instanceof Error ? lastErr : new Error("Chunk failed");
 
       if (body.done && body.path) finalPath = body.path;
     }
