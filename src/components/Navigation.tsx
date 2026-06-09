@@ -14,6 +14,7 @@ const navLinks = [
   { label: "Best Paddles",   href: "/best-pickleball-paddles" },
   { label: "Reviews",        href: "/reviews" },
   { label: "Compare",        href: "/compare" },
+  { label: "Guides",         href: "/guides" },
   { label: "Gear",           href: "/gear"    },
   { label: "Discount Codes", href: "/discount-codes" },
 ];

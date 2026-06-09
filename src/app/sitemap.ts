@@ -2,6 +2,7 @@ import { MetadataRoute } from "next";
 import { paddles } from "@/data/paddles";
 import { blogPosts } from "@/data/blogPosts";
 import { brands } from "@/data/brands";
+import { guides } from "@/data/guides";
 import { siteConfig } from "@/config/site";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -127,5 +128,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  return [...staticPages, ...paddlePages, ...blogPages, ...seriesPages, ...brandPages, ...weeklyPages, ...comparePages];
+  // Guides hub + every individual guide page. Priority 0.8 — these are
+  // dedicated informational pages targeting evergreen Google queries; we
+  // want them crawled as eagerly as our paddle pages.
+  const guidesHub: MetadataRoute.Sitemap = [
+    { url: `${siteConfig.siteUrl}/guides`, lastModified: now, changeFrequency: "weekly", priority: 0.85 },
+  ];
+  const guidePages: MetadataRoute.Sitemap = guides.map((g) => ({
+    url: `${siteConfig.siteUrl}/guides/${g.slug}`,
+    lastModified: new Date(g.updatedDate ?? g.publishDate),
+    changeFrequency: "monthly" as const,
+    priority: 0.8,
+  }));
+
+  return [
+    ...staticPages,
+    ...paddlePages,
+    ...blogPages,
+    ...seriesPages,
+    ...brandPages,
+    ...weeklyPages,
+    ...comparePages,
+    ...guidesHub,
+    ...guidePages,
+  ];
 }
