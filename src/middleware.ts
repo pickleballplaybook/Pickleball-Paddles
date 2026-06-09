@@ -20,10 +20,14 @@ export async function middleware(request: NextRequest) {
   // Drills upload — same shorts_auth cookie gating.
   const isDrillsApi  = pathname.startsWith("/api/admin/drills");
   const isDrillsPage = pathname.startsWith("/admin/drills");
+  // Scheduled posts viewer — the page reads from /api/admin/publish/scheduled*
+  // (already gated as part of isPublishApi). Just the page itself needs gating.
+  const isScheduledPage = pathname.startsWith("/admin/scheduled");
   const isApiGated = isShortsApi || isPublishApi || isNewsletterApi || isDrillsApi;
   const isGated =
     isShortsPage || isShortsApi || isPublishPage || isPublishApi || isPublishOAuth ||
-    isNewsletterApi || isNewsletterPage || isDrillsApi || isDrillsPage;
+    isNewsletterApi || isNewsletterPage || isDrillsApi || isDrillsPage ||
+    isScheduledPage;
 
   if (isGated) {
     const isLoginPage = pathname === "/admin/shorts/login";
