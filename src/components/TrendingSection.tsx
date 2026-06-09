@@ -48,17 +48,21 @@ function getCode(brand: string, discountLink?: string): string {
 }
 
 // ── View count fetcher ────────────────────────────────────────────────────────
-function useViewCounts(slugs: string[]) {
+// One request returns the full per-slug map for the active window with time
+// decay applied (a view today is worth 1.0; a view 28 days ago, 0.5). The
+// previous implementation used /api/views — which returns all-time cumulative
+// counts — and that single line was the entire reason old paddles dominated
+// the trending surfaces forever.
+function useWeightedViews(days: number) {
   const [views, setViews] = useState<Record<string, number>>({});
   useEffect(() => {
-    if (slugs.length === 0) return;
-    fetch(`/api/views?slugs=${slugs.join(",")}`)
+    fetch(`/api/views/weighted?days=${days}`, { cache: "no-store" })
       .then((r) => r.json())
       .then((data) => {
-        if (data && typeof data === "object") setViews(data);
+        if (data && typeof data === "object" && !("error" in data)) setViews(data);
       })
       .catch(() => {});
-  }, [slugs.join(",")]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [days]);
   return views;
 }
 
@@ -124,32 +128,47 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
   const allTrending = getTrendingPaddles(paddles, filteredHearts, paddles.length);
   const allBrands   = getRisingBrands(paddles, filteredHearts, paddles.length);
 
-  // Only fetch ratings for top candidates (not all 116+ paddles)
-  const heartedIds = new Set(filteredHearts.map((h) => h.paddleId));
-  const topByScore = [...paddles].sort((a, b) => b.trendingScore - a.trendingScore).slice(0, 20);
-  const candidateIds = Array.from(new Set([...Array.from(heartedIds), ...topByScore.map((p) => p.id)])).slice(0, 30);
-  const ratingCounts = useRatingCounts(candidateIds);
+  // Weighted views for the active window (7 or 30 days), one round-trip for
+  // every paddle that's been viewed. We use the full map for both engagement
+  // scoring AND candidate seeding — the static `trendingScore` fallback that
+  // used to seed candidates is gone; it was anchoring cold paddles in the
+  // pool indefinitely.
+  const windowDays = timeRange === "7d" ? 7 : 30;
+  const viewCounts = useWeightedViews(windowDays);
 
-  // Fetch views for the same candidates
-  const candidateSlugs = candidateIds
-    .map((id) => paddles.find((p) => p.id === id)?.slug)
+  // Candidates for the (more expensive) per-paddle ratings fetch: anything
+  // hearted in window + anything getting non-trivial recent views.
+  const heartedIds = new Set(filteredHearts.map((h) => h.paddleId));
+  const topViewedSlugs = Object.entries(viewCounts)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 30)
+    .map(([slug]) => slug);
+  const topViewedIds = topViewedSlugs
+    .map((slug) => paddles.find((p) => p.slug === slug)?.id)
     .filter(Boolean) as string[];
-  const viewCounts = useViewCounts(candidateSlugs);
+  const candidateIds = Array.from(new Set([...Array.from(heartedIds), ...topViewedIds])).slice(0, 40);
+  const ratingCounts = useRatingCounts(candidateIds);
 
   const hasHearts = filteredHearts.length > 0;
   const hasRatings = Object.values(ratingCounts).some((r) => r.count > 0);
   const hasViews = Object.values(viewCounts).some((v) => v > 0);
 
-  // Re-sort trending by hearts + star rating count + views combined
+  // Sort by combined engagement. Use weightedScore (recency-decayed hearts)
+  // as the heart signal, not raw totalHearts — otherwise older hearts in the
+  // window outrank today's activity.
   const trendingPre = allTrending
     .map((t) => ({
       ...t,
       ratingCount: ratingCounts[t.paddle.id]?.count ?? 0,
       ratingAvg: ratingCounts[t.paddle.id]?.average ?? 0,
       views: viewCounts[t.paddle.slug] ?? 0,
-      engagement: engagementScore(t.totalHearts, ratingCounts[t.paddle.id]?.count ?? 0, viewCounts[t.paddle.slug] ?? 0),
+      engagement: engagementScore(
+        t.weightedScore < 0 ? 0 : t.weightedScore,
+        ratingCounts[t.paddle.id]?.count ?? 0,
+        viewCounts[t.paddle.slug] ?? 0,
+      ),
     }))
-    .sort((a, b) => b.engagement - a.engagement || b.totalHearts - a.totalHearts)
+    .sort((a, b) => b.engagement - a.engagement || (b.lastHeart ?? 0) - (a.lastHeart ?? 0))
     .filter((t) => (hasHearts || hasRatings || hasViews) ? t.engagement > 0 : true)
     .filter((t) => !isTrendingExcluded(t.paddle.slug));
   // Dedupe by series so a single series can't fill multiple slots.

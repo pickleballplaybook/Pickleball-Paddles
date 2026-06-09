@@ -52,16 +52,24 @@ function useRatingCounts(paddleIds: string[]) {
   return ratings;
 }
 
-function useViewCounts(slugs: string[]) {
+// Fetches the time-decayed weighted view count per slug for the last N days.
+// One round-trip returns the full per-slug map, so we feed it BOTH the
+// engagement score AND the candidate pool (avoids the chicken-and-egg where
+// /api/views/weighted could only be queried for a set of candidate slugs we
+// hadn't picked yet).
+function useWeightedViews(days: number) {
   const [views, setViews] = useState<Record<string, number>>({});
+  const [loaded, setLoaded] = useState(false);
   useEffect(() => {
-    if (slugs.length === 0) return;
-    fetch(`/api/views?slugs=${slugs.join(",")}`)
+    fetch(`/api/views/weighted?days=${days}`, { cache: "no-store" })
       .then((r) => r.json())
-      .then((data) => { if (data && typeof data === "object") setViews(data); })
-      .catch(() => {});
-  }, [slugs.join(",")]); // eslint-disable-line react-hooks/exhaustive-deps
-  return views;
+      .then((data) => {
+        if (data && typeof data === "object" && !("error" in data)) setViews(data);
+      })
+      .catch(() => {})
+      .finally(() => setLoaded(true));
+  }, [days]);
+  return { views, loaded };
 }
 
 // ── Stat bar ranges (from actual paddle database) ────────────────────────────
@@ -379,38 +387,58 @@ export default function TrendingPage() {
       });
   }, []);
 
-  // Filter hearts to last 7 days for trending page
-  const sevenDaysAgo = Date.now() - 7 * 86400000;
-  const recentHearts = heartRecords.filter((h) => new Date(h.createdAt).getTime() >= sevenDaysAgo);
+  // 30-day window with time-decay (handled inside getTrendingPaddles via
+  // getHeartWeight). A heart from today counts 1.0; a heart from 28 days ago
+  // counts 0.5. Hearts older than 30 days are dropped entirely so a long-since-
+  // popular paddle can't ride its history forever.
+  const thirtyDaysAgo = Date.now() - 30 * 86400000;
+  const recentHearts = heartRecords.filter((h) => new Date(h.createdAt).getTime() >= thirtyDaysAgo);
 
-  // Only fetch ratings for top candidates (not all 116+ paddles)
-  // Mirror the homepage Trending Paddles section exactly: candidate selection
-  // and the hasHearts flag use the SAME last-7-days window as the scoring, so a
-  // paddle hearted only outside the window (e.g. Selkirk Boomstik) never becomes
-  // a candidate, never picks up its accumulated views, and stays out of the top 10.
+  // Weighted view counts for ALL paddles in the same 30-day window. This is
+  // the single biggest correctness fix: the previous implementation used
+  // all-time cumulative views, so paddles that had been on the site longest
+  // accumulated a permanent advantage even with zero recent traffic.
+  const { views: weightedViews, loaded: viewsLoaded } = useWeightedViews(30);
+
   const allTrending = getTrendingPaddles(paddles, recentHearts, paddles.length);
-  const heartedIds = new Set(recentHearts.map((h) => h.paddleId));
-  const topByScore = [...paddles].sort((a, b) => b.trendingScore - a.trendingScore).slice(0, 20);
-  const candidateIds = Array.from(new Set([...Array.from(heartedIds), ...topByScore.map((p) => p.id)])).slice(0, 30);
-  const ratingCounts = useRatingCounts(candidateIds);
 
-  const candidateSlugs = candidateIds
-    .map((id) => paddles.find((p) => p.id === id)?.slug)
+  // Candidate pool for ratings: anything hearted in window + anything with
+  // meaningful recent views. (We can pick those out NOW because the weighted
+  // views endpoint returns the full per-slug map up front.) The static
+  // trendingScore fallback that used to seed this list is gone — that was
+  // what let cold paddles like Trufoam Barrage stay in the candidate pool
+  // forever.
+  const heartedIds = new Set(recentHearts.map((h) => h.paddleId));
+  const topViewedSlugs = Object.entries(weightedViews)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 30)
+    .map(([slug]) => slug);
+  const topViewedIds = topViewedSlugs
+    .map((slug) => paddles.find((p) => p.slug === slug)?.id)
     .filter(Boolean) as string[];
-  const viewCounts = useViewCounts(candidateSlugs);
+  const candidateIds = Array.from(new Set([...Array.from(heartedIds), ...topViewedIds])).slice(0, 40);
+  const ratingCounts = useRatingCounts(candidateIds);
 
   const hasHearts = recentHearts.length > 0;
   const hasRatings = Object.values(ratingCounts).some((r) => r.count > 0);
-  const hasViews = Object.values(viewCounts).some((v) => v > 0);
-  const dataReady = heartsLoaded && (hasViews || (!hasHearts && !hasRatings));
+  const hasViews = Object.keys(weightedViews).length > 0;
+  const dataReady = heartsLoaded && viewsLoaded;
 
-  // Same scoring as homepage: hearts + ratings + views/10
+  // Sort by combined engagement (weighted hearts via getHeartWeight inside
+  // getTrendingPaddles → weightedScore; weighted views from the endpoint;
+  // rating counts as before). Use weightedScore as the primary signal, not
+  // raw totalHearts — otherwise a paddle hearted 28 days ago at full count
+  // outranks one hearted heavily today.
   const top10Pre = allTrending
     .map((t) => ({
       ...t,
-      engagement: engagementScore(t.totalHearts, ratingCounts[t.paddle.id]?.count ?? 0, viewCounts[t.paddle.slug] ?? 0),
+      engagement: engagementScore(
+        t.weightedScore < 0 ? 0 : t.weightedScore,
+        ratingCounts[t.paddle.id]?.count ?? 0,
+        weightedViews[t.paddle.slug] ?? 0,
+      ),
     }))
-    .sort((a, b) => b.engagement - a.engagement || b.totalHearts - a.totalHearts)
+    .sort((a, b) => b.engagement - a.engagement || (b.lastHeart ?? 0) - (a.lastHeart ?? 0))
     .filter((t) => (hasHearts || hasRatings || hasViews) ? t.engagement > 0 : true)
     .filter((t) => !isTrendingExcluded(t.paddle.slug));
   const top10 = takeTopBySeriesDedup(top10Pre, 10);
@@ -529,7 +557,7 @@ export default function TrendingPage() {
             Top 10 Trending Paddles
           </h1>
           <p className="text-base" style={{ color: "rgba(255,255,255,0.5)" }}>
-            Ranked by views, hearts, and ratings — last 7 days
+            Ranked by views, hearts, and ratings — last 30 days
           </p>
         </div>
 
