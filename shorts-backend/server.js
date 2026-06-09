@@ -26,6 +26,26 @@ import crypto from 'crypto';
 const execAsync = promisify(exec);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+// Safety net: a stray fs.createReadStream() against a missing file emits an
+// 'error' event on the stream — and if nothing listens for it, Node escalates
+// to an uncaughtException that kills the process. That cascade is what caused
+// the 502 outage: an /api/publish call referenced a file in /tmp that had been
+// wiped by a container restart, the platform-SDK's internal ReadStream crashed
+// the whole server, and Vercel saw "Backend unreachable" for every request
+// until Railway rebooted us. Swallow ENOENT specifically; preserve fatal-crash
+// behavior for everything else.
+process.on('uncaughtException', (err) => {
+  if (err && err.code === 'ENOENT') {
+    console.error('[uncaught ENOENT, kept alive]', err.path || err.message);
+    return;
+  }
+  console.error('[uncaughtException]', err);
+  process.exit(1);
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('[unhandledRejection]', reason);
+});
+
 const app = express();
 const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN;
 app.use(cors(ALLOWED_ORIGIN ? { origin: ALLOWED_ORIGIN.split(',').map(s => s.trim()) } : {}));
@@ -196,9 +216,17 @@ function dirSize(p) {
 // Keep only the N most recent finished jobs on disk — bounded storage,
 // independent of how actively clips are being generated. History tab will
 // only show what's still on disk.
-const CLEANUP_KEEP_JOBS = Number(process.env.CLEANUP_KEEP_JOBS || 15);
+// Default lowered 15 → 3 because the Railway volume is 1GB and each job's
+// downloaded source + clips can be 100–300MB. Keeping 15 quickly filled the
+// disk and broke encodes with "No space left on device". Override via
+// CLEANUP_KEEP_JOBS env var if the volume gets bumped up.
+const CLEANUP_KEEP_JOBS = Number(process.env.CLEANUP_KEEP_JOBS || 3);
+// Max age before an UPLOADS_DIR/<uuid> dir is considered abandoned and wiped.
+// Anything past this is either an orphan from a publish that never happened
+// or a partial chunk run that errored — both are safe to drop.
+const UPLOAD_TTL_MS = Number(process.env.UPLOAD_TTL_MS || 24 * 60 * 60 * 1000);
 
-function diskCleanup() {
+function diskCleanup({ wipeUploads = false } = {}) {
   let freed = 0;
   let removed = 0;
 
@@ -245,11 +273,38 @@ function diskCleanup() {
     }
   }
 
-  console.log(`[cleanup] freed ${(freed / 1024 / 1024).toFixed(1)} MB across ${removed} dir(s) (keep ${CLEANUP_KEEP_JOBS} most recent)`);
+  // UPLOADS_DIR: drop any per-upload subdirectory older than UPLOAD_TTL_MS.
+  // The publish handler only cleans uploads that were actually published, so
+  // without this pass orphan files (failed publishes, never-published queues,
+  // partial chunk runs that errored) accumulate forever and eventually fill
+  // the Railway volume — surfacing as ENOSPC on the next chunk write.
+  // On startup we wipe everything: chunk state lives in browser memory so a
+  // server restart already invalidates any in-flight upload, and this is the
+  // only way to clear orphans that are younger than the TTL after a restart.
+  if (fs.existsSync(UPLOADS_DIR)) {
+    const cutoff = Date.now() - UPLOAD_TTL_MS;
+    for (const entry of fs.readdirSync(UPLOADS_DIR, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+      const dir = path.join(UPLOADS_DIR, entry.name);
+      try {
+        if (!wipeUploads) {
+          const stat = fs.statSync(dir);
+          if (stat.mtimeMs > cutoff) continue;
+        }
+        freed += dirSize(dir);
+        fs.rmSync(dir, { recursive: true, force: true });
+        removed++;
+      } catch (err) {
+        console.error(`[cleanup] failed to remove ${dir}:`, err.message);
+      }
+    }
+  }
+
+  console.log(`[cleanup] freed ${(freed / 1024 / 1024).toFixed(1)} MB across ${removed} dir(s) (keep ${CLEANUP_KEEP_JOBS} most recent, uploads TTL ${(UPLOAD_TTL_MS / 1000 / 60 / 60).toFixed(0)}h)`);
 }
 
-diskCleanup();
-setInterval(diskCleanup, 60 * 60 * 1000); // hourly
+diskCleanup({ wipeUploads: true });
+setInterval(() => diskCleanup(), 60 * 60 * 1000); // hourly
 
 // ─── DRAWTEXT FONT ───────────────────────────────────────────────────────────
 // ffmpeg's drawtext filter (for clip text overlays) needs a TTF/OTF path.
@@ -321,6 +376,7 @@ app.get('/api/jobs', (_req, res) => {
       message: j.message,
       progress: j.progress,
       clipCount: Array.isArray(j.clips) ? j.clips.length : 0,
+      sourceResolution: j.sourceResolution || null,
     }))
     .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
   res.json({ jobs: list });
@@ -510,6 +566,12 @@ async function processVideo(jobId, jobDir, youtubeUrl) {
   setJobStatus(jobId, { status: 'downloading', message: 'Downloading video…', progress: 5 });
   const videoPath = path.join(jobDir, 'video.mp4');
   const cookiesArg = YT_COOKIES_FILE ? `--cookies "${YT_COOKIES_FILE}" ` : '';
+  // Optional proxy for every yt-dlp call. Set YT_PROXY on Railway when
+  // YouTube starts rejecting Railway's egress IP with bot-check errors
+  // (recurring problem on datacenter IPs). Accepts any yt-dlp proxy form:
+  //   http://user:pass@host:port      socks5://user:pass@host:port
+  // When unset, yt-dlp connects directly (default behavior).
+  const proxyArg = process.env.YT_PROXY ? `--proxy "${process.env.YT_PROXY}" ` : '';
   // YouTube's SABR-only experiment is breaking the bestvideo+bestaudio merge
   // path on some accounts (separate streams missing URLs, ffmpeg fails to
   // merge). Each attempt below picks (client, format) combos that prefer
@@ -526,7 +588,20 @@ async function processVideo(jobId, jobDir, youtubeUrl) {
   // a 4K source to a 1080x1080 square (with lanczos) is visibly sharper than
   // a 1080p source at 1080x1080 because every output pixel gets averaged
   // from multiple source pixels instead of mapped 1:1.
-  const HD = '-f "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best" --merge-output-format mp4';
+  // Format priority (left to right):
+  //   1. Pre-muxed HD MP4 ≥ 1080p (height OK, no merge needed — bypasses SABR
+  //      "Postprocessing: Conversion failed!" entirely)
+  //   2. Pre-muxed HD MP4 ≥ 720p
+  //   3. Separate bestvideo+bestaudio MP4 (needs ffmpeg merge; fails on SABR
+  //      accounts but works elsewhere — kept as fallback)
+  //   4. Any pre-muxed MP4 (last resort within the HD attempt list)
+  // The pre-muxed-first ordering meaningfully reduces our dependency on
+  // YouTube cookies. Cookies are still required for some videos but no longer
+  // for every video that happens to have a pre-muxed 1080p stream.
+  const HD =
+    '-f "best[height>=1080][ext=mp4]/best[height>=720][ext=mp4]/' +
+    'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best" ' +
+    '--merge-output-format mp4';
   const MUXED = '-f "best[ext=mp4][protocol^=http]/22/18/best[ext=mp4]/best"';
   // Order matters: clients with the best SABR-bypass behavior go first.
   // YouTube's SABR experiment hides URLs for higher-res streams, leaving
@@ -542,10 +617,13 @@ async function processVideo(jobId, jobDir, youtubeUrl) {
     { label: 'mweb HD',            args: `--extractor-args "youtube:player_client=mweb" ${HD}` },
     { label: 'android HD',         args: `--extractor-args "youtube:player_client=android" ${HD}` },
     { label: 'ios HD',             args: `--extractor-args "youtube:player_client=ios" ${HD}` },
-    // Last-resort muxed fallbacks (will be 360p–720p; accepted unconditionally)
-    { label: 'ios muxed',          args: `--extractor-args "youtube:player_client=ios" ${MUXED}`,     acceptLow: true },
-    { label: 'android muxed',      args: `--extractor-args "youtube:player_client=android" ${MUXED}`, acceptLow: true },
-    { label: 'web muxed',          args: `--extractor-args "youtube:player_client=web" ${MUXED}`,     acceptLow: true },
+    // Last-resort muxed fallbacks — the MUXED format prefers 22 (720p) before
+    // 18 (360p). MIN_HEIGHT (720) now applies to these too so we never silently
+    // ship blurry 360p clips. If all 10 attempts come back below 720p, the
+    // job errors out — better than publishing low-res output to social.
+    { label: 'ios muxed',          args: `--extractor-args "youtube:player_client=ios" ${MUXED}` },
+    { label: 'android muxed',      args: `--extractor-args "youtube:player_client=android" ${MUXED}` },
+    { label: 'web muxed',          args: `--extractor-args "youtube:player_client=web" ${MUXED}` },
   ];
   const attemptErrors = [];
   let lastErr;
@@ -553,7 +631,7 @@ async function processVideo(jobId, jobDir, youtubeUrl) {
   for (const attempt of attempts) {
     try {
       await execAsync(
-        `${YTDLP_BIN} ${cookiesArg}${attempt.args} -o "${videoPath}" "${youtubeUrl}"`,
+        `${YTDLP_BIN} ${cookiesArg}${proxyArg}${attempt.args} -o "${videoPath}" "${youtubeUrl}"`,
         { maxBuffer: 1024 * 1024 * 100 }
       );
       // Probe the resolution. If below MIN_HEIGHT and this isn't a fallback
@@ -682,6 +760,10 @@ Respond ONLY with valid JSON — no preamble, no markdown fences. Format:
   );
   const { width, height } = JSON.parse(probeOut).streams[0];
   console.log(`[${jobId}] source video: ${width}x${height}`);
+  // Persist the source resolution to the job record so the History UI can
+  // surface it as a quality indicator (and so future "why does this look
+  // blurry" debugging takes one glance instead of a Railway log dive).
+  setJobStatus(jobId, { sourceResolution: `${width}x${height}` });
 
   // Output is 9:16 portrait (1080x1920) for IG/FB Reels. The landscape source
   // is center-cropped to a SQUARE (1080x1080) — feels more zoomed-in than
@@ -1123,6 +1205,10 @@ app.get('/api/clips', (_req, res) => {
         filename: clip.filename,
         path: diskPath,
         title: clip.title,
+        // `reason` = the AI-generated rationale for why this segment makes a
+        // good short. Surfaced to /admin/publish so it can auto-fill the
+        // description field via buildReelDescription() when the clip is picked.
+        reason: clip.reason,
         duration: clip.duration,
         createdAt: job.createdAt,
         sourceUrl: job.youtubeUrl,
@@ -1247,10 +1333,91 @@ app.delete('/api/scheduled/:id', (req, res) => {
   res.json({ ok: true });
 });
 
+// Edit the scheduled-at timestamp of a pending IG post. Other fields are
+// snapshotted at publish-prep time and not safely editable post-hoc.
+app.patch('/api/scheduled/:id', express.json(), (req, res) => {
+  const entry = scheduledQueue.find(e => e.id === req.params.id);
+  if (!entry) return res.status(404).json({ error: 'Not found' });
+  if (entry.status === 'published') {
+    return res.status(409).json({ error: 'Already published — cannot edit' });
+  }
+  const next = req.body?.scheduledAt;
+  if (typeof next !== 'string' || !next) {
+    return res.status(400).json({ error: 'scheduledAt is required' });
+  }
+  const t = Date.parse(next);
+  if (Number.isNaN(t)) return res.status(400).json({ error: 'Invalid scheduledAt' });
+  // Don't let a user schedule into the past — the publisher loop ignores
+  // entries with a past timestamp on the next tick, so this is the easiest
+  // place to catch user error.
+  if (t < Date.now() + 60 * 1000) {
+    return res.status(400).json({ error: 'scheduledAt must be at least 1 minute in the future' });
+  }
+  entry.scheduledAt = new Date(t).toISOString();
+  if (entry.status === 'error') {
+    // Reset retryable error state so it gets another go on the new time.
+    entry.status = 'pending';
+    delete entry.error;
+  }
+  saveScheduledQueue();
+  res.json({ ok: true, scheduledAt: entry.scheduledAt, status: entry.status });
+});
+
+// ── Thumbnail-only upload endpoint ─────────────────────────────────────────
+// Lets the client POST a thumbnail image via multipart/form-data and get back
+// a short path string. The client then includes that path in the JSON
+// publish payload instead of a multi-hundred-KB base64 data URL, sidestepping
+// Vercel's 4.5 MB serverless body cap entirely (the multipart upload streams
+// through Vercel via forwardStreamingPost without being buffered/parsed).
+app.post('/api/publish-thumbnail', upload.single('thumbnail'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No thumbnail file uploaded (expected multipart field "thumbnail")' });
+  }
+  // Return the path RELATIVE to UPLOADS_DIR so we control the resolution
+  // surface and clients can't pass arbitrary absolute paths back at us.
+  const relPath = path.relative(UPLOADS_DIR, req.file.path);
+  res.json({ thumbnailPath: relPath, size: req.file.size, mimetype: req.file.mimetype });
+});
+
+// Resolve a thumbnailPath (relative to UPLOADS_DIR) into a data URL string.
+// Path traversal guard: any path that resolves outside UPLOADS_DIR is rejected.
+function thumbnailPathToDataUrl(relPath) {
+  if (!relPath || typeof relPath !== 'string') return null;
+  const abs = path.resolve(UPLOADS_DIR, relPath);
+  const root = path.resolve(UPLOADS_DIR);
+  if (!abs.startsWith(root + path.sep) && abs !== root) {
+    console.warn('[publish] rejected thumbnailPath outside UPLOADS_DIR:', relPath);
+    return null;
+  }
+  if (!fs.existsSync(abs)) {
+    console.warn('[publish] thumbnailPath not found on disk:', abs);
+    return null;
+  }
+  try {
+    const buf = fs.readFileSync(abs);
+    const ext = (path.extname(abs) || '.jpg').toLowerCase();
+    const mime = ext === '.png' ? 'image/png'
+               : ext === '.webp' ? 'image/webp'
+               : 'image/jpeg';
+    return `data:${mime};base64,${buf.toString('base64')}`;
+  } catch (err) {
+    console.error('[publish] failed to read thumbnailPath:', err.message);
+    return null;
+  }
+}
+
 app.post('/api/publish', upload.single('video'), async (req, res) => {
   let { videoPath, title, description, scheduledAt, platforms, videoUrl } = req.body;
+  // Two ways to supply the thumbnail: a base64 data URL inline (legacy,
+  // capped by Vercel at 4.5 MB) or a thumbnailPath returned from
+  // /api/publish-thumbnail (preferred — the bytes were streamed in a
+  // separate multipart request that doesn't hit the body cap).
   const sharedThumbnailDataUrl =
-    typeof req.body.thumbnailDataUrl === 'string' ? req.body.thumbnailDataUrl : undefined;
+    typeof req.body.thumbnailDataUrl === 'string' && req.body.thumbnailDataUrl.length > 0
+      ? req.body.thumbnailDataUrl
+      : (typeof req.body.thumbnailPath === 'string' && req.body.thumbnailPath.length > 0
+          ? thumbnailPathToDataUrl(req.body.thumbnailPath)
+          : undefined);
 
   // If an uploaded file came through multer, prefer it.
   if (req.file) videoPath = req.file.path;
@@ -1264,6 +1431,18 @@ app.post('/api/publish', upload.single('video'), async (req, res) => {
       return res.status(400).json({ error: 'videoPath outside allowed roots' });
     }
     videoPath = resolved;
+
+    // The file must still exist on disk. If UPLOADS_DIR sits on ephemeral
+    // /tmp, a Railway container restart between upload and publish wipes the
+    // bytes — and a downstream fs.createReadStream(videoPath) would emit an
+    // unhandled 'error' on the stream and crash the whole server. Catch it
+    // up-front and tell the client to re-upload.
+    if (!fs.existsSync(resolved)) {
+      console.warn('[publish] videoPath missing on disk:', resolved);
+      return res.status(410).json({
+        error: 'Uploaded video no longer on disk (likely the backend restarted between upload and publish). Please re-upload the file and try again.',
+      });
+    }
 
     // If the file lives in UPLOADS_DIR and we have a public base URL, derive
     // a fetchable URL for Instagram. (IG requires video_url, not a local path.)
