@@ -970,87 +970,57 @@ export default function PublishPage() {
               Connect at least one account above first.
             </p>
           ) : (
-            // ── Group every connected destination by brand, render as columns ──
-            // Brand detection is name-pattern based (see brandFor() helper);
-            // unmatched accounts land in "Other" so nothing disappears.
+            // ── Brand-grouped columns: ONLY the checkboxes live here ──────
+            // Options expanders are deliberately NOT rendered inline — they
+            // were getting squished into the 220px columns. Instead they
+            // appear in a full-width "Configure selected" panel below.
             (() => {
               type Row = { node: React.ReactNode; brand: BrandKey };
               const rows: Row[] = [];
 
               for (const c of connections.youtube) {
-                const key = `youtube:${c.id}`;
                 const checked = selectedTargets.some((t) => t.platform === "youtube" && t.id === c.id);
                 rows.push({
                   brand: brandFor(c.name),
                   node: (
-                    <div key={`yt-${c.id}`}>
-                      <DestinationCheckbox
-                        label={`YouTube · ${c.name}`}
-                        checked={checked}
-                        onChange={() => toggleTarget({ platform: "youtube", id: c.id })}
-                      />
-                      {checked && (
-                        <YouTubeOptionsExpander
-                          opts={targetOptions[key] || {}}
-                          playlists={ytPlaylists[c.id] || null}
-                          onChange={(patch) => setOptions(key, patch)}
-                        />
-                      )}
-                    </div>
+                    <DestinationCheckbox
+                      key={`yt-${c.id}`}
+                      label={`YouTube · ${c.name}`}
+                      checked={checked}
+                      onChange={() => toggleTarget({ platform: "youtube", id: c.id })}
+                    />
                   ),
                 });
               }
               for (const c of connections.facebook) {
-                const key = `facebook:${c.id}`;
                 const checked = selectedTargets.some((t) => t.platform === "facebook" && t.id === c.id);
                 rows.push({
                   brand: brandFor(c.name),
                   node: (
-                    <div key={`fb-${c.id}`}>
-                      <DestinationCheckbox
-                        label={`Facebook · ${c.name}`}
-                        checked={checked}
-                        onChange={() => toggleTarget({ platform: "facebook", id: c.id })}
-                      />
-                      {checked && (
-                        <FacebookOptionsExpander
-                          opts={targetOptions[key] || {}}
-                          onChange={(patch) => setOptions(key, patch)}
-                          otherPages={connections.facebook.filter((p) => p.id !== c.id)}
-                          connectionId={c.id}
-                        />
-                      )}
-                    </div>
+                    <DestinationCheckbox
+                      key={`fb-${c.id}`}
+                      label={`Facebook · ${c.name}`}
+                      checked={checked}
+                      onChange={() => toggleTarget({ platform: "facebook", id: c.id })}
+                    />
                   ),
                 });
               }
               for (const c of connections.instagram) {
-                const key = `instagram:${c.id}`;
                 const checked = selectedTargets.some((t) => t.platform === "instagram" && t.id === c.id);
                 rows.push({
                   brand: brandFor(c.username),
                   node: (
-                    <div key={`ig-${c.id}`}>
-                      <DestinationCheckbox
-                        label={`Instagram · @${c.username}`}
-                        checked={checked}
-                        onChange={() => toggleTarget({ platform: "instagram", id: c.id })}
-                      />
-                      {checked && (
-                        <InstagramOptionsExpander
-                          opts={targetOptions[key] || {}}
-                          onChange={(patch) => setOptions(key, patch)}
-                          otherAccounts={connections.instagram.filter((a) => a.id !== c.id)}
-                          connectionId={c.id}
-                        />
-                      )}
-                    </div>
+                    <DestinationCheckbox
+                      key={`ig-${c.id}`}
+                      label={`Instagram · @${c.username}`}
+                      checked={checked}
+                      onChange={() => toggleTarget({ platform: "instagram", id: c.id })}
+                    />
                   ),
                 });
               }
 
-              // Group by brand and only render non-empty columns (keeps the
-              // grid tight when a brand has zero connected accounts).
               const grouped: Record<BrandKey, Row[]> = {
                 playbook: [], drills: [], picklebrain: [], reviews: [], other: [],
               };
@@ -1060,9 +1030,7 @@ export default function PublishPage() {
               return (
                 <div
                   className="grid gap-4 mb-4"
-                  style={{
-                    gridTemplateColumns: `repeat(auto-fit, minmax(220px, 1fr))`,
-                  }}
+                  style={{ gridTemplateColumns: `repeat(auto-fit, minmax(220px, 1fr))` }}
                 >
                   {activeBrands.map((b) => (
                     <div key={b} className="bg-gray-900 border border-gray-800 rounded-xl p-3">
@@ -1078,6 +1046,89 @@ export default function PublishPage() {
                 </div>
               );
             })()
+          )}
+
+          {/* ── Full-width options panel for each selected destination ──── */}
+          {/* Renders below the brand-column grid so option forms get the */}
+          {/* full content width and don't squish into a 220px column. */}
+          {connections && selectedTargets.length > 0 && (
+            <div className="mb-6 space-y-4">
+              {selectedTargets.map((t) => {
+                const key = `${t.platform}:${t.id}`;
+                if (t.platform === "youtube") {
+                  const c = connections.youtube.find((x) => x.id === t.id);
+                  if (!c) return null;
+                  return (
+                    <details
+                      key={key}
+                      open
+                      className="rounded-xl border border-gray-800 bg-gray-900"
+                    >
+                      <summary className="cursor-pointer select-none px-4 py-2.5 text-sm font-semibold text-gray-200 flex items-center justify-between">
+                        <span>YouTube · {c.name}</span>
+                        <span className="text-xs text-gray-500" aria-hidden>▾</span>
+                      </summary>
+                      <div className="px-4 pb-4 border-t border-gray-800">
+                        <YouTubeOptionsExpander
+                          opts={targetOptions[key] || {}}
+                          playlists={ytPlaylists[c.id] || null}
+                          onChange={(patch) => setOptions(key, patch)}
+                        />
+                      </div>
+                    </details>
+                  );
+                }
+                if (t.platform === "facebook") {
+                  const c = connections.facebook.find((x) => x.id === t.id);
+                  if (!c) return null;
+                  return (
+                    <details
+                      key={key}
+                      open
+                      className="rounded-xl border border-gray-800 bg-gray-900"
+                    >
+                      <summary className="cursor-pointer select-none px-4 py-2.5 text-sm font-semibold text-gray-200 flex items-center justify-between">
+                        <span>Facebook · {c.name}</span>
+                        <span className="text-xs text-gray-500" aria-hidden>▾</span>
+                      </summary>
+                      <div className="px-4 pb-4 border-t border-gray-800">
+                        <FacebookOptionsExpander
+                          opts={targetOptions[key] || {}}
+                          onChange={(patch) => setOptions(key, patch)}
+                          otherPages={connections.facebook.filter((p) => p.id !== c.id)}
+                          connectionId={c.id}
+                        />
+                      </div>
+                    </details>
+                  );
+                }
+                if (t.platform === "instagram") {
+                  const c = connections.instagram.find((x) => x.id === t.id);
+                  if (!c) return null;
+                  return (
+                    <details
+                      key={key}
+                      open
+                      className="rounded-xl border border-gray-800 bg-gray-900"
+                    >
+                      <summary className="cursor-pointer select-none px-4 py-2.5 text-sm font-semibold text-gray-200 flex items-center justify-between">
+                        <span>Instagram · @{c.username}</span>
+                        <span className="text-xs text-gray-500" aria-hidden>▾</span>
+                      </summary>
+                      <div className="px-4 pb-4 border-t border-gray-800">
+                        <InstagramOptionsExpander
+                          opts={targetOptions[key] || {}}
+                          onChange={(patch) => setOptions(key, patch)}
+                          otherAccounts={connections.instagram.filter((a) => a.id !== c.id)}
+                          connectionId={c.id}
+                        />
+                      </div>
+                    </details>
+                  );
+                }
+                return null;
+              })}
+            </div>
           )}
 
           <label className="block text-xs uppercase tracking-wide text-gray-500 mb-1">
@@ -1247,7 +1298,7 @@ function YouTubeOptionsExpander({
     onChange({ playlistIds: next });
   }
   return (
-    <div className="mt-2 ml-6 mb-2 rounded-lg border border-gray-800 bg-gray-950/60 p-3 space-y-3 text-sm">
+    <div className="pt-4 space-y-4 text-sm">
       <div className="flex flex-wrap items-center gap-3">
         <label className="flex items-center gap-2">
           <span className="text-xs uppercase tracking-wide text-gray-500">Visibility</span>
@@ -1607,29 +1658,20 @@ function FacebookOptionsExpander({
 }) {
   const postAsReel = opts.postAsReel !== false;
   return (
-    <div className="mt-2 ml-6 mb-2 rounded-lg border border-gray-800 bg-gray-950/60 p-3 space-y-3 text-sm">
-      <label className="flex items-start gap-2">
+    <div className="pt-4 space-y-4 text-sm">
+      <label className="flex items-center gap-2">
         <input
           type="checkbox"
           checked={postAsReel}
           onChange={(e) => onChange({ postAsReel: e.target.checked })}
-          className="accent-accent-500 mt-0.5"
+          className="accent-accent-500"
         />
-        <span>
-          Post as Reel
-          <span className="block text-xs text-gray-500">
-            Required for collaborators. Video must be 9:16 vertical, 15–90s.
-          </span>
-        </span>
+        <span>Post as Reel</span>
       </label>
-      {!postAsReel && (
-        <p className="text-xs text-yellow-400">
-          ⚠ Collaborators won&apos;t apply on legacy /videos posts.
-        </p>
-      )}
+
       <label className="block">
         <span className="block text-xs uppercase tracking-wide text-gray-500 mb-1">
-          Tag people (comma-separated FB user IDs, only works on legacy /videos)
+          Tag people
         </span>
         <input
           type="text"
@@ -1639,27 +1681,16 @@ function FacebookOptionsExpander({
           className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-white outline-none"
         />
       </label>
-      <div>
-        <span className="block text-xs uppercase tracking-wide text-gray-500 mb-1">
-          Collaborators
-        </span>
-        <p className="text-[11px] text-yellow-500/80">
-          Page-to-Page Reels collaboration isn&apos;t exposed in Meta&apos;s
-          Graph API — the in-app collab feature is UI/Studio-only. (Verified:
-          Reels published via API have no <code>collaborators</code> field set
-          even when we pass it.) Use the FB Pages app to add a Page collab
-          manually after posting.
-        </p>
-      </div>
+
       <label className="block">
         <span className="block text-xs uppercase tracking-wide text-gray-500 mb-1">
-          Location (FB place ID, optional)
+          Location
         </span>
         <input
           type="text"
           value={opts.placeId || ""}
           onChange={(e) => onChange({ placeId: e.target.value })}
-          placeholder="e.g. 11077326922 (look up on FB)"
+          placeholder="FB place ID"
           className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-white outline-none"
         />
       </label>
@@ -1676,12 +1707,8 @@ function FacebookOptionsExpander({
 
       <div>
         <span className="block text-xs uppercase tracking-wide text-gray-500 mb-1">
-          Share the Reel to Facebook Groups (max 9)
+          Share to Facebook Groups
         </span>
-        <p className="text-[11px] text-yellow-500/80 mb-1.5">
-          Pending Meta App Review for user_managed_groups + publish_to_groups.
-          Selection is saved and will fan out once the permissions are granted.
-        </p>
         <GroupsPicker
           selected={opts.groupIds || []}
           onChange={(next) => onChange({ groupIds: next })}
@@ -1707,7 +1734,7 @@ function InstagramOptionsExpander({
     value: `@${a.username}`,
   }));
   return (
-    <div className="mt-2 ml-6 mb-2 rounded-lg border border-gray-800 bg-gray-950/60 p-3 space-y-3 text-sm">
+    <div className="pt-4 space-y-4 text-sm">
       <div>
         <label className="block">
           <span className="block text-xs uppercase tracking-wide text-gray-500 mb-1">
