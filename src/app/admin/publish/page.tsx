@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AdminNav } from "../_components/AdminNav";
+import { buildReelDescription } from "@/lib/reelDescription";
 
 type YouTubeAccount = { id: string; name: string };
 type FacebookAccount = { id: string; name: string };
@@ -18,6 +19,9 @@ type Clip = {
   filename: string;
   path: string;
   title?: string;
+  // The Shorts Generator's per-clip rationale ("why this clip is interesting").
+  // Used by the auto-fill on this page to compose a default description.
+  reason?: string;
   duration?: number;
   createdAt?: string;
   sourceUrl?: string;
@@ -318,6 +322,34 @@ export default function PublishPage() {
       }
     }
     setPreviewVideoUrl(null);
+  }, [sourceMode, selectedFile, selectedClipPath, clips]);
+
+  // ── Auto-fill the description when a source is selected ──────────────────
+  // Two behaviors, both guarded by "only if the field is currently empty"
+  // so the user's typed-in text is never overwritten:
+  //   • Clip mode → use buildReelDescription() with the clip's title +
+  //     reason + source YouTube URL (mirrors the Shorts Generator's
+  //     per-clip description so the user gets a consistent prefilled draft).
+  //   • Upload mode → use the default "🏓 Playbook Paddles" preset since
+  //     fresh uploads have no per-video metadata to draw from.
+  useEffect(() => {
+    // Don't overwrite anything the user has typed.
+    if (description.trim().length > 0) return;
+
+    if (sourceMode === "clip" && selectedClipPath && clips) {
+      const clip = clips.find((c) => c.path === selectedClipPath);
+      if (clip) {
+        setDescription(buildReelDescription(clip, clip.sourceUrl, []));
+      }
+      return;
+    }
+    if (sourceMode === "upload" && selectedFile) {
+      const defaultPreset = DESCRIPTION_PRESETS.find((p) => p.label.includes("Playbook Paddles"));
+      if (defaultPreset) setDescription(defaultPreset.text);
+    }
+    // Intentionally omit `description` from deps — its presence is checked
+    // inside the effect (early return), not used to retrigger the effect.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sourceMode, selectedFile, selectedClipPath, clips]);
 
   const loadConnections = useCallback(async () => {
