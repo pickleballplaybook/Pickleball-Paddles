@@ -139,6 +139,34 @@ function toggleCsv(input: string | undefined, value: string): string {
   return [...items, value].join(", ");
 }
 
+// ── Destination brand grouping ────────────────────────────────────────────
+// Splits all connected accounts into per-brand columns on the publish form.
+// Order in BRAND_ORDER controls left-to-right layout. "other" is the catch-
+// all so an account with an unmatched name never disappears from the form.
+type BrandKey = "playbook" | "drills" | "picklebrain" | "reviews" | "other";
+
+const BRAND_LABEL: Record<BrandKey, string> = {
+  playbook:    "Pickleball Playbook",
+  drills:      "Pickleball Drills",
+  picklebrain: "Picklebrain",
+  reviews:     "Pickleball Playbook Reviews",
+  other:       "Other",
+};
+
+const BRAND_ORDER: BrandKey[] = ["playbook", "drills", "picklebrain", "reviews", "other"];
+
+// Match brand by keywords in the account name / username. "review" is
+// checked before "playbook" because every Reviews account also contains
+// "playbook" in its name (e.g. "@playbookreviews").
+function brandFor(label: string): BrandKey {
+  const s = label.toLowerCase();
+  if (s.includes("review"))                             return "reviews";
+  if (s.includes("drill"))                              return "drills";
+  if (s.includes("picklebrain") || s.includes("brain")) return "picklebrain";
+  if (s.includes("playbook"))                           return "playbook";
+  return "other";
+}
+
 const FILMER_HANDLES = [
   "zachhigginson_pb",
   "elliott_schupp_pickleball",
@@ -942,86 +970,114 @@ export default function PublishPage() {
               Connect at least one account above first.
             </p>
           ) : (
-            <div className="space-y-1.5 mb-4">
-              {connections.youtube.map((c) => {
+            // ── Group every connected destination by brand, render as columns ──
+            // Brand detection is name-pattern based (see brandFor() helper);
+            // unmatched accounts land in "Other" so nothing disappears.
+            (() => {
+              type Row = { node: React.ReactNode; brand: BrandKey };
+              const rows: Row[] = [];
+
+              for (const c of connections.youtube) {
                 const key = `youtube:${c.id}`;
-                const checked = selectedTargets.some(
-                  (t) => t.platform === "youtube" && t.id === c.id
-                );
-                return (
-                  <div key={`yt-${c.id}`}>
-                    <DestinationCheckbox
-                      label={`YouTube · ${c.name}`}
-                      checked={checked}
-                      onChange={() =>
-                        toggleTarget({ platform: "youtube", id: c.id })
-                      }
-                    />
-                    {checked && (
-                      <YouTubeOptionsExpander
-                        opts={targetOptions[key] || {}}
-                        playlists={ytPlaylists[c.id] || null}
-                        onChange={(patch) => setOptions(key, patch)}
+                const checked = selectedTargets.some((t) => t.platform === "youtube" && t.id === c.id);
+                rows.push({
+                  brand: brandFor(c.name),
+                  node: (
+                    <div key={`yt-${c.id}`}>
+                      <DestinationCheckbox
+                        label={`YouTube · ${c.name}`}
+                        checked={checked}
+                        onChange={() => toggleTarget({ platform: "youtube", id: c.id })}
                       />
-                    )}
-                  </div>
-                );
-              })}
-              {connections.facebook.map((c) => {
+                      {checked && (
+                        <YouTubeOptionsExpander
+                          opts={targetOptions[key] || {}}
+                          playlists={ytPlaylists[c.id] || null}
+                          onChange={(patch) => setOptions(key, patch)}
+                        />
+                      )}
+                    </div>
+                  ),
+                });
+              }
+              for (const c of connections.facebook) {
                 const key = `facebook:${c.id}`;
-                const checked = selectedTargets.some(
-                  (t) => t.platform === "facebook" && t.id === c.id
-                );
-                return (
-                  <div key={`fb-${c.id}`}>
-                    <DestinationCheckbox
-                      label={`Facebook · ${c.name}`}
-                      checked={checked}
-                      onChange={() =>
-                        toggleTarget({ platform: "facebook", id: c.id })
-                      }
-                    />
-                    {checked && (
-                      <FacebookOptionsExpander
-                        opts={targetOptions[key] || {}}
-                        onChange={(patch) => setOptions(key, patch)}
-                        otherPages={connections.facebook.filter(
-                          (p) => p.id !== c.id
-                        )}
-                        connectionId={c.id}
+                const checked = selectedTargets.some((t) => t.platform === "facebook" && t.id === c.id);
+                rows.push({
+                  brand: brandFor(c.name),
+                  node: (
+                    <div key={`fb-${c.id}`}>
+                      <DestinationCheckbox
+                        label={`Facebook · ${c.name}`}
+                        checked={checked}
+                        onChange={() => toggleTarget({ platform: "facebook", id: c.id })}
                       />
-                    )}
-                  </div>
-                );
-              })}
-              {connections.instagram.map((c) => {
+                      {checked && (
+                        <FacebookOptionsExpander
+                          opts={targetOptions[key] || {}}
+                          onChange={(patch) => setOptions(key, patch)}
+                          otherPages={connections.facebook.filter((p) => p.id !== c.id)}
+                          connectionId={c.id}
+                        />
+                      )}
+                    </div>
+                  ),
+                });
+              }
+              for (const c of connections.instagram) {
                 const key = `instagram:${c.id}`;
-                const checked = selectedTargets.some(
-                  (t) => t.platform === "instagram" && t.id === c.id
-                );
-                return (
-                  <div key={`ig-${c.id}`}>
-                    <DestinationCheckbox
-                      label={`Instagram · @${c.username}`}
-                      checked={checked}
-                      onChange={() =>
-                        toggleTarget({ platform: "instagram", id: c.id })
-                      }
-                    />
-                    {checked && (
-                      <InstagramOptionsExpander
-                        opts={targetOptions[key] || {}}
-                        onChange={(patch) => setOptions(key, patch)}
-                        otherAccounts={connections.instagram.filter(
-                          (a) => a.id !== c.id
-                        )}
-                        connectionId={c.id}
+                const checked = selectedTargets.some((t) => t.platform === "instagram" && t.id === c.id);
+                rows.push({
+                  brand: brandFor(c.username),
+                  node: (
+                    <div key={`ig-${c.id}`}>
+                      <DestinationCheckbox
+                        label={`Instagram · @${c.username}`}
+                        checked={checked}
+                        onChange={() => toggleTarget({ platform: "instagram", id: c.id })}
                       />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+                      {checked && (
+                        <InstagramOptionsExpander
+                          opts={targetOptions[key] || {}}
+                          onChange={(patch) => setOptions(key, patch)}
+                          otherAccounts={connections.instagram.filter((a) => a.id !== c.id)}
+                          connectionId={c.id}
+                        />
+                      )}
+                    </div>
+                  ),
+                });
+              }
+
+              // Group by brand and only render non-empty columns (keeps the
+              // grid tight when a brand has zero connected accounts).
+              const grouped: Record<BrandKey, Row[]> = {
+                playbook: [], drills: [], picklebrain: [], reviews: [], other: [],
+              };
+              for (const r of rows) grouped[r.brand].push(r);
+              const activeBrands = BRAND_ORDER.filter((b) => grouped[b].length > 0);
+
+              return (
+                <div
+                  className="grid gap-4 mb-4"
+                  style={{
+                    gridTemplateColumns: `repeat(auto-fit, minmax(220px, 1fr))`,
+                  }}
+                >
+                  {activeBrands.map((b) => (
+                    <div key={b} className="bg-gray-900 border border-gray-800 rounded-xl p-3">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2 px-1">
+                        {BRAND_LABEL[b]}{" "}
+                        <span className="text-gray-600 font-medium">({grouped[b].length})</span>
+                      </p>
+                      <div className="space-y-1.5">
+                        {grouped[b].map((r) => r.node)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()
           )}
 
           <label className="block text-xs uppercase tracking-wide text-gray-500 mb-1">
@@ -1109,21 +1165,42 @@ function ConnectionGroup({
   onConnect: () => void;
   children?: React.ReactNode;
 }) {
-  const hasAny = Array.isArray(children)
-    ? children.filter(Boolean).length > 0
-    : Boolean(children);
+  // Collapsed by default — the publish page is busy and connections rarely
+  // need editing. Click the row header to expand. Count shown inline so
+  // you can see "YouTube (1)" at a glance without opening.
+  const [open, setOpen] = useState(false);
+  const childArray = Array.isArray(children) ? children.filter(Boolean) : (children ? [children] : []);
+  const count = childArray.length;
+  const hasAny = count > 0;
   return (
-    <div>
-      <h2 className="text-sm font-semibold text-gray-300 mb-2">{heading}</h2>
-      <div className="bg-gray-900 border border-gray-800 rounded-xl divide-y divide-gray-800">
-        {hasAny ? children : <p className="px-4 py-3 text-sm text-gray-500">{empty}</p>}
-        <button
-          onClick={onConnect}
-          className="block w-full text-left px-4 py-2.5 text-sm text-accent-400 hover:bg-gray-800"
-        >
-          {connectLabel}
-        </button>
-      </div>
+    <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between px-4 py-2.5 text-left hover:bg-gray-800/60 transition-colors"
+        aria-expanded={open}
+      >
+        <span className="flex items-center gap-2">
+          <span className="text-sm font-semibold text-gray-200">{heading}</span>
+          <span className="text-xs text-gray-500">
+            {hasAny ? `(${count})` : "(0)"}
+          </span>
+        </span>
+        <span className="text-xs text-gray-500" aria-hidden>
+          {open ? "▾" : "▸"}
+        </span>
+      </button>
+      {open && (
+        <div className="divide-y divide-gray-800 border-t border-gray-800">
+          {hasAny ? children : <p className="px-4 py-3 text-sm text-gray-500">{empty}</p>}
+          <button
+            onClick={onConnect}
+            className="block w-full text-left px-4 py-2.5 text-sm text-accent-400 hover:bg-gray-800"
+          >
+            {connectLabel}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
