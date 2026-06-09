@@ -81,6 +81,12 @@ const CONFIG: AudienceConfig = {
       a: "You lose about an inch of reach compared to an elongated paddle, and the longer handle of an elongated is missed if you played tennis. For most everyday players, forgiveness gained > reach lost.",
     },
   ],
+  relatedGuides: [
+    "what-is-a-widebody-pickleball-paddle",
+    "elongated-vs-widebody-pickleball-paddles",
+    "what-is-twist-weight",
+    "how-to-choose-a-pickleball-paddle",
+  ],
 };
 
 export const metadata: Metadata = {

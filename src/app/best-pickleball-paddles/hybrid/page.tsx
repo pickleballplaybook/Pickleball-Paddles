@@ -81,6 +81,12 @@ const CONFIG: AudienceConfig = {
       a: "You give up some of the extreme advantage that widebody (forgiveness) or elongated (reach + power) offer. A specialist widebody will always be more forgiving; a specialist elongated will always reach further.",
     },
   ],
+  relatedGuides: [
+    "what-is-a-hybrid-pickleball-paddle",
+    "elongated-vs-widebody-pickleball-paddles",
+    "how-to-choose-a-pickleball-paddle",
+    "pickleball-paddle-thickness-explained",
+  ],
 };
 
 export const metadata: Metadata = {

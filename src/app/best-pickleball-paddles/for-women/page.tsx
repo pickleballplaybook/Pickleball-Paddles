@@ -90,6 +90,12 @@ const CONFIG: AudienceConfig = {
       a: "See our dedicated beginners page — the 6.0 Coral Hybrid here is a strong pick, but the Beyond Measure Ronin (under $125) is the cleanest first paddle for any new player regardless of preferred weight setup.",
     },
   ],
+  relatedGuides: [
+    "pickleball-paddle-grip-size-guide",
+    "how-to-pick-pickleball-paddle-weight",
+    "how-to-choose-a-pickleball-paddle",
+    "what-is-a-hybrid-pickleball-paddle",
+  ],
 };
 
 export const metadata: Metadata = {

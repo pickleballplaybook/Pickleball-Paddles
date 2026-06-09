@@ -84,6 +84,12 @@ const CONFIG: AudienceConfig = {
       a: "Usually not. A solid $130 paddle from this list will outperform a $75 starter for years. The cost-per-use math favors buying once at the right price tier.",
     },
   ],
+  relatedGuides: [
+    "cheap-pickleball-paddles-that-dont-suck",
+    "are-expensive-pickleball-paddles-worth-it",
+    "how-to-choose-a-pickleball-paddle",
+    "pickleball-paddle-thickness-explained",
+  ],
 };
 
 export const metadata: Metadata = {

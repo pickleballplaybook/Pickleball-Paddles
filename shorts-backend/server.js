@@ -83,9 +83,15 @@ const usedUploadTokens = new Set();
 
 const JOBS_DIR = process.env.JOBS_DIR || path.join(__dirname, 'jobs');
 const OUTPUT_DIR = process.env.OUTPUT_DIR || path.join(__dirname, 'output');
+// Declared here (not next to the multer/express upload routes further down)
+// because diskCleanup() runs at startup and references UPLOADS_DIR. Keeping
+// these in the order [declare → mkdir → diskCleanup → routes] avoids a TDZ
+// ReferenceError when the cleanup function runs.
+const UPLOADS_DIR = process.env.UPLOADS_DIR || '/tmp/shorts-uploads';
 const YTDLP_BIN = process.env.YTDLP_BIN || 'yt-dlp';
 fs.mkdirSync(JOBS_DIR, { recursive: true });
 fs.mkdirSync(OUTPUT_DIR, { recursive: true });
+fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 
 // Materialize YouTube cookies from env if provided. Datacenter IPs (Railway) get
 // blocked by YouTube's bot check; a cookies.txt from a real browser session bypasses it.
@@ -1035,12 +1041,12 @@ app.get('/auth/meta/status', (_req, res) => {
 });
 
 // ─── UPLOAD & SCHEDULE ────────────────────────────────────────────────────────
-// Default to ephemeral container disk (not the persistent volume) — raw uploads
-// only need to exist briefly while we publish to YT/IG/FB, and the volume is
+// UPLOADS_DIR is declared at the top of the file (next to JOBS_DIR /
+// OUTPUT_DIR) because diskCleanup() references it during startup. Default to
+// ephemeral container disk (not the persistent volume) — raw uploads only
+// need to exist briefly while we publish to YT/IG/FB, and the volume is
 // reserved for clips + connections.
-const UPLOADS_DIR = process.env.UPLOADS_DIR || '/tmp/shorts-uploads';
 const PUBLIC_BASE_URL = process.env.PUBLIC_BASE_URL || '';
-fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 // Serve uploaded files so Instagram can fetch them. URLs include a UUID
 // uploadId which acts as an unguessable token.
 app.use('/uploads', express.static(UPLOADS_DIR));

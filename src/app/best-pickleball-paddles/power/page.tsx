@@ -56,6 +56,7 @@ export default function BestPowerPaddlesPage() {
       headline="Best Power Pickleball Paddles of 2026"
       intro="These paddles were selected for their swing weight, driving ability, and offensive performance. Every paddle was tested on court with lab-measured specs by a 5.5+ player."
       picks={PICKS}
+      relatedGuides={["power-vs-control-pickleball-paddles", "what-is-swing-weight", "lead-tape-on-pickleball-paddles", "what-is-an-elongated-pickleball-paddle"]}
     />
   );
 }

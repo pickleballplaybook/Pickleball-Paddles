@@ -4,6 +4,7 @@ import { getPaddleBySlug } from "@/data/paddles";
 import { siteConfig } from "@/config/site";
 import { getPaddleCountLabel } from "@/lib/catalogStats";
 import type { Paddle } from "@/types";
+import RelatedGuidesBlock from "@/components/RelatedGuidesBlock";
 
 function getCode(brand: string, discountLink?: string): string {
   if (brand === "Selkirk" || brand === "SLK") {
@@ -25,9 +26,13 @@ interface CategoryPageProps {
   headline: string;        // e.g. "Best Spin Paddles of 2026"
   intro: string;           // introductory paragraph
   picks: CategoryPick[];
+  // Optional /guides slugs to surface at the bottom. Internal links from
+  // these category pages into the long-form guides are the biggest SEO
+  // boost we can give the guide pages.
+  relatedGuides?: string[];
 }
 
-export default function CategoryPage({ category, accent, headline, intro, picks }: CategoryPageProps) {
+export default function CategoryPage({ category, accent, headline, intro, picks, relatedGuides }: CategoryPageProps) {
   return (
     <div className="min-h-screen pt-[156px] pb-20" style={{ background: "var(--bg-page)" }}>
       <div className="container-xl py-16">
@@ -226,6 +231,17 @@ export default function CategoryPage({ category, accent, headline, intro, picks 
             );
           })}
         </div>
+
+        {/* Related guides — funnels readers into the long-form /guides
+            pages that target informational queries this category page
+            can't rank for on its own. */}
+        {relatedGuides && relatedGuides.length > 0 && (
+          <RelatedGuidesBlock
+            slugs={relatedGuides}
+            eyebrow="Go Deeper"
+            title={`Learn More About ${category}`}
+          />
+        )}
 
         {/* CTA */}
         <div className="mt-16 flex flex-col items-center text-center gap-5">

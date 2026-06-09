@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import RelatedGuidesBlock from "@/components/RelatedGuidesBlock";
 import { ArrowRight, ExternalLink, CheckCircle2, Wallet } from "lucide-react";
 import { paddles, getPaddleBySlug } from "@/data/paddles";
 import { siteConfig } from "@/config/site";
@@ -371,6 +372,15 @@ export default function BestPaddlesUnder200Page() {
               ))}
             </div>
           </div>
+          {/* Related guides — internal links into the long-form
+              informational guide pages. */}
+          <RelatedGuidesBlock
+            slugs={["are-expensive-pickleball-paddles-worth-it", "how-to-choose-a-pickleball-paddle", "what-is-a-thermoformed-pickleball-paddle", "pickleball-paddle-thickness-explained"]}
+            eyebrow="Go Deeper"
+            title="Smart Buys Under $200"
+          />
+
+
 
           {/* ── CTA ─────────────────────────────────────────────────────── */}
           <div className="mt-20 flex flex-col items-center text-center gap-5">

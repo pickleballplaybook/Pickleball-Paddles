@@ -54,6 +54,7 @@ export default function BestControlPaddlesPage() {
       headline="Best Control Pickleball Paddles of 2026"
       intro="These paddles were selected for their touch, dwell time, and kitchen play performance. Every paddle was tested on court with lab-measured specs by a 5.5+ player."
       picks={PICKS}
+      relatedGuides={["power-vs-control-pickleball-paddles", "what-is-twist-weight", "pickleball-paddle-thickness-explained", "what-is-a-foam-core-pickleball-paddle"]}
     />
   );
 }

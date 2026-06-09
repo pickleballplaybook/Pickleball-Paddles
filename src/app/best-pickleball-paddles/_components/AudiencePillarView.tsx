@@ -4,6 +4,7 @@ import { getPaddleBySlug } from "@/data/paddles";
 import { siteConfig } from "@/config/site";
 import type { Paddle } from "@/types";
 import InlineNewsletterCTA from "@/components/InlineNewsletterCTA";
+import RelatedGuidesBlock from "@/components/RelatedGuidesBlock";
 
 // ── Pick + config types ──────────────────────────────────────────────────────
 
@@ -31,6 +32,11 @@ export interface AudienceConfig {
   picks: PillarPick[];
   buyingGuide: { heading: string; paragraphs: React.ReactNode[] };
   faq: PillarFaq[];
+  // Optional list of /guides slugs to surface at the bottom of the page.
+  // Internal links from these high-authority category pages into the new
+  // informational guides are the biggest SEO juice we can hand to the guide
+  // pages, which is the whole point of including this.
+  relatedGuides?: string[];
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -249,6 +255,17 @@ export default function AudiencePillarView({ config }: { config: AudienceConfig 
               ))}
             </div>
           </div>
+
+          {/* Related guides — funnels readers into the long-form /guides
+              pages that target informational queries this category page
+              can't rank for on its own. */}
+          {config.relatedGuides && config.relatedGuides.length > 0 && (
+            <RelatedGuidesBlock
+              slugs={config.relatedGuides}
+              eyebrow="Go Deeper"
+              title={`Learn More About ${config.audienceShort.charAt(0).toUpperCase() + config.audienceShort.slice(1)}`}
+            />
+          )}
 
           {/* Footer CTA */}
           <div className="mt-20 flex flex-col items-center text-center gap-5">

@@ -76,6 +76,12 @@ const CONFIG: AudienceConfig = {
       a: "Yes — increasingly. It's become the go-to for many intermediate-to-advanced power players who find 13mm too stiff and 16mm too muted. The catalog grows in this thickness every release cycle.",
     },
   ],
+  relatedGuides: [
+    "pickleball-paddle-thickness-explained",
+    "13mm-vs-14mm-vs-16mm-paddles",
+    "how-to-choose-a-pickleball-paddle",
+    "what-is-swing-weight",
+  ],
 };
 
 export const metadata: Metadata = {

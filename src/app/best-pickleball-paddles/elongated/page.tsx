@@ -81,6 +81,12 @@ const CONFIG: AudienceConfig = {
       a: "Smaller sweet spot, less forgiving on mishits, and the heavier swing weight can be a problem at the kitchen for players who haven't developed quick hands yet.",
     },
   ],
+  relatedGuides: [
+    "what-is-an-elongated-pickleball-paddle",
+    "elongated-vs-widebody-pickleball-paddles",
+    "what-is-swing-weight",
+    "how-to-choose-a-pickleball-paddle",
+  ],
 };
 
 export const metadata: Metadata = {

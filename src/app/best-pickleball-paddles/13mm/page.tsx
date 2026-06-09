@@ -81,6 +81,12 @@ const CONFIG: AudienceConfig = {
       a: "It's a niche thickness — only a small slice of buyers prefer the stiff lively feel. Most brands stock more 16mm SKUs than any other thickness because 16mm has the widest buyer appeal.",
     },
   ],
+  relatedGuides: [
+    "pickleball-paddle-thickness-explained",
+    "13mm-vs-14mm-vs-16mm-paddles",
+    "power-vs-control-pickleball-paddles",
+    "what-is-swing-weight",
+  ],
 };
 
 export const metadata: Metadata = {

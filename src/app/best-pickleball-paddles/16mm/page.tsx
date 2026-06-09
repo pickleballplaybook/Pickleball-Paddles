@@ -80,6 +80,12 @@ const CONFIG: AudienceConfig = {
       a: "Slightly less raw pop off the face than 13–14mm options. For touch players the trade is worth it; for pure power players it can feel muted.",
     },
   ],
+  relatedGuides: [
+    "pickleball-paddle-thickness-explained",
+    "13mm-vs-14mm-vs-16mm-paddles",
+    "power-vs-control-pickleball-paddles",
+    "what-is-a-foam-core-pickleball-paddle",
+  ],
 };
 
 export const metadata: Metadata = {

@@ -91,6 +91,12 @@ const CONFIG: AudienceConfig = {
       a: "Power game transfers in days. Dinking and kitchen game takes weeks-to-months — there's no muscle memory for it from tennis. Buy a paddle that supports both (every pick above has a 16mm core for the soft game) and play with intentional drills.",
     },
   ],
+  relatedGuides: [
+    "what-is-an-elongated-pickleball-paddle",
+    "elongated-vs-widebody-pickleball-paddles",
+    "pickleball-paddle-grip-size-guide",
+    "what-is-swing-weight",
+  ],
 };
 
 export const metadata: Metadata = {

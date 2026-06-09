@@ -23,6 +23,34 @@ import { getReviewSource } from "@/lib/externalReviews";
 import ViewCounter from "@/components/ViewCounter";
 import { getBlogPostForPaddle, BlogSection } from "@/data/blogPosts";
 import { canonicalMatchup } from "@/app/compare/[matchup]/helpers";
+import RelatedGuidesBlock from "@/components/RelatedGuidesBlock";
+import type { Paddle } from "@/types";
+
+// Pick 4 guides that contextually match a given paddle. Internal links
+// from every paddle page (140+ of them) into the most-relevant guides is
+// the single biggest internal-link signal we can hand to the guides.
+function guidesForPaddle(paddle: Paddle): string[] {
+  const out: string[] = [];
+
+  // Shape-specific anchor guide.
+  const shape = (paddle.shape || "").toLowerCase();
+  if (shape.includes("elongated"))     out.push("what-is-an-elongated-pickleball-paddle");
+  else if (shape.includes("hybrid"))   out.push("what-is-a-hybrid-pickleball-paddle");
+  else if (shape.includes("widebody")) out.push("what-is-a-widebody-pickleball-paddle");
+
+  // Thickness-specific anchor — every paddle has one.
+  const thickness = (paddle.thickness || "").toLowerCase();
+  if (thickness.includes("13") || thickness.includes("14") || thickness.includes("16")) {
+    out.push("pickleball-paddle-thickness-explained");
+  }
+
+  // Always-useful evergreen guides.
+  out.push("how-to-choose-a-pickleball-paddle");
+  out.push("lead-tape-on-pickleball-paddles");
+
+  // Trim to 4, de-duped, preserving order.
+  return Array.from(new Set(out)).slice(0, 4);
+}
 import { getBrandByName } from "@/data/brands";
 import TestingMethodologyBlock from "@/components/TestingMethodologyBlock";
 import AffiliateBuyButton from "@/components/AffiliateBuyButton";
@@ -1545,6 +1573,20 @@ export default async function PaddleDetailPage({ params }: Props) {
               </p>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* ── RELATED GUIDES ────────────────────────────────────────────────── */}
+      {/* Contextually-chosen guides for this paddle's shape + thickness +
+          two evergreens. Internal links from every paddle page into the
+          informational guides is the biggest SEO lift we can give them. */}
+      <section className="py-12">
+        <div className="container-xl max-w-5xl mx-auto">
+          <RelatedGuidesBlock
+            slugs={guidesForPaddle(paddle)}
+            eyebrow="Learn"
+            title="Helpful Guides for This Paddle"
+          />
         </div>
       </section>
 

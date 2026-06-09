@@ -107,6 +107,12 @@ const CONFIG: AudienceConfig = {
       a: "Only if you plan to play sanctioned tournaments soon. For recreational play, social pickleball, and most leagues, you don't need USAP approval — though almost every paddle on this list has it anyway.",
     },
   ],
+  relatedGuides: [
+    "how-to-choose-a-pickleball-paddle",
+    "cheap-pickleball-paddles-that-dont-suck",
+    "pickleball-paddle-grip-size-guide",
+    "what-is-a-hybrid-pickleball-paddle",
+  ],
 };
 
 export const metadata: Metadata = {

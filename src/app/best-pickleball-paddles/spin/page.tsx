@@ -56,6 +56,7 @@ export default function BestSpinPaddlesPage() {
       headline="Best Spin Pickleball Paddles of 2026"
       intro="These paddles were selected for their surface texture, dwell time, and ability to generate heavy topspin consistently. Every paddle was tested on court with lab-measured specs by a 5.5+ player."
       picks={PICKS}
+      relatedGuides={["what-is-grit-on-a-pickleball-paddle", "what-is-a-kevlar-pickleball-paddle", "what-is-a-raw-carbon-fiber-paddle", "kevlar-vs-carbon-fiber-pickleball-paddle"]}
     />
   );
 }

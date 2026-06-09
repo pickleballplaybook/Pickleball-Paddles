@@ -98,6 +98,12 @@ const CONFIG: AudienceConfig = {
       a: "No. We test and review paddles based on specs, not medical outcomes. If you have persistent elbow pain, see a sports doctor or physical therapist. A paddle change can help, but it's not a substitute for proper diagnosis and treatment.",
     },
   ],
+  relatedGuides: [
+    "best-pickleball-paddle-for-tennis-elbow",
+    "how-to-pick-pickleball-paddle-weight",
+    "what-is-a-foam-core-pickleball-paddle",
+    "what-is-a-kevlar-pickleball-paddle",
+  ],
 };
 
 export const metadata: Metadata = {

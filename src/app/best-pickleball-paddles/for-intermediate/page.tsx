@@ -84,6 +84,12 @@ const CONFIG: AudienceConfig = {
       a: "$140–$200 is the sweet spot for spec-quality per dollar. Above $200 is mostly diminishing returns — premium materials and brand prestige, but not necessarily a better paddle for your game.",
     },
   ],
+  relatedGuides: [
+    "how-to-choose-a-pickleball-paddle",
+    "how-to-pick-pickleball-paddle-weight",
+    "lead-tape-on-pickleball-paddles",
+    "pickleball-paddle-thickness-explained",
+  ],
 };
 
 export const metadata: Metadata = {

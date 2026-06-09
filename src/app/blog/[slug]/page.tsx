@@ -6,6 +6,27 @@ import { blogPosts, getBlogPostBySlug, BlogSection } from "@/data/blogPosts";
 import { getPaddleBySlug } from "@/data/paddles";
 import { siteConfig } from "@/config/site";
 import YouTubeEmbed from "@/components/YouTubeEmbed";
+import RelatedGuidesBlock from "@/components/RelatedGuidesBlock";
+
+// Pick 4 guides for a review post based on the reviewed paddle's specs
+// (shape + thickness). Falls back to evergreens when the paddle data is
+// missing. Every review links into the guides — that's hundreds of
+// internal links pointing into the new informational pages.
+function guidesForReview(paddleSlug: string | undefined): string[] {
+  const paddle = paddleSlug ? getPaddleBySlug(paddleSlug) : undefined;
+  const out: string[] = [];
+  const shape = (paddle?.shape || "").toLowerCase();
+  if (shape.includes("elongated"))     out.push("what-is-an-elongated-pickleball-paddle");
+  else if (shape.includes("hybrid"))   out.push("what-is-a-hybrid-pickleball-paddle");
+  else if (shape.includes("widebody")) out.push("what-is-a-widebody-pickleball-paddle");
+  const thick = (paddle?.thickness || "").toLowerCase();
+  if (thick.includes("13") || thick.includes("14") || thick.includes("16")) {
+    out.push("pickleball-paddle-thickness-explained");
+  }
+  out.push("how-to-choose-a-pickleball-paddle");
+  out.push("how-long-do-pickleball-paddles-last");
+  return Array.from(new Set(out)).slice(0, 4);
+}
 
 interface Props {
   params: { slug: string };
@@ -279,8 +300,17 @@ export default function BlogPostPage({ params }: Props) {
             </div>
           )}
 
+          {/* Related guides — internal links from every review into the
+              long-form informational guides, picked contextually from
+              the reviewed paddle's specs. */}
+          <RelatedGuidesBlock
+            slugs={guidesForReview(post.paddleSlugs?.[0])}
+            eyebrow="Learn"
+            title="Helpful Guides"
+          />
+
           {/* Back to blog */}
-          <div className="border-t pt-8" style={{ borderColor: "var(--border)" }}>
+          <div className="border-t pt-8 mt-10" style={{ borderColor: "var(--border)" }}>
             <Link
               href="/blog"
               className="inline-flex items-center gap-1.5 text-sm font-semibold transition-colors hover:text-teal-500"

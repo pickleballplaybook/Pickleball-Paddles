@@ -80,6 +80,12 @@ const CONFIG: AudienceConfig = {
       a: "You give up the extreme of any single trait. A specialist power paddle will always hit harder; a specialist control paddle will always feel softer at the kitchen. For most players, the trade is worth it.",
     },
   ],
+  relatedGuides: [
+    "how-to-choose-a-pickleball-paddle",
+    "power-vs-control-pickleball-paddles",
+    "what-is-a-hybrid-pickleball-paddle",
+    "pickleball-paddle-thickness-explained",
+  ],
 };
 
 export const metadata: Metadata = {
