@@ -95,7 +95,12 @@ fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 
 // Materialize YouTube cookies from env if provided. Datacenter IPs (Railway) get
 // blocked by YouTube's bot check; a cookies.txt from a real browser session bypasses it.
-const COOKIES_PATH = path.join(OUTPUT_DIR, '..', 'cookies.txt');
+// Written to /tmp (ephemeral container disk) rather than the persistent volume
+// because the file is regenerated from YT_COOKIES_BASE64 on every startup, and
+// stashing it on the volume just adds pressure to the same disk that holds
+// uploaded videos + processed clips (1 GB total). Saw ENOSPC trying to write
+// even a 16 KB cookies file when the volume was at capacity.
+const COOKIES_PATH = '/tmp/cookies.txt';
 function loadCookies() {
   const raw = process.env.YT_COOKIES_BASE64;
   if (!raw) return null;
@@ -1139,17 +1144,27 @@ const uploadMulter = multer({
 // network can push in 5 minutes.
 //
 // Sequence (browser sends in order, awaits each):
-//   POST /api/file-upload/<id>/chunk?token=…&exp=…&index=0&total=N&filename=x
+//   POST /api/file-upload/<id>/chunk?token=…&exp=…&index=0&total=N&chunkSize=…&filename=x
 //     body: raw bytes of chunk 0 (first chunk → file is truncated/created)
-//   POST … &index=1&total=N… body: raw bytes of chunk 1 (appended)
+//   POST … &index=1&total=N&chunkSize=… body: raw bytes of chunk 1
 //   …
-//   POST … &index=N-1&total=N… body: raw bytes of last chunk → response: { done: true, path }
+//   POST … &index=N-1&total=N&chunkSize=… body: raw bytes of last chunk → response: { done: true, path }
+//
+// Retry safety: before writing each chunk we truncate the file back to the
+// expected pre-chunk size (index * chunkSize). That way a chunk that failed
+// mid-upload (and may have partially written) can be retried without
+// duplicating bytes — the partial leftovers are discarded and the retried
+// chunk's bytes land in the same final position.
 app.post('/api/file-upload/:uploadId/chunk', (req, res) => {
   const { uploadId } = req.params;
   const token = String(req.query.token || '');
   const exp = Number(req.query.exp || 0);
   const index = Number(req.query.index);
   const total = Number(req.query.total);
+  // Client-declared chunk size; defaults to 5 MB to match older clients that
+  // didn't send this param. Required for safe retries because we use it to
+  // compute the expected file size before each append.
+  const chunkSize = Number(req.query.chunkSize || 5 * 1024 * 1024);
   const filename = String(req.query.filename || 'upload.bin')
     .replace(/[^a-zA-Z0-9._-]/g, '_')
     .slice(0, 200) || 'upload.bin';
@@ -1159,6 +1174,9 @@ app.post('/api/file-upload/:uploadId/chunk', (req, res) => {
   }
   if (total < 1 || index < 0 || index >= total) {
     return res.status(400).json({ error: 'Bad index/total' });
+  }
+  if (!Number.isFinite(chunkSize) || chunkSize < 1) {
+    return res.status(400).json({ error: 'Bad chunkSize' });
   }
   if (exp < Date.now()) return res.status(401).json({ error: 'Token expired' });
   if (usedUploadTokens.has(uploadId)) {
@@ -1176,10 +1194,35 @@ app.post('/api/file-upload/:uploadId/chunk', (req, res) => {
   fs.mkdirSync(dir, { recursive: true });
   const finalPath = path.join(dir, filename);
 
-  // First chunk creates/truncates; subsequent chunks append.
-  const writeStream = fs.createWriteStream(finalPath, {
-    flags: index === 0 ? 'w' : 'a',
-  });
+  // Normalize the file to its expected pre-chunk size so the upcoming append
+  // lands at the right offset whether this is a first attempt or a retry of
+  // a chunk that partially uploaded.
+  const expectedSize = index * chunkSize;
+  try {
+    if (index === 0) {
+      // First chunk: start fresh. Truncate any leftover bytes from a previous
+      // upload attempt with the same uploadId (rare, but cheap to handle).
+      fs.writeFileSync(finalPath, '');
+    } else {
+      let currentSize = 0;
+      try { currentSize = fs.statSync(finalPath).size; } catch { currentSize = 0; }
+      if (currentSize < expectedSize) {
+        return res.status(409).json({
+          error: `Out-of-order chunk: have ${currentSize} bytes, expected ≥${expectedSize}`,
+        });
+      }
+      if (currentSize > expectedSize) {
+        // Partial bytes from a failed prior attempt at this same chunk —
+        // discard them so the retry starts cleanly.
+        fs.truncateSync(finalPath, expectedSize);
+      }
+    }
+  } catch (err) {
+    return res.status(500).json({ error: 'Failed to prepare file: ' + err.message });
+  }
+
+  // Append the chunk bytes to the (now correctly sized) file.
+  const writeStream = fs.createWriteStream(finalPath, { flags: 'a' });
   let aborted = false;
   req.on('aborted', () => { aborted = true; writeStream.destroy(); });
   writeStream.on('error', err => {
