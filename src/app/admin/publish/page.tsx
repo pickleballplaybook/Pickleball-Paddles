@@ -608,32 +608,54 @@ export default function PublishPage() {
         return Object.keys(options).length > 0 ? { ...t, options } : t;
       });
 
+      // ── Thumbnail: upload separately via multipart, then reference by path. ──
+      // The dedicated /api/admin/publish/publish-thumbnail route uses
+      // streaming proxy so the bytes never hit Vercel's 4.5 MB body cap.
+      // What goes in the publish JSON is a short `thumbnailPath` string
+      // instead of multi-hundred-KB of base64, keeping the publish payload
+      // under 50 KB even with long descriptions + many targets.
+      let thumbnailPath: string | undefined;
+      if (thumbnailDataUrl) {
+        try {
+          // Convert the data URL into a Blob so it can be multipart-uploaded.
+          const blob = await (await fetch(thumbnailDataUrl)).blob();
+          const fd = new FormData();
+          // Field name "thumbnail" must match upload.single('thumbnail') on the backend.
+          fd.append("thumbnail", blob, "thumbnail.jpg");
+          const upRes = await fetch("/api/admin/publish/publish-thumbnail", {
+            method: "POST",
+            body: fd,
+          });
+          if (!upRes.ok) {
+            const txt = await upRes.text().catch(() => "");
+            throw new Error(`Thumbnail upload failed (${upRes.status}): ${txt.slice(0, 200)}`);
+          }
+          const upJson = await upRes.json();
+          thumbnailPath = upJson.thumbnailPath;
+          if (!thumbnailPath) {
+            throw new Error("Thumbnail upload returned no path");
+          }
+          console.log(`[publish] thumbnail uploaded → ${thumbnailPath} (${Math.round(blob.size / 1024)} KB)`);
+        } catch (err) {
+          throw new Error(
+            "Thumbnail upload failed: " +
+              (err instanceof Error ? err.message : String(err)) +
+              ". Try re-picking the thumbnail or skip it."
+          );
+        }
+      }
+
       const bodyJson = JSON.stringify({
         videoPath,
         title: title.trim(),
         description,
         targets: targetsWithOptions,
         scheduledAt,
-        thumbnailDataUrl: thumbnailDataUrl || undefined,
+        // thumbnailPath replaces thumbnailDataUrl — orders of magnitude smaller.
+        thumbnailPath,
       });
-
-      // Pre-flight size check. Vercel's body cap is 4.5 MB; we refuse at
-      // 4.0 MB so the error message can clearly identify what's huge
-      // instead of letting Vercel return an opaque 413.
       const bodyKB = Math.round(bodyJson.length / 1024);
-      const thumbKB = thumbnailDataUrl
-        ? Math.round(thumbnailDataUrl.length / 1024)
-        : 0;
-      if (bodyJson.length > 4 * 1024 * 1024) {
-        throw new Error(
-          `Publish payload is ${bodyKB} KB (over Vercel's 4.5 MB cap). ` +
-            `Thumbnail is ${thumbKB} KB. ` +
-            (thumbKB > 800
-              ? "Re-pick the thumbnail (compression should bring it under 700 KB) — you may have an old uncompressed one in state."
-              : "Description/tags are unusually large.")
-        );
-      }
-      console.log(`[publish] body=${bodyKB}KB thumb=${thumbKB}KB`);
+      console.log(`[publish] body=${bodyKB}KB thumbPath=${thumbnailPath ?? "none"}`);
 
       const r = await fetch("/api/admin/publish/publish", {
         method: "POST",
