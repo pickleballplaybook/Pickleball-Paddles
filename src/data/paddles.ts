@@ -2560,6 +2560,26 @@ export const paddles: Paddle[] = [
     trendingScore: 50,
     playStyle: "power",
   },
+
+  // ── Pakle Fuse ────────────────────────────────────────────────────────────
+  {
+    id: "131",
+    slug: "pakle-fuse-elongated",
+    brand: "Pakle",
+    name: "Fuse",
+    shape: "Elongated",
+    weight: "",
+    swingWeight: 110.26,
+    twistWeight: 5.95,
+    thickness: "16mm",
+    image: "/images/paddles/Pakle-Fuse-Elongated-16mm.png",
+    price: "$119.00",
+    amountOff: "10%",
+    discountLink: "https://paklepickleball.com/discount/PICKLEBALLPLAYBOOK?rs_ref=3f2lk7iz",
+    addedAt: "2026-06-10",
+    trendingScore: 50,
+    playStyle: "power",
+  },
 ];
 
 // Review dates — ISO publish dates for Latest Reviews sort (newest-first).
