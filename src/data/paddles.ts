@@ -2574,7 +2574,7 @@ export const paddles: Paddle[] = [
     thickness: "16mm",
     image: "/images/paddles/Pakle-Fuse-Elongated-16mm.png",
     price: "$119.00",
-    amountOff: "10%",
+    amountOff: "15%",
     discountLink: "https://paklepickleball.com/discount/PICKLEBALLPLAYBOOK?rs_ref=3f2lk7iz",
     addedAt: "2026-06-10",
     trendingScore: 50,
