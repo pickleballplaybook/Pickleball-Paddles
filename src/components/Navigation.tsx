@@ -3,10 +3,13 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Menu, X, Search, Sun, Moon } from "lucide-react";
+import { Menu, X, Search, Sun, Moon, BookOpen, FileText, Tag } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { useTheme } from "@/components/ThemeProvider";
 import { paddles } from "@/data/paddles";
+import { blogPosts } from "@/data/blogPosts";
+import { guides, GUIDE_CATEGORIES } from "@/data/guides";
+import { brands } from "@/data/brands";
 import PaddleQuiz from "@/components/PaddleQuiz";
 
 const navLinks = [
@@ -20,6 +23,39 @@ const navLinks = [
 ];
 
 // ── Global Search ─────────────────────────────────────────────────────────────
+
+// All-terms-match scoring. The query "selkirk omni" splits into
+// ["selkirk", "omni"] and a paddle qualifies only if BOTH tokens hit
+// somewhere in the haystack — which is "brand name shape thickness slug"
+// concatenated. So the brand match on "selkirk" + name match on "omni"
+// counts as a hit even though no single field contains the full phrase.
+// This is the fix for the "I can only search one word at a time" bug.
+function matchesAllTerms(haystack: string, terms: string[]): boolean {
+  for (const t of terms) {
+    if (!haystack.includes(t)) return false;
+  }
+  return true;
+}
+
+// Optional ranking helper — paddles that match in the brand or name get
+// a small boost over paddles that only match in the slug. Keeps the
+// most-obviously-relevant results at the top of each section.
+function termScore(primary: string, secondary: string, terms: string[]): number {
+  let score = 0;
+  for (const t of terms) {
+    if (primary.includes(t)) score += 2;
+    else if (secondary.includes(t)) score += 1;
+  }
+  return score;
+}
+
+interface SearchResults {
+  paddleResults: typeof paddles;
+  reviewResults: typeof blogPosts;
+  guideResults: typeof guides;
+  brandResults: typeof brands;
+  totalCount: number;
+}
 
 function GlobalSearch({ onClose }: { onClose: () => void }) {
   const [query,   setQuery]   = useState("");
@@ -35,21 +71,59 @@ function GlobalSearch({ onClose }: { onClose: () => void }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  const results = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return [];
-    return paddles
-      .filter(
-        (p) =>
-          p.name.toLowerCase().includes(q) ||
-          p.brand.toLowerCase().includes(q) ||
-          p.shape.toLowerCase().includes(q)
-      )
-      .slice(0, 8);
+  const results: SearchResults | null = useMemo(() => {
+    const raw = query.trim().toLowerCase();
+    if (!raw) return null;
+    const terms = raw.split(/\s+/).filter(Boolean);
+    if (terms.length === 0) return null;
+
+    // ── Paddles ─────────────────────────────────────────────────────
+    const paddleResults = paddles
+      .map((p) => {
+        const primary = `${p.brand} ${p.name}`.toLowerCase();
+        const all = `${primary} ${p.shape} ${p.thickness} ${p.slug.replace(/-/g, " ")}`;
+        return { p, hit: matchesAllTerms(all, terms), s: termScore(primary, all, terms) };
+      })
+      .filter((r) => r.hit)
+      .sort((a, b) => b.s - a.s)
+      .slice(0, 6)
+      .map((r) => r.p);
+
+    // ── Reviews (blog posts) ────────────────────────────────────────
+    const reviewResults = blogPosts
+      .map((b) => {
+        const primary = `${b.brand} ${b.paddleName}`.toLowerCase();
+        const all = `${primary} ${b.title.toLowerCase()} ${b.excerpt.toLowerCase()}`;
+        return { b, hit: matchesAllTerms(all, terms), s: termScore(primary, all, terms) };
+      })
+      .filter((r) => r.hit)
+      .sort((a, b) => b.s - a.s)
+      .slice(0, 4)
+      .map((r) => r.b);
+
+    // ── Guides ──────────────────────────────────────────────────────
+    const guideResults = guides
+      .map((g) => {
+        const primary = g.title.toLowerCase();
+        const all = `${primary} ${g.excerpt.toLowerCase()} ${GUIDE_CATEGORIES[g.category].label.toLowerCase()} ${g.slug.replace(/-/g, " ")}`;
+        return { g, hit: matchesAllTerms(all, terms), s: termScore(primary, all, terms) };
+      })
+      .filter((r) => r.hit)
+      .sort((a, b) => b.s - a.s)
+      .slice(0, 4)
+      .map((r) => r.g);
+
+    // ── Brands ──────────────────────────────────────────────────────
+    const brandResults = brands
+      .filter((b) => matchesAllTerms(`${b.name} ${b.slug.replace(/-/g, " ")}`.toLowerCase(), terms))
+      .slice(0, 3);
+
+    const totalCount = paddleResults.length + reviewResults.length + guideResults.length + brandResults.length;
+    return { paddleResults, reviewResults, guideResults, brandResults, totalCount };
   }, [query]);
 
-  function go(slug: string) {
-    router.push(`/paddles/${slug}`);
+  function go(href: string) {
+    router.push(href);
     onClose();
   }
 
@@ -60,16 +134,16 @@ function GlobalSearch({ onClose }: { onClose: () => void }) {
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div
-        className="mx-auto w-full max-w-xl mt-20 rounded-2xl overflow-hidden shadow-2xl"
-        style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}
+        className="mx-auto w-full max-w-xl mt-20 rounded-2xl overflow-hidden shadow-2xl flex flex-col"
+        style={{ background: "var(--bg-card)", border: "1px solid var(--border)", maxHeight: "calc(100vh - 120px)" }}
       >
         {/* Input row */}
-        <div className="flex items-center gap-3 px-4 py-3.5" style={{ borderBottom: "1px solid var(--border)" }}>
+        <div className="flex items-center gap-3 px-4 py-3.5 flex-shrink-0" style={{ borderBottom: "1px solid var(--border)" }}>
           <Search className="w-4 h-4 flex-shrink-0" style={{ color: "rgba(255,255,255,0.5)" }} />
           <input
             ref={inputRef}
             type="text"
-            placeholder="Search paddles…"
+            placeholder="Search paddles, reviews, guides, brands…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="flex-1 bg-transparent text-sm font-medium focus:outline-none"
@@ -85,44 +159,152 @@ function GlobalSearch({ onClose }: { onClose: () => void }) {
           </button>
         </div>
 
-        {/* Results */}
-        {query.trim() === "" ? (
-          <div className="px-4 py-6 text-center">
-            <p className="text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>
-              Start typing to search paddles by brand or name.
-            </p>
-          </div>
-        ) : results.length === 0 ? (
-          <div className="px-4 py-6 text-center">
-            <p className="text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>No paddles found for &ldquo;{query}&rdquo;</p>
-          </div>
-        ) : (
-          <div>
-            {results.map((p) => (
-              <button
-                key={p.id}
-                onClick={() => go(p.slug)}
-                className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors hover:text-brand-500"
-                style={{ borderBottom: "1px solid var(--border)", color: "var(--text-primary)" }}
-              >
-                {p.image && (
-                  <div className="w-9 h-9 flex-shrink-0 relative">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={p.image} alt={p.name} className="w-full h-full object-contain" />
-                  </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#14b8a6" }}>{p.brand}</p>
-                  <p className="text-sm font-bold truncate">{p.name}</p>
-                </div>
-                <p className="text-xs flex-shrink-0" style={{ color: "rgba(255,255,255,0.5)" }}>
-                  {p.shape} · {p.thickness}
-                </p>
-              </button>
-            ))}
-          </div>
-        )}
+        {/* Results — scrolls if long. Empty / no-results states pinned. */}
+        <div className="overflow-y-auto">
+          {results === null ? (
+            <div className="px-4 py-6 text-center">
+              <p className="text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>
+                Try a brand and a name together — like &ldquo;selkirk omni&rdquo; or &ldquo;honolulu j6cr&rdquo;.
+              </p>
+            </div>
+          ) : results.totalCount === 0 ? (
+            <div className="px-4 py-6 text-center">
+              <p className="text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>No results for &ldquo;{query}&rdquo;</p>
+            </div>
+          ) : (
+            <>
+              {/* ── Paddles ─────────────────────────────────────────── */}
+              {results.paddleResults.length > 0 && (
+                <>
+                  <SectionHeader label="Paddles" count={results.paddleResults.length} />
+                  {results.paddleResults.map((p) => (
+                    <button
+                      key={`paddle-${p.id}`}
+                      onClick={() => go(`/paddles/${p.slug}`)}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors hover:text-brand-500"
+                      style={{ borderBottom: "1px solid var(--border)", color: "var(--text-primary)" }}
+                    >
+                      {p.image && (
+                        <div className="w-9 h-9 flex-shrink-0 relative">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={p.image} alt={p.name} className="w-full h-full object-contain" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#14b8a6" }}>{p.brand}</p>
+                        <p className="text-sm font-bold truncate">{p.name}</p>
+                      </div>
+                      <p className="text-xs flex-shrink-0" style={{ color: "rgba(255,255,255,0.5)" }}>
+                        {p.shape} · {p.thickness}
+                      </p>
+                    </button>
+                  ))}
+                </>
+              )}
+
+              {/* ── Reviews ────────────────────────────────────────── */}
+              {results.reviewResults.length > 0 && (
+                <>
+                  <SectionHeader label="Reviews" count={results.reviewResults.length} />
+                  {results.reviewResults.map((b) => (
+                    <button
+                      key={`review-${b.slug}`}
+                      onClick={() => go(`/blog/${b.slug}`)}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors hover:text-brand-500"
+                      style={{ borderBottom: "1px solid var(--border)", color: "var(--text-primary)" }}
+                    >
+                      <div
+                        className="w-9 h-9 flex-shrink-0 rounded-lg flex items-center justify-center"
+                        style={{ background: "rgba(20,184,166,0.10)" }}
+                      >
+                        <FileText className="w-4 h-4" style={{ color: "#2dd4bf" }} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#14b8a6" }}>
+                          {b.brand} Review
+                        </p>
+                        <p className="text-sm font-bold truncate">{b.title.replace(/ Review:.*$/, "")}</p>
+                      </div>
+                    </button>
+                  ))}
+                </>
+              )}
+
+              {/* ── Guides ─────────────────────────────────────────── */}
+              {results.guideResults.length > 0 && (
+                <>
+                  <SectionHeader label="Guides" count={results.guideResults.length} />
+                  {results.guideResults.map((g) => (
+                    <button
+                      key={`guide-${g.slug}`}
+                      onClick={() => go(`/guides/${g.slug}`)}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors hover:text-brand-500"
+                      style={{ borderBottom: "1px solid var(--border)", color: "var(--text-primary)" }}
+                    >
+                      <div
+                        className="w-9 h-9 flex-shrink-0 rounded-lg flex items-center justify-center"
+                        style={{ background: "rgba(20,184,166,0.10)" }}
+                      >
+                        <BookOpen className="w-4 h-4" style={{ color: "#2dd4bf" }} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#14b8a6" }}>
+                          {GUIDE_CATEGORIES[g.category].label}
+                        </p>
+                        <p className="text-sm font-bold truncate">{g.title}</p>
+                      </div>
+                    </button>
+                  ))}
+                </>
+              )}
+
+              {/* ── Brands ─────────────────────────────────────────── */}
+              {results.brandResults.length > 0 && (
+                <>
+                  <SectionHeader label="Brands" count={results.brandResults.length} />
+                  {results.brandResults.map((b) => (
+                    <button
+                      key={`brand-${b.slug}`}
+                      onClick={() => go(`/brands/${b.slug}`)}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors hover:text-brand-500"
+                      style={{ borderBottom: "1px solid var(--border)", color: "var(--text-primary)" }}
+                    >
+                      <div
+                        className="w-9 h-9 flex-shrink-0 rounded-lg flex items-center justify-center"
+                        style={{ background: "rgba(20,184,166,0.10)" }}
+                      >
+                        <Tag className="w-4 h-4" style={{ color: "#2dd4bf" }} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#14b8a6" }}>Brand</p>
+                        <p className="text-sm font-bold truncate">{b.name}</p>
+                      </div>
+                    </button>
+                  ))}
+                </>
+              )}
+            </>
+          )}
+        </div>
       </div>
+    </div>
+  );
+}
+
+// Small visual divider that introduces each result group.
+function SectionHeader({ label, count }: { label: string; count: number }) {
+  return (
+    <div
+      className="flex items-center justify-between px-4 py-2 sticky top-0 z-[1]"
+      style={{
+        background: "var(--bg-card)",
+        borderBottom: "1px solid var(--border)",
+      }}
+    >
+      <p className="text-[10px] font-extrabold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.45)" }}>
+        {label}
+      </p>
+      <p className="text-[10px] font-bold" style={{ color: "rgba(255,255,255,0.3)" }}>{count}</p>
     </div>
   );
 }
