@@ -2568,7 +2568,7 @@ export const paddles: Paddle[] = [
     brand: "Pakle",
     name: "Fuse",
     shape: "Elongated",
-    weight: "",
+    weight: "7.6 oz",
     swingWeight: 110.26,
     twistWeight: 5.95,
     thickness: "16mm",
