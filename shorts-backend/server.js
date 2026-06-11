@@ -4,6 +4,7 @@ import cors from 'cors';
 import { exec, execSync } from 'child_process';
 import { promisify } from 'util';
 import fs from 'fs';
+import zlib from 'zlib';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { v4 as uuidv4 } from 'uuid';
@@ -105,7 +106,16 @@ function loadCookies() {
   const raw = process.env.YT_COOKIES_BASE64;
   if (!raw) return null;
   try {
-    const decoded = Buffer.from(raw, 'base64').toString('utf-8');
+    const buf = Buffer.from(raw, 'base64');
+    // Try gzip first (preferred — lets us ship ~2x as many cookies under
+    // Railway's 32 KB env var cap). Fall back to plain base64 for backward
+    // compat with the older deploy flow.
+    let decoded;
+    try {
+      decoded = zlib.gunzipSync(buf).toString('utf-8');
+    } catch {
+      decoded = buf.toString('utf-8');
+    }
     fs.writeFileSync(COOKIES_PATH, decoded);
     fs.chmodSync(COOKIES_PATH, 0o600);
     console.log(`Wrote cookies.txt (${decoded.length} bytes) for yt-dlp`);
@@ -231,7 +241,7 @@ function dirSize(p) {
 // downloaded source + clips can be 100–300MB. Keeping 15 quickly filled the
 // disk and broke encodes with "No space left on device". Override via
 // CLEANUP_KEEP_JOBS env var if the volume gets bumped up.
-const CLEANUP_KEEP_JOBS = Number(process.env.CLEANUP_KEEP_JOBS || 3);
+const CLEANUP_KEEP_JOBS = Number(process.env.CLEANUP_KEEP_JOBS || 2);
 // Max age before an UPLOADS_DIR/<uuid> dir is considered abandoned and wiped.
 // Anything past this is either an orphan from a publish that never happened
 // or a partial chunk run that errored — both are safe to drop.
@@ -315,7 +325,7 @@ function diskCleanup({ wipeUploads = false } = {}) {
 }
 
 diskCleanup({ wipeUploads: true });
-setInterval(() => diskCleanup(), 60 * 60 * 1000); // hourly
+setInterval(() => diskCleanup(), 15 * 60 * 1000); // every 15 min
 
 // ─── DRAWTEXT FONT ───────────────────────────────────────────────────────────
 // ffmpeg's drawtext filter (for clip text overlays) needs a TTF/OTF path.
@@ -348,6 +358,15 @@ function escapeDrawText(s) {
 app.post('/api/process', async (req, res) => {
   const { youtubeUrl } = req.body;
   if (!youtubeUrl) return res.status(400).json({ error: 'youtubeUrl is required' });
+
+  // Free disk BEFORE we start a new ~300 MB yt-dlp download. The hourly
+  // interval can't catch up fast enough on the 1 GB volume, so without
+  // this every other submit was ENOSPC'ing.
+  try {
+    diskCleanup();
+  } catch (err) {
+    console.error('[cleanup] pre-job cleanup failed (continuing):', err.message);
+  }
 
   const jobId = uuidv4();
   const jobDir = path.join(JOBS_DIR, jobId);
@@ -1394,6 +1413,36 @@ setInterval(() => {
     );
   }
 }, 30 * 1000).unref();
+
+// Nuclear: wipe every scheduled-IG dir on /data/output/scheduled/ AND
+// reset the queue file to []. Use when the queue has fallen out of
+// sync with disk (publish failures held the volume hostage so the
+// publisher loop kept ENOSPC'ing, leaving orphan media nobody can
+// reach via DELETE /api/scheduled/:id).
+app.post('/api/scheduled/wipe-all', (_req, res) => {
+  let removed = 0;
+  let freed = 0;
+  try {
+    if (fs.existsSync(SCHEDULED_DIR)) {
+      for (const entry of fs.readdirSync(SCHEDULED_DIR, { withFileTypes: true })) {
+        if (!entry.isDirectory()) continue;
+        const dir = path.join(SCHEDULED_DIR, entry.name);
+        try {
+          freed += dirSize(dir);
+          fs.rmSync(dir, { recursive: true, force: true });
+          removed++;
+        } catch {}
+      }
+    }
+    const before = scheduledQueue.length;
+    scheduledQueue = [];
+    saveScheduledQueue();
+    console.log(`[wipe-all] removed ${removed} dir(s), freed ${(freed/1024/1024).toFixed(1)} MB, queue ${before} → 0`);
+    res.json({ ok: true, removedDirs: removed, freedMB: +(freed/1024/1024).toFixed(1), queueBefore: before });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 app.get('/api/scheduled', (_req, res) => {
   // Sanitize: never leak access tokens to the UI.
