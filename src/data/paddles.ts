@@ -2580,6 +2580,31 @@ export const paddles: Paddle[] = [
     trendingScore: 50,
     playStyle: "power",
   },
+
+  // ── Diadem Blue Core ──────────────────────────────────────────────────────
+  // discountLink → the brand-page affiliate URL from the CSV (gets the
+  // customer the 10% off). The Diadem PRODUCT-PAGE URL where customer
+  // reviews live is registered separately in src/lib/externalReviews.ts
+  // (REVIEW_SOURCES) so the rating-link surfaces don't get conflated with
+  // the buy-link.
+  {
+    id: "132",
+    slug: "diadem-bluecore-elongated",
+    brand: "Diadem",
+    name: "Blue Core",
+    shape: "Elongated",
+    weight: "7.9 oz",
+    swingWeight: 111.55,
+    twistWeight: 5.86,
+    thickness: "16mm",
+    image: "/images/paddles/Diadem-Bluecore-Elongated-16mm.png",
+    price: "$249.95",
+    amountOff: "10%",
+    discountLink: "https://diademsports.com?sca_ref=11522018.FS6VKOMxxmPR&utm_source=uppromote&utm_medium=affilliate&utm_campaign=pickleball-playbook",
+    addedAt: "2026-06-11",
+    trendingScore: 50,
+    playStyle: "control",
+  },
 ];
 
 // Review dates — ISO publish dates for Latest Reviews sort (newest-first).

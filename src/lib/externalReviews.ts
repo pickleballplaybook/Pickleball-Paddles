@@ -186,6 +186,21 @@ export const REVIEW_SOURCES: ReviewSource[] = [
     staticRating: 4.7,
     staticCount: 299,
   },
+
+  // ── Diadem ──────────────────────────────────────────────────────────────
+  // Diadem's product page is on Shopify; try Judge.me first. URL is the
+  // canonical product page with all tracking junk (utm_*, gclid, gad_*,
+  // variant ID) stripped — the sync cron only needs the product handle.
+  // This is the RATING link, intentionally separate from the affiliate
+  // discountLink on the paddle row in src/data/paddles.ts.
+  {
+    paddleSlugs: ["diadem-bluecore-elongated"],
+    platform: "judgeme",
+    shopDomain: "diademsports.com",
+    productUrl: "https://diademsports.com/products/edge-blucore",
+    sourceName: "Diadem Sports",
+    productHandle: "edge-blucore",
+  },
 ];
 
 /**
