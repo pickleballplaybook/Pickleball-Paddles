@@ -11,7 +11,14 @@ cmds = [
   # `yt-dlp_linux` is the standalone Linux binary (PyInstaller-bundled, no
   # Python needed). The plain `yt-dlp` filename is a Python script and won't
   # run without python3 on PATH.
-  "curl -L -o /usr/local/bin/yt-dlp https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_linux",
+  #
+  # Pull from the **nightly** builds repo, not stable. YouTube changes its
+  # internal format manifests / signature challenges roughly weekly, and
+  # stable lags master by ~1 week. Symptoms when stable goes stale: every
+  # client attempt returns "Requested format is not available" or "Sign in
+  # to confirm you're not a bot" even with valid cookies. Nightly tracks
+  # master so the fix lands on the next deploy after a yt-dlp patch.
+  "curl -L -o /usr/local/bin/yt-dlp https://github.com/yt-dlp/yt-dlp-nightly-builds/releases/latest/download/yt-dlp_linux",
   "chmod +x /usr/local/bin/yt-dlp",
   "/usr/local/bin/yt-dlp --version"
 ]
