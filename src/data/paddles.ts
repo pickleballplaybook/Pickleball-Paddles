@@ -2603,7 +2603,7 @@ export const paddles: Paddle[] = [
     discountLink: "https://diademsports.com?sca_ref=11522018.FS6VKOMxxmPR&utm_source=uppromote&utm_medium=affilliate&utm_campaign=pickleball-playbook",
     addedAt: "2026-06-11",
     trendingScore: 50,
-    playStyle: "control",
+    playStyle: "all-court",
   },
 ];
 
