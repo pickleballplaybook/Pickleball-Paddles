@@ -46,25 +46,33 @@ interface BalanceCategory {
   accentRgb: string;
 }
 
+// Category accents intentionally match the site's existing play-style
+// colorway (indigo / teal / orange) so the Balance Point card reads as
+// part of the same design system rather than a one-off coloring scheme.
+//   HEAD-LIGHT  →  indigo (#818cf8) — same as the control-style badge,
+//                  the hand-speed / quickness association.
+//   NEUTRAL     →  teal (#2dd4bf)   — the site's brand accent.
+//   HEAD-HEAVY  →  orange (#fb923c) — same as the power-style badge,
+//                  the plow-through / mass association.
 function categorize(bp: number): BalanceCategory {
   if (bp < 23.5) {
     return {
       label: "HEAD-LIGHT",
       tagline: "Faster hand speed — quicker through the air",
-      accentRgb: "96, 165, 250",   // blue-400
+      accentRgb: "129, 140, 248",  // indigo-400 — site's control-style color
     };
   }
   if (bp <= 24.5) {
     return {
       label: "NEUTRAL BALANCE",
       tagline: "Even feel — versatile across the court",
-      accentRgb: "239, 68, 68",    // red-500
+      accentRgb: "45, 212, 191",   // teal-300 — site brand accent
     };
   }
   return {
     label: "HEAD-HEAVY",
     tagline: "More plow-through — extra mass behind the ball",
-    accentRgb: "244, 114, 182",  // pink-400
+    accentRgb: "251, 146, 60",   // orange-400 — site's power-style color
   };
 }
 
@@ -105,33 +113,30 @@ export default function BalancePointSpec({ paddle }: Props) {
 
   return (
     <div className="w-full">
-      {/* Header above the card — matches the inspiration treatment. */}
-      <p className="text-sm mb-4" style={{ color: "var(--flip-text-muted, rgba(255,255,255,0.6))" }}>
-        How heavy the paddle feels and where the mass sits.
-      </p>
-
       <div
-        className="relative rounded-3xl overflow-hidden p-6 md:p-8"
+        className="relative rounded-2xl overflow-hidden p-6 md:p-8"
         style={{
-          // Category-tinted dark background. The radial gradients use the
-          // category accent at low alpha; the base layer stays nearly black
-          // so the card feels at home in the site's dark surface system
-          // regardless of which category the accent is.
+          // Matches the Specifications card alongside it (same flip-bg-card
+          // surface, same flip-card-border) so the two cards visually pair
+          // up. A subtle category-accent glow at the top and a hairline
+          // border tint give the Balance Point card just enough character
+          // to feel intentional without breaking the surface system.
           background: [
-            `radial-gradient(ellipse 80% 60% at 50% 20%, rgba(${rgb}, 0.12) 0%, transparent 60%)`,
-            `radial-gradient(ellipse 60% 50% at 50% 100%, rgba(${rgb}, 0.08) 0%, transparent 70%)`,
-            `linear-gradient(180deg, rgba(${rgb}, 0.04) 0%, #0d0612 100%)`,
+            `radial-gradient(ellipse 80% 50% at 50% 0%, rgba(${rgb}, 0.10) 0%, transparent 70%)`,
+            "var(--flip-bg-card)",
           ].join(", "),
-          border: `1px solid rgba(${rgb}, 0.20)`,
-          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04), 0 12px 40px rgba(0,0,0,0.40)",
+          border: `1px solid rgba(${rgb}, 0.25)`,
+          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
         }}
       >
-        {/* Section label */}
-        <p
-          className="text-[11px] font-extrabold uppercase tracking-[0.25em] mb-6"
-          style={{ color: "rgba(255,255,255,0.85)" }}
-        >
+        {/* Heading + subtitle — styled to match the Specifications card's
+            <h2 Specifications> heading directly above/below it so the two
+            cards read as a coordinated pair. */}
+        <h2 className="text-xl font-extrabold mb-1" style={{ color: "var(--flip-text-head)" }}>
           Balance Point
+        </h2>
+        <p className="text-sm mb-6" style={{ color: "var(--flip-text-muted)" }}>
+          How heavy the paddle feels and where the mass sits.
         </p>
 
         {/* Paddle image with overlaid balance + center lines.
@@ -208,7 +213,8 @@ export default function BalancePointSpec({ paddle }: Props) {
           <div
             className="relative h-2 rounded-full"
             style={{
-              background: "linear-gradient(90deg, rgba(96,165,250,0.35) 0%, rgba(255,255,255,0.10) 50%, rgba(244,114,182,0.40) 100%)",
+              // Indigo → teal → orange — mirrors the three categories.
+              background: "linear-gradient(90deg, rgba(129,140,248,0.32) 0%, rgba(45,212,191,0.18) 50%, rgba(251,146,60,0.32) 100%)",
               boxShadow: "inset 0 1px 2px rgba(0,0,0,0.5)",
             }}
           >

@@ -1026,6 +1026,15 @@ export default async function PaddleDetailPage({ params }: Props) {
                 )}
               </div>
 
+              {/* Balance Point — sits directly above the Specifications
+                  card, immediately after the Weight specs block. This puts
+                  it visually in line with the "weight and balance" section
+                  on the right side of the layout. Only renders when
+                  paddle.balancePoint is set. */}
+              {typeof paddle.balancePoint === "number" && (
+                <BalancePointSpec paddle={paddle} />
+              )}
+
               {/* Specifications table */}
               <div
                 className="rounded-2xl p-6 md:p-8"
@@ -1054,14 +1063,6 @@ export default async function PaddleDetailPage({ params }: Props) {
                   <SpecRow label="Play Style" value={STYLE_LABELS[paddle.playStyle ?? ""] ?? paddle.playStyle} last />
                 </div>
               </div>
-
-              {/* Balance Point — appears right after the Specifications card
-                  inside the left column, so it sits in the spec-flow context
-                  instead of as a standalone section further down the page.
-                  Only renders when paddle.balancePoint is set. */}
-              {typeof paddle.balancePoint === "number" && (
-                <BalancePointSpec paddle={paddle} />
-              )}
             </div>
 
             {/* Sidebar — sticky, hidden on mobile (price already in hero) */}
