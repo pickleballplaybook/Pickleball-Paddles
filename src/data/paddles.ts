@@ -1830,7 +1830,7 @@ export const paddles: Paddle[] = [
     manualVideoId: "npb1mJrEakM",
     addedAt: "2026-05-11",
     trendingScore: 50,
-    playStyle: "all-court",
+    playStyle: "power",
     seriesSlug: "honolulu-crystal-blue",
   },
   {
@@ -1850,7 +1850,7 @@ export const paddles: Paddle[] = [
     manualVideoId: "npb1mJrEakM",
     addedAt: "2026-05-11",
     trendingScore: 50,
-    playStyle: "all-court",
+    playStyle: "power",
     seriesSlug: "honolulu-crystal-blue",
   },
   {
@@ -1870,7 +1870,7 @@ export const paddles: Paddle[] = [
     manualVideoId: "npb1mJrEakM",
     addedAt: "2026-05-11",
     trendingScore: 50,
-    playStyle: "all-court",
+    playStyle: "power",
     seriesSlug: "honolulu-crystal-blue",
   },
 

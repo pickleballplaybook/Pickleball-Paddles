@@ -974,6 +974,7 @@ export default async function PaddleDetailPage({ params }: Props) {
                 {paddle.swingWeight > 0 ? (
                   <SpecBar
                     label="Swing Weight"
+                    kind="swing-weight"
                     value={paddle.swingWeight}
                     min={catalog.swingWeight.min}
                     max={catalog.swingWeight.max}
@@ -988,6 +989,7 @@ export default async function PaddleDetailPage({ params }: Props) {
                 {paddle.twistWeight > 0 ? (
                   <SpecBar
                     label="Twist Weight"
+                    kind="twist-weight"
                     value={paddle.twistWeight}
                     min={catalog.twistWeight.min}
                     max={catalog.twistWeight.max}
@@ -1002,6 +1004,7 @@ export default async function PaddleDetailPage({ params }: Props) {
                 {parseFloat(paddle.weight) > 0 && (
                   <SpecBar
                     label="Static Weight"
+                    kind="static-weight"
                     value={parseFloat(paddle.weight)}
                     unit="oz"
                     min={catalog.weight.min}
