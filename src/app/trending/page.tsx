@@ -144,18 +144,48 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
   } as const;
   const pc = playColors[paddle.playStyle as keyof typeof playColors] ?? { dot: "#2dd4bf", text: "rgba(45,212,191,0.95)" };
 
-  // Premium rank badge: gold for #1, teal otherwise.
-  const isTopRank = rank === 1;
-  const rankBg = isTopRank
-    ? "linear-gradient(135deg, #f4d28a 0%, #d4a35a 100%)"
-    : "linear-gradient(135deg, rgba(20,184,166,0.55) 0%, rgba(13,148,136,0.30) 100%)";
-  const rankBorder = isTopRank ? "rgba(244,210,138,0.75)" : "rgba(45,212,191,0.55)";
-  const rankShadow = isTopRank
-    ? "0 8px 24px rgba(212,163,90,0.40), inset 0 1px 0 rgba(255,255,255,0.45)"
-    : "0 6px 20px rgba(20,184,166,0.28), inset 0 1px 0 rgba(255,255,255,0.18)";
-  const rankNumColor = isTopRank ? "#1a0f00" : "#fff";
+  // Podium colors — gold for #1, silver for #2, bronze for #3, on-brand
+  // teal for everything else. Each variant tunes background, border,
+  // shadow, and the numeric color inside the badge so it reads correctly
+  // against the metallic gradient.
+  const rankStyles: Record<"gold" | "silver" | "bronze" | "teal", {
+    bg: string; border: string; shadow: string; num: string;
+  }> = {
+    gold: {
+      bg:     "linear-gradient(135deg, #f4d28a 0%, #d4a35a 100%)",
+      border: "rgba(244,210,138,0.75)",
+      shadow: "0 8px 24px rgba(212,163,90,0.40), inset 0 1px 0 rgba(255,255,255,0.45)",
+      num:    "#1a0f00",
+    },
+    silver: {
+      bg:     "linear-gradient(135deg, #e5e7eb 0%, #94a3b8 100%)",
+      border: "rgba(229,231,235,0.75)",
+      shadow: "0 8px 24px rgba(148,163,184,0.38), inset 0 1px 0 rgba(255,255,255,0.50)",
+      num:    "#0f172a",
+    },
+    bronze: {
+      bg:     "linear-gradient(135deg, #d97a3a 0%, #92451c 100%)",
+      border: "rgba(217,122,58,0.80)",
+      shadow: "0 8px 24px rgba(146,69,28,0.40), inset 0 1px 0 rgba(255,255,255,0.30)",
+      num:    "#1a0a05",
+    },
+    teal: {
+      bg:     "linear-gradient(135deg, rgba(20,184,166,0.55) 0%, rgba(13,148,136,0.30) 100%)",
+      border: "rgba(45,212,191,0.55)",
+      shadow: "0 6px 20px rgba(20,184,166,0.28), inset 0 1px 0 rgba(255,255,255,0.18)",
+      num:    "#fff",
+    },
+  };
+  const podium = rank === 1 ? rankStyles.gold
+    : rank === 2 ? rankStyles.silver
+    : rank === 3 ? rankStyles.bronze
+    : rankStyles.teal;
+  const isTopRank = rank === 1;  // used elsewhere for the gold dot indicator below
 
-  // Refined stat-bar palette — champagne gold replaces the old orange for twist.
+  // Stat-bar palette — twist swapped from champagne gold to soft indigo
+  // (matches the control-style color used elsewhere on the site) so the
+  // bar trio reads as a cool slate/teal/indigo gradient that vibes with
+  // the rest of the dark navy palette.
   const BARS = {
     weight: {
       fill: "linear-gradient(90deg, #64748b 0%, #94a3b8 60%, #cbd5e1 100%)",
@@ -166,8 +196,8 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
       glow: "0 0 8px rgba(45,212,191,0.40)",
     },
     twist: {
-      fill: "linear-gradient(90deg, #b8895a 0%, #d4a574 50%, #f4c980 100%)",
-      glow: "0 0 8px rgba(240,201,128,0.38)",
+      fill: "linear-gradient(90deg, #6366f1 0%, #818cf8 50%, #a5b4fc 100%)",
+      glow: "0 0 8px rgba(129,140,248,0.40)",
     },
   };
 
@@ -192,18 +222,22 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
         ].join(", "),
       }}
     >
-      {/* Rank badge — premium */}
+      {/* Rank badge — podium-colored: gold #1, silver #2, bronze #3, teal else */}
       <div
         className="absolute top-5 left-5 w-14 h-14 rounded-full flex items-center justify-center z-10"
         style={{
-          background: rankBg,
-          border: `1.5px solid ${rankBorder}`,
-          boxShadow: rankShadow,
+          background: podium.bg,
+          border: `1.5px solid ${podium.border}`,
+          boxShadow: podium.shadow,
         }}
       >
         <span
           className="text-xl font-extrabold tabular-nums"
-          style={{ color: rankNumColor, letterSpacing: "-0.02em", textShadow: isTopRank ? "0 1px 0 rgba(255,255,255,0.25)" : "none" }}
+          style={{
+            color: podium.num,
+            letterSpacing: "-0.02em",
+            textShadow: rank <= 3 ? "0 1px 0 rgba(255,255,255,0.25)" : "none",
+          }}
         >
           #{rank}
         </span>
@@ -223,14 +257,20 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
           the space in between. */}
       <div className="absolute inset-x-0 top-[14%] bottom-[10%] flex items-stretch gap-3 px-5">
 
-        {/* ── LEFT: paddle image, much bigger than before ──────────────── */}
-        <div className="relative flex-[0.52] flex items-center justify-center">
+        {/* ── LEFT: paddle image — height-locked at 96% of the column so
+                every paddle renders at the same size regardless of the
+                source image's aspect ratio (some images come with a
+                paddle cover or accessory that was making the paddle look
+                smaller under the old max-h + max-w fit). Wider source
+                images now overflow horizontally and get clipped by
+                overflow-hidden on the column. */}
+        <div className="relative flex-[0.52] flex items-center justify-center overflow-hidden">
           {paddle.image && (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={paddle.image}
               alt={`${paddle.brand} ${paddle.name}`}
-              className="relative z-[1] max-h-[96%] max-w-[96%] w-auto object-contain"
+              className="relative z-[1] h-[96%] w-auto max-w-none object-contain"
               style={{ filter: "drop-shadow(0 22px 38px rgba(0,0,0,0.60)) drop-shadow(0 4px 12px rgba(0,0,0,0.42))" }}
             />
           )}
@@ -580,35 +620,46 @@ export default function TrendingPage() {
         )}
         {dataReady && top10.length > 0 && (
           <>
-            {/* Card */}
-            <TrendingCard
-              paddle={top10[currentIndex].paddle}
-              rank={currentIndex + 1}
-              code={getCode(top10[currentIndex].paddle.brand, top10[currentIndex].paddle.discountLink)}
-              totalCards={top10.length}
-            />
+            {/* Card + side-positioned nav arrows. The arrows sit just
+                outside the card's left and right edges so they feel like
+                "flip to the next paddle" affordances instead of a separate
+                pager block below. The wrapper is relative so the absolute
+                arrows anchor to the card itself. */}
+            <div className="relative">
+              <TrendingCard
+                paddle={top10[currentIndex].paddle}
+                rank={currentIndex + 1}
+                code={getCode(top10[currentIndex].paddle.brand, top10[currentIndex].paddle.discountLink)}
+                totalCards={top10.length}
+              />
 
-            {/* Nav buttons — below the card, outside the frame */}
-            <div className="flex items-center justify-center gap-4 mt-4">
+              {/* Prev — left edge */}
               <button
                 onClick={() => setCurrentIndex((p) => Math.max(0, p - 1))}
                 disabled={currentIndex === 0}
-                className="w-10 h-10 rounded-full flex items-center justify-center transition-all disabled:opacity-20"
-                style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)" }}
+                aria-label="Previous paddle"
+                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 w-11 h-11 rounded-full flex items-center justify-center transition-all disabled:opacity-20 z-20 hover:scale-105"
+                style={{ background: "rgba(15,23,42,0.85)", border: "1px solid rgba(255,255,255,0.18)", backdropFilter: "blur(8px)", boxShadow: "0 6px 18px rgba(0,0,0,0.35)" }}
               >
                 <ChevronLeft className="w-5 h-5 text-white" />
               </button>
-              <span className="text-sm font-bold" style={{ color: "rgba(255,255,255,0.5)" }}>
-                {currentIndex + 1} / {top10.length}
-              </span>
+              {/* Next — right edge */}
               <button
                 onClick={() => setCurrentIndex((p) => Math.min(top10.length - 1, p + 1))}
                 disabled={currentIndex >= top10.length - 1}
-                className="w-10 h-10 rounded-full flex items-center justify-center transition-all disabled:opacity-20"
-                style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)" }}
+                aria-label="Next paddle"
+                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-11 h-11 rounded-full flex items-center justify-center transition-all disabled:opacity-20 z-20 hover:scale-105"
+                style={{ background: "rgba(15,23,42,0.85)", border: "1px solid rgba(255,255,255,0.18)", backdropFilter: "blur(8px)", boxShadow: "0 6px 18px rgba(0,0,0,0.35)" }}
               >
                 <ChevronRight className="w-5 h-5 text-white" />
               </button>
+            </div>
+
+            {/* Position counter below the card — arrows moved away */}
+            <div className="flex items-center justify-center mt-4">
+              <span className="text-sm font-bold tabular-nums" style={{ color: "rgba(255,255,255,0.5)" }}>
+                {currentIndex + 1} / {top10.length}
+              </span>
             </div>
 
             {/* Download buttons — owner-only (unlocked via ?export=<secret>) */}

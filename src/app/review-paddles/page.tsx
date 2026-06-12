@@ -2,8 +2,8 @@ import { paddles } from "@/data/paddles";
 import ReviewPaddleGrid from "./ReviewPaddleGrid";
 
 export const metadata = {
-  title: "Save Paddles to Your Shortlist",
-  description: "Build your personal paddle shortlist. Save paddles you're interested in, skip the ones that aren't for you.",
+  title: "Rate Pickleball Paddles",
+  description: "Vote on the paddles you've tried. Thumbs up the ones you'd recommend, thumbs down the ones you wouldn't. Your votes shape the trending rankings.",
 };
 
 export default function ReviewPaddlesPage() {
@@ -25,17 +25,17 @@ export default function ReviewPaddlesPage() {
         {/* Header */}
         <div className="mb-10">
           <p className="text-xs font-bold uppercase tracking-widest text-brand-500 mb-2">
-            Your Shortlist
+            Community Votes
           </p>
           <h1
             className="text-3xl font-extrabold tracking-tight mb-2"
             style={{ color: "var(--text-primary)" }}
           >
-            Build Your Paddle Shortlist
+            Rate Paddles You&apos;ve Tried
           </h1>
           <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-            Tap the bookmark on paddles you&apos;re interested in to save them to your shortlist.
-            Thumbs-down the ones that aren&apos;t for you. View your saved paddles anytime on the Saved page.
+            Thumbs up the paddles you&apos;d recommend, thumbs down the ones you wouldn&apos;t.
+            Your votes feed directly into the trending rankings — one vote per paddle per browser.
           </p>
         </div>
 
