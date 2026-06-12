@@ -13,18 +13,19 @@ import { supabase } from "@/lib/supabaseClient";
 // Width each card is rendered at for export; pixelRatio 2 doubles it for a
 // crisp ~1200×1200 Instagram-ready PNG. Kept fixed so every export is identical
 // regardless of the viewer's screen size.
-const EXPORT_WIDTH = 600;
+export const EXPORT_WIDTH = 600;
 
 // The download buttons are owner-only. Visiting /trending?export=<secret> once
 // per device sets a localStorage flag that reveals them; ?export=off hides them
 // again. Normal visitors never see the buttons. (This hides the UI from the
 // public; it isn't a hard security boundary — the secret lives in the bundle.)
-const EXPORT_SECRET = "tr3nd-export-9f2c";
-const EXPORT_UNLOCK_FLAG = "pb-trending-export-unlocked";
+// /specs reuses the same secret/flag so unlocking on either page unlocks both.
+export const EXPORT_SECRET = "tr3nd-export-9f2c";
+export const EXPORT_UNLOCK_FLAG = "pb-trending-export-unlocked";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-function getCode(brand: string, discountLink?: string): string {
+export function getCode(brand: string, discountLink?: string): string {
   if (brand === "Selkirk" || brand === "SLK") {
     if (discountLink?.includes("lockerroompickleball.com")) return siteConfig.discountCode;
     return "INF-PLAYBOOK";
@@ -158,8 +159,12 @@ function StatBar({ label, value, displayValue, min, max, fill, glow, zones }: {
 
 // ── Card component (1:1 square, screenshot-optimized for Instagram) ──────────
 
-function TrendingCard({ paddle, rank, code, totalCards }: {
-  paddle: Paddle; rank: number; code: string; totalCards: number;
+// Exported so /specs/page.tsx can reuse the exact same card. Two optional
+// props that /specs uses: pass rank={0} to hide the podium badge, pass
+// totalCards={0} to hide the page-dot indicators (130+ dots wouldn't fit
+// anyway).
+export function TrendingCard({ paddle, rank = 0, code, totalCards = 0 }: {
+  paddle: Paddle; rank?: number; code: string; totalCards?: number;
 }) {
   const hasRealDiscount = !!paddle.discountLink?.trim() && !!paddle.amountOff && paddle.amountOff !== "$0" && paddle.amountOff !== "";
   const isSelkirk = paddle.brand === "Selkirk" || paddle.brand === "SLK";
@@ -283,19 +288,36 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
         </span>
       </div>
 
-      {/* Header branding — with thin decorative rules either side */}
-      <div className="absolute top-7 left-0 right-0 flex items-center justify-center gap-3 pointer-events-none z-10">
-        <span className="h-px w-6" style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.25))" }} />
-        <p className="text-[10px] font-extrabold uppercase tracking-[0.35em]" style={{ color: "rgba(255,255,255,0.55)" }}>
-          PlaybookPaddles.com
+      {/* Header — PlaybookPaddles.com brand rule on top, then the actual
+          paddle's brand + name + shape/thickness right below it. This
+          frees the right-column spec panel to be a clean 'Specs' card
+          with just the stat bars. */}
+      <div className="absolute top-5 left-0 right-0 flex flex-col items-center gap-1.5 pointer-events-none z-10 px-16">
+        <div className="flex items-center gap-3">
+          <span className="h-px w-6" style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.25))" }} />
+          <p className="text-[10px] font-extrabold uppercase tracking-[0.35em]" style={{ color: "rgba(255,255,255,0.55)" }}>
+            PlaybookPaddles.com
+          </p>
+          <span className="h-px w-6" style={{ background: "linear-gradient(90deg, rgba(255,255,255,0.25), transparent)" }} />
+        </div>
+        <h2
+          className="text-base font-extrabold leading-tight text-center"
+          style={{ color: "#ffffff", letterSpacing: "-0.01em" }}
+        >
+          <span style={{ color: "rgba(45,212,191,0.85)" }}>{paddle.brand}</span> {paddle.name}
+        </h2>
+        <p
+          className="text-[9px] font-bold uppercase tracking-[0.20em]"
+          style={{ color: "rgba(186,212,228,0.55)" }}
+        >
+          {paddle.shape} · {paddle.thickness}
         </p>
-        <span className="h-px w-6" style={{ background: "linear-gradient(90deg, rgba(255,255,255,0.25), transparent)" }} />
       </div>
 
       {/* ── Main content row — horizontal split: paddle LEFT, specs RIGHT ──
           The header + footer keep their absolute positioning, this row fills
           the space in between. */}
-      <div className="absolute inset-x-0 top-[14%] bottom-[10%] flex items-stretch gap-3 px-5">
+      <div className="absolute inset-x-0 top-[20%] bottom-[10%] flex items-stretch gap-3 px-5">
 
         {/* ── LEFT: paddle image — height-locked at 96% of the column so
                 every paddle renders at the same size regardless of the
@@ -378,13 +400,16 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
                     </div>
 
                     {/* Thin solid leader line — vertical, connects BAL PT
-                        tag down to the legend at the bottom. */}
+                        tag down to the legend that sits halfway up the
+                        grip. bottom value matches the legend's bottom +
+                        its approximate height so the line lands just
+                        above the cm number. */}
                     <div
                       aria-hidden
                       className="absolute pointer-events-none z-[2]"
                       style={{
                         top:    `calc(${100 - balancePct}% + 18px)`,
-                        bottom: 50,
+                        bottom: "30%",
                         left:   12,
                         width:  1,
                         background: BAL_ACCENT,
@@ -392,14 +417,16 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
                       }}
                     />
 
-                    {/* Legend at bottom-left of the column — cm value
-                        with category right below it. Sits in the open
-                        margin to the left of the paddle handle. */}
+                    {/* Legend positioned at ~22% from the column bottom
+                        — visually about halfway up the paddle's grip.
+                        Open margin to the left of the grip is wide
+                        enough that the category word (Head-Heavy etc.)
+                        never crowds the paddle silhouette. */}
                     <div
                       aria-hidden
                       className="absolute pointer-events-none z-[2] flex flex-col items-start"
                       style={{
-                        bottom: 8,
+                        bottom: "22%",
                         left:   4,
                         whiteSpace: "nowrap",
                         lineHeight: 1.15,
@@ -501,20 +528,17 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
               boxShadow: "inset 0 1px 0 rgba(255,255,255,0.07), 0 8px 24px rgba(0,0,0,0.25)",
             }}
           >
-            {/* Brand + name */}
+            {/* 'Specs' title only. Brand, name, shape, and thickness all
+                live in the card header above the paddle image now, so
+                this panel can be much shorter and lets the stat bars
+                breathe. */}
             <div>
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em]" style={{ color: "rgba(45,212,191,0.85)" }}>
-                {paddle.brand}
-              </p>
               <h2
-                className="text-lg font-extrabold text-white leading-tight mt-0.5"
+                className="text-lg font-extrabold text-white leading-tight"
                 style={{ letterSpacing: "-0.01em" }}
               >
-                {paddle.name}
+                Specs
               </h2>
-              <p className="text-[10px] mt-1 font-medium uppercase tracking-[0.12em]" style={{ color: "rgba(186,212,228,0.45)" }}>
-                {paddle.shape} · {paddle.thickness}
-              </p>
             </div>
 
             {/* Hairline divider */}
