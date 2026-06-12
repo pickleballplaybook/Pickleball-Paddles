@@ -335,40 +335,51 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
                   />
                 ))}
               </div>
+              {/* Bordered chip styled to match the value chip on the
+                  individual paddle pages (BalancePointSpec) — dark bg,
+                  yellow-green border, glowing shadow, cm value on top
+                  with the 'BAL PT' label small underneath. Positioned on
+                  the LEFT side of the paddle column with breathing room
+                  below the line, so it sits clearly off the paddle's
+                  silhouette in the empty column margin. */}
               <div
                 aria-hidden
-                className="absolute pointer-events-none z-[0] flex items-baseline gap-1.5"
+                className="absolute pointer-events-none z-[0] flex flex-col items-center rounded-md"
                 style={{
-                  // Back on the LEFT side of the paddle column, just
-                  // below the line. Now shows the cm value inline so the
-                  // reader sees the actual measurement right at the line
-                  // itself — the standalone Bal Pt row in the spec panel
-                  // is gone since it'd just be a duplicate.
-                  bottom: `calc(${balancePct}% - 14px)`,
-                  left: 4,
-                  textShadow: "0 1px 2px rgba(0,0,0,0.6)",
+                  bottom: `calc(${balancePct}% - 34px)`,
+                  left: 6,
+                  padding: "3px 7px 2px",
+                  background: "rgba(0,0,0,0.72)",
+                  border: `1px solid rgba(222,250,50,0.50)`,
+                  boxShadow: "0 2px 10px rgba(0,0,0,0.40), 0 0 14px rgba(222,250,50,0.18)",
+                  whiteSpace: "nowrap",
                 }}
               >
                 <span
-                  style={{
-                    fontSize: "9px",
-                    fontWeight: 800,
-                    letterSpacing: "0.16em",
-                    textTransform: "uppercase",
-                    color: BAL_ACCENT,
-                  }}
-                >
-                  Bal Pt
-                </span>
-                <span
                   className="font-mono tabular-nums"
                   style={{
-                    fontSize: "10px",
+                    fontSize: "11px",
                     fontWeight: 800,
                     color: BAL_ACCENT,
+                    lineHeight: 1.15,
+                    letterSpacing: "0.01em",
                   }}
                 >
                   {paddle.balancePoint!.toFixed(1)} cm
+                </span>
+                <span
+                  style={{
+                    fontSize: "7px",
+                    fontWeight: 800,
+                    letterSpacing: "0.18em",
+                    textTransform: "uppercase",
+                    color: BAL_ACCENT,
+                    opacity: 0.85,
+                    lineHeight: 1.4,
+                    marginTop: 1,
+                  }}
+                >
+                  Bal Pt
                 </span>
               </div>
             </>
