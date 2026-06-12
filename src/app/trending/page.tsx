@@ -6,7 +6,7 @@ import { toPng } from "html-to-image";
 import JSZip from "jszip";
 import { paddles } from "@/data/paddles";
 import { Paddle } from "@/types";
-import { getTrendingPaddles, engagementScore, isTrendingExcluded, takeTopBySeriesDedup, HeartRecord } from "@/lib/trending";
+import { getTrendingPaddles, engagementScore, isTrendingExcluded, takeTopBySeriesDedup, HeartRecord, MIN_TRENDING_ENGAGEMENT } from "@/lib/trending";
 import { siteConfig } from "@/config/site";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -439,7 +439,10 @@ export default function TrendingPage() {
       ),
     }))
     .sort((a, b) => b.engagement - a.engagement || (b.lastHeart ?? 0) - (a.lastHeart ?? 0))
-    .filter((t) => (hasHearts || hasRatings || hasViews) ? t.engagement > 0 : true)
+    // Minimum engagement floor — same single-heart-no-views filter the
+    // homepage Trending section uses, kept in lockstep via MIN_TRENDING_ENGAGEMENT
+    // so /trending and the homepage never disagree about what qualifies.
+    .filter((t) => (hasHearts || hasRatings || hasViews) ? t.engagement >= MIN_TRENDING_ENGAGEMENT : true)
     .filter((t) => !isTrendingExcluded(t.paddle.slug));
   const top10 = takeTopBySeriesDedup(top10Pre, 10);
 

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowRight, TrendingUp, Star, Heart, Eye, ExternalLink } from "lucide-react";
 import { Paddle } from "@/types";
-import { getTrendingPaddles, getRisingBrands, engagementScore, isTrendingExcluded, takeTopBySeriesDedup, HeartRecord } from "@/lib/trending";
+import { getTrendingPaddles, getRisingBrands, engagementScore, isTrendingExcluded, takeTopBySeriesDedup, HeartRecord, MIN_TRENDING_ENGAGEMENT } from "@/lib/trending";
 import { siteConfig } from "@/config/site";
 import { supabase } from "@/lib/supabaseClient";
 import { getBrandByName } from "@/data/brands";
@@ -103,7 +103,11 @@ function filterByTimeRange<T extends { createdAt: Date | string | number }>(
 
 export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
   const [heartRecords, setHeartRecords] = useState<HeartRecord[]>([]);
-  const [timeRange, setTimeRange] = useState<TimeRange>("7d");
+  // Default to 30d — synced with /trending so the homepage Trending Paddles
+  // section shows the same paddles that /trending shows. Users can still
+  // toggle to 7d for the recency view, but the out-of-box experience now
+  // matches /trending instead of telling two different stories.
+  const [timeRange, setTimeRange] = useState<TimeRange>("30d");
 
   async function fetchHearts() {
     try {
@@ -169,7 +173,10 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
       ),
     }))
     .sort((a, b) => b.engagement - a.engagement || (b.lastHeart ?? 0) - (a.lastHeart ?? 0))
-    .filter((t) => (hasHearts || hasRatings || hasViews) ? t.engagement > 0 : true)
+    // Minimum engagement floor: filters out paddles with one stale heart
+    // and no other signal (Rebl-Alliance-style) so the list reflects actual
+    // momentum, not "one person hearted this once."
+    .filter((t) => (hasHearts || hasRatings || hasViews) ? t.engagement >= MIN_TRENDING_ENGAGEMENT : true)
     .filter((t) => !isTrendingExcluded(t.paddle.slug));
   // Dedupe by series so a single series can't fill multiple slots.
   const trendingSorted = takeTopBySeriesDedup(trendingPre, 10);

@@ -7,6 +7,13 @@ import { Paddle } from "@/types";
 // by raw view counts (1 heart ≈ 50 views of weight; 1 rating ≈ 30).
 export const ENGAGEMENT_WEIGHTS = { heart: 5, rating: 3, viewDivisor: 10 } as const;
 
+// Minimum engagement score required to appear in any trending list. A paddle
+// with one heart and zero views scores exactly 5, which is "trending" only
+// in the most generous sense — the floor at >5 means it takes either two
+// hearts, a heart + meaningful views, or 60+ views to qualify. Keeps the
+// list honest when site-wide engagement is low.
+export const MIN_TRENDING_ENGAGEMENT = 6;
+
 export function engagementScore(hearts: number, ratings: number, views: number): number {
   return (
     hearts * ENGAGEMENT_WEIGHTS.heart +
