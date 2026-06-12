@@ -218,10 +218,9 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
     },
   };
   // Single source of truth for the balance accent color — used for the
-  // line behind the paddle, the diagonal leader, and the stat-bar glow so
-  // they all read as one visual element.
-  const BAL_ACCENT      = "rgba(245,158,11,0.65)";    // amber-500 @ ~65%
-  const BAL_ACCENT_SOFT = "rgba(245,158,11,0.30)";   // softer dashed line
+  // dashed line behind the paddle and the small 'BAL PT' label below it
+  // so they read as one visual element.
+  const BAL_ACCENT = "rgba(245,158,11,0.65)"; // amber-500 @ ~65%
 
   // Vertical position (% from bottom of paddle image) where the balance
   // line should sit on the paddle. Clamped to leave a little headroom
@@ -282,39 +281,6 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
         <span className="h-px w-6" style={{ background: "linear-gradient(90deg, rgba(255,255,255,0.25), transparent)" }} />
       </div>
 
-      {/* Diagonal leader from the balance line's right end on the paddle
-          column to the Bal Pt row in the spec panel on the right. Rendered
-          in a card-level SVG so the line can span across both columns of
-          the content row below. Coordinates are in card-% via viewBox 0-100
-          with preserveAspectRatio="none".
-          - Start (x1): ~51% — right edge of paddle column at balance height
-          - End   (x2): ~62% — left edge of spec panel
-          - End   (y2): ~72% — approximate Bal Pt row position
-          The y1 math maps the column-relative `balancePct` % from bottom
-          of the column into card-% from top:
-              y1 = 100 - (10 + balancePct * 0.76)
-                    └─ bottom-10% offset
-                          └─ column height is ~76% of card */}
-      {balancePct !== null && (
-        <svg
-          aria-hidden
-          className="absolute inset-0 pointer-events-none z-[2]"
-          viewBox="0 0 100 100"
-          preserveAspectRatio="none"
-        >
-          <line
-            x1={51}
-            y1={(100 - (10 + balancePct * 0.76)).toFixed(2)}
-            x2={62}
-            y2={72}
-            stroke={BAL_ACCENT}
-            strokeWidth={0.25}
-            strokeDasharray="0.8 0.6"
-            strokeLinecap="round"
-          />
-        </svg>
-      )}
-
       {/* ── Main content row — horizontal split: paddle LEFT, specs RIGHT ──
           The header + footer keep their absolute positioning, this row fills
           the space in between. */}
@@ -327,19 +293,38 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
         <div className="relative flex-[0.52] flex items-center justify-center overflow-hidden">
           {/* Balance line — sits BEHIND the paddle (z-index 0 vs the
               image's z-index 1) so it's only visible on either side of
-              the paddle silhouette. No dot or text label here — the
-              diagonal SVG leader at the card level handles the connection
-              to the Bal Pt row in the spec panel. */}
+              the paddle silhouette. A small 'BAL PT' label sits just
+              below the line on the right side, in the same amber tone,
+              so the user knows what they're looking at without the
+              diagonal leader cutting across the spec card. */}
           {balancePct !== null && (
-            <div
-              aria-hidden
-              className="absolute left-0 right-0 pointer-events-none z-[0]"
-              style={{
-                bottom: `${balancePct}%`,
-                height: 0,
-                borderTop: `1.5px dashed ${BAL_ACCENT}`,
-              }}
-            />
+            <>
+              <div
+                aria-hidden
+                className="absolute left-0 right-0 pointer-events-none z-[0]"
+                style={{
+                  bottom: `${balancePct}%`,
+                  height: 0,
+                  borderTop: `1.5px dashed ${BAL_ACCENT}`,
+                }}
+              />
+              <div
+                aria-hidden
+                className="absolute pointer-events-none z-[0]"
+                style={{
+                  bottom: `calc(${balancePct}% - 16px)`,
+                  right: 6,
+                  fontSize: "10px",
+                  fontWeight: 800,
+                  letterSpacing: "0.18em",
+                  textTransform: "uppercase",
+                  color: BAL_ACCENT,
+                  textShadow: "0 1px 2px rgba(0,0,0,0.6)",
+                }}
+              >
+                Bal Pt
+              </div>
+            </>
           )}
 
           {paddle.image && (
