@@ -2348,7 +2348,7 @@ export const paddles: Paddle[] = [
     reviewUrl: "https://youtu.be/2jXKJrCH9iI",
     addedAt: "2026-05-29",
     trendingScore: 50,
-    playStyle: "all-court",
+    playStyle: "power",
   },
 
   // ── Aireo Cyclone certification variants ──────────────────────────────────
