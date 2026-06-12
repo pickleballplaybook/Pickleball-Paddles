@@ -312,11 +312,15 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
                 aria-hidden
                 className="absolute pointer-events-none z-[0]"
                 style={{
-                  bottom: `calc(${balancePct}% - 16px)`,
-                  right: 6,
-                  fontSize: "10px",
+                  // Anchored to the LEFT side of the paddle column, below
+                  // the line — there's more empty space there than on the
+                  // right, so the label reads cleanly without being clipped
+                  // by the paddle silhouette.
+                  bottom: `calc(${balancePct}% - 14px)`,
+                  left: 4,
+                  fontSize: "9px",
                   fontWeight: 800,
-                  letterSpacing: "0.18em",
+                  letterSpacing: "0.16em",
                   textTransform: "uppercase",
                   color: BAL_ACCENT,
                   textShadow: "0 1px 2px rgba(0,0,0,0.6)",
