@@ -16,15 +16,15 @@ import type { Paddle } from "@/types";
 // Reference range that bounds the visual bar. Real pickleball paddles cluster
 // between ~22 and ~26 cm; the bar covers a touch wider so extreme values
 // still plot meaningfully instead of pinning at the endpoint.
-const BAR_MIN = 20.0;
-const BAR_MAX = 26.0;
+const BAR_MIN = 22.0;
+const BAR_MAX = 28.0;
 
 // "Typical range" labels shown at the bar endpoints. These mirror the
 // inspiration design's anchor values, not the absolute bar bounds — so
 // players see a recognizable head-light/head-heavy reference even when the
 // underlying bar extends slightly further in each direction.
-const HEAD_LIGHT_REF = 20.0;
-const HEAD_HEAVY_REF = 26.0;
+const HEAD_LIGHT_REF = 22.0;
+const HEAD_HEAVY_REF = 28.0;
 
 // Geometric paddle center estimate, used to draw the dashed "CENTER" line
 // on the paddle image. A 16.5" elongated is ~41.91 cm tall → center at
