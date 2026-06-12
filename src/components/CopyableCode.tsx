@@ -35,21 +35,21 @@ export default function CopyableCode({ code }: { code: string }) {
       onClick={handleCopy}
       aria-label={`Copy discount code ${code}`}
       title={`Copy ${code}`}
-      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono font-bold tracking-wider transition-colors"
+      className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-lg text-base font-mono font-bold tracking-wider transition-colors"
       style={{
         background: "transparent",
-        border: "1px dashed rgba(45,212,191,0.55)",
+        border: "1.5px dashed rgba(45,212,191,0.55)",
         color: "#2dd4bf",
       }}
     >
-      <span className="font-sans font-semibold tracking-normal" style={{ color: "rgba(45,212,191,0.65)" }}>
+      <span className="font-sans font-semibold tracking-normal text-base" style={{ color: "rgba(45,212,191,0.70)" }}>
         Code:
       </span>
       <span>{code}</span>
       {copied ? (
-        <Check className="w-3 h-3 ml-0.5" strokeWidth={2.5} />
+        <Check className="w-4 h-4 ml-1" strokeWidth={2.5} />
       ) : (
-        <Copy className="w-3 h-3 ml-0.5 opacity-80" strokeWidth={2} />
+        <Copy className="w-4 h-4 ml-1 opacity-80" strokeWidth={2} />
       )}
     </button>
   );

@@ -28,7 +28,8 @@ export type GuideSectionType =
   | "ol"           // ordered list
   | "table"        // comparison table
   | "callout"      // tinted info box (use `variant`)
-  | "verdict";     // teal verdict / summary box at the end of a guide
+  | "verdict"      // teal verdict / summary box at the end of a guide
+  | "paddle-ref";  // inline paddle card (use `slug`)
 
 export interface GuideSection {
   type: GuideSectionType;
@@ -37,6 +38,12 @@ export interface GuideSection {
   headers?: string[];
   rows?: string[][];
   variant?: "info" | "warning" | "tip";
+  // For type="paddle-ref": the paddle slug to surface inline. Renders the
+  // same small paddle card the bottom-of-page "Paddles to Consider" block
+  // uses, dropped in right where the paddle is first mentioned so the
+  // reader can jump straight to the detail page without scrolling to the
+  // bottom of the guide.
+  slug?: string;
 }
 
 export interface GuideFAQ {
@@ -1891,38 +1898,40 @@ export const guides: Guide[] = [
     sections: [
       { type: "p", text: "Ben Johns has been the dominant men's pickleball player for years and his paddle choice is one of the most-asked questions in the sport. He's currently sponsored by Joola and uses paddles in their Perseus lineup — though his exact paddle has shifted multiple times as Joola has released updated versions and adjusted to USAPA delistings." },
       { type: "callout", variant: "warning", text: "Pro paddle endorsements change frequently. Always verify on the pro's official social media or the brand's pro player page before assuming a model is current." },
-      { type: "h2", text: "Current Paddle (as of mid-2026)" },
-      { type: "p", text: "Ben Johns is currently playing with a Joola Perseus Pro IV — Joola's flagship 16mm thermoformed elongated paddle with a raw T700 carbon face. It's a 16.5\" elongated shape, ~8.0 oz, with a swing weight around 117. He's been on the Perseus line in various forms since 2022." },
+      { type: "h2", text: "Current Paddle (as of 2026)" },
+      { type: "p", text: "Ben Johns is currently playing with the Joola Perseus Pro V — Joola's newest flagship 16mm thermoformed elongated paddle with a raw T700 carbon face. It's a 16.5\" elongated shape, ~8.0 oz, with a swing weight around 117. He's been on the Perseus line in various forms since 2022 and moved to the Pro V in 2026 after Joola refined the construction further over the Pro IV." },
+      { type: "paddle-ref", slug: "joola-pro-v-perseus-elongated" },
       { type: "h2", text: "Paddle History — Quick Timeline" },
       { type: "table", headers: ["Year", "Paddle", "Notes"], rows: [
         ["2020", "Franklin Signature Carbon", "His first pro-sponsored paddle"],
         ["2021–2022", "Joola Hyperion CFS 16mm", "His move to Joola; the original thermoformed flagship"],
         ["2023", "Joola Perseus 14mm", "Switched to 14mm thickness for more pop"],
         ["2024", "Joola Pro IV Perseus", "Updated construction; briefly de-listed during USAPA controversy"],
-        ["2025–present", "Joola Perseus Pro IV (current)", "Refined production after de-listing was resolved"],
+        ["2025", "Joola Perseus Pro IV (refined)", "Refined production after de-listing was resolved"],
+        ["2026–present", "Joola Perseus Pro V (current)", "Joola's newest flagship — refined unibody construction over the Pro IV"],
       ]},
       { type: "h2", text: "Should You Buy Ben Johns's Paddle?" },
-      { type: "p", text: "Maybe. The Joola Perseus Pro IV is a genuinely excellent paddle — high-end materials, professional-level construction, and one of the most popular flagship paddles on the market. But Ben Johns is a 6'2\" professional with elite hand speed and reach; the same paddle that fits his game perfectly may not fit yours. Most amateur players are better served by a paddle that matches their playing style than by mimicking a pro's choice." },
-      { type: "h2", text: "Specs of the Joola Perseus Pro IV" },
+      { type: "p", text: "Maybe. The Joola Perseus Pro V is a genuinely excellent paddle — high-end materials, professional-level construction, and one of the most popular flagship paddles on the market. But Ben Johns is a 6'2\" professional with elite hand speed and reach; the same paddle that fits his game perfectly may not fit yours. Most amateur players are better served by a paddle that matches their playing style than by mimicking a pro's choice." },
+      { type: "h2", text: "Specs of the Joola Perseus Pro V" },
       { type: "ul", items: [
         "Shape: Elongated (16.5\" × ~7.5\")",
         "Thickness: 16mm",
         "Face: Raw T700 carbon fiber",
-        "Construction: Thermoformed unibody, Gen 3",
+        "Construction: Thermoformed unibody (newest revision)",
         "Weight: ~8.0 oz",
         "Swing weight: ~117 (high-end of all-court range)",
         "Twist weight: ~6.4",
         "Price: $280",
       ]},
-      { type: "verdict", text: "Ben Johns currently plays with the Joola Perseus Pro IV. It's a top-tier elongated power paddle that suits his game and pro tour conditions. Buying it because Ben uses it won't make you play like Ben — but if its specs (elongated, 16mm, SW ~117) actually fit your style, it's a legitimately excellent paddle on its own merits." },
+      { type: "verdict", text: "Ben Johns currently plays with the Joola Perseus Pro V. It's a top-tier elongated power paddle that suits his game and pro tour conditions. Buying it because Ben uses it won't make you play like Ben — but if its specs (elongated, 16mm, SW ~117) actually fit your style, it's a legitimately excellent paddle on its own merits." },
     ],
     faqs: [
-      { q: "What paddle does Ben Johns use?", a: "Ben Johns currently uses the Joola Perseus Pro IV — a 16mm thermoformed elongated paddle with a raw T700 carbon face. He's been on Joola's Perseus line in various versions since 2022. (Pro endorsements can change; verify on Joola's pro player page for the current model.)" },
+      { q: "What paddle does Ben Johns use?", a: "Ben Johns currently uses the Joola Perseus Pro V — a 16mm thermoformed elongated paddle with a raw T700 carbon face. He's been on Joola's Perseus line in various versions since 2022 and moved to the Pro V in 2026. (Pro endorsements can change; verify on Joola's pro player page for the current model.)" },
       { q: "Should I buy the same paddle as Ben Johns?", a: "Only if its specs (elongated shape, 16mm thickness, swing weight ~117) actually fit your playing style. Ben Johns is a 6'2\" professional with elite hand speed; the paddle that fits him won't necessarily fit you. Most amateur players are better served by picking by spec rather than by pro endorsement." },
-      { q: "Is the Joola Perseus banned?", a: "The original Joola Gen 3 paddles (including the first Perseus Pro IV) were de-listed by USAPA in late 2024 over surface roughness concerns. Joola issued replacements and updated the production process. Current Perseus paddles are USAPA approved — but always verify on the USAPA approved list before tournament play." },
-      { q: "How much does Ben Johns's paddle cost?", a: "The current Joola Perseus Pro IV retails at $279.95. Joola occasionally runs promotions, and older Perseus models can be found at discount, but Ben's actual paddle is at the top of the price range." },
+      { q: "Is the Joola Perseus banned?", a: "The original Joola Gen 3 paddles (including the first Perseus Pro IV) were de-listed by USAPA in late 2024 over surface roughness concerns. Joola issued replacements and updated the production process. Current Perseus paddles — including the Pro V — are USAPA approved. Always verify on the USAPA approved list before tournament play." },
+      { q: "How much does Ben Johns's paddle cost?", a: "The current Joola Perseus Pro V retails at $279.95. Joola occasionally runs promotions, and older Perseus models (like the Pro IV) can be found at discount, but Ben's actual paddle is at the top of the price range." },
     ],
-    paddleSlugs: [],
+    paddleSlugs: ["joola-pro-v-perseus-elongated"],
     relatedGuideSlugs: ["how-to-choose-a-pickleball-paddle", "which-paddle-does-anna-leigh-waters-use", "best-pickleball-paddle-2026"],
   },
 
@@ -1980,20 +1989,28 @@ export const guides: Guide[] = [
       { type: "p", text: "There's no single \"best pickleball paddle\" — only a best paddle for your game. The market in 2026 is the deepest it's ever been, with excellent options at every price point and for every playing style. These are our top picks across the categories that matter, drawn from our full database of measured, tested paddles." },
       { type: "h2", text: "Best Overall: Honolulu J2CR Crystal Blue Hybrid" },
       { type: "p", text: "If we could only recommend one paddle for the average all-court doubles player, the Honolulu J2CR Crystal Blue Hybrid would be it. 14mm thermoformed unibody, T700 raw carbon face, swing weight ~112, twist weight ~6.4. It does nothing badly and everything well, and at ~$200 it sits in the value sweet spot." },
+      { type: "paddle-ref", slug: "honolulu-j2cr-crystal-blue-hybrid" },
       { type: "h2", text: "Best Power: Selkirk Boomstik Elongated" },
       { type: "p", text: "The most powerful elongated paddle Selkirk has ever made. 13mm thermoformed, swing weight ~119, raw carbon face. If your game is built around drives and putaways, this delivers more pop than almost anything else at its price ($249)." },
+      { type: "paddle-ref", slug: "selkirk-boomstik-elongated" },
       { type: "h2", text: "Best Control: Kobo Thunder Axe ∞ Elongated" },
       { type: "p", text: "18mm of pure control. Extreme dink-and-reset specialist paddle — not for everyone, but if you're a soft-hands doubles player who almost never bangs, the Thunder Axe is the ultimate kitchen weapon. ~$259." },
+      { type: "paddle-ref", slug: "kobo-thunder-axe-infinity-elongated" },
       { type: "h2", text: "Best All-Court: Speedup Tide 14H Hybrid" },
       { type: "p", text: "Foam core 14mm hybrid that delivers all-court versatility at $169. Soft enough for resets, powerful enough for drives, with a quieter feel than honeycomb alternatives. Best value-for-money all-court paddle on the market." },
+      { type: "paddle-ref", slug: "speedup-tide-14h-hybrid" },
       { type: "h2", text: "Best for Beginners: Bread & Butter Loco Elongated" },
       { type: "p", text: "$99. That price gets you modern thermoformed construction, a raw carbon face, and a forgiving 14mm core that doesn't punish off-center hits. The best sub-$100 paddle to start the sport with." },
+      { type: "paddle-ref", slug: "bread-and-butter-loco-elongated" },
       { type: "h2", text: "Best Premium / Pro: Honolulu J6CR Crystal Blue Elongated" },
       { type: "p", text: "Top-shelf construction: 16mm thermoformed Gen 3, T700 carbon face with edge channel foam, swing weight ~115, twist weight ~6.6. The price is high ($259) but the construction is genuinely flagship-tier and the paddle competes with anything Joola or Selkirk produce at the top end." },
+      { type: "paddle-ref", slug: "honolulu-j6cr-crystal-blue-elongated" },
       { type: "h2", text: "Best Foam Core: Gruvn LAZR 16HD Hybrid" },
       { type: "p", text: "If you want maximum durability with a soft, quiet feel, the Gruvn LAZR 16HD is the foam-core paddle to beat. 16mm high-density foam core, Kevlar/carbon hybrid face, lifetime warranty. ~$229." },
+      { type: "paddle-ref", slug: "gruvn-lazr-16hd-hybrid" },
       { type: "h2", text: "Best Spin: Luzz Tornazo Elongated" },
       { type: "p", text: "Kevlar face = peak spin generation. The Tornazo Elongated produces more topspin RPM than almost any other paddle in our database, and the Kevlar face means that spin advantage holds up for 18+ months instead of fading at 6. ~$229." },
+      { type: "paddle-ref", slug: "luzz-tornazo-elongated" },
       { type: "verdict", text: "Pick by what fits your game. Most all-court players should look at the Honolulu J2CR or the Speedup Tide 14H first. Power players: Selkirk Boomstik. Control players: Kobo Thunder Axe. Beginners: Bread & Butter Loco. There's no \"one paddle that's best for everyone\" — but for any given playing style, there's a clear best." },
     ],
     faqs: [
@@ -2036,16 +2053,22 @@ export const guides: Guide[] = [
       { type: "h2", text: "Top Picks for Tennis Elbow" },
       { type: "h3", text: "1. Gruvn LAZR 16HD Hybrid ($229)" },
       { type: "p", text: "Foam core, Kevlar/carbon face, 16mm thickness — the trifecta of low-impact specs. Lifetime warranty doesn't hurt either. Our top overall pick for arm-friendly paddles." },
+      { type: "paddle-ref", slug: "gruvn-lazr-16hd-hybrid" },
       { type: "h3", text: "2. Friday Aura Pro Elongated ($199)" },
       { type: "p", text: "Foam core, 14mm, swing weight ~113. Plush feel at contact, very dampened vibration. The elongated shape suits power players who need an arm-friendly option without giving up reach." },
+      { type: "paddle-ref", slug: "friday-aura-pro-elongated" },
       { type: "h3", text: "3. Luzz Glider Hybrid ($229)" },
       { type: "p", text: "Kevlar face on a 16mm hybrid frame. Excellent vibration dampening, large sweet spot. Particularly good for tennis converts dealing with elbow pain from their tennis days." },
+      { type: "paddle-ref", slug: "luzz-glider-hybrid" },
       { type: "h3", text: "4. Speedup Tide 14L Elongated ($169)" },
       { type: "p", text: "Foam core, 14mm elongated. Soft feel, swing weight 121 is at the upper end for tennis elbow players but the foam dampening compensates. Best value pick in this category." },
+      { type: "paddle-ref", slug: "speedup-tide-14l-elongated" },
       { type: "h3", text: "5. Six Zero Coral Hybrid ($199)" },
       { type: "p", text: "16mm thermoformed hybrid with notable softness for a honeycomb paddle. Swing weight ~111. A good honeycomb option for players who prefer the traditional feel over foam." },
+      { type: "paddle-ref", slug: "6-0-coral-hybrid" },
       { type: "h3", text: "6. Beyond Measure Ronin Elongated ($129)" },
       { type: "p", text: "Budget pick — 14mm, swing weight ~112, well-tuned for forgiveness at a sub-$130 price. Won't deliver the vibration dampening of the Kevlar/foam options but it's much lighter on the wallet." },
+      { type: "paddle-ref", slug: "beyond-measure-ronin-elongated" },
       { type: "h2", text: "The Other Half of the Solution" },
       { type: "p", text: "A better paddle is only part of recovering from or preventing tennis elbow. Also matters: proper grip size (too small = over-gripping = strain), strength training for the forearm and rotator cuff, regular ice after sessions, and an elbow strap (counterforce brace) during play. Address all of these together; the paddle alone isn't enough." },
       { type: "verdict", text: "If you have or are prone to tennis elbow, the Gruvn LAZR 16HD Hybrid is our top pick — foam core, Kevlar face, lifetime warranty, all the arm-friendly specs in one paddle. For budget-conscious arm-protection buyers, the Beyond Measure Ronin is the value pick. Pair any of them with strength training and proper grip size." },

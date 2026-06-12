@@ -190,6 +190,16 @@ function RenderSection({ section }: { section: GuideSection }) {
           </p>
         </div>
       );
+    case "paddle-ref":
+      // Reuses the same small card the bottom-of-page "Paddles to Consider"
+      // block uses. Wrapped in a tiny margin so it reads as a callout pinned
+      // to the paragraph that mentions it, not as a section of its own.
+      if (!section.slug) return null;
+      return (
+        <div className="my-4">
+          <PaddleRecCard slug={section.slug} />
+        </div>
+      );
   }
 }
 
