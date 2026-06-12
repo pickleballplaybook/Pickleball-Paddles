@@ -2474,7 +2474,7 @@ export const paddles: Paddle[] = [
     weight: "7.9 oz",
     swingWeight: 114.12,
     twistWeight: 6.36,
-    balancePoint: 23.3,
+    balancePoint: 24.1,
     thickness: "16mm",
     image: "/images/paddles/11SIX24-Ultre-Power-2-Elongated-16mm.png",
     amountOff: "$10",
