@@ -335,15 +335,13 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
                   />
                 ))}
               </div>
-              {/* Plain inline 'BAL PT 24.1 cm · HEAD-HEAVY' — sits in
-                  FRONT of the paddle (z-[2] vs paddle's z-[1]) so it's
-                  never clipped by the silhouette. No background or
-                  border; yellow-green text reads cleanly on the navy bg.
-                  Anchored to the left edge of the paddle column so it
-                  stays well off the paddle silhouette. The category word
-                  uses the same RANGES.balancePoint.zones vocabulary as
-                  the StatBar descriptors so the language is consistent
-                  with the rest of the card. */}
+              {/* Vertically stacked balance label — BAL PT, cm value,
+                  category each on its own line. Narrower footprint than
+                  the previous inline run so it stays clear of the paddle
+                  silhouette in the left column margin. Anchored from the
+                  TOP so the stack grows downward from just below the
+                  dashed line. z-[2] keeps it in front of the paddle so
+                  it's never clipped. */}
               {(() => {
                 const bp = paddle.balancePoint!;
                 const bpPct = ((bp - RANGES.balancePoint.min) / (RANGES.balancePoint.max - RANGES.balancePoint.min)) * 100;
@@ -354,19 +352,25 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
                 return (
                   <div
                     aria-hidden
-                    className="absolute pointer-events-none z-[2] inline-flex items-baseline gap-2"
+                    className="absolute pointer-events-none z-[2] flex flex-col items-start"
                     style={{
-                      bottom: `calc(${balancePct}% - 18px)`,
+                      // top positions from the top of the column; since
+                      // the line is at bottom: balancePct%, its top edge
+                      // from the column top is (100 - balancePct)%. Add a
+                      // 5px gap so the BAL PT label sits just below the
+                      // line without crowding it.
+                      top: `calc(${100 - balancePct}% + 5px)`,
                       left: 4,
                       whiteSpace: "nowrap",
                       textShadow: "0 1px 3px rgba(0,0,0,0.75)",
+                      lineHeight: 1.15,
                     }}
                   >
                     <span
                       style={{
-                        fontSize: "10px",
+                        fontSize: "8px",
                         fontWeight: 800,
-                        letterSpacing: "0.18em",
+                        letterSpacing: "0.20em",
                         textTransform: "uppercase",
                         color: BAL_ACCENT,
                       }}
@@ -376,24 +380,26 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
                     <span
                       className="font-mono tabular-nums"
                       style={{
-                        fontSize: "12px",
+                        fontSize: "13px",
                         fontWeight: 800,
                         color: BAL_ACCENT,
+                        marginTop: 1,
                       }}
                     >
                       {bp.toFixed(1)} cm
                     </span>
                     <span
                       style={{
-                        fontSize: "9px",
+                        fontSize: "8px",
                         fontWeight: 800,
                         letterSpacing: "0.16em",
                         textTransform: "uppercase",
                         color: BAL_ACCENT,
-                        opacity: 0.80,
+                        opacity: 0.78,
+                        marginTop: 2,
                       }}
                     >
-                      · {bpZone}
+                      {bpZone}
                     </span>
                   </div>
                 );
