@@ -26,6 +26,12 @@ export interface Paddle {
   weight: string;       // CSV: Weight  (e.g. "8.0 oz")
   swingWeight: number;  // CSV: Swing Weight
   twistWeight: number;  // CSV: Twist Weight
+  // Balance point in cm, measured from the butt of the handle. Optional —
+  // the BalancePointSpec component on the paddle detail page renders only
+  // when a value is set, so populating these can be a rolling effort.
+  // Typical pickleball range: 22–26 cm. Below ~23.5 = head-light;
+  // 23.5–24.0 = balanced; above ~24.0 = head-heavy.
+  balancePoint?: number;
   thickness: string;    // CSV: Thickness (e.g. "16mm")
   amountOff: string;    // CSV: Amount off — "$10", "10%", "$0", or ""
   discountLink: string; // CSV: Discount link — empty string means no link

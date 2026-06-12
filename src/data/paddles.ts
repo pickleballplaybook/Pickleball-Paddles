@@ -2329,6 +2329,7 @@ export const paddles: Paddle[] = [
     weight: "8.3 oz",
     swingWeight: 115.24,
     twistWeight: 7.87,
+    balancePoint: 24.8,
     thickness: "16mm",
     // Back on Selkirk's site with the INF-PLAYBOOK gift-card flow.
     // The variant + discount params pre-apply the code so the user gets a

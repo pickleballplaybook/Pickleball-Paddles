@@ -24,6 +24,7 @@ import ViewCounter from "@/components/ViewCounter";
 import { getBlogPostForPaddle, BlogSection } from "@/data/blogPosts";
 import { canonicalMatchup } from "@/app/compare/[matchup]/helpers";
 import RelatedGuidesBlock from "@/components/RelatedGuidesBlock";
+import BalancePointSpec from "@/components/BalancePointSpec";
 import type { Paddle } from "@/types";
 
 // Pick 4 guides that contextually match a given paddle. Internal links
@@ -1131,6 +1132,18 @@ export default async function PaddleDetailPage({ params }: Props) {
           </div>
         </div>
       </section>
+
+      {/* ── BALANCE POINT ────────────────────────────────────────────────── */}
+      {/* Only renders when paddle.balancePoint is set. As balance numbers
+          are populated for each paddle the section appears organically;
+          paddles without data simply skip it. */}
+      {typeof paddle.balancePoint === "number" && (
+        <section id="balance-point" className="py-16">
+          <div className="container-xl max-w-3xl mx-auto">
+            <BalancePointSpec paddle={paddle} />
+          </div>
+        </section>
+      )}
 
       {/* ── WHO IT'S FOR (tab: who) ──────────────────────────────────────── */}
       <section id="who" className="py-16" style={{ background: "var(--flip-bg-card)" }}>
