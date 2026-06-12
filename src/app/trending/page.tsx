@@ -310,42 +310,66 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
               diagonal leader cutting across the spec card. */}
           {balancePct !== null && (
             <>
+              {/* Evenly-distributed dashes via flex + justify-between.
+                  Guarantees a complete dash at BOTH the leftmost and
+                  rightmost edge of the column — the previous gradient
+                  approach was clipping the right-edge dash mid-stroke.
+                  Flex auto-distributes the gaps to fill the column width
+                  regardless of breakpoint, so every dash stays the same
+                  length and both ends land on a full one. */}
               <div
                 aria-hidden
-                className="absolute pointer-events-none z-[0]"
-                style={{
-                  // 14px dash + 10px gap, 3px thick. Explicit dash control
-                  // because CSS `border-style: dashed` defaults to tight
-                  // ticks that read as a thin solid line at this scale.
-                  // Right edge trimmed by 14px so the pattern ends on a
-                  // full dash instead of clipping a partial nub against
-                  // the column edge.
-                  bottom: `${balancePct}%`,
-                  left: 0,
-                  right: 14,
-                  height: 3,
-                  marginBottom: -1.5,
-                  backgroundImage: `repeating-linear-gradient(to right, ${BAL_ACCENT} 0 14px, transparent 14px 24px)`,
-                }}
-              />
+                className="absolute left-0 right-0 flex justify-between items-center pointer-events-none z-[0]"
+                style={{ bottom: `${balancePct}%`, height: 3, marginBottom: -1.5 }}
+              >
+                {Array.from({ length: 11 }).map((_, i) => (
+                  <span
+                    key={i}
+                    style={{
+                      width: 14,
+                      height: 3,
+                      background: BAL_ACCENT,
+                      borderRadius: 1,
+                      flexShrink: 0,
+                    }}
+                  />
+                ))}
+              </div>
               <div
                 aria-hidden
-                className="absolute pointer-events-none z-[0]"
+                className="absolute pointer-events-none z-[0] flex items-baseline gap-1.5"
                 style={{
-                  // 'BAL PT' label moved to the RIGHT side of the paddle,
-                  // just below the line. Pairs visually with the right end
-                  // of the line so it reads as the spec-anchor point.
+                  // Back on the LEFT side of the paddle column, just
+                  // below the line. Now shows the cm value inline so the
+                  // reader sees the actual measurement right at the line
+                  // itself — the standalone Bal Pt row in the spec panel
+                  // is gone since it'd just be a duplicate.
                   bottom: `calc(${balancePct}% - 14px)`,
-                  right: 4,
-                  fontSize: "9px",
-                  fontWeight: 800,
-                  letterSpacing: "0.16em",
-                  textTransform: "uppercase",
-                  color: BAL_ACCENT,
+                  left: 4,
                   textShadow: "0 1px 2px rgba(0,0,0,0.6)",
                 }}
               >
-                Bal Pt
+                <span
+                  style={{
+                    fontSize: "9px",
+                    fontWeight: 800,
+                    letterSpacing: "0.16em",
+                    textTransform: "uppercase",
+                    color: BAL_ACCENT,
+                  }}
+                >
+                  Bal Pt
+                </span>
+                <span
+                  className="font-mono tabular-nums"
+                  style={{
+                    fontSize: "10px",
+                    fontWeight: 800,
+                    color: BAL_ACCENT,
+                  }}
+                >
+                  {paddle.balancePoint!.toFixed(1)} cm
+                </span>
               </div>
             </>
           )}
@@ -470,18 +494,10 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
                   zones={RANGES.twistWeight.zones}
                 />
               )}
-              {typeof paddle.balancePoint === "number" && (
-                <StatBar
-                  label="Bal Pt"
-                  value={paddle.balancePoint}
-                  displayValue={`${paddle.balancePoint.toFixed(1)} cm`}
-                  min={RANGES.balancePoint.min}
-                  max={RANGES.balancePoint.max}
-                  fill={BARS.balance.fill}
-                  glow={BARS.balance.glow}
-                  zones={RANGES.balancePoint.zones}
-                />
-              )}
+              {/* Bal Pt row removed from the spec panel — the on-paddle
+                  label ('BAL PT 24.1 cm' next to the dashed line) is now
+                  the sole place the balance reading appears, so the
+                  panel isn't repeating itself. */}
             </div>
           </div>
         </div>
