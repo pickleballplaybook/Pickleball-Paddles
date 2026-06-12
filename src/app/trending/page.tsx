@@ -335,53 +335,69 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
                   />
                 ))}
               </div>
-              {/* Bordered chip styled to match the value chip on the
-                  individual paddle pages (BalancePointSpec) — dark bg,
-                  yellow-green border, glowing shadow, cm value on top
-                  with the 'BAL PT' label small underneath. Positioned on
-                  the LEFT side of the paddle column with breathing room
-                  below the line, so it sits clearly off the paddle's
-                  silhouette in the empty column margin. */}
-              <div
-                aria-hidden
-                className="absolute pointer-events-none z-[0] flex flex-col items-center rounded-md"
-                style={{
-                  bottom: `calc(${balancePct}% - 34px)`,
-                  left: 6,
-                  padding: "3px 7px 2px",
-                  background: "rgba(0,0,0,0.72)",
-                  border: `1px solid rgba(222,250,50,0.50)`,
-                  boxShadow: "0 2px 10px rgba(0,0,0,0.40), 0 0 14px rgba(222,250,50,0.18)",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                <span
-                  className="font-mono tabular-nums"
-                  style={{
-                    fontSize: "11px",
-                    fontWeight: 800,
-                    color: BAL_ACCENT,
-                    lineHeight: 1.15,
-                    letterSpacing: "0.01em",
-                  }}
-                >
-                  {paddle.balancePoint!.toFixed(1)} cm
-                </span>
-                <span
-                  style={{
-                    fontSize: "7px",
-                    fontWeight: 800,
-                    letterSpacing: "0.18em",
-                    textTransform: "uppercase",
-                    color: BAL_ACCENT,
-                    opacity: 0.85,
-                    lineHeight: 1.4,
-                    marginTop: 1,
-                  }}
-                >
-                  Bal Pt
-                </span>
-              </div>
+              {/* Plain inline 'BAL PT 24.1 cm · HEAD-HEAVY' — sits in
+                  FRONT of the paddle (z-[2] vs paddle's z-[1]) so it's
+                  never clipped by the silhouette. No background or
+                  border; yellow-green text reads cleanly on the navy bg.
+                  Anchored to the left edge of the paddle column so it
+                  stays well off the paddle silhouette. The category word
+                  uses the same RANGES.balancePoint.zones vocabulary as
+                  the StatBar descriptors so the language is consistent
+                  with the rest of the card. */}
+              {(() => {
+                const bp = paddle.balancePoint!;
+                const bpPct = ((bp - RANGES.balancePoint.min) / (RANGES.balancePoint.max - RANGES.balancePoint.min)) * 100;
+                const bpZone =
+                  bpPct < 33.4 ? RANGES.balancePoint.zones[0] :
+                  bpPct > 66.6 ? RANGES.balancePoint.zones[2] :
+                                 RANGES.balancePoint.zones[1];
+                return (
+                  <div
+                    aria-hidden
+                    className="absolute pointer-events-none z-[2] inline-flex items-baseline gap-2"
+                    style={{
+                      bottom: `calc(${balancePct}% - 18px)`,
+                      left: 4,
+                      whiteSpace: "nowrap",
+                      textShadow: "0 1px 3px rgba(0,0,0,0.75)",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: "10px",
+                        fontWeight: 800,
+                        letterSpacing: "0.18em",
+                        textTransform: "uppercase",
+                        color: BAL_ACCENT,
+                      }}
+                    >
+                      Bal Pt
+                    </span>
+                    <span
+                      className="font-mono tabular-nums"
+                      style={{
+                        fontSize: "12px",
+                        fontWeight: 800,
+                        color: BAL_ACCENT,
+                      }}
+                    >
+                      {bp.toFixed(1)} cm
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "9px",
+                        fontWeight: 800,
+                        letterSpacing: "0.16em",
+                        textTransform: "uppercase",
+                        color: BAL_ACCENT,
+                        opacity: 0.80,
+                      }}
+                    >
+                      · {bpZone}
+                    </span>
+                  </div>
+                );
+              })()}
             </>
           )}
 
