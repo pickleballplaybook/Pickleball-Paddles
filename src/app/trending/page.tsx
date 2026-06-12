@@ -218,123 +218,132 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
         <span className="h-px w-6" style={{ background: "linear-gradient(90deg, rgba(255,255,255,0.25), transparent)" }} />
       </div>
 
-      {/* ── Top half: paddle image with play style label ──────────────────
-          pt-10 pushes the centered paddle down so it clears the header above. */}
-      <div className="absolute inset-x-0 top-0 h-[56%] flex items-center justify-center pt-10">
-        {paddle.image && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={paddle.image}
-            alt={`${paddle.brand} ${paddle.name}`}
-            className="relative z-[1] max-h-[92%] w-auto object-contain"
-            style={{ filter: "drop-shadow(0 20px 34px rgba(0,0,0,0.58)) drop-shadow(0 4px 12px rgba(0,0,0,0.38))" }}
-          />
-        )}
-        {/* Pedestal glow under the paddle */}
-        <div
-          className="absolute left-1/2 -translate-x-1/2 bottom-6 w-[58%] h-3 rounded-full pointer-events-none"
-          style={{ background: "radial-gradient(ellipse, rgba(0,0,0,0.55) 0%, transparent 75%)", filter: "blur(6px)" }}
-        />
-        {/* Play style badge */}
-        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-[2]">
-          <span
-            className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.18em] px-3 py-1 rounded-full"
-            style={{
-              background: "rgba(8,18,32,0.7)",
-              border: "1px solid rgba(255,255,255,0.10)",
-              color: pc.text,
-              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)",
-            }}
-          >
-            <span className="w-1.5 h-1.5 rounded-full" style={{ background: pc.dot, boxShadow: `0 0 6px ${pc.dot}` }} />
-            {playLabel}
-          </span>
-        </div>
-      </div>
+      {/* ── Main content row — horizontal split: paddle LEFT, specs RIGHT ──
+          The header + footer keep their absolute positioning, this row fills
+          the space in between. */}
+      <div className="absolute inset-x-0 top-[14%] bottom-[10%] flex items-stretch gap-3 px-5">
 
-      {/* ── Bottom half: specs panel — glassy with subtle top highlight ── */}
-      <div className="absolute inset-x-0 bottom-0 h-[44%] flex flex-col justify-center px-6 pb-10 pt-2">
-        <div
-          className="rounded-2xl p-5 flex flex-col gap-3"
-          style={{
-            background: "linear-gradient(180deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 100%)",
-            border: "1px solid rgba(255,255,255,0.09)",
-            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.07), 0 8px 24px rgba(0,0,0,0.25)",
-          }}
-        >
-          {/* Brand + name */}
-          <div>
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.25em]" style={{ color: "rgba(45,212,191,0.85)" }}>
-              {paddle.brand}
-            </p>
-            <h2
-              className="text-xl font-extrabold text-white leading-tight mt-0.5"
-              style={{ letterSpacing: "-0.01em" }}
-            >
-              {paddle.name}
-            </h2>
-            <p className="text-[11px] mt-1 font-medium uppercase tracking-[0.12em]" style={{ color: "rgba(186,212,228,0.45)" }}>
-              {paddle.shape} · {paddle.thickness}
-            </p>
-          </div>
-
-          {/* Hairline divider */}
-          <div className="h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)" }} />
-
-          {/* Stat bars */}
-          <div className="flex flex-col gap-2">
-            <StatBar
-              label="Weight"
-              value={weightNum}
-              displayValue={paddle.weight}
-              min={RANGES.weight.min}
-              max={RANGES.weight.max}
-              fill={BARS.weight.fill}
-              glow={BARS.weight.glow}
+        {/* ── LEFT: paddle image, much bigger than before ──────────────── */}
+        <div className="relative flex-[0.52] flex items-center justify-center">
+          {paddle.image && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={paddle.image}
+              alt={`${paddle.brand} ${paddle.name}`}
+              className="relative z-[1] max-h-[96%] max-w-[96%] w-auto object-contain"
+              style={{ filter: "drop-shadow(0 22px 38px rgba(0,0,0,0.60)) drop-shadow(0 4px 12px rgba(0,0,0,0.42))" }}
             />
-            {paddle.swingWeight > 0 && (
-              <StatBar
-                label="Swing Wt"
-                value={paddle.swingWeight}
-                displayValue={paddle.swingWeight.toFixed(1)}
-                min={RANGES.swingWeight.min}
-                max={RANGES.swingWeight.max}
-                fill={BARS.swing.fill}
-                glow={BARS.swing.glow}
-              />
-            )}
-            {paddle.twistWeight > 0 && (
-              <StatBar
-                label="Twist Wt"
-                value={paddle.twistWeight}
-                displayValue={paddle.twistWeight.toFixed(2)}
-                min={RANGES.twistWeight.min}
-                max={RANGES.twistWeight.max}
-                fill={BARS.twist.fill}
-                glow={BARS.twist.glow}
-              />
-            )}
-          </div>
-
-          {/* Discount code — refined glassy chip */}
-          {showCodeChip && (
-            <div
-              className="inline-flex items-center gap-2 pl-3 pr-3 py-1.5 rounded-lg self-start"
+          )}
+          {/* Pedestal glow under the paddle */}
+          <div
+            className="absolute left-1/2 -translate-x-1/2 bottom-8 w-[68%] h-3 rounded-full pointer-events-none"
+            style={{ background: "radial-gradient(ellipse, rgba(0,0,0,0.55) 0%, transparent 75%)", filter: "blur(6px)" }}
+          />
+          {/* Play-style badge — under the paddle, in its column */}
+          <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 z-[2]">
+            <span
+              className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.18em] px-3 py-1 rounded-full"
               style={{
-                background: "linear-gradient(135deg, rgba(20,184,166,0.20) 0%, rgba(20,184,166,0.06) 100%)",
-                border: "1px solid rgba(45,212,191,0.30)",
-                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06), 0 2px 8px rgba(20,184,166,0.10)",
+                background: "rgba(8,18,32,0.7)",
+                border: "1px solid rgba(255,255,255,0.10)",
+                color: pc.text,
+                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)",
               }}
             >
-              <span className="text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: "rgba(255,255,255,0.45)" }}>
-                Code
-              </span>
-              <span className="text-xs font-extrabold font-mono tracking-wider" style={{ color: "#5eead4" }}>{code}</span>
-              <span className="text-[10px] font-bold" style={{ color: "rgba(255,255,255,0.4)" }}>
-                · {hasRealDiscount ? `${paddle.amountOff} off` : "Free gift card"}
-              </span>
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: pc.dot, boxShadow: `0 0 6px ${pc.dot}` }} />
+              {playLabel}
+            </span>
+          </div>
+        </div>
+
+        {/* ── RIGHT: stacked specs panel + prominent code chip ─────────── */}
+        <div className="relative flex-[0.48] flex flex-col gap-3 self-center">
+
+          {/* Big code chip up top — the prominent placement the user asked for. */}
+          {showCodeChip && (
+            <div
+              className="rounded-xl px-4 py-3"
+              style={{
+                background: "linear-gradient(135deg, rgba(20,184,166,0.25) 0%, rgba(20,184,166,0.08) 100%)",
+                border: "1.5px solid rgba(45,212,191,0.40)",
+                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.08), 0 4px 14px rgba(20,184,166,0.18)",
+              }}
+            >
+              <p className="text-[9px] font-extrabold uppercase tracking-[0.25em] mb-1" style={{ color: "rgba(255,255,255,0.50)" }}>
+                Discount Code
+              </p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-lg font-extrabold font-mono tracking-wider" style={{ color: "#5eead4" }}>{code}</span>
+                <span className="text-[10px] font-bold" style={{ color: "rgba(255,255,255,0.55)" }}>
+                  · {hasRealDiscount ? `${paddle.amountOff} off` : "Free gift card"}
+                </span>
+              </div>
             </div>
           )}
+
+          {/* Spec panel — glassy, contains brand/name + stat bars */}
+          <div
+            className="rounded-2xl p-4 flex flex-col gap-3"
+            style={{
+              background: "linear-gradient(180deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 100%)",
+              border: "1px solid rgba(255,255,255,0.09)",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.07), 0 8px 24px rgba(0,0,0,0.25)",
+            }}
+          >
+            {/* Brand + name */}
+            <div>
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em]" style={{ color: "rgba(45,212,191,0.85)" }}>
+                {paddle.brand}
+              </p>
+              <h2
+                className="text-lg font-extrabold text-white leading-tight mt-0.5"
+                style={{ letterSpacing: "-0.01em" }}
+              >
+                {paddle.name}
+              </h2>
+              <p className="text-[10px] mt-1 font-medium uppercase tracking-[0.12em]" style={{ color: "rgba(186,212,228,0.45)" }}>
+                {paddle.shape} · {paddle.thickness}
+              </p>
+            </div>
+
+            {/* Hairline divider */}
+            <div className="h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)" }} />
+
+            {/* Stat bars */}
+            <div className="flex flex-col gap-2">
+              <StatBar
+                label="Weight"
+                value={weightNum}
+                displayValue={paddle.weight}
+                min={RANGES.weight.min}
+                max={RANGES.weight.max}
+                fill={BARS.weight.fill}
+                glow={BARS.weight.glow}
+              />
+              {paddle.swingWeight > 0 && (
+                <StatBar
+                  label="Swing Wt"
+                  value={paddle.swingWeight}
+                  displayValue={paddle.swingWeight.toFixed(1)}
+                  min={RANGES.swingWeight.min}
+                  max={RANGES.swingWeight.max}
+                  fill={BARS.swing.fill}
+                  glow={BARS.swing.glow}
+                />
+              )}
+              {paddle.twistWeight > 0 && (
+                <StatBar
+                  label="Twist Wt"
+                  value={paddle.twistWeight}
+                  displayValue={paddle.twistWeight.toFixed(2)}
+                  min={RANGES.twistWeight.min}
+                  max={RANGES.twistWeight.max}
+                  fill={BARS.twist.fill}
+                  glow={BARS.twist.glow}
+                />
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
