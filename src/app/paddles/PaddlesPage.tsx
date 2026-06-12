@@ -340,7 +340,7 @@ export default function PaddlesPage({
             className="text-5xl md:text-6xl font-extrabold tracking-tight mb-3"
             style={{ color: "var(--text-primary)" }}
           >
-            All Paddles
+            Paddle Database
           </h1>
           <p className="text-lg max-w-xl" style={{ color: "var(--text-muted)" }}>
             Filter by brand, shape, or style. Save with code{" "}
