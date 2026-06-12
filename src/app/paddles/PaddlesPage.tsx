@@ -204,7 +204,10 @@ function PaddlesInner({ paddles, priceCache }: { paddles: Paddle[]; priceCache: 
     segments.push({ paddles: chunk, promoIndex });
   }
 
-  const GRID = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6";
+  // 3-column max — gives each card real estate to breathe and lets the
+  // paddle image + specs read at a glance. Was 4-up at xl; the tradeoff is
+  // we trade scan density for clearer hierarchy on each card.
+  const GRID = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6";
   const isHeartSort = ["most-hearts", "popular-month", "default"].includes(filters.sort);
 
   return (
