@@ -12,9 +12,10 @@ interface Props {
   slug: string;
   code?: string;            // Discount code to auto-copy on click (omit for no-code paddles)
   preLaunch?: boolean;      // When true, replaces the Apply Discount button with "Coming Soon"
+  launchAt?: string;        // ISO date — shown on the Coming-Soon button as 'Coming June 14'
 }
 
-export default function StickyBottomBar({ name, brand, price, discountLink, slug, code, preLaunch }: Props) {
+export default function StickyBottomBar({ name, brand, price, discountLink, slug, code, preLaunch, launchAt }: Props) {
   const hasLink = !!discountLink?.trim() && !preLaunch;
   const hasCode = !!code?.trim();
 
@@ -76,7 +77,9 @@ export default function StickyBottomBar({ name, brand, price, discountLink, slug
                 border: preLaunch ? "1px dashed var(--code-border)" : undefined,
               }}
             >
-              Coming Soon
+              {preLaunch && launchAt
+                ? `Coming ${new Date(launchAt).toLocaleDateString("en-US", { month: "long", day: "numeric" })}`
+                : "Coming Soon"}
             </span>
           )}
         </div>

@@ -1658,6 +1658,7 @@ export default async function PaddleDetailPage({ params }: Props) {
       slug={paddle.slug}
       code={noCode ? undefined : code}
       preLaunch={preLaunch}
+      launchAt={paddle.launchAt}
     />
     </>
   );

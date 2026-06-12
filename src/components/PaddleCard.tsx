@@ -282,7 +282,12 @@ export default function PaddleCard({ paddle, index = 0, heartCount = 0, dislikeC
                 border: "1px dashed var(--code-border)",
               }}
             >
-              Coming Soon
+              {/* Shows the launch date when known (e.g. 'Coming June 14'),
+                  falls back to 'Coming Soon' if launchAt isn't set or has
+                  already passed in this render's clock. */}
+              {paddle.launchAt
+                ? `Coming ${new Date(paddle.launchAt).toLocaleDateString("en-US", { month: "long", day: "numeric" })}`
+                : "Coming Soon"}
             </span>
           ) : hasDiscount ? (
             <a

@@ -2068,7 +2068,7 @@ export const paddles: Paddle[] = [
     image: "/images/paddles/6.0-Coral-Hybrid-16mm.png",
     amountOff: "10%",
     price: "$200.00",
-    discountLink: "https://sixzeropickleball.us/discount/PLAYBOOK?redirect=/%3Fsca_ref%3D11145669.B01d6tJmnqn5",
+    discountLink: "https://us.sixzeropickleball.com/discount/PLAYBOOK?sca_ref=11145669.B01d6tJmnqn5&redirect=/",
     reviewUrl: "https://youtu.be/Z1e4mRHG2r8",
     addedAt: "2026-05-04",
     trendingScore: 55,
@@ -2088,7 +2088,7 @@ export const paddles: Paddle[] = [
     image: "/images/paddles/6.0-Coral-Elongated-16mm.png",
     amountOff: "10%",
     price: "$200.00",
-    discountLink: "https://sixzeropickleball.us/discount/PLAYBOOK?redirect=/%3Fsca_ref%3D11145669.B01d6tJmnqn5",
+    discountLink: "https://us.sixzeropickleball.com/discount/PLAYBOOK?sca_ref=11145669.B01d6tJmnqn5&redirect=/",
     reviewUrl: "https://youtu.be/Z1e4mRHG2r8",
     addedAt: "2026-05-04",
     trendingScore: 55,
@@ -2607,6 +2607,28 @@ export const paddles: Paddle[] = [
     addedAt: "2026-06-11",
     trendingScore: 50,
     playStyle: "all-court",
+  },
+
+  // ── 6.0 Coral Pro ─────────────────────────────────────────────────────────
+  // Launch midnight ET on June 14, 2026. Until then the buy button renders
+  // as 'Coming June 14' via isPreLaunch() + StickyBottomBar.launchAt. Specs
+  // will be backfilled after the user measures the paddle on the SW1 rig.
+  {
+    id: "133",
+    slug: "6-0-coral-pro-hybrid",
+    brand: "6.0",
+    name: "Coral Pro",
+    shape: "Hybrid",
+    weight: "",
+    swingWeight: 0,
+    twistWeight: 0,
+    thickness: "16mm",
+    image: "/images/paddles/6.0-Coral-Pro-Hybrid-16mm.png",
+    amountOff: "10%",
+    discountLink: "https://us.sixzeropickleball.com/discount/PLAYBOOK?sca_ref=11145669.B01d6tJmnqn5&redirect=/",
+    addedAt: "2026-06-12",
+    trendingScore: 50,
+    launchAt: "2026-06-14T00:00:00-04:00",
   },
 ];
 
