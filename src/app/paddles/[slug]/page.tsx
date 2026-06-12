@@ -1453,6 +1453,45 @@ export default async function PaddleDetailPage({ params }: Props) {
               Video review coming soon. Subscribe to be notified.
             </p>
           )}
+
+          {/* Featured review — used for crossover/head-to-head videos that
+              compare this paddle against another. Appears in addition to
+              the main review (does NOT replace it). The video ID parser
+              accepts youtu.be/<id>, youtube.com/watch?v=<id>, and embed
+              URLs equally — anything Selkirk Boomstik vs Omni–style. */}
+          {paddle.featuredReviewUrl && (() => {
+            const m = paddle.featuredReviewUrl.match(/(?:youtu\.be\/|v=|embed\/)([A-Za-z0-9_-]{11})/);
+            const featuredId = m?.[1];
+            if (!featuredId) return null;
+            return (
+              <div className="mt-10">
+                <div className="flex items-center gap-2 mb-4">
+                  <span
+                    className="text-[10px] font-extrabold uppercase tracking-widest px-2 py-1 rounded-full"
+                    style={{
+                      background: "rgba(251,146,60,0.15)",
+                      color: "#fb923c",
+                      border: "1px solid rgba(251,146,60,0.30)",
+                    }}
+                  >
+                    Featured
+                  </span>
+                  <h3 className="text-lg font-extrabold" style={{ color: "var(--flip-text-head)" }}>
+                    Head-to-Head Review
+                  </h3>
+                </div>
+                <div
+                  className="rounded-2xl overflow-hidden"
+                  style={{ border: "1px solid var(--flip-card-border)" }}
+                >
+                  <YouTubeEmbed
+                    videoId={featuredId}
+                    title={`${paddle.brand} ${paddle.name} — Featured Review`}
+                  />
+                </div>
+              </div>
+            );
+          })()}
         </div>
       </section>
 

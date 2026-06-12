@@ -1686,6 +1686,7 @@ export const paddles: Paddle[] = [
     price: "$332.99",
     discountLink: "https://lockerroompickleball.com/products/labs-project-boomstik?sca_ref=8334840.yY4rLJi7oU9HDNHD",
     manualVideoId: "GeVglhdjWQg",
+    featuredReviewUrl: "https://youtu.be/SZ8NJn3WxCA",
     addedAt: "2026-04-13",
     trendingScore: 66,
     playStyle: "power",
@@ -2330,6 +2331,7 @@ export const paddles: Paddle[] = [
     swingWeight: 115.24,
     twistWeight: 7.87,
     balancePoint: 23.8,
+    featuredReviewUrl: "https://youtu.be/SZ8NJn3WxCA",
     thickness: "16mm",
     // Back on Selkirk's site with the INF-PLAYBOOK gift-card flow.
     // The variant + discount params pre-apply the code so the user gets a

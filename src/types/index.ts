@@ -44,6 +44,10 @@ export interface Paddle {
   badge?: string;
   ratings?: PaddleRatings;
   reviewUrl?: string;        // CSV: Review column — full YouTube URL
+  // Optional secondary featured review — used for head-to-head or special
+  // crossover videos that should appear ALONGSIDE the primary review, not
+  // replace it. Renders below the main review with a "Featured" label.
+  featuredReviewUrl?: string;
   manualVideoId?: string;
 
   // ── Categorisation ────────────────────────────────────────────────────────
