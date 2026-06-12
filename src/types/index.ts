@@ -59,6 +59,24 @@ export interface Paddle {
   // ── Series / family grouping ──────────────────────────────────────────────
   seriesSlug?: string;    // paddles with same seriesSlug are shown together on /series/[slug]
 
+  // ── Extended dimensions (optional; populated as measured) ─────────────────
+  // These power the "Specifications" card on the paddle detail page. Each
+  // is a free-form string so unit/format stays consistent with how brands
+  // publish ("16.5\"", "4 1/4\"", etc.). Skipped rows just don't render.
+  paddleLength?: string;
+  paddleWidth?: string;
+  handleLength?: string;
+  gripSize?: string;
+
+  // ── Categories / certifications ───────────────────────────────────────────
+  // Free-form so brands' inconsistent generation labels still fit
+  // ("Gen 3", "Gen 4", "Pro IV"). yearReleased is the calendar year the
+  // paddle launched. usapApproved drives a green checkmark on the
+  // Specifications card.
+  generation?: string;
+  yearReleased?: string;
+  usapApproved?: boolean;
+
   // ── Catalog metadata ──────────────────────────────────────────────────────
   addedAt: string;        // ISO date — powers "Just Added"
   trendingScore: number;  // 0–100 — powers "What's Trending"

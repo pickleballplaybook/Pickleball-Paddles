@@ -1039,34 +1039,81 @@ export default async function PaddleDetailPage({ params }: Props) {
                 <BalancePointSpec paddle={paddle} />
               )}
 
-              {/* Specifications table */}
-              <div
-                className="rounded-2xl p-6 md:p-8"
-                style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}
-              >
-                <h2 className="text-xl font-extrabold mb-6" style={{ color: "var(--flip-text-head)" }}>
-                  Specifications
-                </h2>
+              {/* Specifications card — manufacturer/brand-page data that
+                  isn't covered by the Weight & Balance card above. Every
+                  row is optional; if no extended dimensions or category
+                  data is populated for this paddle, the whole card
+                  silently doesn't render so we don't show an empty box. */}
+              {(() => {
+                const dimensionRows = [
+                  paddle.shape         && { label: "Shape",         value: paddle.shape },
+                  paddle.paddleLength  && { label: "Paddle Length", value: paddle.paddleLength },
+                  paddle.paddleWidth   && { label: "Paddle Width",  value: paddle.paddleWidth },
+                  paddle.handleLength  && { label: "Handle Length", value: paddle.handleLength },
+                  paddle.gripSize      && { label: "Grip Size",     value: paddle.gripSize },
+                  paddle.thickness     && { label: "Core Thickness", value: paddle.thickness },
+                ].filter(Boolean) as { label: string; value: string }[];
 
-                <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "var(--flip-text-muted)" }}>
-                  Dimensions
-                </p>
-                <div className="mb-6">
-                  <SpecRow label="Core Thickness" value={paddle.thickness} />
-                  <SpecRow label="Shape"          value={paddle.shape} />
-                  <SpecRow label="Weight"         value={paddle.weight} />
-                  <SpecRow label="Swing Weight"   value={paddle.swingWeight || undefined} />
-                  <SpecRow label="Twist Weight"   value={paddle.twistWeight || undefined} last />
-                </div>
+                const categoryRows = [
+                  paddle.generation    && { label: "Generation",    value: paddle.generation },
+                  paddle.yearReleased  && { label: "Year Released", value: paddle.yearReleased },
+                  paddle.playStyle     && { label: "Play Style",    value: STYLE_LABELS[paddle.playStyle] ?? paddle.playStyle },
+                  paddle.usapApproved !== undefined && { label: "USAP Approved", value: paddle.usapApproved ? "Yes" : "Pending" },
+                ].filter(Boolean) as { label: string; value: string }[];
 
-                <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "var(--flip-text-muted)" }}>
-                  Classification
-                </p>
-                <div>
-                  <SpecRow label="Brand"      value={paddle.brand} />
-                  <SpecRow label="Play Style" value={STYLE_LABELS[paddle.playStyle ?? ""] ?? paddle.playStyle} last />
-                </div>
-              </div>
+                // No data beyond what's already shown elsewhere — skip
+                // the whole card. The two duplicate-only rows (Shape +
+                // Core Thickness) don't count as a card-worth of content
+                // on their own.
+                if (dimensionRows.length <= 2 && categoryRows.length === 0) return null;
+
+                return (
+                  <div
+                    className="rounded-2xl p-6 md:p-8"
+                    style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}
+                  >
+                    <h2 className="text-xl font-extrabold mb-6" style={{ color: "var(--flip-text-head)" }}>
+                      Specifications
+                    </h2>
+
+                    {dimensionRows.length > 0 && (
+                      <>
+                        <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "var(--flip-text-muted)" }}>
+                          Dimensions
+                        </p>
+                        <div className="mb-6">
+                          {dimensionRows.map((row, i) => (
+                            <SpecRow
+                              key={row.label}
+                              label={row.label}
+                              value={row.value}
+                              last={i === dimensionRows.length - 1}
+                            />
+                          ))}
+                        </div>
+                      </>
+                    )}
+
+                    {categoryRows.length > 0 && (
+                      <>
+                        <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "var(--flip-text-muted)" }}>
+                          Categories
+                        </p>
+                        <div>
+                          {categoryRows.map((row, i) => (
+                            <SpecRow
+                              key={row.label}
+                              label={row.label}
+                              value={row.value}
+                              last={i === categoryRows.length - 1}
+                            />
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
 
             {/* Sidebar — sticky, hidden on mobile (price already in hero) */}
