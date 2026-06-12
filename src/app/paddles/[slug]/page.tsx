@@ -1054,6 +1054,14 @@ export default async function PaddleDetailPage({ params }: Props) {
                   <SpecRow label="Play Style" value={STYLE_LABELS[paddle.playStyle ?? ""] ?? paddle.playStyle} last />
                 </div>
               </div>
+
+              {/* Balance Point — appears right after the Specifications card
+                  inside the left column, so it sits in the spec-flow context
+                  instead of as a standalone section further down the page.
+                  Only renders when paddle.balancePoint is set. */}
+              {typeof paddle.balancePoint === "number" && (
+                <BalancePointSpec paddle={paddle} />
+              )}
             </div>
 
             {/* Sidebar — sticky, hidden on mobile (price already in hero) */}
@@ -1132,18 +1140,6 @@ export default async function PaddleDetailPage({ params }: Props) {
           </div>
         </div>
       </section>
-
-      {/* ── BALANCE POINT ────────────────────────────────────────────────── */}
-      {/* Only renders when paddle.balancePoint is set. As balance numbers
-          are populated for each paddle the section appears organically;
-          paddles without data simply skip it. */}
-      {typeof paddle.balancePoint === "number" && (
-        <section id="balance-point" className="py-16">
-          <div className="container-xl max-w-3xl mx-auto">
-            <BalancePointSpec paddle={paddle} />
-          </div>
-        </section>
-      )}
 
       {/* ── WHO IT'S FOR (tab: who) ──────────────────────────────────────── */}
       <section id="who" className="py-16" style={{ background: "var(--flip-bg-card)" }}>

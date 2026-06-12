@@ -134,9 +134,13 @@ export default function BalancePointSpec({ paddle }: Props) {
           Balance Point
         </p>
 
-        {/* Paddle image with overlaid balance + center lines */}
+        {/* Paddle image with overlaid balance + center lines.
+            Sized larger now that the section lives inside the left column
+            of the specs grid — the column is narrower than a full-width
+            section, so the image needs to fill more of its container to
+            stay visually prominent. */}
         <div className="flex justify-center my-4 md:my-6">
-          <div className="relative" style={{ width: 220, maxWidth: "60%" }}>
+          <div className="relative" style={{ width: 320, maxWidth: "78%" }}>
             {paddle.image ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
