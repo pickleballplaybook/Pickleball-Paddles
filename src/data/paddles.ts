@@ -2614,17 +2614,19 @@ export const paddles: Paddle[] = [
 
   // ── 6.0 Coral Pro ─────────────────────────────────────────────────────────
   // Launch midnight ET on June 14, 2026. Until then the buy button renders
-  // as 'Coming June 14' via isPreLaunch() + StickyBottomBar.launchAt. Specs
-  // will be backfilled after the user measures the paddle on the SW1 rig.
+  // as 'Coming June 14' via isPreLaunch() + StickyBottomBar.launchAt. Lab
+  // specs measured on the SW1 rig + balance point measured at home; play
+  // style 'all-court' per the CSV import.
   {
     id: "133",
     slug: "6-0-coral-pro-hybrid",
     brand: "6.0",
     name: "Coral Pro",
     shape: "Hybrid",
-    weight: "",
-    swingWeight: 0,
-    twistWeight: 0,
+    playStyle: "all-court",
+    weight: "8.1 oz",
+    swingWeight: 113.33,
+    twistWeight: 6.63,
     balancePoint: 23.8,
     thickness: "16mm",
     image: "/images/paddles/6.0-Coral-Pro-Hybrid-16mm.png",
