@@ -225,7 +225,9 @@ export default function PaddleCard({ paddle, index = 0, heartCount = 0 }: Paddle
           const code = isSelkirk && !paddle.discountLink?.includes("lockerroompickleball.com") ? "INF-PLAYBOOK" : "PLAYBOOK";
           return (
             <div className="flex items-center gap-1.5 mb-3">
-              <span className="text-xs font-mono font-bold text-brand-600 bg-brand-50 border border-brand-200 px-2 py-0.5 rounded tracking-widest">
+              {/* Outline-only treatment — keeps the code visible without
+                  visually competing with the primary Buy CTA below. */}
+              <span className="text-xs font-mono font-bold text-brand-600 bg-transparent border border-dashed border-brand-400 px-2 py-0.5 rounded tracking-widest">
                 {code}
               </span>
               {hasRealDiscount && (
