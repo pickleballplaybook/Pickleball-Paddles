@@ -312,14 +312,17 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
             <>
               <div
                 aria-hidden
-                className="absolute left-0 right-0 pointer-events-none z-[0]"
+                className="absolute pointer-events-none z-[0]"
                 style={{
-                  // Thicker line + explicit dash/gap via repeating-linear-
-                  // gradient because CSS `border-style: dashed` doesn't let
-                  // us tune dash length or spacing (browser-default looks
-                  // like tight little ticks at this size). 14px dash + 10px
-                  // gap reads cleanly at the card's scale.
+                  // 14px dash + 10px gap, 3px thick. Explicit dash control
+                  // because CSS `border-style: dashed` defaults to tight
+                  // ticks that read as a thin solid line at this scale.
+                  // Right edge trimmed by 14px so the pattern ends on a
+                  // full dash instead of clipping a partial nub against
+                  // the column edge.
                   bottom: `${balancePct}%`,
+                  left: 0,
+                  right: 14,
                   height: 3,
                   marginBottom: -1.5,
                   backgroundImage: `repeating-linear-gradient(to right, ${BAL_ACCENT} 0 14px, transparent 14px 24px)`,
@@ -329,12 +332,11 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
                 aria-hidden
                 className="absolute pointer-events-none z-[0]"
                 style={{
-                  // Anchored to the LEFT side of the paddle column, below
-                  // the line — there's more empty space there than on the
-                  // right, so the label reads cleanly without being clipped
-                  // by the paddle silhouette.
+                  // 'BAL PT' label moved to the RIGHT side of the paddle,
+                  // just below the line. Pairs visually with the right end
+                  // of the line so it reads as the spec-anchor point.
                   bottom: `calc(${balancePct}% - 14px)`,
-                  left: 4,
+                  right: 4,
                   fontSize: "9px",
                   fontWeight: 800,
                   letterSpacing: "0.16em",

@@ -17,9 +17,10 @@ export function getPaddleCountLabel(): string {
 }
 
 export interface CatalogStats {
-  swingWeight: { min: number; max: number; avg: number };
-  twistWeight: { min: number; max: number; avg: number };
-  weight:      { min: number; max: number; avg: number };
+  swingWeight:  { min: number; max: number; avg: number };
+  twistWeight:  { min: number; max: number; avg: number };
+  weight:       { min: number; max: number; avg: number };
+  balancePoint: { min: number; max: number; avg: number };
 }
 
 let cache: CatalogStats | null = null;
@@ -32,6 +33,9 @@ export function getCatalogStats(): CatalogStats {
   const wts = paddles
     .map((p) => parseFloat(p.weight))
     .filter((v) => !isNaN(v) && v > 0);
+  const bps = paddles
+    .map((p) => p.balancePoint)
+    .filter((v): v is number => typeof v === "number" && v > 0);
 
   const stats = (arr: number[]) =>
     arr.length
@@ -43,9 +47,10 @@ export function getCatalogStats(): CatalogStats {
       : { min: 0, max: 0, avg: 0 };
 
   cache = {
-    swingWeight: stats(sws),
-    twistWeight: stats(tws),
-    weight: stats(wts),
+    swingWeight:  stats(sws),
+    twistWeight:  stats(tws),
+    weight:       stats(wts),
+    balancePoint: stats(bps),
   };
   return cache;
 }

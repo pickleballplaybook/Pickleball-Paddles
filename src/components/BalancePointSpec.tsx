@@ -1,4 +1,5 @@
 import type { Paddle } from "@/types";
+import { getCatalogStats } from "@/lib/catalogStats";
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  BalancePointSpec
@@ -13,18 +14,12 @@ import type { Paddle } from "@/types";
 //  to import anywhere.
 // ─────────────────────────────────────────────────────────────────────────────
 
-// Reference range that bounds the visual bar. Real pickleball paddles cluster
-// between ~22 and ~26 cm; the bar covers a touch wider so extreme values
-// still plot meaningfully instead of pinning at the endpoint.
-const BAR_MIN = 22.0;
-const BAR_MAX = 28.0;
-
-// "Typical range" labels shown at the bar endpoints. These mirror the
-// inspiration design's anchor values, not the absolute bar bounds — so
-// players see a recognizable head-light/head-heavy reference even when the
-// underlying bar extends slightly further in each direction.
-const HEAD_LIGHT_REF = 22.0;
-const HEAD_HEAVY_REF = 28.0;
+// Bar range is driven by the actual measured spread across the catalog —
+// pulled from getCatalogStats().balancePoint. We pad ~0.3 cm on each end so
+// the marker for min/max paddles doesn't pin to the absolute edge. As more
+// paddles get measured the range expands automatically; nothing to update
+// here. The labeled HEAD-LIGHT / HEAD-HEAVY endpoints are the raw min/max
+// (not padded) so the visible numbers reflect the actual catalog spread.
 
 // Geometric paddle center estimate, used to draw the dashed "CENTER" line
 // on the paddle image. A 16.5" elongated is ~41.91 cm tall → center at
@@ -90,9 +85,22 @@ export default function BalancePointSpec({ paddle }: Props) {
 
   const cat = categorize(bp);
 
+  // Bar range pulled from the actual measured catalog. As more paddles get
+  // balance points filled in, the bar widens automatically without anyone
+  // editing constants. ~0.3 cm padding on each end so a paddle equal to
+  // min or max doesn't pin the marker to the absolute edge.
+  const stats = getCatalogStats().balancePoint;
+  const barMin = stats.min > 0 ? stats.min - 0.3 : 22.0;
+  const barMax = stats.max > 0 ? stats.max + 0.3 : 26.0;
+  // Labeled endpoints under the bar show the raw (un-padded) catalog
+  // min/max so the visible 'typical range' numbers reflect the actual
+  // spread of what we've measured.
+  const headLightRef = stats.min > 0 ? stats.min : 22.0;
+  const headHeavyRef = stats.max > 0 ? stats.max : 26.0;
+
   // Bar position — % from left of the rail, clamped so the marker never
   // disappears off the edge if a paddle measures slightly outside the bar.
-  const barPositionPct = clampPct(((bp - BAR_MIN) / (BAR_MAX - BAR_MIN)) * 100);
+  const barPositionPct = clampPct(((bp - barMin) / (barMax - barMin)) * 100);
 
   // Vertical position of the balance line on the paddle image —
   // % up from the bottom of the image. Same clamp logic.
@@ -258,7 +266,7 @@ export default function BalancePointSpec({ paddle }: Props) {
                 Head-Light
               </p>
               <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.55)" }}>
-                {HEAD_LIGHT_REF.toFixed(1)} cm
+                {headLightRef.toFixed(1)} cm
               </p>
               <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.35)" }}>
                 (typical range)
@@ -269,7 +277,7 @@ export default function BalancePointSpec({ paddle }: Props) {
                 Head-Heavy
               </p>
               <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.55)" }}>
-                {HEAD_HEAVY_REF.toFixed(1)} cm
+                {headHeavyRef.toFixed(1)} cm
               </p>
               <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.35)" }}>
                 (typical range)
