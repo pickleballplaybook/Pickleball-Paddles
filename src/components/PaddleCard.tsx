@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Paddle } from "@/types";
 import { buyAtLabel } from "@/lib/buyAtLabel";
-import { isPreLaunch } from "@/lib/launchStatus";
+import { isPreLaunch, formatLaunchButtonLabel } from "@/lib/launchStatus";
 import VotePill from "@/components/VotePill";
 import CopyableCode from "@/components/CopyableCode";
 
@@ -282,12 +282,10 @@ export default function PaddleCard({ paddle, index = 0, heartCount = 0, dislikeC
                 border: "1px dashed var(--code-border)",
               }}
             >
-              {/* Shows the launch date when known (e.g. 'Coming June 14'),
-                  falls back to 'Coming Soon' if launchAt isn't set or has
-                  already passed in this render's clock. */}
-              {paddle.launchAt
-                ? `Coming ${new Date(paddle.launchAt).toLocaleDateString("en-US", { month: "long", day: "numeric" })}`
-                : "Coming Soon"}
+              {/* "Coming June 14th" — date formatted in ET (anchored to
+                  the paddle.launchAt timezone) with English ordinal. Falls
+                  back to "Coming Soon" when no launchAt is set. */}
+              {formatLaunchButtonLabel(paddle.launchAt) ?? "Coming Soon"}
             </span>
           ) : hasDiscount ? (
             <a

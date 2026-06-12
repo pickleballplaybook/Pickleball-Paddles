@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import AffiliateBuyButton from "@/components/AffiliateBuyButton";
+import { formatLaunchButtonLabel } from "@/lib/launchStatus";
 
 interface Props {
   name: string;
@@ -77,9 +78,7 @@ export default function StickyBottomBar({ name, brand, price, discountLink, slug
                 border: preLaunch ? "1px dashed var(--code-border)" : undefined,
               }}
             >
-              {preLaunch && launchAt
-                ? `Coming ${new Date(launchAt).toLocaleDateString("en-US", { month: "long", day: "numeric" })}`
-                : "Coming Soon"}
+              {(preLaunch && formatLaunchButtonLabel(launchAt)) ?? "Coming Soon"}
             </span>
           )}
         </div>
