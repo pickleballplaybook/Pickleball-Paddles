@@ -290,7 +290,7 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
       <div className="absolute top-5 left-0 right-0 flex flex-col items-center gap-1.5 pointer-events-none z-10 px-16">
         <div className="flex items-center gap-3">
           <span className="h-px w-6" style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.25))" }} />
-          <p className="text-[10px] font-extrabold uppercase tracking-[0.35em]" style={{ color: "rgba(255,255,255,0.55)" }}>
+          <p className="text-[14px] font-extrabold uppercase tracking-[0.35em]" style={{ color: "rgba(255,255,255,0.85)" }}>
             PlaybookPaddles.com
           </p>
           <span className="h-px w-6" style={{ background: "linear-gradient(90deg, rgba(255,255,255,0.25), transparent)" }} />
@@ -584,14 +584,29 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
         </div>
       </div>
 
-      {/* Footer branding */}
-      <div className="absolute bottom-3 left-5 right-5 flex items-center justify-between pointer-events-none z-10">
-        <p className="text-[10px] font-extrabold uppercase tracking-[0.18em]" style={{ color: "rgba(186,212,228,0.5)" }}>
-          Playbook Reviews
-        </p>
-        <p className="text-[10px] font-semibold" style={{ color: "rgba(186,212,228,0.4)" }}>
-          playbookpaddles.com
-        </p>
+      {/* Footer branding — YouTube logo + @PlaybookReviews handle on
+          the bottom-left so anyone screenshotting the card can find
+          the channel. Bottom-right url removed (it's already in the
+          header at the top). */}
+      <div className="absolute bottom-3 left-5 right-5 flex items-center pointer-events-none z-10">
+        <div className="inline-flex items-center gap-2">
+          {/* YouTube glyph — official red rounded-rect with white play
+              triangle. Inline SVG so we don't pull a brand-asset
+              dependency just for one icon. */}
+          <svg width="20" height="14" viewBox="0 0 28 20" aria-hidden style={{ flexShrink: 0 }}>
+            <path
+              d="M27.4 3.13a3.51 3.51 0 0 0-2.47-2.49C22.74 0 14 0 14 0S5.26 0 3.07.64A3.51 3.51 0 0 0 .6 3.13C0 5.34 0 10 0 10s0 4.66.6 6.87a3.51 3.51 0 0 0 2.47 2.49C5.26 20 14 20 14 20s8.74 0 10.93-.64a3.51 3.51 0 0 0 2.47-2.49C28 14.66 28 10 28 10s0-4.66-.6-6.87z"
+              fill="#FF0000"
+            />
+            <path d="M11.2 14.29 18.46 10 11.2 5.71v8.58z" fill="#ffffff" />
+          </svg>
+          <p
+            className="text-[12px] font-extrabold uppercase"
+            style={{ color: "rgba(255,255,255,0.80)", letterSpacing: "0.12em" }}
+          >
+            @PlaybookReviews
+          </p>
+        </div>
       </div>
 
       {/* Dot indicators — refined oval shape */}
