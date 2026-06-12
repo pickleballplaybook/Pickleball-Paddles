@@ -75,10 +75,18 @@ function useWeightedViews(days: number) {
 // ── Stat bar ranges (from actual paddle database) ────────────────────────────
 
 const RANGES = {
-  weight:      { min: 7.2, max: 9.2, unit: "oz" },
-  swingWeight: { min: 95,  max: 125, unit: "" },
-  twistWeight: { min: 4.5, max: 7.5, unit: "" },
+  weight:       { min: 7.2, max: 9.2,  unit: "oz" },
+  swingWeight:  { min: 95,  max: 125,  unit: "" },
+  twistWeight:  { min: 4.5, max: 7.5,  unit: "" },
+  balancePoint: { min: 22,  max: 26,   unit: "cm" },
 };
+
+// Reference paddle length used to position the balance-point indicator line
+// on the trending card. Same constant the BalancePointSpec component uses on
+// individual paddle pages — kept as a single canonical reference instead of
+// trying to derive it per paddle (which would require accurate per-paddle
+// length data we don't have for most paddles yet).
+const PADDLE_HEIGHT_CM_REF = 41.0;
 
 function normalize(value: number, min: number, max: number): number {
   if (max === min) return 0.5;
@@ -199,7 +207,22 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
       fill: "linear-gradient(90deg, #6366f1 0%, #818cf8 50%, #a5b4fc 100%)",
       glow: "0 0 8px rgba(129,140,248,0.40)",
     },
+    // Soft coral for balance — visually distinct from the slate / teal /
+    // indigo trio above so the new row reads as a separate measurement
+    // family (it's the only one not in oz / kg·cm²).
+    balance: {
+      fill: "linear-gradient(90deg, #fb7185 0%, #fda4af 50%, #fecdd3 100%)",
+      glow: "0 0 8px rgba(251,113,133,0.40)",
+    },
   };
+
+  // Vertical position (% from bottom of paddle image) where the balance
+  // line should sit on the paddle. Clamped to leave a little headroom
+  // top and bottom so an extreme value never pins the line into the
+  // glow at the edge of the image.
+  const balancePct = paddle.balancePoint
+    ? Math.max(8, Math.min(92, (paddle.balancePoint / PADDLE_HEIGHT_CM_REF) * 100))
+    : null;
 
   return (
     <div
@@ -259,12 +282,60 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
 
         {/* ── LEFT: paddle image — height-locked at 96% of the column so
                 every paddle renders at the same size regardless of the
-                source image's aspect ratio (some images come with a
-                paddle cover or accessory that was making the paddle look
-                smaller under the old max-h + max-w fit). Wider source
-                images now overflow horizontally and get clipped by
-                overflow-hidden on the column. */}
+                source image's aspect ratio. Wider source images overflow
+                horizontally and get clipped by overflow-hidden. */}
         <div className="relative flex-[0.52] flex items-center justify-center overflow-hidden">
+          {/* Balance line — sits BEHIND the paddle (z-index 0 vs the
+              image's z-index 1) so it's only visible on either side of
+              the paddle silhouette. Extends across the full column width
+              and crosses into the right column visually, with a soft
+              coral marker pinned to the right edge to "anchor" the line
+              into the spec panel as a leader-line connection. Only
+              renders when paddle.balancePoint is set; the line itself
+              is decorative, the numeric spec lives in the right panel. */}
+          {balancePct !== null && (
+            <>
+              <div
+                aria-hidden
+                className="absolute left-0 right-0 pointer-events-none z-[0]"
+                style={{
+                  bottom: `${balancePct}%`,
+                  height: 0,
+                  borderTop: "1.5px dashed rgba(251,113,133,0.55)",
+                }}
+              />
+              <div
+                aria-hidden
+                className="absolute pointer-events-none rounded-full z-[0]"
+                style={{
+                  bottom: `calc(${balancePct}% - 5px)`,
+                  right: 8,
+                  width: 10,
+                  height: 10,
+                  background: "#fb7185",
+                  boxShadow: "0 0 10px rgba(251,113,133,0.75), inset 0 1px 0 rgba(255,255,255,0.30)",
+                  border: "1px solid rgba(254,205,211,0.50)",
+                }}
+              />
+              <div
+                aria-hidden
+                className="absolute pointer-events-none z-[0]"
+                style={{
+                  bottom: `calc(${balancePct}% + 8px)`,
+                  right: 8,
+                  fontSize: "9px",
+                  fontWeight: 800,
+                  letterSpacing: "0.18em",
+                  textTransform: "uppercase",
+                  color: "rgba(254,205,211,0.85)",
+                  textShadow: "0 1px 2px rgba(0,0,0,0.6)",
+                }}
+              >
+                Balance
+              </div>
+            </>
+          )}
+
           {paddle.image && (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -380,6 +451,17 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
                   max={RANGES.twistWeight.max}
                   fill={BARS.twist.fill}
                   glow={BARS.twist.glow}
+                />
+              )}
+              {typeof paddle.balancePoint === "number" && (
+                <StatBar
+                  label="Bal Pt"
+                  value={paddle.balancePoint}
+                  displayValue={`${paddle.balancePoint.toFixed(1)} cm`}
+                  min={RANGES.balancePoint.min}
+                  max={RANGES.balancePoint.max}
+                  fill={BARS.balance.fill}
+                  glow={BARS.balance.glow}
                 />
               )}
             </div>
