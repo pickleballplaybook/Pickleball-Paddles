@@ -27,6 +27,9 @@ export function getUserKey(): string {
 }
 
 // ── Supabase heart operations ─────────────────────────────────────────────────
+// The DB still uses "paddle_hearts" / "heart" naming; the user-facing concept
+// is now thumbs-up (the Save metaphor was scrapped in favor of votes). Internal
+// names stay so existing data and queries keep working unchanged.
 
 async function heartExists(paddleId: string, userKey: string): Promise<boolean> {
   const { data } = await supabase
@@ -54,38 +57,108 @@ async function removeHeart(paddleId: string, userKey: string): Promise<void> {
   if (error) console.error("[useReactions] delete error:", error.message);
 }
 
+// ── Supabase dislike operations ───────────────────────────────────────────────
+// Mirrors the heart functions against a paddle_dislikes table. If the table
+// hasn't been created yet (Supabase migration pending), every call here
+// fails silently — the UI keeps working with optimistic local state, the
+// vote just won't be persisted across sessions.
+
+async function dislikeExists(paddleId: string, userKey: string): Promise<boolean> {
+  try {
+    const { data, error } = await supabase
+      .from("paddle_dislikes")
+      .select("paddle_id")
+      .eq("paddle_id", paddleId)
+      .eq("user_key", userKey)
+      .maybeSingle();
+    if (error) return false;
+    return data !== null;
+  } catch {
+    return false;
+  }
+}
+
+async function addDislike(paddleId: string, userKey: string): Promise<void> {
+  try {
+    const { error } = await supabase
+      .from("paddle_dislikes")
+      .upsert({ paddle_id: paddleId, user_key: userKey }, { onConflict: "paddle_id,user_key" });
+    if (error) console.warn("[useReactions] dislike insert failed (table missing?):", error.message);
+  } catch (e) {
+    console.warn("[useReactions] dislike insert exception:", e);
+  }
+}
+
+async function removeDislike(paddleId: string, userKey: string): Promise<void> {
+  try {
+    const { error } = await supabase
+      .from("paddle_dislikes")
+      .delete()
+      .eq("paddle_id", paddleId)
+      .eq("user_key", userKey);
+    if (error) console.warn("[useReactions] dislike delete failed:", error.message);
+  } catch (e) {
+    console.warn("[useReactions] dislike delete exception:", e);
+  }
+}
+
 // ── Hook ──────────────────────────────────────────────────────────────────────
 
 export function useReactions(paddleId: string) {
   const [reaction, setReaction] = useState<Reaction>(null);
 
-  // Load initial state from Supabase on mount
+  // Load initial state from Supabase on mount — check both heart + dislike
+  // tables so the button reflects the user's saved vote across both axes.
   useEffect(() => {
     const userKey = getUserKey();
-    heartExists(paddleId, userKey).then((hearted) => {
-      setReaction(hearted ? "heart" : null);
+    Promise.all([
+      heartExists(paddleId, userKey),
+      dislikeExists(paddleId, userKey),
+    ]).then(([hearted, disliked]) => {
+      setReaction(hearted ? "heart" : disliked ? "dislike" : null);
     });
   }, [paddleId]);
 
   const toggle = useCallback((r: "heart" | "dislike") => {
-    if (r === "dislike") {
-      // Dislike is UI-only — not stored anywhere
-      setReaction((prev) => (prev === "dislike" ? null : "dislike"));
-      return;
-    }
-
-    // Heart: optimistic update then sync to Supabase
+    // Toggling thumbs-up while a dislike is set (or vice versa) needs to
+    // clean up the OTHER reaction in the DB too, so each user contributes
+    // at most one vote in one direction. Tracked via the prev state.
     setReaction((prev) => {
-      const next: Reaction = prev === "heart" ? null : "heart";
       const userKey = getUserKey();
-      if (next === "heart") {
-        addHeart(paddleId, userKey).then(() => {
-          window.dispatchEvent(new CustomEvent("hearts-updated", { detail: { paddleId, delta: 1 } }));
-        });
+      const next: Reaction = prev === r ? null : r;
+
+      if (r === "heart") {
+        if (next === "heart") {
+          addHeart(paddleId, userKey).then(() => {
+            window.dispatchEvent(new CustomEvent("hearts-updated", { detail: { paddleId, delta: 1 } }));
+          });
+          // Switching from dislike → heart: also remove the prior dislike.
+          if (prev === "dislike") {
+            removeDislike(paddleId, userKey).then(() => {
+              window.dispatchEvent(new CustomEvent("dislikes-updated", { detail: { paddleId, delta: -1 } }));
+            });
+          }
+        } else {
+          removeHeart(paddleId, userKey).then(() => {
+            window.dispatchEvent(new CustomEvent("hearts-updated", { detail: { paddleId, delta: -1 } }));
+          });
+        }
       } else {
-        removeHeart(paddleId, userKey).then(() => {
-          window.dispatchEvent(new CustomEvent("hearts-updated", { detail: { paddleId, delta: -1 } }));
-        });
+        // r === "dislike"
+        if (next === "dislike") {
+          addDislike(paddleId, userKey).then(() => {
+            window.dispatchEvent(new CustomEvent("dislikes-updated", { detail: { paddleId, delta: 1 } }));
+          });
+          if (prev === "heart") {
+            removeHeart(paddleId, userKey).then(() => {
+              window.dispatchEvent(new CustomEvent("hearts-updated", { detail: { paddleId, delta: -1 } }));
+            });
+          }
+        } else {
+          removeDislike(paddleId, userKey).then(() => {
+            window.dispatchEvent(new CustomEvent("dislikes-updated", { detail: { paddleId, delta: -1 } }));
+          });
+        }
       }
       return next;
     });

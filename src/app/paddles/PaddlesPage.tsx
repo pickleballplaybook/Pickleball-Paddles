@@ -100,36 +100,42 @@ function PaddlesInner({ paddles, priceCache }: { paddles: Paddle[]; priceCache: 
   const [sortHeartCounts, setSortHeartCounts] = useState<HeartCountMap>({});
   // displayHeartCounts — shown on cards, updated optimistically on click
   const [displayHeartCounts, setDisplayHeartCounts] = useState<HeartCountMap>({});
+  // Mirror for dislike counts. Same dual sort/display pattern — display
+  // updates immediately on click via the dislikes-updated event.
+  const [displayDislikeCounts, setDisplayDislikeCounts] = useState<HeartCountMap>({});
   const [loadingHearts, setLoadingHearts] = useState(true);
   const [pageSize,  setPageSize]  = useState(20);
   const [page,      setPage]      = useState(1);
 
-  // Load aggregated heart counts directly from Supabase (bypasses API caching)
-  async function loadHeartCounts() {
+  // Load aggregated heart + dislike counts directly from Supabase. Hearts
+  // and dislikes are independent — the dislike fetch fails-soft so a missing
+  // paddle_dislikes table (migration pending) keeps the rest of the page
+  // working with thumbs-down counts at 0.
+  async function loadReactionCounts() {
     try {
-      const { data, error } = await supabase
-        .from("paddle_hearts")
-        .select("paddle_id");
-      if (error || !data) return;
-      const map: HeartCountMap = {};
-      for (const row of data) {
-        map[row.paddle_id] = (map[row.paddle_id] ?? 0) + 1;
-      }
-      setSortHeartCounts(map);
-      setDisplayHeartCounts(map);
+      const [{ data: hearts }, { data: dislikes }] = await Promise.all([
+        supabase.from("paddle_hearts").select("paddle_id"),
+        supabase.from("paddle_dislikes").select("paddle_id").then((r) => r.error ? { data: [] } : r),
+      ]);
+      const hmap: HeartCountMap = {};
+      for (const row of hearts ?? []) hmap[row.paddle_id] = (hmap[row.paddle_id] ?? 0) + 1;
+      setSortHeartCounts(hmap);
+      setDisplayHeartCounts(hmap);
+      const dmap: HeartCountMap = {};
+      for (const row of dislikes ?? []) dmap[row.paddle_id] = (dmap[row.paddle_id] ?? 0) + 1;
+      setDisplayDislikeCounts(dmap);
     } catch (err) {
-      console.error("[PaddlesPage] Failed to load heart counts:", err);
+      console.error("[PaddlesPage] Failed to load reaction counts:", err);
     } finally {
       setLoadingHearts(false);
     }
   }
 
-  // Fetch user's reactions and heart counts on mount
+  // Fetch user's reactions + counts on mount
   useEffect(() => {
     fetchUserReactionMap().then(setReactions);
-    loadHeartCounts();
+    loadReactionCounts();
 
-    // On heart click: only update display count (no re-sort, no page jump)
     function onHeartsUpdated(e: Event) {
       const ev = e as CustomEvent<{ paddleId?: string; delta?: number }>;
       const { paddleId, delta } = ev.detail ?? {};
@@ -140,9 +146,23 @@ function PaddlesInner({ paddles, priceCache }: { paddles: Paddle[]; priceCache: 
         }));
       }
     }
+    function onDislikesUpdated(e: Event) {
+      const ev = e as CustomEvent<{ paddleId?: string; delta?: number }>;
+      const { paddleId, delta } = ev.detail ?? {};
+      if (paddleId != null && delta != null) {
+        setDisplayDislikeCounts((prev) => ({
+          ...prev,
+          [paddleId]: Math.max(0, (prev[paddleId] ?? 0) + delta),
+        }));
+      }
+    }
 
     window.addEventListener("hearts-updated", onHeartsUpdated);
-    return () => window.removeEventListener("hearts-updated", onHeartsUpdated);
+    window.addEventListener("dislikes-updated", onDislikesUpdated);
+    return () => {
+      window.removeEventListener("hearts-updated", onHeartsUpdated);
+      window.removeEventListener("dislikes-updated", onDislikesUpdated);
+    };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Slice [5,6] from the shared hourly shuffle — unique across homepage [0,1,2] and reviews [3,4]
@@ -245,7 +265,13 @@ function PaddlesInner({ paddles, priceCache }: { paddles: Paddle[]; priceCache: 
               <div key={si}>
                 <div className={`${GRID} mb-8`}>
                   {seg.paddles.map((paddle, i) => (
-                    <PaddleCard key={paddle.id} paddle={paddle} index={segOffset + i} heartCount={displayHeartCounts[paddle.id] ?? 0} />
+                    <PaddleCard
+                      key={paddle.id}
+                      paddle={paddle}
+                      index={segOffset + i}
+                      heartCount={displayHeartCounts[paddle.id] ?? 0}
+                      dislikeCount={displayDislikeCounts[paddle.id] ?? 0}
+                    />
                   ))}
                 </div>
                 {/* Insert promo after every chunk except the last */}

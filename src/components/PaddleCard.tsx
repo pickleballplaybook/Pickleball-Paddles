@@ -1,17 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { Bookmark, ThumbsDown } from "lucide-react";
 import { Paddle } from "@/types";
-import { useReactions } from "@/hooks/useReactions";
 import { buyAtLabel } from "@/lib/buyAtLabel";
 import { isPreLaunch } from "@/lib/launchStatus";
+import VotePill from "@/components/VotePill";
+import CopyableCode from "@/components/CopyableCode";
 
 interface PaddleCardProps {
   paddle: Paddle;
   priority?: boolean;
   index?: number;
+  /** Renamed in usage to upCount but kept this name to avoid touching callers. */
   heartCount?: number;
+  /** Live thumbs-down count. Defaults to 0 if not passed. */
+  dislikeCount?: number;
 }
 
 const BADGE_STYLES: Record<string, string> = {
@@ -60,9 +63,7 @@ function calcDiscountedPrice(price: string, amountOff: string): string | null {
   return `$${discounted.toFixed(2)}`;
 }
 
-export default function PaddleCard({ paddle, index = 0, heartCount = 0 }: PaddleCardProps) {
-  const { reaction, toggle } = useReactions(paddle.id);
-
+export default function PaddleCard({ paddle, index = 0, heartCount = 0, dislikeCount = 0 }: PaddleCardProps) {
   const hasDiscount = !!paddle.discountLink?.trim();
   const reviewLink  = paddle.reviewUrl ?? (paddle.manualVideoId ? `https://youtu.be/${paddle.manualVideoId}` : null);
   const hasReview   = !!reviewLink;
@@ -214,9 +215,19 @@ export default function PaddleCard({ paddle, index = 0, heartCount = 0 }: Paddle
           ))}
         </div>
 
-        {/* Discount badge — show the code for any paddle that has a usable code:
-            (a) real $/% discount, OR
-            (b) Selkirk paddle on selkirk.com (gift-card perks via INF-PLAYBOOK). */}
+        {/* Vote pill + Save % — sits above the discount code so the user
+            reads (votes, then deal, then buy) top-to-bottom. */}
+        <div className="flex items-center justify-between gap-2 mb-3">
+          <VotePill paddleId={paddle.id} upCount={heartCount} downCount={dislikeCount} size="sm" />
+          {!!paddle.amountOff && paddle.amountOff !== "$0" && paddle.amountOff !== "" && (
+            <span className="text-xs font-semibold" style={{ color: "var(--discount-text)" }}>
+              Save {paddle.amountOff}
+            </span>
+          )}
+        </div>
+
+        {/* Discount code chip — "Code: PLAYBOOK 📋", dashed teal outline,
+            copy-to-clipboard. Suppressed for paddles without a usable code. */}
         {(() => {
           const hasRealDiscount = !!paddle.amountOff && paddle.amountOff !== "$0" && paddle.amountOff !== "";
           const isSelkirk = paddle.brand === "Selkirk" || paddle.brand === "SLK";
@@ -224,18 +235,8 @@ export default function PaddleCard({ paddle, index = 0, heartCount = 0 }: Paddle
           if (!hasRealDiscount && !isSelkirkGiftCard) return null;
           const code = isSelkirk && !paddle.discountLink?.includes("lockerroompickleball.com") ? "INF-PLAYBOOK" : "PLAYBOOK";
           return (
-            <div className="flex items-center gap-1.5 mb-3">
-              {/* Outline-only treatment — keeps the code visible without
-                  visually competing with the primary Buy CTA below. */}
-              <span className="text-xs font-mono font-bold text-brand-600 bg-transparent border border-dashed border-brand-400 px-2 py-0.5 rounded tracking-widest">
-                {code}
-              </span>
-              {hasRealDiscount && (
-                <>
-                  <span className="text-xs" style={{ color: "var(--text-muted)" }}>·</span>
-                  <span className="text-xs font-semibold" style={{ color: "var(--discount-text)" }}>Save {paddle.amountOff}</span>
-                </>
-              )}
+            <div className="mb-3">
+              <CopyableCode code={code} />
             </div>
           );
         })()}
@@ -243,85 +244,49 @@ export default function PaddleCard({ paddle, index = 0, heartCount = 0 }: Paddle
         {/* ── CTAs ──────────────────────────────────────────────────────────── */}
         <div className="space-y-2">
 
-          {/* Primary CTA + compact reactions */}
-          <div className="flex items-center gap-2">
-
-            {/* Primary — theme-responsive bg (black in light mode, white in dark) */}
-            {preLaunch ? (
-              <span
-                className="flex-1 inline-flex items-center justify-center gap-1.5 font-semibold rounded-xl text-sm py-2.5"
-                style={{
-                  background: "var(--flip-bg-card)",
-                  color: "var(--flip-text-muted)",
-                  border: "1px dashed var(--code-border)",
-                }}
-              >
-                Coming Soon
-              </span>
-            ) : hasDiscount ? (
-              <a
-                href={paddle.discountLink}
-                target="_blank"
-                rel="noopener noreferrer sponsored"
-                className="flex-1 inline-flex items-center justify-center gap-1.5 font-semibold rounded-xl text-sm py-2.5 transition-all active:scale-[0.98]"
-                style={{ background: "var(--btn-buy-bg)", color: "var(--btn-buy-text)" }}
-              >
-                {buyAtLabel(paddle.brand)}
-              </a>
-            ) : hasReview ? (
-              <a
-                href={reviewLink!}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 inline-flex items-center justify-center gap-2 text-sm py-2.5 rounded-xl font-medium transition-colors"
-                style={{ background: "var(--bg-alt)", color: "#cbd5e1", border: "1px solid var(--border)" }}
-              >
-                <span style={{ color: "#dc2626" }}><YouTubeIcon className="w-4 h-4" /></span>
-                Watch Review
-              </a>
-            ) : (
-              <button
-                disabled
-                className="flex-1 inline-flex items-center justify-center text-sm py-2.5 rounded-xl font-semibold cursor-not-allowed opacity-40"
-                style={{ background: "var(--bg-alt)", color: "var(--text-muted)" }}
-              >
-                Link Coming Soon
-              </button>
-            )}
-
-            {/* Compact reactions */}
-            <div className="flex items-center gap-0.5 flex-shrink-0">
-              <button
-                onClick={() => toggle("heart")}
-                aria-label="Save paddle"
-                className="p-2 rounded-lg transition-all duration-150 active:scale-90"
-                style={{ color: reaction === "heart" ? "#2dd4bf" : "var(--text-muted)" }}
-              >
-                <Bookmark
-                  className="w-4 h-4"
-                  fill={reaction === "heart" ? "currentColor" : "none"}
-                  strokeWidth={2}
-                />
-              </button>
-              {heartCount > 0 && (
-                <span className="text-xs font-semibold tabular-nums mr-1" style={{ color: "var(--text-muted)" }}>
-                  {heartCount}
-                </span>
-              )}
-              <button
-                onClick={() => toggle("dislike")}
-                aria-label="Not for me"
-                className="p-2 rounded-lg transition-all duration-150 active:scale-90"
-                style={{ color: reaction === "dislike" ? "var(--text-secondary)" : "var(--text-muted)" }}
-              >
-                <ThumbsDown
-                  className="w-4 h-4"
-                  fill={reaction === "dislike" ? "currentColor" : "none"}
-                  strokeWidth={2}
-                />
-              </button>
-            </div>
-          </div>
+          {/* Primary CTA — full-width now that the reactions live above
+              instead of competing for the same row. */}
+          {preLaunch ? (
+            <span
+              className="block w-full inline-flex items-center justify-center gap-1.5 font-semibold rounded-xl text-sm py-2.5"
+              style={{
+                background: "var(--flip-bg-card)",
+                color: "var(--flip-text-muted)",
+                border: "1px dashed var(--code-border)",
+              }}
+            >
+              Coming Soon
+            </span>
+          ) : hasDiscount ? (
+            <a
+              href={paddle.discountLink}
+              target="_blank"
+              rel="noopener noreferrer sponsored"
+              className="block w-full inline-flex items-center justify-center gap-1.5 font-semibold rounded-xl text-sm py-2.5 transition-all active:scale-[0.98]"
+              style={{ background: "var(--btn-buy-bg)", color: "var(--btn-buy-text)" }}
+            >
+              {buyAtLabel(paddle.brand)}
+            </a>
+          ) : hasReview ? (
+            <a
+              href={reviewLink!}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full inline-flex items-center justify-center gap-2 text-sm py-2.5 rounded-xl font-medium transition-colors"
+              style={{ background: "var(--bg-alt)", color: "#cbd5e1", border: "1px solid var(--border)" }}
+            >
+              <span style={{ color: "#dc2626" }}><YouTubeIcon className="w-4 h-4" /></span>
+              Watch Review
+            </a>
+          ) : (
+            <button
+              disabled
+              className="block w-full inline-flex items-center justify-center text-sm py-2.5 rounded-xl font-semibold cursor-not-allowed opacity-40"
+              style={{ background: "var(--bg-alt)", color: "var(--text-muted)" }}
+            >
+              Link Coming Soon
+            </button>
+          )}
 
           {/* Secondary — Watch Review */}
           {hasDiscount && hasReview && (

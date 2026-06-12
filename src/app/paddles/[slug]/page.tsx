@@ -687,7 +687,8 @@ export default async function PaddleDetailPage({ params }: Props) {
               <ViewCounter slug={paddle.slug} type="paddle" />
             </div>
 
-            {/* Save / reactions */}
+            {/* Thumbs up / thumbs down — live counts, one vote per browser.
+                Sits directly below the star rating per the spec. */}
             <div className="mb-5">
               <ReactionButtons paddleId={paddle.id} />
             </div>

@@ -1,0 +1,56 @@
+"use client";
+
+import { useState } from "react";
+import { Copy, Check } from "lucide-react";
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  CopyableCode
+//  "Code: PLAYBOOK 📋" chip — dashed teal outline (intentionally different
+//  from solid-pill discount chips elsewhere in the space), small copy icon
+//  that briefly turns into a check after a successful clipboard write.
+//  Used on every PaddleCard.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export default function CopyableCode({ code }: { code: string }) {
+  const [copied, setCopied] = useState(false);
+
+  async function handleCopy(e: React.MouseEvent) {
+    // Stop the click from bubbling into the surrounding <Link> wrapper —
+    // copying the code shouldn't navigate to the paddle page.
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1600);
+    } catch {
+      // Some browsers gate clipboard access — fall back to a manual select.
+      // Rare in practice; we just silently no-op.
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={handleCopy}
+      aria-label={`Copy discount code ${code}`}
+      title={`Copy ${code}`}
+      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono font-bold tracking-wider transition-colors"
+      style={{
+        background: "transparent",
+        border: "1px dashed rgba(45,212,191,0.55)",
+        color: "#2dd4bf",
+      }}
+    >
+      <span className="font-sans font-semibold tracking-normal" style={{ color: "rgba(45,212,191,0.65)" }}>
+        Code:
+      </span>
+      <span>{code}</span>
+      {copied ? (
+        <Check className="w-3 h-3 ml-0.5" strokeWidth={2.5} />
+      ) : (
+        <Copy className="w-3 h-3 ml-0.5 opacity-80" strokeWidth={2} />
+      )}
+    </button>
+  );
+}
