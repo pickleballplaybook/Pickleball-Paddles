@@ -227,9 +227,11 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
     twist:   { fill: TEAL_FILL, glow: TEAL_GLOW },
     balance: { fill: TEAL_FILL, glow: TEAL_GLOW },
   };
-  // Balance line + label color also teal — keeps the whole stat treatment
-  // single-color rather than the previous amber accent.
-  const BAL_ACCENT = "rgba(45,212,191,0.65)";
+  // Balance line + 'BAL PT' label use the site's yellow-green discount
+  // accent (#defa32). It's the one place we let a non-teal color through
+  // on the card so the line stays visible against the now all-teal stat
+  // bars — the previous teal-on-teal treatment was getting lost.
+  const BAL_ACCENT = "rgba(222,250,50,0.75)";
 
   // Vertical position (% from bottom of paddle image) where the balance
   // line should sit on the paddle. Clamped to leave a little headroom
