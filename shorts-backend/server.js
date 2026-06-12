@@ -390,6 +390,70 @@ app.post('/api/process', async (req, res) => {
   });
 });
 
+// Sibling of /api/process for the laptop-driven yt-dlp flow. The caller (the
+// local-ytdlp CLI) has already pushed the video file through the existing
+// chunked-upload pipeline (/api/upload-reserve + /api/file-upload/<id>/chunk)
+// and now hands us the resulting path so we can skip the download stage
+// entirely and run the same analyze + cut + clip pipeline.
+//
+// videoPath must resolve to a file under UPLOADS_DIR — anything else is
+// rejected so a misbehaving client can't read arbitrary disk.
+app.post('/api/process-local', express.json(), async (req, res) => {
+  const { videoPath, sourceUrl } = req.body || {};
+  if (typeof videoPath !== 'string' || !videoPath) {
+    return res.status(400).json({ error: 'videoPath is required' });
+  }
+
+  const abs = path.resolve(videoPath);
+  const root = path.resolve(UPLOADS_DIR);
+  if (!abs.startsWith(root + path.sep) && abs !== root) {
+    return res.status(400).json({ error: 'videoPath must live under UPLOADS_DIR' });
+  }
+  if (!fs.existsSync(abs)) {
+    return res.status(404).json({ error: 'videoPath does not exist' });
+  }
+
+  try { diskCleanup(); } catch (err) {
+    console.error('[cleanup] pre-job cleanup failed (continuing):', err.message);
+  }
+
+  const jobId = uuidv4();
+  // jobDir is created so analyzeAndCutVideo can write intermediate audio /
+  // transcript files into it, and so the existing rmSync(jobDir) at the
+  // end of the pipeline has a place to clean up.
+  const jobDir = path.join(JOBS_DIR, jobId);
+  fs.mkdirSync(jobDir, { recursive: true });
+  fs.mkdirSync(path.join(OUTPUT_DIR, jobId), { recursive: true });
+
+  jobs[jobId] = {
+    jobId,
+    youtubeUrl: typeof sourceUrl === 'string' ? sourceUrl : '',
+    createdAt: new Date().toISOString(),
+    status: 'queued',
+    message: 'Starting (local ingest)…',
+    clips: [],
+  };
+  persistJob(jobId);
+  res.json({ jobId });
+
+  analyzeAndCutVideo(jobId, jobDir, abs)
+    .catch(err => setJobStatus(jobId, { status: 'error', message: err.message }))
+    .finally(() => {
+      // Remove the uploaded source's per-upload dir so a successful run
+      // doesn't leak the 100–300 MB file under /tmp/shorts-uploads. The
+      // 24 h UPLOAD_TTL_MS sweep would eventually catch it, but cleaning
+      // immediately keeps headroom on the container disk.
+      try {
+        const parent = path.dirname(abs);
+        if (parent !== UPLOADS_DIR && parent.startsWith(root + path.sep)) {
+          fs.rmSync(parent, { recursive: true, force: true });
+        }
+      } catch (cleanupErr) {
+        console.error('[process-local] upload cleanup failed:', cleanupErr.message);
+      }
+    });
+});
+
 app.get('/api/status/:jobId', (req, res) => {
   const job = jobs[req.params.jobId];
   if (!job) return res.status(404).json({ error: 'Job not found' });
@@ -700,6 +764,15 @@ async function processVideo(jobId, jobDir, youtubeUrl) {
     );
   }
 
+  await analyzeAndCutVideo(jobId, jobDir, videoPath);
+}
+
+// Stages 2–6 of the original processVideo() pipeline (audio extract →
+// Whisper transcript → Claude clip selection → ffmpeg cut → cleanup),
+// factored out so the local-yt-dlp ingest path (/api/process-local) can
+// run them against a video that was uploaded from a laptop instead of
+// downloaded by Railway. videoPath must already exist on disk.
+async function analyzeAndCutVideo(jobId, jobDir, videoPath) {
   // 2. Extract audio for Whisper
   // Whisper has a hard 25 MB file cap. -q:a 0 (highest VBR quality) was
   // producing ~245 kbps MP3s that blew past 25 MB for any video >~14 min.
