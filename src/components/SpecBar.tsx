@@ -70,13 +70,14 @@ const SPEC_META: Record<SpecKind, {
   },
 };
 
-// Three colors mapped to zones — same palette the site uses elsewhere for
-// the play-style badges (indigo / teal / orange) so the meaning stays
-// consistent across the paddle page.
+// All bars use the brand teal — the zone descriptor chip in the top-right
+// of each card carries the meaning (Whippy / Balanced / Head-Heavy etc.)
+// so the card color doesn't need to differentiate. Cohesive premium look
+// instead of the previous indigo/teal/orange spread.
 const ZONE_COLORS = {
-  low:  { accent: "129, 140, 248" }, // indigo-400
-  avg:  { accent: "45, 212, 191"  }, // teal-300
-  high: { accent: "251, 146, 60"  }, // orange-400
+  low:  { accent: "45, 212, 191" }, // teal-300
+  avg:  { accent: "45, 212, 191" }, // teal-300
+  high: { accent: "45, 212, 191" }, // teal-300
 } as const;
 
 export default function SpecBar({ label, value, unit = "", min, max, avg, kind = "generic", descriptor }: Props) {

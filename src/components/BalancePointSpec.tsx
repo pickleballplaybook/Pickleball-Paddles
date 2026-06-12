@@ -46,33 +46,33 @@ interface BalanceCategory {
   accentRgb: string;
 }
 
-// Category accents intentionally match the site's existing play-style
-// colorway (indigo / teal / orange) so the Balance Point card reads as
-// part of the same design system rather than a one-off coloring scheme.
-//   HEAD-LIGHT  →  indigo (#818cf8) — same as the control-style badge,
-//                  the hand-speed / quickness association.
-//   NEUTRAL     →  teal (#2dd4bf)   — the site's brand accent.
-//   HEAD-HEAVY  →  orange (#fb923c) — same as the power-style badge,
-//                  the plow-through / mass association.
+// All three categories use the brand teal — the LABEL carries the meaning
+// (HEAD-LIGHT / AVERAGE / HEAD-HEAVY) so the card stays cohesive with the
+// rest of the SpecBar treatments on the paddle page instead of swapping
+// colors per category. The 'AVERAGE' middle band intentionally avoids
+// 'Neutral Balance' or 'Perfectly Balanced' — it just means 'sits in the
+// typical band of pickleball paddles', which is what an average paddle is.
+const TEAL_RGB = "45, 212, 191";
+
 function categorize(bp: number): BalanceCategory {
   if (bp < 23.5) {
     return {
       label: "HEAD-LIGHT",
-      tagline: "Faster hand speed — quicker through the air",
-      accentRgb: "129, 140, 248",  // indigo-400 — site's control-style color
+      tagline: "Faster hand speed — quicker through the air.",
+      accentRgb: TEAL_RGB,
     };
   }
   if (bp <= 24.5) {
     return {
-      label: "NEUTRAL BALANCE",
-      tagline: "Even feel — versatile across the court",
-      accentRgb: "45, 212, 191",   // teal-300 — site brand accent
+      label: "AVERAGE",
+      tagline: "Sits in the typical balance band — versatile across the court.",
+      accentRgb: TEAL_RGB,
     };
   }
   return {
     label: "HEAD-HEAVY",
-    tagline: "More plow-through — extra mass behind the ball",
-    accentRgb: "251, 146, 60",   // orange-400 — site's power-style color
+    tagline: "More plow-through — extra mass behind the ball.",
+    accentRgb: TEAL_RGB,
   };
 }
 

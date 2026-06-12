@@ -72,13 +72,19 @@ function useWeightedViews(days: number) {
   return { views, loaded };
 }
 
-// ── Stat bar ranges (from actual paddle database) ────────────────────────────
+// ── Stat bar ranges + zone descriptor labels ────────────────────────────────
+// `zones` are read by StatBar to render a small uppercase descriptor under
+// each value. Same vocabulary the SpecBar component uses on individual
+// paddle pages so the language is consistent across surfaces.
+//   Balance uses the user-approved trio: HEAD-LIGHT · AVERAGE · HEAD-HEAVY
+//   (no 'Neutral' or 'Perfectly Balanced' since each paddle's actual
+//    balance varies and 'average' just means 'sits in the typical band'.)
 
 const RANGES = {
-  weight:       { min: 7.2, max: 9.2,  unit: "oz" },
-  swingWeight:  { min: 95,  max: 125,  unit: "" },
-  twistWeight:  { min: 4.5, max: 7.5,  unit: "" },
-  balancePoint: { min: 22,  max: 26,   unit: "cm" },
+  weight:       { min: 7.2, max: 9.2,  unit: "oz", zones: ["Light",      "Average",  "Heavy"]      as const },
+  swingWeight:  { min: 95,  max: 125,  unit: "",   zones: ["Whippy",     "Balanced", "Head-Heavy"] as const },
+  twistWeight:  { min: 4.5, max: 7.5,  unit: "",   zones: ["Demanding",  "Forgiving","Forgiving+"] as const },
+  balancePoint: { min: 22,  max: 26,   unit: "cm", zones: ["Head-Light", "Average",  "Head-Heavy"] as const },
 };
 
 // Reference paddle length used to position the balance-point indicator line
@@ -93,10 +99,19 @@ function normalize(value: number, min: number, max: number): number {
   return Math.max(0, Math.min(1, (value - min) / (max - min)));
 }
 
-function StatBar({ label, value, displayValue, min, max, fill, glow }: {
-  label: string; value: number; displayValue: string; min: number; max: number; fill: string; glow: string;
+function StatBar({ label, value, displayValue, min, max, fill, glow, zones }: {
+  label: string; value: number; displayValue: string; min: number; max: number;
+  fill: string; glow: string;
+  zones?: readonly [string, string, string];
 }) {
   const pct = normalize(value, min, max) * 100;
+  // Zone descriptor — simple thirds split since we don't have a per-spec
+  // catalog average available here. Picks the matching word from the
+  // RANGES.<spec>.zones triple ("Light" / "Average" / "Heavy" etc.) so
+  // the language matches the SpecBar component on individual paddle pages.
+  const zoneIdx = pct < 33.4 ? 0 : pct > 66.6 ? 2 : 1;
+  const descriptor = zones?.[zoneIdx];
+
   return (
     <div className="flex items-center gap-3">
       <span
@@ -121,12 +136,22 @@ function StatBar({ label, value, displayValue, min, max, fill, glow }: {
           }}
         />
       </div>
-      <span
-        className="text-[11px] font-extrabold font-mono w-[52px] flex-shrink-0 tabular-nums"
-        style={{ color: "rgba(255,255,255,0.88)", letterSpacing: "0.02em" }}
-      >
-        {displayValue}
-      </span>
+      <div className="flex flex-col items-end leading-tight w-[78px] flex-shrink-0">
+        <span
+          className="text-[11px] font-extrabold font-mono tabular-nums"
+          style={{ color: "rgba(255,255,255,0.88)", letterSpacing: "0.02em" }}
+        >
+          {displayValue}
+        </span>
+        {descriptor && (
+          <span
+            className="text-[8px] font-bold uppercase tracking-wider mt-0.5 whitespace-nowrap"
+            style={{ color: "rgba(45,212,191,0.78)", letterSpacing: "0.12em" }}
+          >
+            {descriptor}
+          </span>
+        )}
+      </div>
     </div>
   );
 }
@@ -190,37 +215,21 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
     : rankStyles.teal;
   const isTopRank = rank === 1;  // used elsewhere for the gold dot indicator below
 
-  // Stat-bar palette — twist swapped from champagne gold to soft indigo
-  // (matches the control-style color used elsewhere on the site) so the
-  // bar trio reads as a cool slate/teal/indigo gradient that vibes with
-  // the rest of the dark navy palette.
+  // All bars use the brand teal — the descriptor under each value carries
+  // the meaning (Light / Average / Heavy etc.) so the bar color doesn't
+  // need to differentiate. Reads as a cohesive premium dashboard instead
+  // of a multi-color stack.
+  const TEAL_FILL = "linear-gradient(90deg, #0d9488 0%, #14b8a6 50%, #5eead4 100%)";
+  const TEAL_GLOW = "0 0 8px rgba(45,212,191,0.40)";
   const BARS = {
-    weight: {
-      fill: "linear-gradient(90deg, #64748b 0%, #94a3b8 60%, #cbd5e1 100%)",
-      glow: "0 0 6px rgba(203,213,225,0.25)",
-    },
-    swing: {
-      fill: "linear-gradient(90deg, #0d9488 0%, #14b8a6 50%, #5eead4 100%)",
-      glow: "0 0 8px rgba(45,212,191,0.40)",
-    },
-    // Sky cyan for twist — cool, vivid, brand-adjacent, clearly distinct
-    // from the teal swing-weight bar without competing with it.
-    twist: {
-      fill: "linear-gradient(90deg, #0ea5e9 0%, #38bdf8 50%, #7dd3fc 100%)",
-      glow: "0 0 8px rgba(56,189,248,0.40)",
-    },
-    // Muted amber for balance — single warm accent in a row of three cool
-    // bars, so the new row stands out as the special spec without
-    // screaming. Coral was too candy-pink for the navy aesthetic.
-    balance: {
-      fill: "linear-gradient(90deg, #d97706 0%, #f59e0b 50%, #fcd34d 100%)",
-      glow: "0 0 8px rgba(245,158,11,0.40)",
-    },
+    weight:  { fill: TEAL_FILL, glow: TEAL_GLOW },
+    swing:   { fill: TEAL_FILL, glow: TEAL_GLOW },
+    twist:   { fill: TEAL_FILL, glow: TEAL_GLOW },
+    balance: { fill: TEAL_FILL, glow: TEAL_GLOW },
   };
-  // Single source of truth for the balance accent color — used for the
-  // dashed line behind the paddle and the small 'BAL PT' label below it
-  // so they read as one visual element.
-  const BAL_ACCENT = "rgba(245,158,11,0.65)"; // amber-500 @ ~65%
+  // Balance line + label color also teal — keeps the whole stat treatment
+  // single-color rather than the previous amber accent.
+  const BAL_ACCENT = "rgba(45,212,191,0.65)";
 
   // Vertical position (% from bottom of paddle image) where the balance
   // line should sit on the paddle. Clamped to leave a little headroom
@@ -425,6 +434,7 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
                 max={RANGES.weight.max}
                 fill={BARS.weight.fill}
                 glow={BARS.weight.glow}
+                zones={RANGES.weight.zones}
               />
               {paddle.swingWeight > 0 && (
                 <StatBar
@@ -435,6 +445,7 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
                   max={RANGES.swingWeight.max}
                   fill={BARS.swing.fill}
                   glow={BARS.swing.glow}
+                  zones={RANGES.swingWeight.zones}
                 />
               )}
               {paddle.twistWeight > 0 && (
@@ -446,6 +457,7 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
                   max={RANGES.twistWeight.max}
                   fill={BARS.twist.fill}
                   glow={BARS.twist.glow}
+                  zones={RANGES.twistWeight.zones}
                 />
               )}
               {typeof paddle.balancePoint === "number" && (
@@ -457,6 +469,7 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
                   max={RANGES.balancePoint.max}
                   fill={BARS.balance.fill}
                   glow={BARS.balance.glow}
+                  zones={RANGES.balancePoint.zones}
                 />
               )}
             </div>
