@@ -339,7 +339,15 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
                       <div className="flex items-center gap-1.5 flex-shrink-0">
                         <span className="inline-flex items-center gap-1 text-[11px]" style={{ color: "var(--flip-text-muted)" }}>
                           <Eye className="w-3 h-3" />
-                          {views >= 1000 ? `${(views / 1000).toFixed(1)}k` : views}
+                          {/* `views` is the time-decayed weighted score the
+                              ranking uses internally; we round it for the
+                              display because nobody hovers a paddle for 0.5
+                              of a view. The exact decimal still drives the
+                              ranking sort above. */}
+                          {(() => {
+                            const v = Math.round(views);
+                            return v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v;
+                          })()}
                         </span>
                         {hasLink && (
                           <a
@@ -469,7 +477,10 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
                       </div>
                       <span className="inline-flex items-center gap-1 text-[11px] flex-shrink-0" style={{ color: "var(--flip-text-muted)" }}>
                         <Eye className="w-3 h-3" />
-                        {brandViews >= 1000 ? `${(brandViews / 1000).toFixed(1)}k` : brandViews}
+                        {(() => {
+                          const v = Math.round(brandViews);
+                          return v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v;
+                        })()}
                       </span>
                     </Link>
                   );
