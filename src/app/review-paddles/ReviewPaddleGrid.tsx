@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Heart, ThumbsDown } from "lucide-react";
+import { Bookmark, ThumbsDown } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useReactions } from "@/hooks/useReactions";
 import { supabase } from "@/lib/supabaseClient";
@@ -58,11 +58,11 @@ function PaddleReviewCard({ paddle, heartCount = 0 }: { paddle: PaddleEntry; hea
       <div className="flex items-center gap-1 flex-shrink-0">
         <button
           onClick={() => toggle("heart")}
-          aria-label="Love this paddle"
+          aria-label="Save this paddle"
           className="p-2 rounded-lg transition-all duration-150 active:scale-90"
-          style={{ color: reaction === "heart" ? "#ef4444" : "var(--text-muted)" }}
+          style={{ color: reaction === "heart" ? "#2dd4bf" : "var(--text-muted)" }}
         >
-          <Heart
+          <Bookmark
             className="w-5 h-5"
             fill={reaction === "heart" ? "currentColor" : "none"}
             strokeWidth={2}

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Heart, ThumbsDown } from "lucide-react";
+import { Bookmark, ThumbsDown } from "lucide-react";
 import { Paddle } from "@/types";
 import { useReactions } from "@/hooks/useReactions";
 import { buyAtLabel } from "@/lib/buyAtLabel";
@@ -293,9 +293,9 @@ export default function PaddleCard({ paddle, index = 0, heartCount = 0 }: Paddle
                 onClick={() => toggle("heart")}
                 aria-label="Save paddle"
                 className="p-2 rounded-lg transition-all duration-150 active:scale-90"
-                style={{ color: reaction === "heart" ? "#ef4444" : "var(--text-muted)" }}
+                style={{ color: reaction === "heart" ? "#2dd4bf" : "var(--text-muted)" }}
               >
-                <Heart
+                <Bookmark
                   className="w-4 h-4"
                   fill={reaction === "heart" ? "currentColor" : "none"}
                   strokeWidth={2}

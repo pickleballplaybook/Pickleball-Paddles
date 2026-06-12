@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowRight, TrendingUp, Star, Heart, Eye, ExternalLink } from "lucide-react";
+import { ArrowRight, TrendingUp, Star, Bookmark, Eye, ExternalLink } from "lucide-react";
 import { Paddle } from "@/types";
 import { getTrendingPaddles, getRisingBrands, engagementScore, isTrendingExcluded, takeTopBySeriesDedup, HeartRecord, MIN_TRENDING_ENGAGEMENT } from "@/lib/trending";
 import { siteConfig } from "@/config/site";
@@ -423,13 +423,13 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
           {/* ── Rising Brands ────────────────────────────────────────────── */}
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <Heart className="w-4 h-4" style={{ color: "#14b8a6" }} strokeWidth={2} />
+              <Bookmark className="w-4 h-4" style={{ color: "#14b8a6" }} strokeWidth={2} />
               <p className="font-extrabold text-base" style={{ color: "var(--flip-text-head)" }}>Rising Brands</p>
             </div>
             <div className="flex flex-col gap-1">
               {brandsSorted.length === 0 ? (
                 <p className="text-sm" style={{ color: "var(--flip-text-muted)" }}>
-                  Heart paddles you like to see top brands here.
+                  Save paddles you like to see top brands here.
                 </p>
               ) : (
                 brandsSorted.map(({ brand, totalHearts, paddleCount, topSlug }, i) => {

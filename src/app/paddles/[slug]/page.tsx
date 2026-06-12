@@ -687,7 +687,7 @@ export default async function PaddleDetailPage({ params }: Props) {
               <ViewCounter slug={paddle.slug} type="paddle" />
             </div>
 
-            {/* Hearts / reactions */}
+            {/* Save / reactions */}
             <div className="mb-5">
               <ReactionButtons paddleId={paddle.id} />
             </div>

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, ArrowUp, ArrowDown, Heart, Star, Eye, ExternalLink } from "lucide-react";
+import { ArrowRight, ArrowUp, ArrowDown, Bookmark, Star, Eye, ExternalLink } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { generateNarrative, RankedPaddle } from "@/lib/weeklyNarrative";
 
@@ -188,9 +188,9 @@ export default function WeeklyRankingsView({ rankings, heading, subheading }: Pr
 
                     {/* Engagement — readable breakdown (composite stays in the DB, not shown) */}
                     <div className="flex items-center flex-wrap gap-1.5 text-[11px]" style={{ color: "var(--text-muted)" }}>
-                      <Heart className="w-3 h-3 flex-shrink-0" style={{ color: "#f87171" }} fill="currentColor" />
+                      <Bookmark className="w-3 h-3 flex-shrink-0" style={{ color: "#2dd4bf" }} fill="currentColor" />
                       <span>
-                        {plural(r.hearts, "heart")} · {plural(r.ratings, "rating")} · {plural(r.views, "view")} this week
+                        {plural(r.hearts, "save")} · {plural(r.ratings, "rating")} · {plural(r.views, "view")} this week
                       </span>
                       {r.ratings > 0 && (
                         <span className="inline-flex items-center gap-0.5 ml-1" style={{ color: "#facc15" }}>

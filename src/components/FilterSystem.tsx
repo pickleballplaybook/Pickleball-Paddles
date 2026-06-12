@@ -19,7 +19,7 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: "control",       label: "Highest Control"     },
   { value: "spin",          label: "Highest Spin"        },
   { value: "twist-weight",  label: "Best Twist Weight"   },
-  { value: "most-hearts",   label: "Most Hearts"         },
+  { value: "most-hearts",   label: "Most Saved"          },
 ];
 
 const PRICE_RANGES = [

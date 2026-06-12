@@ -2,8 +2,8 @@ import { paddles } from "@/data/paddles";
 import ReviewPaddleGrid from "./ReviewPaddleGrid";
 
 export const metadata = {
-  title: "Review Paddles",
-  description: "Share your paddle feedback and help shape what's trending.",
+  title: "Save Paddles to Your Shortlist",
+  description: "Build your personal paddle shortlist. Save paddles you're interested in, skip the ones that aren't for you.",
 };
 
 export default function ReviewPaddlesPage() {
@@ -25,17 +25,17 @@ export default function ReviewPaddlesPage() {
         {/* Header */}
         <div className="mb-10">
           <p className="text-xs font-bold uppercase tracking-widest text-brand-500 mb-2">
-            Community
+            Your Shortlist
           </p>
           <h1
             className="text-3xl font-extrabold tracking-tight mb-2"
             style={{ color: "var(--text-primary)" }}
           >
-            Review Paddles
+            Build Your Paddle Shortlist
           </h1>
           <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-            Heart the paddles you love. Thumbs-down the ones that weren&apos;t for you.
-            Your feedback shapes what&apos;s trending.
+            Tap the bookmark on paddles you&apos;re interested in to save them to your shortlist.
+            Thumbs-down the ones that aren&apos;t for you. View your saved paddles anytime on the Saved page.
           </p>
         </div>
 

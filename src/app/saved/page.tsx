@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Heart, ArrowLeft, ArrowRight } from "lucide-react";
+import { Bookmark, ArrowLeft, ArrowRight } from "lucide-react";
 import { fetchSavedPaddleIds, useReactions } from "@/hooks/useReactions";
 import { paddles } from "@/data/paddles";
 import { Paddle } from "@/types";
@@ -60,10 +60,10 @@ function SavedCard({ paddle }: { paddle: Paddle }) {
         <button
           onClick={() => toggle("heart")}
           aria-label="Remove from saved"
-          className="p-2 rounded-lg transition-colors hover:bg-red-50"
-          style={{ color: "#ef4444" }}
+          className="p-2 rounded-lg transition-colors"
+          style={{ color: "#2dd4bf" }}
         >
-          <Heart className="w-4 h-4" fill="currentColor" strokeWidth={2} />
+          <Bookmark className="w-4 h-4" fill="currentColor" strokeWidth={2} />
         </button>
       </div>
     </div>
@@ -95,14 +95,14 @@ export default function SavedPage() {
         </Link>
 
         <div className="flex items-center gap-3 mb-8">
-          <Heart className="w-5 h-5" style={{ color: "#ef4444" }} fill="currentColor" />
+          <Bookmark className="w-5 h-5" style={{ color: "#2dd4bf" }} fill="currentColor" />
           <h1 className="text-3xl font-extrabold tracking-tight" style={{ color: "var(--text-primary)" }}>
             Saved Paddles
           </h1>
           {savedPaddles.length > 0 && (
             <span
               className="text-xs font-bold px-2 py-0.5 rounded-full"
-              style={{ background: "rgba(239,68,68,0.1)", color: "#ef4444" }}
+              style={{ background: "rgba(20,184,166,0.10)", color: "#2dd4bf" }}
             >
               {savedPaddles.length}
             </span>
@@ -117,17 +117,17 @@ export default function SavedPage() {
           </div>
         ) : savedPaddles.length === 0 ? (
           <div className="text-center py-20">
-            <Heart className="w-10 h-10 mx-auto mb-4 opacity-20" style={{ color: "var(--text-muted)" }} />
+            <Bookmark className="w-10 h-10 mx-auto mb-4 opacity-20" style={{ color: "var(--text-muted)" }} />
             <p className="font-semibold mb-1" style={{ color: "var(--text-primary)" }}>Nothing saved yet</p>
             <p className="text-sm mb-6" style={{ color: "var(--text-muted)" }}>
-              Heart a paddle on its detail page to save it here.
+              Tap the bookmark on any paddle to save it to your shortlist.
             </p>
             <Link href="/paddles" className="btn-secondary text-sm">
               Browse Paddles <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
         ) : (
-          /* Re-load when a card is un-hearted so list updates */
+          /* Re-load when a card is un-saved so list updates */
           <div className="flex flex-col gap-3" onClick={load}>
             {savedPaddles.map((p) => (
               <SavedCard key={p.id} paddle={p} />

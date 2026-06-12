@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
-import { X, Heart } from "lucide-react";
+import { X, Bookmark } from "lucide-react";
 
 export default function TopBar() {
   const [dismissed, setDismissed] = useState(false);
@@ -49,7 +49,7 @@ export default function TopBar() {
             className="md:text-[15px] text-[13px]"
             style={{ margin: 0, fontWeight: 800, lineHeight: 1, letterSpacing: "0.12em", color: "#ffffff" }}
           >
-            BECOME A PADDLE REVIEWER
+            BUILD YOUR PADDLE SHORTLIST
           </p>
 
           {/* Line 2 */}
@@ -57,9 +57,9 @@ export default function TopBar() {
             className="flex items-center justify-center gap-1 md:text-[13px] text-[12px]"
             style={{ margin: "5px 0 0", lineHeight: 1.1, fontWeight: 400, color: "rgba(255,255,255,0.5)" }}
           >
-            Place a
-            <Heart className="w-3 h-3 flex-shrink-0" fill="none" stroke="#f472b6" strokeWidth={2} />
-            on paddles you like
+            Tap
+            <Bookmark className="w-3 h-3 flex-shrink-0" fill="none" stroke="#2dd4bf" strokeWidth={2} />
+            on paddles to save them
           </p>
 
           {/* Line 3 — CTA */}
@@ -69,7 +69,7 @@ export default function TopBar() {
               className="inline-flex items-center gap-1 md:text-[13px] text-[12px]"
               style={{ fontWeight: 600, color: "#2dd4bf", letterSpacing: "0.01em" }}
             >
-              Start Reviewing
+              Start Saving
               <span aria-hidden style={{ fontSize: "0.85em" }}>→</span>
             </Link>
           </div>
