@@ -1,5 +1,4 @@
 import type { Paddle } from "@/types";
-import { getCatalogStats } from "@/lib/catalogStats";
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  BalancePointSpec
@@ -85,18 +84,14 @@ export default function BalancePointSpec({ paddle }: Props) {
 
   const cat = categorize(bp);
 
-  // Bar range pulled from the actual measured catalog. As more paddles get
-  // balance points filled in, the bar widens automatically without anyone
-  // editing constants. ~0.3 cm padding on each end so a paddle equal to
-  // min or max doesn't pin the marker to the absolute edge.
-  const stats = getCatalogStats().balancePoint;
-  const barMin = stats.min > 0 ? stats.min - 0.3 : 22.0;
-  const barMax = stats.max > 0 ? stats.max + 0.3 : 26.0;
-  // Labeled endpoints under the bar show the raw (un-padded) catalog
-  // min/max so the visible 'typical range' numbers reflect the actual
-  // spread of what we've measured.
-  const headLightRef = stats.min > 0 ? stats.min : 22.0;
-  const headHeavyRef = stats.max > 0 ? stats.max : 26.0;
+  // Fixed bar range — 22.0 cm (head-light end) to 25.5 cm (head-heavy
+  // end). Anchored to the pickleball-paddle spectrum the user wants
+  // displayed rather than the catalog's measured min/max, so the
+  // 'typical range' endpoints stay stable as more paddles get measured.
+  const barMin       = 22.0;
+  const barMax       = 25.5;
+  const headLightRef = 22.0;
+  const headHeavyRef = 25.5;
 
   // Bar position — % from left of the rail, clamped so the marker never
   // disappears off the edge if a paddle measures slightly outside the bar.
