@@ -13,19 +13,18 @@ import { supabase } from "@/lib/supabaseClient";
 // Width each card is rendered at for export; pixelRatio 2 doubles it for a
 // crisp ~1200×1200 Instagram-ready PNG. Kept fixed so every export is identical
 // regardless of the viewer's screen size.
-export const EXPORT_WIDTH = 600;
+const EXPORT_WIDTH = 600;
 
 // The download buttons are owner-only. Visiting /trending?export=<secret> once
 // per device sets a localStorage flag that reveals them; ?export=off hides them
 // again. Normal visitors never see the buttons. (This hides the UI from the
 // public; it isn't a hard security boundary — the secret lives in the bundle.)
-// /specs reuses the same secret/flag so unlocking on either page unlocks both.
-export const EXPORT_SECRET = "tr3nd-export-9f2c";
-export const EXPORT_UNLOCK_FLAG = "pb-trending-export-unlocked";
+const EXPORT_SECRET = "tr3nd-export-9f2c";
+const EXPORT_UNLOCK_FLAG = "pb-trending-export-unlocked";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-export function getCode(brand: string, discountLink?: string): string {
+function getCode(brand: string, discountLink?: string): string {
   if (brand === "Selkirk" || brand === "SLK") {
     if (discountLink?.includes("lockerroompickleball.com")) return siteConfig.discountCode;
     return "INF-PLAYBOOK";
@@ -159,12 +158,8 @@ function StatBar({ label, value, displayValue, min, max, fill, glow, zones }: {
 
 // ── Card component (1:1 square, screenshot-optimized for Instagram) ──────────
 
-// Exported so /specs/page.tsx can reuse the exact same card. Two optional
-// props that /specs uses: pass rank={0} to hide the podium badge, pass
-// totalCards={0} to hide the page-dot indicators (130+ dots wouldn't fit
-// anyway).
-export function TrendingCard({ paddle, rank = 0, code, totalCards = 0 }: {
-  paddle: Paddle; rank?: number; code: string; totalCards?: number;
+function TrendingCard({ paddle, rank, code, totalCards }: {
+  paddle: Paddle; rank: number; code: string; totalCards: number;
 }) {
   const hasRealDiscount = !!paddle.discountLink?.trim() && !!paddle.amountOff && paddle.amountOff !== "$0" && paddle.amountOff !== "";
   const isSelkirk = paddle.brand === "Selkirk" || paddle.brand === "SLK";
