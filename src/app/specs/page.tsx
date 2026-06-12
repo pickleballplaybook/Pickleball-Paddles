@@ -6,11 +6,18 @@
 //  IG-export card the /trending top-10 page uses, but with rank+dot pager
 //  hidden — every paddle gets a card, not just the ranked subset.
 //
-//  Admin extras (unlocked once per device via /specs?export=<secret>):
-//    - A small "Download PNG" button below every visible card. Captures
-//      that specific card from its on-screen ref via html-to-image, so
-//      single-card downloads work without mounting a fixed-size hidden
-//      copy of every paddle.
+//  Proportion fix: TrendingCard is tuned for a 600 px design width. In a
+//  narrower grid column the absolutely-positioned header overlaps the
+//  content row (long paddle names wrap into the discount chip). To preserve
+//  the exported look pixel-for-pixel we render each card at its native
+//  600 × 600 px size inside a container-query wrapper that uniformly scales
+//  the rendered output to fit the column. Result: every card on /specs
+//  looks identical to its PNG export, just visually smaller.
+//
+//  Downloads: a 'PNG' button sits below every card. Captures from the
+//  unscaled 600 px ref, so exports always render at a consistent
+//  1200 × 1200 (pixelRatio 2), independent of viewport. No unlock secret —
+//  /specs is admin-only by virtue of not being linked from the nav.
 //
 //  Not linked from the main nav — this URL is discoverable only by typing
 //  /specs directly. No robots block (it's an admin URL, not secret data),
@@ -25,16 +32,15 @@ import { toPng } from "html-to-image";
 import { paddles } from "@/data/paddles";
 import TrendingCard, { getCode } from "@/components/TrendingCard";
 
-// Same unlock pattern as /trending — visit /specs?export=<secret> once on a
-// device to flip a localStorage flag and reveal the download buttons. The
-// secret intentionally differs from the trending one so revoking one doesn't
-// revoke the other.
-const EXPORT_SECRET = "sp3cs-export-7k4j";
-const EXPORT_UNLOCK_FLAG = "pb-specs-export-unlocked";
-
 // 18 = 6 rows × 3 cols on desktop. Browsing felt a little dense at 24 and a
 // little sparse at 12 — 18 is the sweet spot per the request.
 const PAGE_SIZE = 18;
+
+// The design width TrendingCard is tuned for. Every internal pixel (padding,
+// header font sizing, balance-line dashes, spec-bar widths) was tuned at this
+// width, so we always render the card at exactly this size and scale visually
+// to fit the column. Matches EXPORT_WIDTH from TrendingCard for consistency.
+const CARD_DESIGN_PX = 600;
 
 export default function SpecsPage() {
   // Alphabetical sort (brand, then name) so the catalog browses predictably
@@ -54,28 +60,10 @@ export default function SpecsPage() {
   const startIdx = (page - 1) * PAGE_SIZE;
   const pageItems = sorted.slice(startIdx, startIdx + PAGE_SIZE);
 
-  // ── Owner-only download unlock ─────────────────────────────────────────────
-  const [canExport, setCanExport] = useState(false);
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const key = params.get("export");
-    if (key === EXPORT_SECRET) {
-      localStorage.setItem(EXPORT_UNLOCK_FLAG, "1");
-      params.delete("export");
-      const qs = params.toString();
-      window.history.replaceState({}, "", window.location.pathname + (qs ? `?${qs}` : ""));
-    } else if (key === "off") {
-      localStorage.removeItem(EXPORT_UNLOCK_FLAG);
-    }
-    setCanExport(localStorage.getItem(EXPORT_UNLOCK_FLAG) === "1");
-  }, []);
-
   // ── Per-card refs — one slot per visible card on the current page. Reset
-  // when the page changes; captureCard reads directly from the visible ref
-  // so we don't need to mount fixed-size hidden copies of all 270+ paddles.
-  // Quality stays consistent because every card on the page is rendered at
-  // the same grid-column width, and pixelRatio: 2 doubles the resolution
-  // on capture.
+  // when the page changes. captureCard reads the unscaled 600 px card via
+  // its ref so every export PNG is consistently 1200 × 1200 (pixelRatio 2)
+  // regardless of viewport.
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [exporting, setExporting] = useState<number | null>(null);
 
@@ -123,7 +111,7 @@ export default function SpecsPage() {
   }, [page]);
 
   // Arrow-key page navigation. Skipped when typing in inputs (the jump-to
-  // box, etc.) so it doesn't fight with text editing.
+  // box, etc.) so it doesn't fight text editing.
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
@@ -163,7 +151,6 @@ export default function SpecsPage() {
           </h1>
           <p className="text-base" style={{ color: "rgba(255,255,255,0.5)" }}>
             {sorted.length} paddles · {PAGE_SIZE} per page · ← / → to flip pages
-            {canExport && " · download buttons unlocked"}
           </p>
         </div>
 
@@ -176,17 +163,48 @@ export default function SpecsPage() {
             const globalIndex = startIdx + i;
             return (
               <div key={paddle.id} className="flex flex-col gap-2">
-                <div ref={(el) => { cardRefs.current[i] = el; }}>
-                  <TrendingCard
-                    paddle={paddle}
-                    rank={0}           // hide podium badge — these aren't ranked
-                    code={getCode(paddle.brand, paddle.discountLink)}
-                    totalCards={0}     // hide bottom dot pager
-                  />
+                {/* Scaled-card wrapper. The outer div is aspect-ratio 1:1
+                    and uses container-type: inline-size so the inner
+                    600 px card scales to exactly the column width via
+                    `transform: scale(calc(100cqw / 600px))`. Result:
+                    proportions are identical to the PNG export at any
+                    viewport, no flicker, no JS measurement. */}
+                <div
+                  style={{
+                    position: "relative",
+                    width: "100%",
+                    aspectRatio: "1 / 1",
+                    containerType: "inline-size",
+                  } as React.CSSProperties}
+                >
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: CARD_DESIGN_PX,
+                      height: CARD_DESIGN_PX,
+                      transformOrigin: "top left",
+                      // Modern CSS: dividing a length by a length yields a
+                      // unitless number that scale() accepts. Supported in
+                      // all evergreen browsers since 2023.
+                      transform: `scale(calc(100cqw / ${CARD_DESIGN_PX}px))`,
+                    }}
+                  >
+                    <div ref={(el) => { cardRefs.current[i] = el; }}>
+                      <TrendingCard
+                        paddle={paddle}
+                        rank={0}           // hide podium badge — these aren't ranked
+                        code={getCode(paddle.brand, paddle.discountLink)}
+                        totalCards={0}     // hide bottom dot pager
+                      />
+                    </div>
+                  </div>
                 </div>
 
-                {/* Index + name caption below each card so the admin can
-                    confirm what they're about to download at a glance. */}
+                {/* Index + name caption + download button. Always visible
+                    on /specs — the page is unlinked from nav, so it's
+                    admin-discoverable rather than gated by an unlock. */}
                 <div className="flex items-center justify-between gap-3 px-1">
                   <p className="text-sm font-bold truncate" style={{ color: "rgba(255,255,255,0.75)" }}>
                     <span className="font-mono tabular-nums" style={{ color: "rgba(255,255,255,0.40)" }}>
@@ -194,18 +212,17 @@ export default function SpecsPage() {
                     </span>{" "}
                     {paddle.brand} {paddle.name}
                   </p>
-                  {canExport && (
-                    <button
-                      onClick={() => downloadOne(i)}
-                      disabled={exporting !== null}
-                      className="inline-flex items-center gap-1.5 font-bold text-xs px-3 py-1.5 rounded-lg flex-shrink-0 transition-all hover:scale-[1.03] disabled:opacity-50 disabled:hover:scale-100"
-                      style={{ background: "rgba(20,184,166,0.18)", border: "1px solid rgba(45,212,191,0.40)", color: "#5eead4" }}
-                    >
-                      {exporting === i
-                        ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Saving…</>
-                        : <><Download className="w-3.5 h-3.5" /> PNG</>}
-                    </button>
-                  )}
+                  <button
+                    onClick={() => downloadOne(i)}
+                    disabled={exporting !== null}
+                    aria-label={`Download ${paddle.brand} ${paddle.name} card as PNG`}
+                    className="inline-flex items-center gap-1.5 font-bold text-xs px-3 py-1.5 rounded-lg flex-shrink-0 transition-all hover:scale-[1.03] disabled:opacity-50 disabled:hover:scale-100"
+                    style={{ background: "rgba(20,184,166,0.18)", border: "1px solid rgba(45,212,191,0.40)", color: "#5eead4" }}
+                  >
+                    {exporting === i
+                      ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Saving…</>
+                      : <><Download className="w-3.5 h-3.5" /> PNG</>}
+                  </button>
                 </div>
               </div>
             );
