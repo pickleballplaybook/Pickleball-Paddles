@@ -335,13 +335,14 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
                   />
                 ))}
               </div>
-              {/* Vertically stacked balance label — BAL PT, cm value,
-                  category each on its own line. Narrower footprint than
-                  the previous inline run so it stays clear of the paddle
-                  silhouette in the left column margin. Anchored from the
-                  TOP so the stack grows downward from just below the
-                  dashed line. z-[2] keeps it in front of the paddle so
-                  it's never clipped. */}
+              {/* Leader-line layout: small 'BAL PT' tag sits just below
+                  the dashed line at balance height. A thin solid vertical
+                  line runs from below that tag down to a legend block at
+                  the bottom-left of the paddle column (in the open space
+                  to the left of the handle), where the cm value and the
+                  category word live. Keeps everything off the paddle's
+                  silhouette and reads like a technical-illustration
+                  callout. */}
               {(() => {
                 const bp = paddle.balancePoint!;
                 const bpPct = ((bp - RANGES.balancePoint.min) / (RANGES.balancePoint.max - RANGES.balancePoint.min)) * 100;
@@ -349,59 +350,87 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
                   bpPct < 33.4 ? RANGES.balancePoint.zones[0] :
                   bpPct > 66.6 ? RANGES.balancePoint.zones[2] :
                                  RANGES.balancePoint.zones[1];
+                // Connector line geometry:
+                //   - vertical line at left: 12, so it visually aligns
+                //     with the BAL PT tag and the legend below
+                //   - top: just below the BAL PT tag (line% + ~16px)
+                //   - bottom: just above the legend block (~52px from
+                //     the column bottom, leaving room for the legend)
                 return (
-                  <div
-                    aria-hidden
-                    className="absolute pointer-events-none z-[2] flex flex-col items-start"
-                    style={{
-                      // top positions from the top of the column; since
-                      // the line is at bottom: balancePct%, its top edge
-                      // from the column top is (100 - balancePct)%. Add a
-                      // 5px gap so the BAL PT label sits just below the
-                      // line without crowding it.
-                      top: `calc(${100 - balancePct}% + 5px)`,
-                      left: 4,
-                      whiteSpace: "nowrap",
-                      textShadow: "0 1px 3px rgba(0,0,0,0.75)",
-                      lineHeight: 1.15,
-                    }}
-                  >
-                    <span
+                  <>
+                    {/* BAL PT tag — small, sits just below the dashed line */}
+                    <div
+                      aria-hidden
+                      className="absolute pointer-events-none z-[2]"
                       style={{
+                        top: `calc(${100 - balancePct}% + 5px)`,
+                        left: 4,
+                        whiteSpace: "nowrap",
                         fontSize: "8px",
                         fontWeight: 800,
                         letterSpacing: "0.20em",
                         textTransform: "uppercase",
                         color: BAL_ACCENT,
+                        textShadow: "0 1px 3px rgba(0,0,0,0.75)",
                       }}
                     >
                       Bal Pt
-                    </span>
-                    <span
-                      className="font-mono tabular-nums"
+                    </div>
+
+                    {/* Thin solid leader line — vertical, connects BAL PT
+                        tag down to the legend at the bottom. */}
+                    <div
+                      aria-hidden
+                      className="absolute pointer-events-none z-[2]"
                       style={{
-                        fontSize: "13px",
-                        fontWeight: 800,
-                        color: BAL_ACCENT,
-                        marginTop: 1,
+                        top:    `calc(${100 - balancePct}% + 18px)`,
+                        bottom: 50,
+                        left:   12,
+                        width:  1,
+                        background: BAL_ACCENT,
+                        opacity: 0.55,
+                      }}
+                    />
+
+                    {/* Legend at bottom-left of the column — cm value
+                        with category right below it. Sits in the open
+                        margin to the left of the paddle handle. */}
+                    <div
+                      aria-hidden
+                      className="absolute pointer-events-none z-[2] flex flex-col items-start"
+                      style={{
+                        bottom: 8,
+                        left:   4,
+                        whiteSpace: "nowrap",
+                        lineHeight: 1.15,
+                        textShadow: "0 1px 3px rgba(0,0,0,0.75)",
                       }}
                     >
-                      {bp.toFixed(1)} cm
-                    </span>
-                    <span
-                      style={{
-                        fontSize: "8px",
-                        fontWeight: 800,
-                        letterSpacing: "0.16em",
-                        textTransform: "uppercase",
-                        color: BAL_ACCENT,
-                        opacity: 0.78,
-                        marginTop: 2,
-                      }}
-                    >
-                      {bpZone}
-                    </span>
-                  </div>
+                      <span
+                        className="font-mono tabular-nums"
+                        style={{
+                          fontSize: "13px",
+                          fontWeight: 800,
+                          color: BAL_ACCENT,
+                        }}
+                      >
+                        {bp.toFixed(1)} cm
+                      </span>
+                      <span
+                        style={{
+                          fontSize: "8px",
+                          fontWeight: 800,
+                          letterSpacing: "0.16em",
+                          textTransform: "uppercase",
+                          color: BAL_ACCENT,
+                          opacity: 0.78,
+                          marginTop: 2,
+                        }}
+                      >
+                        {bpZone}
+                      </span>
+                    </div>
+                  </>
                 );
               })()}
             </>
