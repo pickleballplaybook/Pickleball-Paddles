@@ -203,18 +203,25 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
       fill: "linear-gradient(90deg, #0d9488 0%, #14b8a6 50%, #5eead4 100%)",
       glow: "0 0 8px rgba(45,212,191,0.40)",
     },
+    // Sky cyan for twist — cool, vivid, brand-adjacent, clearly distinct
+    // from the teal swing-weight bar without competing with it.
     twist: {
-      fill: "linear-gradient(90deg, #6366f1 0%, #818cf8 50%, #a5b4fc 100%)",
-      glow: "0 0 8px rgba(129,140,248,0.40)",
+      fill: "linear-gradient(90deg, #0ea5e9 0%, #38bdf8 50%, #7dd3fc 100%)",
+      glow: "0 0 8px rgba(56,189,248,0.40)",
     },
-    // Soft coral for balance — visually distinct from the slate / teal /
-    // indigo trio above so the new row reads as a separate measurement
-    // family (it's the only one not in oz / kg·cm²).
+    // Muted amber for balance — single warm accent in a row of three cool
+    // bars, so the new row stands out as the special spec without
+    // screaming. Coral was too candy-pink for the navy aesthetic.
     balance: {
-      fill: "linear-gradient(90deg, #fb7185 0%, #fda4af 50%, #fecdd3 100%)",
-      glow: "0 0 8px rgba(251,113,133,0.40)",
+      fill: "linear-gradient(90deg, #d97706 0%, #f59e0b 50%, #fcd34d 100%)",
+      glow: "0 0 8px rgba(245,158,11,0.40)",
     },
   };
+  // Single source of truth for the balance accent color — used for the
+  // line behind the paddle, the diagonal leader, and the stat-bar glow so
+  // they all read as one visual element.
+  const BAL_ACCENT      = "rgba(245,158,11,0.65)";    // amber-500 @ ~65%
+  const BAL_ACCENT_SOFT = "rgba(245,158,11,0.30)";   // softer dashed line
 
   // Vertical position (% from bottom of paddle image) where the balance
   // line should sit on the paddle. Clamped to leave a little headroom
@@ -275,6 +282,39 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
         <span className="h-px w-6" style={{ background: "linear-gradient(90deg, rgba(255,255,255,0.25), transparent)" }} />
       </div>
 
+      {/* Diagonal leader from the balance line's right end on the paddle
+          column to the Bal Pt row in the spec panel on the right. Rendered
+          in a card-level SVG so the line can span across both columns of
+          the content row below. Coordinates are in card-% via viewBox 0-100
+          with preserveAspectRatio="none".
+          - Start (x1): ~51% — right edge of paddle column at balance height
+          - End   (x2): ~62% — left edge of spec panel
+          - End   (y2): ~72% — approximate Bal Pt row position
+          The y1 math maps the column-relative `balancePct` % from bottom
+          of the column into card-% from top:
+              y1 = 100 - (10 + balancePct * 0.76)
+                    └─ bottom-10% offset
+                          └─ column height is ~76% of card */}
+      {balancePct !== null && (
+        <svg
+          aria-hidden
+          className="absolute inset-0 pointer-events-none z-[2]"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+        >
+          <line
+            x1={51}
+            y1={(100 - (10 + balancePct * 0.76)).toFixed(2)}
+            x2={62}
+            y2={72}
+            stroke={BAL_ACCENT}
+            strokeWidth={0.25}
+            strokeDasharray="0.8 0.6"
+            strokeLinecap="round"
+          />
+        </svg>
+      )}
+
       {/* ── Main content row — horizontal split: paddle LEFT, specs RIGHT ──
           The header + footer keep their absolute positioning, this row fills
           the space in between. */}
@@ -287,53 +327,19 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
         <div className="relative flex-[0.52] flex items-center justify-center overflow-hidden">
           {/* Balance line — sits BEHIND the paddle (z-index 0 vs the
               image's z-index 1) so it's only visible on either side of
-              the paddle silhouette. Extends across the full column width
-              and crosses into the right column visually, with a soft
-              coral marker pinned to the right edge to "anchor" the line
-              into the spec panel as a leader-line connection. Only
-              renders when paddle.balancePoint is set; the line itself
-              is decorative, the numeric spec lives in the right panel. */}
+              the paddle silhouette. No dot or text label here — the
+              diagonal SVG leader at the card level handles the connection
+              to the Bal Pt row in the spec panel. */}
           {balancePct !== null && (
-            <>
-              <div
-                aria-hidden
-                className="absolute left-0 right-0 pointer-events-none z-[0]"
-                style={{
-                  bottom: `${balancePct}%`,
-                  height: 0,
-                  borderTop: "1.5px dashed rgba(251,113,133,0.55)",
-                }}
-              />
-              <div
-                aria-hidden
-                className="absolute pointer-events-none rounded-full z-[0]"
-                style={{
-                  bottom: `calc(${balancePct}% - 5px)`,
-                  right: 8,
-                  width: 10,
-                  height: 10,
-                  background: "#fb7185",
-                  boxShadow: "0 0 10px rgba(251,113,133,0.75), inset 0 1px 0 rgba(255,255,255,0.30)",
-                  border: "1px solid rgba(254,205,211,0.50)",
-                }}
-              />
-              <div
-                aria-hidden
-                className="absolute pointer-events-none z-[0]"
-                style={{
-                  bottom: `calc(${balancePct}% + 8px)`,
-                  right: 8,
-                  fontSize: "9px",
-                  fontWeight: 800,
-                  letterSpacing: "0.18em",
-                  textTransform: "uppercase",
-                  color: "rgba(254,205,211,0.85)",
-                  textShadow: "0 1px 2px rgba(0,0,0,0.6)",
-                }}
-              >
-                Balance
-              </div>
-            </>
+            <div
+              aria-hidden
+              className="absolute left-0 right-0 pointer-events-none z-[0]"
+              style={{
+                bottom: `${balancePct}%`,
+                height: 0,
+                borderTop: `1.5px dashed ${BAL_ACCENT}`,
+              }}
+            />
           )}
 
           {paddle.image && (
