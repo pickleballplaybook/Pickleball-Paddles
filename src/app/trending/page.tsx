@@ -296,10 +296,10 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
           <span className="h-px w-6" style={{ background: "linear-gradient(90deg, rgba(255,255,255,0.25), transparent)" }} />
         </div>
         <h2
-          className="text-base font-extrabold leading-tight text-center"
-          style={{ color: "#ffffff", letterSpacing: "-0.01em" }}
+          className="text-2xl md:text-3xl font-extrabold leading-tight text-center"
+          style={{ color: "#ffffff", letterSpacing: "-0.015em" }}
         >
-          <span style={{ color: "rgba(45,212,191,0.85)" }}>{paddle.brand}</span> {paddle.name}
+          {paddle.brand} {paddle.name}
         </h2>
         <p
           className="text-[9px] font-bold uppercase tracking-[0.20em]"
