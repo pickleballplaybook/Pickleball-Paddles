@@ -397,3 +397,15 @@ html.dark {
   outline: 2px solid #3cacae;
   outline-offset: 2px;
 }
+
+
+/* Paddle list card hover treatment — teal border tint + slight shadow lift
+   on hover. Pairs with the Tailwind hover:-translate-y-0.5 in PaddleCard
+   to signal interactivity at a glance. */
+.paddle-card {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+.paddle-card:hover {
+  border-color: rgba(20, 184, 166, 0.35);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+}

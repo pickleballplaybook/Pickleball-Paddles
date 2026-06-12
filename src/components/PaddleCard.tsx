@@ -73,7 +73,7 @@ export default function PaddleCard({ paddle, index = 0, heartCount = 0, dislikeC
 
   return (
     <article
-      className="animate-slide-up card group flex flex-col overflow-hidden"
+      className="paddle-card animate-slide-up card group flex flex-col overflow-hidden transition-all duration-200 hover:-translate-y-0.5"
       style={{ animationDelay: staggerDelay }}
     >
 
@@ -107,33 +107,8 @@ export default function PaddleCard({ paddle, index = 0, heartCount = 0, dislikeC
               <span className={BADGE_STYLES[paddle.badge] ?? "badge-green"}>{paddle.badge}</span>
             </div>
           )}
-
-          <div className="absolute top-3 right-3 flex flex-col items-end gap-1.5">
-            <span
-              className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
-                SHAPE_COLORS[paddle.shape] ?? "bg-slate-50 text-slate-500 border-slate-200"
-              }`}
-            >
-              {paddle.shape}
-            </span>
-            {paddle.playStyle && (
-              <span
-                className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
-                style={{
-                  background: paddle.playStyle === "power"
-                    ? "rgba(251,146,60,0.18)" : paddle.playStyle === "control"
-                    ? "rgba(99,102,241,0.18)" : "rgba(34,197,94,0.18)",
-                  color: paddle.playStyle === "power" ? "#fb923c"
-                    : paddle.playStyle === "control" ? "#818cf8" : "#4ade80",
-                  border: paddle.playStyle === "power"
-                    ? "1px solid rgba(251,146,60,0.35)" : paddle.playStyle === "control"
-                    ? "1px solid rgba(99,102,241,0.35)" : "1px solid rgba(34,197,94,0.35)",
-                }}
-              >
-                {paddle.playStyle === "all-court" ? "All-Court" : paddle.playStyle === "power" ? "Power" : "Control"}
-              </span>
-            )}
-          </div>
+          {/* Shape + play-style chips moved out of the image and into the
+              content block below — they no longer crowd the paddle. */}
         </div>
       </Link>
 
@@ -146,12 +121,42 @@ export default function PaddleCard({ paddle, index = 0, heartCount = 0, dislikeC
 
         <Link href={`/paddles/${paddle.slug}`}>
           <h3
-            className="text-base font-bold leading-snug mb-1 hover:text-brand-500 transition-colors"
+            className="text-lg font-bold leading-snug mb-2 hover:text-brand-500 transition-colors"
             style={{ color: "var(--text-primary)" }}
           >
             {paddle.name}
           </h3>
         </Link>
+
+        {/* Shape + play-style chips — small inline classifiers under the
+            paddle name. Moved out of the image so the paddle photo reads
+            cleanly without overlapping decoration. */}
+        <div className="flex items-center gap-1.5 flex-wrap mb-3">
+          <span
+            className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
+              SHAPE_COLORS[paddle.shape] ?? "bg-slate-50 text-slate-500 border-slate-200"
+            }`}
+          >
+            {paddle.shape}
+          </span>
+          {paddle.playStyle && (
+            <span
+              className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
+              style={{
+                background: paddle.playStyle === "power"
+                  ? "rgba(251,146,60,0.18)" : paddle.playStyle === "control"
+                  ? "rgba(99,102,241,0.18)" : "rgba(34,197,94,0.18)",
+                color: paddle.playStyle === "power" ? "#fb923c"
+                  : paddle.playStyle === "control" ? "#818cf8" : "#4ade80",
+                border: paddle.playStyle === "power"
+                  ? "1px solid rgba(251,146,60,0.35)" : paddle.playStyle === "control"
+                  ? "1px solid rgba(99,102,241,0.35)" : "1px solid rgba(34,197,94,0.35)",
+              }}
+            >
+              {paddle.playStyle === "all-court" ? "All-Court" : paddle.playStyle === "power" ? "Power" : "Control"}
+            </span>
+          )}
+        </div>
 
         {paddle.tagline && (
           <p className="text-sm leading-relaxed mb-2 line-clamp-2" style={{ color: "var(--text-muted)" }}>
@@ -159,19 +164,39 @@ export default function PaddleCard({ paddle, index = 0, heartCount = 0, dislikeC
           </p>
         )}
 
+        {/* Price row — bigger now that the card has more horizontal real
+            estate, with the Save % chip pinned to the right of the line. */}
         {paddle.price && (() => {
           const discounted = calcDiscountedPrice(paddle.price!, paddle.amountOff);
+          const hasSavings = !!paddle.amountOff && paddle.amountOff !== "$0" && paddle.amountOff !== "";
           return (
-            <div className="flex items-baseline gap-2 mb-3">
-              <span
-                className="text-base font-bold"
-                style={{ color: discounted ? "var(--text-muted)" : "var(--text-primary)", textDecoration: discounted ? "line-through" : "none" }}
-              >
-                {paddle.price}
-              </span>
-              {discounted && (
-                <span className="text-base font-bold" style={{ color: "#14b8a6" }}>
-                  {discounted}
+            <div className="flex items-baseline justify-between gap-2 mb-3">
+              <div className="flex items-baseline gap-2 min-w-0">
+                <span
+                  className={discounted ? "text-sm font-semibold" : "text-2xl font-extrabold"}
+                  style={{
+                    color: discounted ? "var(--text-muted)" : "var(--text-primary)",
+                    textDecoration: discounted ? "line-through" : "none",
+                  }}
+                >
+                  {paddle.price}
+                </span>
+                {discounted && (
+                  <span className="text-2xl font-extrabold tabular-nums" style={{ color: "#14b8a6" }}>
+                    {discounted}
+                  </span>
+                )}
+              </div>
+              {hasSavings && (
+                <span
+                  className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-1 rounded-full flex-shrink-0"
+                  style={{
+                    background: "rgba(222,250,50,0.10)",
+                    color: "var(--discount-text)",
+                    border: "1px solid rgba(222,250,50,0.30)",
+                  }}
+                >
+                  Save {paddle.amountOff}
                 </span>
               )}
             </div>
@@ -198,32 +223,34 @@ export default function PaddleCard({ paddle, index = 0, heartCount = 0, dislikeC
           </div>
         )}
 
-        {/* Stats row — Weight / Twist Wt / Thickness */}
-        <div
-          className="flex items-center gap-3 mb-4 py-3 mt-auto"
-          style={{ borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)" }}
-        >
-          {[
-            { label: "Weight",    value: paddle.weight },
-            { label: "Twist Wt",  value: paddle.twistWeight },
-            { label: "Thickness", value: paddle.thickness },
-          ].map(({ label, value }) => (
-            <div key={label} className="text-center flex-1">
-              <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>{label}</p>
-              <p className="text-xs font-bold mt-0.5" style={{ color: "var(--text-primary)" }}>{value}</p>
-            </div>
-          ))}
-        </div>
+        {/* Specs — single inline line. Uses swing weight (the spec people
+            actually shop on) when available, falling back to twist weight
+            only if SW isn't measured yet. Half the height of the old 3-col
+            boxed strip with a clearer scan rhythm. */}
+        {(paddle.weight || paddle.swingWeight || paddle.thickness) && (() => {
+          const bits: string[] = [];
+          if (paddle.weight && paddle.weight.trim()) bits.push(paddle.weight);
+          if (paddle.swingWeight && paddle.swingWeight > 0) {
+            bits.push(`SW ${paddle.swingWeight.toFixed(1)}`);
+          } else if (paddle.twistWeight && paddle.twistWeight > 0) {
+            bits.push(`TW ${paddle.twistWeight.toFixed(2)}`);
+          }
+          if (paddle.thickness) bits.push(paddle.thickness);
+          if (bits.length === 0) return null;
+          return (
+            <p
+              className="text-xs font-medium mb-3 mt-auto pt-3"
+              style={{ color: "var(--text-muted)", borderTop: "1px solid var(--border)" }}
+            >
+              {bits.join(" · ")}
+            </p>
+          );
+        })()}
 
-        {/* Vote pill + Save % — sits above the discount code so the user
-            reads (votes, then deal, then buy) top-to-bottom. */}
-        <div className="flex items-center justify-between gap-2 mb-3">
+        {/* Vote pill — Save % moved up to the price row, so this stays
+            single-purpose. */}
+        <div className="mb-3">
           <VotePill paddleId={paddle.id} upCount={heartCount} downCount={dislikeCount} size="sm" />
-          {!!paddle.amountOff && paddle.amountOff !== "$0" && paddle.amountOff !== "" && (
-            <span className="text-xs font-semibold" style={{ color: "var(--discount-text)" }}>
-              Save {paddle.amountOff}
-            </span>
-          )}
         </div>
 
         {/* Discount code chip — "Code: PLAYBOOK 📋", dashed teal outline,
@@ -301,9 +328,8 @@ export default function PaddleCard({ paddle, index = 0, heartCount = 0, dislikeC
               Watch Review
             </a>
           )}
-          {!hasReview && (
-            <span className="text-xs" style={{ color: "var(--text-muted)" }}>No review yet</span>
-          )}
+          {/* 'No review yet' text removed — empty state added more noise
+              than signal. Paddles without a review just show nothing. */}
 
         </div>
       </div>
