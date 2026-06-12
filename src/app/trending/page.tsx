@@ -314,9 +314,15 @@ function TrendingCard({ paddle, rank, code, totalCards }: {
                 aria-hidden
                 className="absolute left-0 right-0 pointer-events-none z-[0]"
                 style={{
+                  // Thicker line + explicit dash/gap via repeating-linear-
+                  // gradient because CSS `border-style: dashed` doesn't let
+                  // us tune dash length or spacing (browser-default looks
+                  // like tight little ticks at this size). 14px dash + 10px
+                  // gap reads cleanly at the card's scale.
                   bottom: `${balancePct}%`,
-                  height: 0,
-                  borderTop: `1.5px dashed ${BAL_ACCENT}`,
+                  height: 3,
+                  marginBottom: -1.5,
+                  backgroundImage: `repeating-linear-gradient(to right, ${BAL_ACCENT} 0 14px, transparent 14px 24px)`,
                 }}
               />
               <div
