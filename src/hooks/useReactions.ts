@@ -170,23 +170,6 @@ export function useReactions(paddleId: string) {
 // ── Bulk fetch helpers ────────────────────────────────────────────────────────
 
 /**
- * Fetch paddle IDs hearted by the current user from Supabase.
- * Used by the Saved page.
- */
-export async function fetchSavedPaddleIds(): Promise<string[]> {
-  const userKey = getUserKey();
-  const { data, error } = await supabase
-    .from("paddle_hearts")
-    .select("paddle_id")
-    .eq("user_key", userKey);
-  if (error) {
-    console.error("[fetchSavedPaddleIds]", error.message);
-    return [];
-  }
-  return (data ?? []).map((r) => r.paddle_id);
-}
-
-/**
  * Fetch current user's hearts as a ReactionMap.
  * Used by PaddlesPage for "most-hearts" and "popular-month" sorting.
  */
@@ -210,12 +193,3 @@ export async function fetchUserReactionMap(): Promise<ReactionMap> {
   return map;
 }
 
-// ── Legacy shims (kept so other imports compile) ──────────────────────────────
-// These no longer read localStorage. Code that relied on them should migrate
-// to fetchSavedPaddleIds() / fetchUserReactionMap().
-
-/** @deprecated Use fetchUserReactionMap() */
-export function getAllReactions(): ReactionMap { return {}; }
-
-/** @deprecated Use fetchSavedPaddleIds() */
-export function getSavedPaddleIds(): string[] { return []; }

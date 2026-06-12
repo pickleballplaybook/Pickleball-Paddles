@@ -68,7 +68,11 @@ export async function GET(req: NextRequest) {
       const ratings = rating?.count ?? 0;
       const avgRating = rating ? Math.round((rating.sum / rating.count) * 100) / 100 : 0;
       const views = viewCounts.get(p.slug) ?? 0;
-      const composite = engagementScore(hearts, ratings, views);
+      // Trending composite: thumbs-up votes + recent views only. Ratings
+      // are still recorded in the snapshot below for transparency, but
+      // they no longer influence the ranking — see src/lib/trending.ts
+      // for rationale.
+      const composite = engagementScore(hearts, views);
       return { paddle: p, hearts, ratings, avgRating, views, composite };
     });
 

@@ -434,7 +434,6 @@ export default function TrendingPage() {
       ...t,
       engagement: engagementScore(
         t.weightedScore < 0 ? 0 : t.weightedScore,
-        ratingCounts[t.paddle.id]?.count ?? 0,
         weightedViews[t.paddle.slug] ?? 0,
       ),
     }))

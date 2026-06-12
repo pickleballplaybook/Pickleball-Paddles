@@ -5,7 +5,11 @@ import { Paddle } from "@/types";
 // the weekly cron, the /trending page, and the homepage Trending section so they
 // can never drift. Hearts and ratings are weighted up so they aren't drowned out
 // by raw view counts (1 heart ≈ 50 views of weight; 1 rating ≈ 30).
-export const ENGAGEMENT_WEIGHTS = { heart: 5, rating: 3, viewDivisor: 10 } as const;
+// Trending is intentionally computed from JUST thumbs-up votes and views
+// — ratings are deliberately excluded because they reflect long-term paddle
+// quality, not momentum. A 12-month-old paddle with great ratings shouldn't
+// crowd out a freshly-launched paddle people are actively voting up.
+export const ENGAGEMENT_WEIGHTS = { heart: 5, viewDivisor: 10 } as const;
 
 // Minimum engagement score required to appear in any trending list. A paddle
 // with one heart and zero views scores exactly 5, which is "trending" only
@@ -14,12 +18,8 @@ export const ENGAGEMENT_WEIGHTS = { heart: 5, rating: 3, viewDivisor: 10 } as co
 // list honest when site-wide engagement is low.
 export const MIN_TRENDING_ENGAGEMENT = 6;
 
-export function engagementScore(hearts: number, ratings: number, views: number): number {
-  return (
-    hearts * ENGAGEMENT_WEIGHTS.heart +
-    ratings * ENGAGEMENT_WEIGHTS.rating +
-    Math.floor(views / ENGAGEMENT_WEIGHTS.viewDivisor)
-  );
+export function engagementScore(hearts: number, views: number): number {
+  return hearts * ENGAGEMENT_WEIGHTS.heart + Math.floor(views / ENGAGEMENT_WEIGHTS.viewDivisor);
 }
 
 // Paddle slugs that should never appear on any trending surface (homepage

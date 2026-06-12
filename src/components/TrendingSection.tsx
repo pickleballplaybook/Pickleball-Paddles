@@ -168,7 +168,6 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
       views: viewCounts[t.paddle.slug] ?? 0,
       engagement: engagementScore(
         t.weightedScore < 0 ? 0 : t.weightedScore,
-        ratingCounts[t.paddle.id]?.count ?? 0,
         viewCounts[t.paddle.slug] ?? 0,
       ),
     }))
