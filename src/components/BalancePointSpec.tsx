@@ -40,8 +40,10 @@ const PADDLE_HEIGHT_CM = 41.0;
 interface BalanceCategory {
   label: string;
   tagline: string;
-  accentColor: string;   // text/marker color
-  accentBg: string;      // soft fill for highlights
+  // RGB triplet for the category accent — the card background, balance line,
+  // position marker, and verdict label all derive from this single value
+  // so every shade in the card stays consistent.
+  accentRgb: string;
 }
 
 function categorize(bp: number): BalanceCategory {
@@ -49,23 +51,20 @@ function categorize(bp: number): BalanceCategory {
     return {
       label: "HEAD-LIGHT",
       tagline: "Faster hand speed — quicker through the air",
-      accentColor: "#60a5fa",
-      accentBg: "rgba(96,165,250,0.16)",
+      accentRgb: "96, 165, 250",   // blue-400
     };
   }
-  if (bp <= 24.0) {
+  if (bp <= 24.5) {
     return {
-      label: "BALANCED",
-      tagline: "Even feel — neither tip- nor handle-heavy",
-      accentColor: "#34d399",
-      accentBg: "rgba(52,211,153,0.16)",
+      label: "NEUTRAL BALANCE",
+      tagline: "Even feel — versatile across the court",
+      accentRgb: "239, 68, 68",    // red-500
     };
   }
   return {
     label: "HEAD-HEAVY",
     tagline: "More plow-through — extra mass behind the ball",
-    accentColor: "#f472b6",
-    accentBg: "rgba(244,114,182,0.16)",
+    accentRgb: "244, 114, 182",  // pink-400
   };
 }
 
@@ -99,6 +98,11 @@ export default function BalancePointSpec({ paddle }: Props) {
   const offset = bp - GEOMETRIC_CENTER_CM;
   const offsetLabel = offset >= 0 ? `+${offset.toFixed(1)}` : offset.toFixed(1);
 
+  // Single source of truth for the accent color; all shades below derive
+  // from this so the entire card stays color-coherent for the category.
+  const rgb = cat.accentRgb;
+  const accent = `rgb(${rgb})`;
+
   return (
     <div className="w-full">
       {/* Header above the card — matches the inspiration treatment. */}
@@ -109,15 +113,16 @@ export default function BalancePointSpec({ paddle }: Props) {
       <div
         className="relative rounded-3xl overflow-hidden p-6 md:p-8"
         style={{
-          // Deep wine-mulberry gradient matching the inspiration's vibe but
-          // adapted to the site's existing dark surface palette so it doesn't
-          // feel grafted on.
+          // Category-tinted dark background. The radial gradients use the
+          // category accent at low alpha; the base layer stays nearly black
+          // so the card feels at home in the site's dark surface system
+          // regardless of which category the accent is.
           background: [
-            "radial-gradient(ellipse 80% 60% at 50% 20%, rgba(168,85,247,0.10) 0%, transparent 60%)",
-            "radial-gradient(ellipse 60% 50% at 50% 100%, rgba(244,114,182,0.08) 0%, transparent 70%)",
-            "linear-gradient(180deg, #1a0c1f 0%, #14091a 60%, #0d0612 100%)",
+            `radial-gradient(ellipse 80% 60% at 50% 20%, rgba(${rgb}, 0.12) 0%, transparent 60%)`,
+            `radial-gradient(ellipse 60% 50% at 50% 100%, rgba(${rgb}, 0.08) 0%, transparent 70%)`,
+            `linear-gradient(180deg, rgba(${rgb}, 0.04) 0%, #0d0612 100%)`,
           ].join(", "),
-          border: "1px solid rgba(244,114,182,0.18)",
+          border: `1px solid rgba(${rgb}, 0.20)`,
           boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04), 0 12px 40px rgba(0,0,0,0.40)",
         }}
       >
@@ -150,8 +155,8 @@ export default function BalancePointSpec({ paddle }: Props) {
               style={{
                 bottom: `${balanceLineFromBottomPct}%`,
                 height: 2,
-                background: cat.accentColor,
-                boxShadow: `0 0 12px ${cat.accentColor}, 0 0 2px ${cat.accentColor}`,
+                background: accent,
+                boxShadow: `0 0 12px ${accent}, 0 0 2px ${accent}`,
               }}
             />
             {/* Solid-line marker dot */}
@@ -163,8 +168,8 @@ export default function BalancePointSpec({ paddle }: Props) {
                 transform: "translateX(-50%)",
                 width: 12,
                 height: 12,
-                background: cat.accentColor,
-                boxShadow: `0 0 8px ${cat.accentColor}`,
+                background: accent,
+                boxShadow: `0 0 8px ${accent}`,
               }}
             />
 
@@ -211,9 +216,9 @@ export default function BalancePointSpec({ paddle }: Props) {
                 transform: "translate(-50%, -50%)",
                 width: 14,
                 height: 16,
-                background: cat.accentColor,
+                background: accent,
                 borderRadius: 6,
-                boxShadow: `0 0 12px ${cat.accentColor}, inset 0 1px 0 rgba(255,255,255,0.4)`,
+                boxShadow: `0 0 12px ${accent}, inset 0 1px 0 rgba(255,255,255,0.4)`,
               }}
             />
           </div>
@@ -248,7 +253,7 @@ export default function BalancePointSpec({ paddle }: Props) {
         {/* Verdict row */}
         <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-4 mt-8 pt-6" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>
           <div className="min-w-0">
-            <p className="text-xl md:text-2xl font-extrabold tracking-tight" style={{ color: cat.accentColor }}>
+            <p className="text-xl md:text-2xl font-extrabold tracking-tight" style={{ color: accent }}>
               {cat.label}
             </p>
             <p className="text-sm mt-1" style={{ color: "rgba(255,255,255,0.65)" }}>
