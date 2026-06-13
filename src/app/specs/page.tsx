@@ -2,22 +2,23 @@
 //  /specs — admin-friendly spec-card index of every paddle in the catalog.
 //
 //  Layout: 3-column grid (1 col on mobile, 2 on tablet, 3 on desktop),
-//  paginated 18 paddles per page (6 rows × 3 columns on desktop). Same 1:1
+//  paginated 18 paddles per page (6 rows × 3 columns on desktop). Same 4:5
 //  IG-export card the /trending top-10 page uses, but with rank+dot pager
 //  hidden — every paddle gets a card, not just the ranked subset.
 //
-//  Proportion fix: TrendingCard is tuned for a 600 px design width. In a
-//  narrower grid column the absolutely-positioned header overlaps the
-//  content row (long paddle names wrap into the discount chip). To preserve
-//  the exported look pixel-for-pixel we render each card at its native
-//  600 × 600 px size inside a container-query wrapper that uniformly scales
-//  the rendered output to fit the column. Result: every card on /specs
-//  looks identical to its PNG export, just visually smaller.
+//  Proportion fix: TrendingCard is tuned for a 600 × 750 px design surface
+//  (4:5 portrait). In a narrower grid column the absolutely-positioned
+//  header overlaps the content row (long paddle names wrap into the
+//  discount chip). To preserve the exported look pixel-for-pixel we render
+//  each card at its native 600 × 750 px size inside a container-query
+//  wrapper that uniformly scales the rendered output to fit the column.
+//  Result: every card on /specs looks identical to its PNG export.
 //
 //  Downloads: a 'PNG' button sits below every card. Captures from the
-//  unscaled 600 px ref, so exports always render at a consistent
-//  1200 × 1200 (pixelRatio 2), independent of viewport. No unlock secret —
-//  /specs is admin-only by virtue of not being linked from the nav.
+//  unscaled 600 × 750 ref at pixelRatio 1.8, so exports always render at a
+//  consistent 1080 × 1350 (Instagram's preferred portrait feed size),
+//  independent of viewport. No unlock secret — /specs is admin-only by
+//  virtue of not being linked from the nav.
 //
 //  Not linked from the main nav — this URL is discoverable only by typing
 //  /specs directly. No robots block (it's an admin URL, not secret data),
@@ -30,32 +31,79 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { ChevronLeft, ChevronRight, Download, Loader2 } from "lucide-react";
 import { toPng } from "html-to-image";
 import { paddles } from "@/data/paddles";
-import TrendingCard, { getCode } from "@/components/TrendingCard";
+import TrendingCard, { EXPORT_WIDTH, EXPORT_HEIGHT, EXPORT_PIXEL_RATIO, getCode } from "@/components/TrendingCard";
 
 // 18 = 6 rows × 3 cols on desktop. Browsing felt a little dense at 24 and a
 // little sparse at 12 — 18 is the sweet spot per the request.
 const PAGE_SIZE = 18;
 
-// The design width TrendingCard is tuned for. Every internal pixel (padding,
-// header font sizing, balance-line dashes, spec-bar widths) was tuned at this
-// width, so we always render the card at exactly this size and scale visually
-// to fit the column. Matches EXPORT_WIDTH from TrendingCard for consistency.
-const CARD_DESIGN_PX = 600;
+// Sort options surfaced in the dropdown above the grid. A-Z is the default
+// because it makes any given paddle land on the same page across refreshes,
+// which matters when bulk-exporting cards. Price/date sorts re-shuffle that
+// stable order on demand.
+type SortKey =
+  | "az"
+  | "za"
+  | "price-asc"
+  | "price-desc"
+  | "newest"
+  | "oldest";
+
+const SORT_LABELS: Record<SortKey, string> = {
+  "az":         "A → Z",
+  "za":         "Z → A",
+  "price-asc":  "Price: Low → High",
+  "price-desc": "Price: High → Low",
+  "newest":     "Newest → Oldest",
+  "oldest":     "Oldest → Newest",
+};
+
+// Parse a price string like "$209.99" → 209.99. Returns Infinity for
+// missing / unparseable prices so they sort to the *end* on both
+// directions instead of randomly clumping at one extreme.
+function parsePrice(p?: string): number {
+  if (!p) return Infinity;
+  const n = parseFloat(p.replace(/[^0-9.]/g, ""));
+  return Number.isFinite(n) ? n : Infinity;
+}
 
 export default function SpecsPage() {
-  // Alphabetical sort (brand, then name) so the catalog browses predictably
-  // and a given paddle is always on the same page across refreshes.
-  const sorted = useMemo(
-    () => [...paddles].sort((a, b) => {
-      const bc = a.brand.localeCompare(b.brand);
-      return bc !== 0 ? bc : a.name.localeCompare(b.name);
-    }),
-    [],
-  );
+  const [sortKey, setSortKey] = useState<SortKey>("newest");
+
+  // Apply the selected sort. A-Z (default) sorts by brand then name so the
+  // catalog browses predictably. The other options re-shuffle by the
+  // requested key.
+  const sorted = useMemo(() => {
+    const arr = [...paddles];
+    switch (sortKey) {
+      case "az":
+        return arr.sort((a, b) => {
+          const bc = a.brand.localeCompare(b.brand);
+          return bc !== 0 ? bc : a.name.localeCompare(b.name);
+        });
+      case "za":
+        return arr.sort((a, b) => {
+          const bc = b.brand.localeCompare(a.brand);
+          return bc !== 0 ? bc : b.name.localeCompare(a.name);
+        });
+      case "price-asc":
+        return arr.sort((a, b) => parsePrice(a.price) - parsePrice(b.price));
+      case "price-desc":
+        return arr.sort((a, b) => parsePrice(b.price) - parsePrice(a.price));
+      case "newest":
+        return arr.sort((a, b) => b.addedAt.localeCompare(a.addedAt));
+      case "oldest":
+        return arr.sort((a, b) => a.addedAt.localeCompare(b.addedAt));
+    }
+  }, [sortKey]);
 
   const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
   const [page, setPage] = useState(1);
   const [jumpValue, setJumpValue] = useState("");
+
+  // Whenever the sort changes, jump back to page 1 so the user sees the
+  // start of the new order instead of landing mid-list.
+  useEffect(() => { setPage(1); }, [sortKey]);
 
   const startIdx = (page - 1) * PAGE_SIZE;
   const pageItems = sorted.slice(startIdx, startIdx + PAGE_SIZE);
@@ -95,7 +143,7 @@ export default function SpecsPage() {
     // Warm-up pass: html-to-image populates its internal image cache on
     // the first call, so the second call renders reliably. Swallow any
     // warm-up error so a transient failure doesn't abort the real capture.
-    const opts = { pixelRatio: 2, cacheBust: false, backgroundColor: "#060e1a" };
+    const opts = { pixelRatio: EXPORT_PIXEL_RATIO, cacheBust: false, backgroundColor: "#060e1a" };
     try { await toPng(node, opts); } catch { /* warm-up only */ }
     return toPng(node, opts);
   }
@@ -172,6 +220,33 @@ export default function SpecsPage() {
           </p>
         </div>
 
+        {/* Sort dropdown — six options covering name (A-Z / Z-A), price,
+            and added-date. Native <select> so it works without extra deps
+            and matches OS-level affordances. Reset to page 1 on change is
+            handled by an effect higher up. */}
+        <div className="flex items-center justify-center gap-3 mb-8">
+          <label htmlFor="specs-sort" className="text-xs font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.50)" }}>
+            Sort by
+          </label>
+          <select
+            id="specs-sort"
+            value={sortKey}
+            onChange={(e) => setSortKey(e.target.value as SortKey)}
+            className="text-sm font-bold px-3 py-2 rounded-lg cursor-pointer focus:outline-none focus:ring-2"
+            style={{
+              background: "rgba(15,23,42,0.85)",
+              border: "1px solid rgba(45,212,191,0.35)",
+              color: "#5eead4",
+            }}
+          >
+            {(Object.keys(SORT_LABELS) as SortKey[]).map((k) => (
+              <option key={k} value={k} style={{ background: "#0f172a", color: "#fff" }}>
+                {SORT_LABELS[k]}
+              </option>
+            ))}
+          </select>
+        </div>
+
         {/* Grid anchor — used for scroll-to-top on page change */}
         <div ref={gridTopRef} />
 
@@ -181,9 +256,9 @@ export default function SpecsPage() {
             const globalIndex = startIdx + i;
             return (
               <div key={paddle.id} className="flex flex-col gap-2">
-                {/* Scaled-card wrapper. The outer div is aspect-ratio 1:1
+                {/* Scaled-card wrapper. The outer div is aspect-ratio 4:5
                     and uses container-type: inline-size so the inner
-                    600 px card scales to exactly the column width via
+                    600 × 750 card scales to exactly the column width via
                     `transform: scale(calc(100cqw / 600px))`. Result:
                     proportions are identical to the PNG export at any
                     viewport, no flicker, no JS measurement. */}
@@ -191,7 +266,7 @@ export default function SpecsPage() {
                   style={{
                     position: "relative",
                     width: "100%",
-                    aspectRatio: "1 / 1",
+                    aspectRatio: "4 / 5",
                     containerType: "inline-size",
                   } as React.CSSProperties}
                 >
@@ -200,13 +275,13 @@ export default function SpecsPage() {
                       position: "absolute",
                       top: 0,
                       left: 0,
-                      width: CARD_DESIGN_PX,
-                      height: CARD_DESIGN_PX,
+                      width: EXPORT_WIDTH,
+                      height: EXPORT_HEIGHT,
                       transformOrigin: "top left",
                       // Modern CSS: dividing a length by a length yields a
                       // unitless number that scale() accepts. Supported in
                       // all evergreen browsers since 2023.
-                      transform: `scale(calc(100cqw / ${CARD_DESIGN_PX}px))`,
+                      transform: `scale(calc(100cqw / ${EXPORT_WIDTH}px))`,
                     }}
                   >
                     <div ref={(el) => { cardRefs.current[i] = el; }}>
