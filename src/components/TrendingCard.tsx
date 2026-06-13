@@ -98,17 +98,17 @@ function StatBar({ label, value, displayValue, min, max, fill, glow, zones }: {
           }}
         />
       </div>
-      <div className="flex flex-col items-end leading-tight w-[78px] flex-shrink-0">
+      <div className="flex flex-col items-end leading-tight w-[88px] flex-shrink-0">
         <span
-          className="text-[11px] font-extrabold font-mono tabular-nums"
-          style={{ color: "rgba(255,255,255,0.88)", letterSpacing: "0.02em" }}
+          className="text-[14px] font-extrabold font-mono tabular-nums"
+          style={{ color: "rgba(255,255,255,0.92)", letterSpacing: "0.02em" }}
         >
           {displayValue}
         </span>
         {descriptor && (
           <span
-            className="text-[8px] font-bold uppercase tracking-wider mt-0.5 whitespace-nowrap"
-            style={{ color: "rgba(45,212,191,0.78)", letterSpacing: "0.12em" }}
+            className="text-[9px] font-bold uppercase tracking-wider mt-0.5 whitespace-nowrap"
+            style={{ color: "rgba(45,212,191,0.80)", letterSpacing: "0.12em" }}
           >
             {descriptor}
           </span>
