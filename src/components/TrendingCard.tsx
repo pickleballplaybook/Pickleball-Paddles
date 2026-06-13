@@ -441,8 +441,13 @@ export default function TrendingCard({ paddle, rank, code, totalCards }: {
             className="absolute left-1/2 -translate-x-1/2 bottom-8 w-[68%] h-3 rounded-full pointer-events-none"
             style={{ background: "radial-gradient(ellipse, rgba(0,0,0,0.55) 0%, transparent 75%)", filter: "blur(6px)" }}
           />
-          {/* Play-style badge — under the paddle, in its column */}
-          <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 z-[2]">
+          {/* Play-style badge — under the paddle, in its column.
+              `whiteSpace: nowrap` prevents the hyphen in 'All-Court' from
+              wrapping to a second line (which would extend the pill past
+              the column's overflow-hidden bottom and clip the second word).
+              Positioned a few px inside the column so the pill is fully
+              visible regardless of label length. */}
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-[2]">
             <span
               className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.18em] px-3 py-1 rounded-full"
               style={{
@@ -450,6 +455,7 @@ export default function TrendingCard({ paddle, rank, code, totalCards }: {
                 border: "1px solid rgba(255,255,255,0.10)",
                 color: pc.text,
                 boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)",
+                whiteSpace: "nowrap",
               }}
             >
               <span className="w-1.5 h-1.5 rounded-full" style={{ background: pc.dot, boxShadow: `0 0 6px ${pc.dot}` }} />
@@ -461,22 +467,28 @@ export default function TrendingCard({ paddle, rank, code, totalCards }: {
         {/* ── RIGHT: stacked specs panel + prominent code chip ─────────── */}
         <div className="relative flex-[0.48] flex flex-col gap-3 self-center">
 
-          {/* Big code chip up top — the prominent placement the user asked for. */}
+          {/* Big code chip up top — the prominent placement the user asked
+              for. Center-aligned and visually distinct from the glassy Specs
+              panel below: darker semi-solid backdrop, brighter teal border,
+              soft teal glow so it reads as a call-to-action instead of a
+              second data card. The discount amount uses the brand
+              yellow-green so the "X% off" pops without competing with the
+              teal code. */}
           {showCodeChip && (
             <div
-              className="rounded-xl px-4 py-3"
+              className="rounded-xl px-4 py-3 text-center"
               style={{
-                background: "linear-gradient(135deg, rgba(20,184,166,0.25) 0%, rgba(20,184,166,0.08) 100%)",
-                border: "1.5px solid rgba(45,212,191,0.40)",
-                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.08), 0 4px 14px rgba(20,184,166,0.18)",
+                background: "linear-gradient(180deg, rgba(6,14,26,0.85) 0%, rgba(10,22,40,0.85) 100%)",
+                border: "1.5px solid rgba(45,212,191,0.65)",
+                boxShadow: "0 0 22px rgba(20,184,166,0.22), inset 0 1px 0 rgba(255,255,255,0.05)",
               }}
             >
-              <p className="text-[9px] font-extrabold uppercase tracking-[0.25em] mb-1" style={{ color: "rgba(255,255,255,0.50)" }}>
+              <p className="text-[9px] font-extrabold uppercase tracking-[0.25em] mb-1.5" style={{ color: "rgba(255,255,255,0.55)" }}>
                 Discount Code
               </p>
-              <div className="flex items-baseline gap-2">
+              <div className="flex items-baseline justify-center gap-2">
                 <span className="text-lg font-extrabold font-mono tracking-wider" style={{ color: "#5eead4" }}>{code}</span>
-                <span className="text-[10px] font-bold" style={{ color: "rgba(255,255,255,0.55)" }}>
+                <span className="text-[13px] font-extrabold" style={{ color: "#defa32" }}>
                   · {hasRealDiscount ? `${paddle.amountOff} off` : "Free gift card"}
                 </span>
               </div>
