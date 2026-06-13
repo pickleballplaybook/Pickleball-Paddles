@@ -75,10 +75,28 @@ export default function SpecsPage() {
     const node = cardRefs.current[visibleIndex];
     if (!node) throw new Error(`card ${visibleIndex} not mounted`);
     if (document.fonts?.ready) await document.fonts.ready;
-    // html-to-image's first capture of a node can miss late-loaded images;
-    // a warm-up pass makes the real capture reliable.
-    const opts = { pixelRatio: 2, cacheBust: true, backgroundColor: "#060e1a" };
-    await toPng(node, opts);
+    // Explicitly decode every <img> inside the card before capturing.
+    // Without this, the first click can fail because html-to-image starts
+    // serializing before the paddle image is fully ready in the renderer
+    // — by the second click the browser has cached it and it works.
+    await Promise.all(
+      Array.from(node.querySelectorAll("img")).map(async (img) => {
+        try {
+          if (!(img.complete && img.naturalWidth > 0)) {
+            await new Promise<void>((resolve) => {
+              img.addEventListener("load",  () => resolve(), { once: true });
+              img.addEventListener("error", () => resolve(), { once: true });
+            });
+          }
+          if (img.decode) await img.decode();
+        } catch { /* missing image shouldn't block the export */ }
+      }),
+    );
+    // Warm-up pass: html-to-image populates its internal image cache on
+    // the first call, so the second call renders reliably. Swallow any
+    // warm-up error so a transient failure doesn't abort the real capture.
+    const opts = { pixelRatio: 2, cacheBust: false, backgroundColor: "#060e1a" };
+    try { await toPng(node, opts); } catch { /* warm-up only */ }
     return toPng(node, opts);
   }
 
