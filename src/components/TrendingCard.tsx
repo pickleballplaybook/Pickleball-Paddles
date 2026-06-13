@@ -19,10 +19,15 @@
 import { Paddle } from "@/types";
 import { siteConfig } from "@/config/site";
 
-// Width each card is rendered at for export; pixelRatio 2 doubles it for a
-// crisp ~1200×1200 Instagram-ready PNG. Kept fixed so every export is identical
-// regardless of the viewer's screen size.
+// Design dimensions: 4:5 portrait (600 × 750), pixelRatio 1.8 → exactly
+// 1080 × 1350 — Instagram's preferred portrait feed size. Width stays 600
+// so existing pixel-tuned measurements (paddings, font sizes, bar widths)
+// keep working; the extra 150 px of height goes to a taller paddle, a
+// roomier Specs panel, and headroom for the Serve Speed + RPM bars coming
+// next week.
 export const EXPORT_WIDTH = 600;
+export const EXPORT_HEIGHT = 750;
+export const EXPORT_PIXEL_RATIO = 1.8;
 
 // Returns the discount code to print on a card. Selkirk paddles use the
 // influencer code ("INF-PLAYBOOK") unless the link points to Locker Room
@@ -42,11 +47,22 @@ export function getCode(brand: string, discountLink?: string): string {
 //   Balance uses the user-approved trio: HEAD-LIGHT · AVERAGE · HEAD-HEAVY
 //   (no 'Neutral' or 'Perfectly Balanced' since each paddle's actual
 //    balance varies and 'average' just means 'sits in the typical band'.)
+// `thresholds` (when present) anchors the zone boundaries to absolute values
+// instead of dividing the min→max range into thirds. Each spec defines N
+// zone labels and N-1 thresholds (the values where one zone ends and the
+// next begins). Industry-standard cutoffs so a paddle is categorized the
+// same way regardless of how the catalog's min/max shifts over time.
+//   weight   (5 zones): <7.4 feather · 7.4-7.8 light · 7.81-8.19 avg ·
+//                       8.2-8.4 mid-heavy · 8.41+ heavy
+//   swing    (3 zones): <111 head-light · 111-118 avg · >118 head-heavy
+//   twist    (5 zones): <5.0 poor · 5.0-5.49 fair · 5.5-5.89 good ·
+//                       5.9-6.99 forgiving · 7.0+ elite
+//   balance  (3 zones, relative): head-light / neutral / head-heavy
 export const RANGES = {
-  weight:       { min: 7.2, max: 9.2,  unit: "oz", zones: ["Light",      "Average",  "Heavy"]      as const },
-  swingWeight:  { min: 95,  max: 125,  unit: "",   zones: ["Whippy",     "Balanced", "Head-Heavy"] as const },
-  twistWeight:  { min: 4.5, max: 7.5,  unit: "",   zones: ["Demanding",  "Forgiving","Forgiving+"] as const },
-  balancePoint: { min: 22,  max: 26,   unit: "cm", zones: ["Head-Light", "Average",  "Head-Heavy"] as const },
+  weight:       { min: 7.2, max: 9.2,  unit: "oz", zones: ["Featherweight", "Light", "Average", "Mid-Heavy", "Heavy"] as const, thresholds: [7.4, 7.81, 8.2, 8.41] as const },
+  swingWeight:  { min: 95,  max: 125,  unit: "",   zones: ["Head-Light", "Average", "Head-Heavy"] as const, thresholds: [111, 118] as const },
+  twistWeight:  { min: 4.5, max: 7.5,  unit: "",   zones: ["Poor", "Fair", "Good", "Forgiving", "Elite"] as const, thresholds: [5.0, 5.5, 5.9, 7.0] as const },
+  balancePoint: { min: 22,  max: 26,   unit: "cm", zones: ["Head-Light", "Neutral", "Head-Heavy"] as const },
 };
 
 // Reference paddle length used to position the balance-point indicator line
@@ -61,29 +77,63 @@ function normalize(value: number, min: number, max: number): number {
   return Math.max(0, Math.min(1, (value - min) / (max - min)));
 }
 
-function StatBar({ label, value, displayValue, min, max, fill, glow, zones }: {
+function StatBar({ label, value, displayValue, min, max, fill, glow, zones, thresholds }: {
   label: string; value: number; displayValue: string; min: number; max: number;
   fill: string; glow: string;
-  zones?: readonly [string, string, string];
+  zones?: readonly string[];
+  thresholds?: readonly number[];
 }) {
   const pct = normalize(value, min, max) * 100;
-  // Zone descriptor — simple thirds split since we don't have a per-spec
-  // catalog average available here. Picks the matching word from the
-  // RANGES.<spec>.zones triple ("Light" / "Average" / "Heavy" etc.) so
-  // the language matches the SpecBar component on individual paddle pages.
-  const zoneIdx = pct < 33.4 ? 0 : pct > 66.6 ? 2 : 1;
+  // Zone descriptor — if explicit thresholds are provided, use absolute
+  // cutoffs. The number of zones is unbounded: N thresholds define N+1
+  // zones (e.g. 4 thresholds for static weight produce 5 zones:
+  // featherweight / light / average / mid-heavy / heavy). Without
+  // thresholds we fall back to an even split of the min→max range across
+  // however many labels `zones` contains, so the language stays consistent
+  // with SpecBar on individual paddle pages.
+  let zoneIdx: number;
+  if (thresholds && thresholds.length > 0) {
+    const idx = thresholds.findIndex((t) => value < t);
+    zoneIdx = idx === -1 ? thresholds.length : idx;
+  } else if (zones && zones.length > 0) {
+    zoneIdx = Math.min(zones.length - 1, Math.floor((pct / 100) * zones.length));
+  } else {
+    zoneIdx = 1;
+  }
   const descriptor = zones?.[zoneIdx];
 
+  // Stacked layout: label + value on the top row (left/right), bar running
+  // the full panel width underneath. The previous 3-column horizontal
+  // layout starved the bar of width once the label and value got bigger,
+  // making it impossible to tell where the fill landed.
   return (
-    <div className="flex items-center gap-3">
-      <span
-        className="text-[10px] font-bold uppercase tracking-[0.18em] w-[72px] text-right flex-shrink-0"
-        style={{ color: "rgba(186,212,228,0.55)" }}
-      >
-        {label}
-      </span>
+    <div className="flex flex-col gap-1.5">
+      <div className="flex items-baseline justify-between gap-3">
+        <span
+          className="text-[12px] font-bold uppercase tracking-[0.18em] whitespace-nowrap flex-shrink-0"
+          style={{ color: "rgba(186,212,228,0.65)" }}
+        >
+          {label}
+        </span>
+        <div className="flex items-baseline gap-2">
+          <span
+            className="text-[20px] font-extrabold font-mono tabular-nums leading-none"
+            style={{ color: "rgba(255,255,255,0.94)", letterSpacing: "0.02em" }}
+          >
+            {displayValue}
+          </span>
+          {descriptor && (
+            <span
+              className="text-[11px] font-bold uppercase tracking-wider whitespace-nowrap"
+              style={{ color: "rgba(45,212,191,0.85)", letterSpacing: "0.12em" }}
+            >
+              {descriptor}
+            </span>
+          )}
+        </div>
+      </div>
       <div
-        className="flex-1 h-2 rounded-full overflow-hidden relative"
+        className="h-2.5 rounded-full overflow-hidden relative w-full"
         style={{
           background: "rgba(255,255,255,0.04)",
           boxShadow: "inset 0 1px 2px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.03)",
@@ -98,22 +148,6 @@ function StatBar({ label, value, displayValue, min, max, fill, glow, zones }: {
           }}
         />
       </div>
-      <div className="flex flex-col items-end leading-tight w-[88px] flex-shrink-0">
-        <span
-          className="text-[14px] font-extrabold font-mono tabular-nums"
-          style={{ color: "rgba(255,255,255,0.92)", letterSpacing: "0.02em" }}
-        >
-          {displayValue}
-        </span>
-        {descriptor && (
-          <span
-            className="text-[9px] font-bold uppercase tracking-wider mt-0.5 whitespace-nowrap"
-            style={{ color: "rgba(45,212,191,0.80)", letterSpacing: "0.12em" }}
-          >
-            {descriptor}
-          </span>
-        )}
-      </div>
     </div>
   );
 }
@@ -123,8 +157,12 @@ function StatBar({ label, value, displayValue, min, max, fill, glow, zones }: {
 // `totalCards` controls the bottom dot pager (0 = hidden, n > 0 = render n dots
 // with the one at rank-1 highlighted). /specs passes 0 for both so the card
 // reads as a clean per-paddle spec sheet.
-export default function TrendingCard({ paddle, rank, code, totalCards }: {
+export default function TrendingCard({ paddle, rank, code, totalCards, bareBackground = false }: {
   paddle: Paddle; rank: number; code: string; totalCards: number;
+  /** One-off template mode — renders only the PLAYBOOKPADDLES.COM banner
+   *  on the card background so the export PNG can be used as a blank
+   *  master template (paddle, specs, discount chip, footer all hidden). */
+  bareBackground?: boolean;
 }) {
   const hasRealDiscount = !!paddle.discountLink?.trim() && !!paddle.amountOff && paddle.amountOff !== "$0" && paddle.amountOff !== "";
   const isSelkirk = paddle.brand === "Selkirk" || paddle.brand === "SLK";
@@ -210,7 +248,7 @@ export default function TrendingCard({ paddle, rank, code, totalCards }: {
     <div
       className="relative rounded-3xl overflow-hidden"
       style={{
-        aspectRatio: "1 / 1",
+        aspectRatio: "4 / 5",
         background: [
           // Soft teal aurora top
           "radial-gradient(ellipse 90% 55% at 50% -10%, rgba(20,184,166,0.16) 0%, transparent 65%)",
@@ -264,30 +302,38 @@ export default function TrendingCard({ paddle, rank, code, totalCards }: {
           </p>
           <span className="h-px w-6" style={{ background: "linear-gradient(90deg, rgba(255,255,255,0.25), transparent)" }} />
         </div>
-        <h2
-          className="text-2xl md:text-3xl font-extrabold leading-tight text-center"
-          style={{ color: "#ffffff", letterSpacing: "-0.015em" }}
-        >
-          {paddle.brand} {paddle.name}
-        </h2>
-        <p
-          className="text-[9px] font-bold uppercase tracking-[0.20em]"
-          style={{ color: "rgba(186,212,228,0.55)" }}
-        >
-          {paddle.shape} · {paddle.thickness}
-        </p>
+        {!bareBackground && (
+          <>
+            <h2
+              className="text-3xl md:text-4xl font-extrabold leading-tight text-center"
+              style={{ color: "#ffffff", letterSpacing: "-0.015em" }}
+            >
+              {paddle.brand} {paddle.name}
+            </h2>
+            <p
+              className="text-[11px] font-bold uppercase tracking-[0.20em]"
+              style={{ color: "rgba(186,212,228,0.60)" }}
+            >
+              {paddle.shape} · {paddle.thickness}
+            </p>
+          </>
+        )}
       </div>
 
       {/* ── Main content row — horizontal split: paddle LEFT, specs RIGHT ──
           The header + footer keep their absolute positioning, this row fills
-          the space in between. */}
+          the space in between. Hidden entirely in bareBackground mode so
+          the export is a clean template (URL banner + background only). */}
+      {!bareBackground && (
       <div className="absolute inset-x-0 top-[20%] bottom-[10%] flex items-stretch gap-3 px-5">
 
         {/* ── LEFT: paddle image — height-locked at 96% of the column so
                 every paddle renders at the same size regardless of the
                 source image's aspect ratio. Wider source images overflow
-                horizontally and get clipped by overflow-hidden. */}
-        <div className="relative flex-[0.52] flex items-center justify-center overflow-hidden">
+                horizontally and get clipped by overflow-hidden.
+                On the 4:5 portrait card the column is much taller than on
+                the old 1:1, so the paddle scales up naturally. */}
+        <div className="relative flex-[0.50] flex items-center justify-center overflow-hidden">
           {/* Balance line — sits BEHIND the paddle (z-index 0 vs the
               image's z-index 1) so it's only visible on either side of
               the paddle silhouette. A small 'BAL PT' label sits just
@@ -338,42 +384,24 @@ export default function TrendingCard({ paddle, rank, code, totalCards }: {
                                  RANGES.balancePoint.zones[1];
                 // Connector line geometry:
                 //   - vertical line at left: 12, so it visually aligns
-                //     with the BAL PT tag and the legend below
-                //   - top: just below the BAL PT tag (line% + ~16px)
-                //   - bottom: just above the legend block (~52px from
+                //     with the legend below
+                //   - top: just below the dashed line (line% + 4px)
+                //   - bottom: just above the legend block (~30% from
                 //     the column bottom, leaving room for the legend)
                 return (
                   <>
-                    {/* BAL PT tag — small, sits just below the dashed line */}
+                    {/* Thin solid leader line — vertical, connects the
+                        dashed BAL PT line down to the legend that sits
+                        halfway up the grip. The 'BAL PT' label itself
+                        lives at the top of the legend now (above the cm
+                        value), so the line runs uninterrupted from the
+                        dashed line straight down to the legend. */}
                     <div
                       aria-hidden
                       className="absolute pointer-events-none z-[2]"
                       style={{
-                        top: `calc(${100 - balancePct}% + 5px)`,
-                        left: 4,
-                        whiteSpace: "nowrap",
-                        fontSize: "8px",
-                        fontWeight: 800,
-                        letterSpacing: "0.20em",
-                        textTransform: "uppercase",
-                        color: BAL_ACCENT,
-                        textShadow: "0 1px 3px rgba(0,0,0,0.75)",
-                      }}
-                    >
-                      Bal Pt
-                    </div>
-
-                    {/* Thin solid leader line — vertical, connects BAL PT
-                        tag down to the legend that sits halfway up the
-                        grip. bottom value matches the legend's bottom +
-                        its approximate height so the line lands just
-                        above the cm number. */}
-                    <div
-                      aria-hidden
-                      className="absolute pointer-events-none z-[2]"
-                      style={{
-                        top:    `calc(${100 - balancePct}% + 18px)`,
-                        bottom: "30%",
+                        top:    `calc(${100 - balancePct}% + 4px)`,
+                        bottom: "36%",
                         left:   12,
                         width:  1,
                         background: BAL_ACCENT,
@@ -385,7 +413,8 @@ export default function TrendingCard({ paddle, rank, code, totalCards }: {
                         — visually about halfway up the paddle's grip.
                         Open margin to the left of the grip is wide
                         enough that the category word (Head-Heavy etc.)
-                        never crowds the paddle silhouette. */}
+                        never crowds the paddle silhouette. Stack order
+                        top → bottom: BAL PT label · cm value · zone. */}
                     <div
                       aria-hidden
                       className="absolute pointer-events-none z-[2] flex flex-col items-start"
@@ -398,9 +427,22 @@ export default function TrendingCard({ paddle, rank, code, totalCards }: {
                       }}
                     >
                       <span
+                        style={{
+                          fontSize: "12px",
+                          fontWeight: 800,
+                          letterSpacing: "0.20em",
+                          textTransform: "uppercase",
+                          color: BAL_ACCENT,
+                          opacity: 0.85,
+                          marginBottom: 2,
+                        }}
+                      >
+                        Bal Pt
+                      </span>
+                      <span
                         className="font-mono tabular-nums"
                         style={{
-                          fontSize: "13px",
+                          fontSize: "22px",
                           fontWeight: 800,
                           color: BAL_ACCENT,
                         }}
@@ -409,12 +451,12 @@ export default function TrendingCard({ paddle, rank, code, totalCards }: {
                       </span>
                       <span
                         style={{
-                          fontSize: "8px",
+                          fontSize: "12px",
                           fontWeight: 800,
                           letterSpacing: "0.16em",
                           textTransform: "uppercase",
                           color: BAL_ACCENT,
-                          opacity: 0.78,
+                          opacity: 0.85,
                           marginTop: 2,
                         }}
                       >
@@ -464,36 +506,8 @@ export default function TrendingCard({ paddle, rank, code, totalCards }: {
           </div>
         </div>
 
-        {/* ── RIGHT: stacked specs panel + prominent code chip ─────────── */}
-        <div className="relative flex-[0.48] flex flex-col gap-3 self-center">
-
-          {/* Big code chip up top — the prominent placement the user asked
-              for. Center-aligned and visually distinct from the glassy Specs
-              panel below: darker semi-solid backdrop, brighter teal border,
-              soft teal glow so it reads as a call-to-action instead of a
-              second data card. The discount amount uses the brand
-              yellow-green so the "X% off" pops without competing with the
-              teal code. */}
-          {showCodeChip && (
-            <div
-              className="rounded-xl px-4 py-3 text-center"
-              style={{
-                background: "linear-gradient(180deg, rgba(6,14,26,0.85) 0%, rgba(10,22,40,0.85) 100%)",
-                border: "1.5px solid rgba(45,212,191,0.65)",
-                boxShadow: "0 0 22px rgba(20,184,166,0.22), inset 0 1px 0 rgba(255,255,255,0.05)",
-              }}
-            >
-              <p className="text-[9px] font-extrabold uppercase tracking-[0.25em] mb-1.5" style={{ color: "rgba(255,255,255,0.55)" }}>
-                Discount Code
-              </p>
-              <div className="flex items-baseline justify-center gap-2">
-                <span className="text-lg font-extrabold font-mono tracking-wider" style={{ color: "#5eead4" }}>{code}</span>
-                <span className="text-[13px] font-extrabold" style={{ color: "#defa32" }}>
-                  · {hasRealDiscount ? `${paddle.amountOff} off` : "Free gift card"}
-                </span>
-              </div>
-            </div>
-          )}
+        {/* ── RIGHT: specs panel on top, discount-code chip directly below. */}
+        <div className="relative flex-[0.50] flex flex-col gap-3 self-center">
 
           {/* Spec panel — glassy, contains brand/name + stat bars */}
           <div
@@ -510,7 +524,7 @@ export default function TrendingCard({ paddle, rank, code, totalCards }: {
                 breathe. */}
             <div>
               <h2
-                className="text-lg font-extrabold text-white leading-tight"
+                className="text-xl font-extrabold text-white leading-tight"
                 style={{ letterSpacing: "-0.01em" }}
               >
                 Specs
@@ -531,6 +545,7 @@ export default function TrendingCard({ paddle, rank, code, totalCards }: {
                 fill={BARS.weight.fill}
                 glow={BARS.weight.glow}
                 zones={RANGES.weight.zones}
+                thresholds={RANGES.weight.thresholds}
               />
               {paddle.swingWeight > 0 && (
                 <StatBar
@@ -542,6 +557,7 @@ export default function TrendingCard({ paddle, rank, code, totalCards }: {
                   fill={BARS.swing.fill}
                   glow={BARS.swing.glow}
                   zones={RANGES.swingWeight.zones}
+                  thresholds={RANGES.swingWeight.thresholds}
                 />
               )}
               {paddle.twistWeight > 0 && (
@@ -554,6 +570,7 @@ export default function TrendingCard({ paddle, rank, code, totalCards }: {
                   fill={BARS.twist.fill}
                   glow={BARS.twist.glow}
                   zones={RANGES.twistWeight.zones}
+                  thresholds={RANGES.twistWeight.thresholds}
                 />
               )}
               {/* Bal Pt row removed from the spec panel — the on-paddle
@@ -562,13 +579,41 @@ export default function TrendingCard({ paddle, rank, code, totalCards }: {
                   panel isn't repeating itself. */}
             </div>
           </div>
+
+          {/* Discount-code chip — sits directly below the Specs panel.
+              Center-aligned and visually distinct from the glassy Specs
+              panel above: darker semi-solid backdrop, brighter teal border,
+              soft teal glow so it reads as a call-to-action rather than a
+              second data card. */}
+          {showCodeChip && (
+            <div
+              className="rounded-xl px-4 py-3 text-center"
+              style={{
+                background: "linear-gradient(180deg, rgba(6,14,26,0.85) 0%, rgba(10,22,40,0.85) 100%)",
+                border: "1.5px solid rgba(45,212,191,0.65)",
+                boxShadow: "0 0 22px rgba(20,184,166,0.22), inset 0 1px 0 rgba(255,255,255,0.05)",
+              }}
+            >
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] mb-1.5" style={{ color: "rgba(255,255,255,0.55)" }}>
+                Discount Code
+              </p>
+              <div className="flex items-baseline justify-center gap-2">
+                <span className="text-xl font-extrabold font-mono tracking-wider" style={{ color: "#5eead4" }}>{code}</span>
+                <span className="text-[15px] font-extrabold" style={{ color: "#defa32" }}>
+                  · {hasRealDiscount ? `${paddle.amountOff} off` : "Free gift card"}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
+      )}
 
       {/* Footer branding — YouTube logo + @PlaybookReviews handle on
           the bottom-left so anyone screenshotting the card can find
           the channel. Bottom-right url removed (it's already in the
-          header at the top). */}
+          header at the top). Hidden in bareBackground mode. */}
+      {!bareBackground && (
       <div className="absolute bottom-3 left-5 right-5 flex items-center pointer-events-none z-10">
         <div className="inline-flex items-center gap-2">
           {/* YouTube glyph — official red rounded-rect with white play
@@ -589,6 +634,7 @@ export default function TrendingCard({ paddle, rank, code, totalCards }: {
           </p>
         </div>
       </div>
+      )}
 
       {/* Dot indicators — refined oval shape. Skipped on /specs
           (totalCards=0) where there's no pager context for them to

@@ -7,7 +7,7 @@ import JSZip from "jszip";
 import { paddles } from "@/data/paddles";
 import { getTrendingPaddles, engagementScore, isTrendingExcluded, takeTopBySeriesDedup, HeartRecord, MIN_TRENDING_ENGAGEMENT } from "@/lib/trending";
 import { supabase } from "@/lib/supabaseClient";
-import TrendingCard, { EXPORT_WIDTH, getCode } from "@/components/TrendingCard";
+import TrendingCard, { EXPORT_WIDTH, EXPORT_PIXEL_RATIO, getCode } from "@/components/TrendingCard";
 
 // The download buttons are owner-only. Visiting /trending?export=<secret> once
 // per device sets a localStorage flag that reveals them; ?export=off hides them
@@ -167,10 +167,27 @@ export default function TrendingPage() {
     if (!node) throw new Error(`card ${index} not mounted`);
     // Wait for fonts so text isn't captured in a fallback face.
     if (document.fonts?.ready) await document.fonts.ready;
-    // html-to-image's first capture of a node can miss late-loaded images;
-    // a warm-up pass makes the real capture reliable.
-    const opts = { pixelRatio: 2, cacheBust: true, backgroundColor: "#060e1a" };
-    await toPng(node, opts);
+    // Explicitly decode every <img> inside the card before capturing.
+    // Without this, the first click can fail because html-to-image starts
+    // serializing before the paddle image is fully ready in the renderer.
+    await Promise.all(
+      Array.from(node.querySelectorAll("img")).map(async (img) => {
+        try {
+          if (!(img.complete && img.naturalWidth > 0)) {
+            await new Promise<void>((resolve) => {
+              img.addEventListener("load",  () => resolve(), { once: true });
+              img.addEventListener("error", () => resolve(), { once: true });
+            });
+          }
+          if (img.decode) await img.decode();
+        } catch { /* missing image shouldn't block the export */ }
+      }),
+    );
+    // Warm-up pass: html-to-image populates its internal image cache on
+    // the first call, so the second call renders reliably. Swallow any
+    // warm-up error so a transient failure doesn't abort the real capture.
+    const opts = { pixelRatio: EXPORT_PIXEL_RATIO, cacheBust: false, backgroundColor: "#060e1a" };
+    try { await toPng(node, opts); } catch { /* warm-up only */ }
     return toPng(node, opts);
   }
 

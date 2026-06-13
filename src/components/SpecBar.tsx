@@ -33,36 +33,48 @@ interface Props {
   descriptor?: string;
 }
 
-// Per-spec copy. The three slots map to [low zone, average zone, high zone].
-// Tuned for what each spec actually means on the court so a viewer reading
-// the card learns something useful instead of just seeing a number.
+// Per-spec copy. `zoneLabels` and `interpretations` are parallel arrays — N
+// labels paired with N interpretations describing what that zone feels like
+// on the court. `thresholds` (when present) holds N-1 absolute cutoffs that
+// determine which zone a value falls into; the categorization stays stable
+// regardless of how the catalog's min/max shifts as we add paddles.
+// Without `thresholds` the component falls back to a catalog-relative
+// split anchored on the dataset average.
 const SPEC_META: Record<SpecKind, {
-  zoneLabels: [string, string, string];
-  interpretations: [string, string, string];
+  zoneLabels: readonly string[];
+  interpretations: readonly string[];
+  thresholds?: readonly number[];
 }> = {
   "swing-weight": {
-    zoneLabels:      ["Whippy", "Balanced", "Head-Heavy"],
+    zoneLabels:      ["Head-Light", "Average", "Head-Heavy"],
     interpretations: [
-      "Light and fast through the air — great for hand battles and quick reactions, less plow-through on drives.",
-      "Balanced feel — neither sluggish at the kitchen nor underpowered on drives. The all-court sweet spot.",
+      "Head-light and fast through the air — great for hand battles and quick reactions, less plow-through on drives.",
+      "Average swing weight — neither sluggish at the kitchen nor underpowered on drives. The all-court sweet spot.",
       "Head-heavy with serious plow-through on drives — slower hand speed at the kitchen, more strain on the shoulder over long sessions.",
     ],
+    thresholds: [111, 118] as const,
   },
   "twist-weight": {
-    zoneLabels:      ["Demanding", "Forgiving", "Very Forgiving"],
+    zoneLabels:      ["Poor", "Fair", "Good", "Forgiving", "Elite"],
     interpretations: [
-      "Smaller effective sweet spot — clean contact required, off-center hits punish.",
+      "Small effective sweet spot — clean contact required, off-center hits punish heavily.",
+      "Limited sweet spot — better contact needed for stable returns, off-center hits feel noticeably less solid.",
+      "Decent sweet spot — handles modest off-center contact with reasonable stability.",
       "Solid sweet spot for most players — handles normal off-center contact predictably.",
-      "Very large effective sweet spot — off-center hits stay stable; great for beginners and high-speed exchanges.",
+      "Exceptional sweet spot — virtually any contact stays stable; ideal for high-speed exchanges and beginner forgiveness.",
     ],
+    thresholds: [5.0, 5.5, 5.9, 7.0] as const,
   },
   "static-weight": {
-    zoneLabels:      ["Light", "Average", "Heavy"],
+    zoneLabels:      ["Featherweight", "Light", "Average", "Mid-Heavy", "Heavy"],
     interpretations: [
-      "Light in hand — easier on the wrist, faster reactions, less momentum on drives.",
-      "Balanced weight — versatile across the court and easy to control for most players.",
-      "Heavy in hand — more momentum on every swing, but more wrist and shoulder fatigue over long sessions.",
+      "Featherlight in hand — fastest reactions and least fatigue, but the least drive momentum.",
+      "Light in hand — quick reactions, easy on the wrist, less plow-through on drives.",
+      "Average weight — versatile across the court and easy to control for most players.",
+      "Slightly heavier than average — more drive momentum while still maneuverable for most players.",
+      "Heavy in hand — maximum momentum on every swing, but more wrist and shoulder fatigue over long sessions.",
     ],
+    thresholds: [7.4, 7.81, 8.2, 8.41] as const,
   },
   "generic": {
     zoneLabels:      ["Low", "Average", "High"],
@@ -87,20 +99,27 @@ export default function SpecBar({ label, value, unit = "", min, max, avg, kind =
   const pct    = Math.max(0, Math.min(100, ((value - min) / range) * 100));
   const avgPct = Math.max(0, Math.min(100, ((avg - min) / range) * 100));
 
-  // Zone splits anchored on the catalog average so paddles whose dataset
-  // skews high don't all get tagged "high". 60% of the way from min → avg is
-  // the low / avg boundary; 40% of the way from avg → max is the avg / high
-  // boundary.
-  const lowEnd  = min + (avg - min) * 0.6;
-  const highEnd = avg + (max - avg) * 0.4;
-  const zone: "low" | "avg" | "high" =
-    value < lowEnd  ? "low"  :
-    value > highEnd ? "high" : "avg";
-
   const meta = SPEC_META[kind];
-  const zoneLabel = zone === "low" ? meta.zoneLabels[0] : zone === "high" ? meta.zoneLabels[2] : meta.zoneLabels[1];
-  const interp    = descriptor ?? (zone === "low" ? meta.interpretations[0] : zone === "high" ? meta.interpretations[2] : meta.interpretations[1]);
-  const accent    = ZONE_COLORS[zone].accent;
+
+  // Pick the zone index. If this spec defines explicit thresholds, walk
+  // them to find the first one the value falls below; if none, the value
+  // is in the highest zone. N-1 thresholds → N zones. Otherwise fall back
+  // to a catalog-relative 3-zone split: 60% of the way from min → avg is
+  // the low/avg boundary, 40% of the way from avg → max is the avg/high
+  // boundary.
+  let zoneIdx: number;
+  if (meta.thresholds && meta.thresholds.length > 0) {
+    const idx = meta.thresholds.findIndex((t) => value < t);
+    zoneIdx = idx === -1 ? meta.thresholds.length : idx;
+  } else {
+    const lowEnd  = min + (avg - min) * 0.6;
+    const highEnd = avg + (max - avg) * 0.4;
+    zoneIdx = value < lowEnd ? 0 : value > highEnd ? 2 : 1;
+  }
+
+  const zoneLabel = meta.zoneLabels[zoneIdx] ?? meta.zoneLabels[meta.zoneLabels.length - 1];
+  const interp    = descriptor ?? (meta.interpretations[zoneIdx] ?? meta.interpretations[meta.interpretations.length - 1]);
+  const accent    = ZONE_COLORS.avg.accent;
 
   return (
     <div
