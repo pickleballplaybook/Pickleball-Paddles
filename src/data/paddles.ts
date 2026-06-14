@@ -2627,7 +2627,7 @@ export const paddles: Paddle[] = [
     weight: "8.1 oz",
     swingWeight: 113.33,
     twistWeight: 6.63,
-    balancePoint: 23.8,
+    balancePoint: 24.1,
     thickness: "16mm",
     image: "/images/paddles/6.0-Coral-Pro-Hybrid-16mm.png",
     amountOff: "10%",
