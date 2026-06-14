@@ -118,7 +118,7 @@ export default function NewsletterPage() {
               className="inline-flex items-center gap-2 text-sm font-semibold px-6 py-3 rounded-xl transition-all hover:scale-[1.02]"
               style={{ border: "1px solid rgba(255,255,255,0.15)", color: "var(--text-primary)" }}
             >
-              <Youtube className="w-4 h-4 text-red-500" /> @playbookreviews
+              <Youtube className="w-4 h-4 text-red-500" /> @playbookpaddles
             </a>
           </div>
 

@@ -36,7 +36,7 @@ export default function YouTubeEmbed({
               rel="noopener noreferrer"
               className="text-brand-500 hover:text-brand-600 underline underline-offset-2 transition-colors"
             >
-              @playbookreviews
+              @playbookpaddles
             </a>
             .
           </p>

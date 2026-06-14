@@ -57,7 +57,7 @@ export default function LatestReviews({ items, featuredVideo }: LatestReviewsPro
               className="btn-secondary text-sm"
             >
               <Youtube className="w-4 h-4 text-red-500" />
-              @playbookreviews
+              @playbookpaddles
             </a>
             <Link href="/reviews" className="btn-secondary text-sm">
               All Reviews <ArrowRight className="w-4 h-4" />
@@ -244,7 +244,7 @@ export default function LatestReviews({ items, featuredVideo }: LatestReviewsPro
             className="btn-secondary justify-center"
           >
             <Youtube className="w-4 h-4 text-red-500" />
-            @playbookreviews
+            @playbookpaddles
           </a>
         </div>
       </div>

@@ -11,7 +11,7 @@
 //    - totalCards = 0 → no dots (also for /specs)
 //
 //  Everything else — paddle image, balance-point dashed line + leader-line
-//  legend, specs panel, discount-code chip, footer @PlaybookReviews handle —
+//  legend, specs panel, discount-code chip, footer @PlaybookPaddles handle —
 //  is identical between the two surfaces. Iterating on the card visual now
 //  only touches this file.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -609,7 +609,7 @@ export default function TrendingCard({ paddle, rank, code, totalCards, bareBackg
       </div>
       )}
 
-      {/* Footer branding — YouTube logo + @PlaybookReviews handle on
+      {/* Footer branding — YouTube logo + @PlaybookPaddles handle on
           the bottom-left so anyone screenshotting the card can find
           the channel. Bottom-right url removed (it's already in the
           header at the top). Hidden in bareBackground mode. */}
@@ -630,7 +630,7 @@ export default function TrendingCard({ paddle, rank, code, totalCards, bareBackg
             className="text-[12px] font-extrabold uppercase"
             style={{ color: "rgba(255,255,255,0.80)", letterSpacing: "0.12em" }}
           >
-            @PlaybookReviews
+            @PlaybookPaddles
           </p>
         </div>
       </div>

@@ -12,7 +12,7 @@ export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: "Pickleball Paddle Video Reviews — Full In-Depth Reviews",
-  description: `Watch full in-depth video reviews for 100+ pickleball paddles. Every paddle tested on court with lab-measured specs. Subscribe to @playbookreviews for new reviews weekly.`,
+  description: `Watch full in-depth video reviews for 100+ pickleball paddles. Every paddle tested on court with lab-measured specs. Subscribe to @playbookpaddles for new reviews weekly.`,
   alternates: { canonical: `${siteConfig.siteUrl}/reviews` },
   openGraph: {
     title: "Pickleball Paddle Video Reviews",
@@ -143,7 +143,7 @@ export default async function ReviewsPage() {
             className="inline-flex items-center gap-2 text-sm font-semibold text-red-600 hover:text-red-700 bg-red-50 border border-red-200 px-4 py-2.5 rounded-xl transition-all hover:bg-red-100"
           >
             <Youtube className="w-4 h-4" />
-            @playbookreviews
+            @playbookpaddles
           </a>
         </div>
 

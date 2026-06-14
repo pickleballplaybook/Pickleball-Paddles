@@ -109,7 +109,7 @@ export default function Footer() {
             style={{ color: "var(--text-muted)" }}
           >
             <Youtube className="w-4 h-4 text-red-500" />
-            @playbookreviews
+            @playbookpaddles
           </a>
         </div>
       </div>

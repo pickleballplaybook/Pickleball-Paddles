@@ -19,7 +19,7 @@ export const siteConfig = {
 
   // ── YouTube ─────────────────────────────────────────────────────────────────
   // Channel URL — shown in footer and reviews page
-  youtubeChannelUrl: "https://www.youtube.com/channel/UCikz-D2j4_jMVYZrQuPin6A",
+  youtubeChannelUrl: "https://www.youtube.com/@PlaybookPaddles",
 
   // Paddle Reviews Playlist URL
   // REPLACE the placeholder below with your actual playlist URL when ready.
