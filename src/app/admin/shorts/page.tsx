@@ -64,7 +64,7 @@ type Job = {
 const REEL_TAG_OPTIONS = [
   { handle: "pickleballdrillsapp", label: "@pickleballdrillsapp" },
   { handle: "pickleballplaybook", label: "@pickleballplaybook" },
-  { handle: "playbookreviews", label: "@playbookreviews" },
+  { handle: "playbookpaddles", label: "@playbookpaddles" },
 ];
 
 // buildReelDescription, buildHashtagLine, and the PICKLEBALL_HASHTAGS catalog
