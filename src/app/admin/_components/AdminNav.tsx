@@ -10,6 +10,7 @@ const TABS = [
   { href: "/admin/auto-reply", label: "Auto Reply" },
   { href: "/admin/weekly-thumbnail", label: "Weekly Thumbnail" },
   { href: "/admin/drills", label: "Drills" },
+  { href: "/admin/email", label: "Email" },
 ];
 
 export function AdminNav() {
