@@ -162,11 +162,9 @@ export default function GearProductPage({ params }: Props) {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
 
-            {/* Image — `mix-blend-mode: multiply` blends the product photo's
-                baked-in white background into the radial-gradient backdrop so
-                manufacturer shots with white walls/floors stop looking like
-                a hard rectangle. Product colors darken slightly; trade-off
-                worth it for the visual cohesion across the gear catalog. */}
+            {/* Image — renders as-is so manufacturer shots with baked-in
+                white backgrounds keep their intended look. Transparent PNGs
+                sit on the radial-gradient backdrop. */}
             <div
               className="rounded-3xl overflow-hidden w-full"
               style={{
@@ -181,7 +179,6 @@ export default function GearProductPage({ params }: Props) {
                   src={product.image}
                   alt={`${fullName} for pickleball`}
                   className="w-full h-full object-cover object-center"
-                  style={{ mixBlendMode: "multiply" }}
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
