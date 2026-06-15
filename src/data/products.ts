@@ -220,6 +220,22 @@ export const gearProducts: GearProduct[] = [
     ctaText: "Get Discount",
   },
   {
+    id: "ethos-pro-undergrip",
+    brand: "Ethos",
+    name: "Pro Undergrip",
+    price: "",
+    badge: "10% Off",
+    link: "https://www.ethospickleball.com/discount/PLAYBOOK?redirect=/?sca_ref=11559688.Hf8GGHu0NO",
+    image: "/images/products/Ethos-Pro-Undergrip.png",
+    // Wide hero crop — used by the homepage PromoBar's 45% image column
+    // and any other banner-style context.
+    featuredImage: "/images/products/Hero/ethos-pro-undergrip.png",
+    imageAspect: "square",
+    subtitle: "Tour-quality undergrip from Ethos — built for comfort, tack, and feel on every shot.",
+    bg: "#0d1f1f",
+    ctaText: "Get 10% Off",
+  },
+  {
     id: "academy",
     brand: "Pickleball Playbook Academy",
     name: "FREE 6-Week Program",
