@@ -19,15 +19,27 @@
 import { Paddle } from "@/types";
 import { siteConfig } from "@/config/site";
 
-// Design dimensions: 4:5 portrait (600 × 750), pixelRatio 1.8 → exactly
-// 1080 × 1350 — Instagram's preferred portrait feed size. Width stays 600
-// so existing pixel-tuned measurements (paddings, font sizes, bar widths)
-// keep working; the extra 150 px of height goes to a taller paddle, a
-// roomier Specs panel, and headroom for the Serve Speed + RPM bars coming
-// next week.
+// Design dimensions: width 600 across both supported formats so the existing
+// pixel-tuned measurements (paddings, font sizes, bar widths) keep working.
+// pixelRatio 1.8 → output width 1080 in both cases:
+//   - format "ig" (4:5 IG portrait):   600 × 750  → 1080 × 1350
+//   - format "yt" (9:16 YT vertical):  600 × 1067 → 1080 × 1920
+// The 9:16 height is sub-pixel rounded (1067 × 1.8 = 1920.6 → effectively
+// 1080 × 1920 once the browser snaps to whole pixels).
+export type CardFormat = "ig" | "yt";
 export const EXPORT_WIDTH = 600;
-export const EXPORT_HEIGHT = 750;
+export const EXPORT_HEIGHT_IG = 750;
+export const EXPORT_HEIGHT_YT = 1067;
+export const EXPORT_HEIGHT = EXPORT_HEIGHT_IG;  // back-compat default for /trending
 export const EXPORT_PIXEL_RATIO = 1.8;
+export const ASPECT_BY_FORMAT: Record<CardFormat, string> = {
+  ig: "4 / 5",
+  yt: "9 / 16",
+};
+export const HEIGHT_BY_FORMAT: Record<CardFormat, number> = {
+  ig: EXPORT_HEIGHT_IG,
+  yt: EXPORT_HEIGHT_YT,
+};
 
 // Returns the discount code to print on a card. Selkirk paddles use the
 // influencer code ("INF-PLAYBOOK") unless the link points to Locker Room
@@ -157,12 +169,18 @@ function StatBar({ label, value, displayValue, min, max, fill, glow, zones, thre
 // `totalCards` controls the bottom dot pager (0 = hidden, n > 0 = render n dots
 // with the one at rank-1 highlighted). /specs passes 0 for both so the card
 // reads as a clean per-paddle spec sheet.
-export default function TrendingCard({ paddle, rank, code, totalCards, bareBackground = false }: {
+export default function TrendingCard({ paddle, rank, code, totalCards, bareBackground = false, format = "ig" }: {
   paddle: Paddle; rank: number; code: string; totalCards: number;
   /** One-off template mode — renders only the PLAYBOOKPADDLES.COM banner
    *  on the card background so the export PNG can be used as a blank
    *  master template (paddle, specs, discount chip, footer all hidden). */
   bareBackground?: boolean;
+  /** Aspect ratio to render at. "ig" = 4:5 (IG portrait 1080×1350, default),
+   *  "yt" = 9:16 (vertical YouTube/Shorts thumbnail 1080×1920). The interior
+   *  layout is identical — header pins top, footer pins bottom, the
+   *  paddle/specs row stretches percentage-positioned into the extra
+   *  vertical space the 9:16 frame provides. */
+  format?: CardFormat;
 }) {
   const hasRealDiscount = !!paddle.discountLink?.trim() && !!paddle.amountOff && paddle.amountOff !== "$0" && paddle.amountOff !== "";
   const isSelkirk = paddle.brand === "Selkirk" || paddle.brand === "SLK";
@@ -248,7 +266,7 @@ export default function TrendingCard({ paddle, rank, code, totalCards, bareBackg
     <div
       className="relative rounded-3xl overflow-hidden"
       style={{
-        aspectRatio: "4 / 5",
+        aspectRatio: ASPECT_BY_FORMAT[format],
         background: [
           // Soft teal aurora top
           "radial-gradient(ellipse 90% 55% at 50% -10%, rgba(20,184,166,0.16) 0%, transparent 65%)",

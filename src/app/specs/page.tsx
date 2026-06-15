@@ -31,7 +31,14 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { ChevronLeft, ChevronRight, Download, Loader2 } from "lucide-react";
 import { toPng } from "html-to-image";
 import { paddles } from "@/data/paddles";
-import TrendingCard, { EXPORT_WIDTH, EXPORT_HEIGHT, EXPORT_PIXEL_RATIO, getCode } from "@/components/TrendingCard";
+import TrendingCard, {
+  EXPORT_WIDTH,
+  EXPORT_PIXEL_RATIO,
+  ASPECT_BY_FORMAT,
+  HEIGHT_BY_FORMAT,
+  getCode,
+  type CardFormat,
+} from "@/components/TrendingCard";
 
 // 18 = 6 rows × 3 cols on desktop. Browsing felt a little dense at 24 and a
 // little sparse at 12 — 18 is the sweet spot per the request.
@@ -69,6 +76,12 @@ function parsePrice(p?: string): number {
 
 export default function SpecsPage() {
   const [sortKey, setSortKey] = useState<SortKey>("newest");
+  // Export format — drives both the on-page card aspect ratio and the
+  // dimensions of the downloaded PNG. "ig" = 4:5 portrait (1080×1350,
+  // Instagram feed). "yt" = 9:16 vertical (1080×1920, YouTube/Shorts).
+  const [format, setFormat] = useState<CardFormat>("ig");
+  const cardDesignHeight = HEIGHT_BY_FORMAT[format];
+  const cardAspect = ASPECT_BY_FORMAT[format];
 
   // Apply the selected sort. A-Z (default) sorts by brand then name so the
   // catalog browses predictably. The other options re-shuffle by the
@@ -116,7 +129,7 @@ export default function SpecsPage() {
   const [exporting, setExporting] = useState<number | null>(null);
 
   function fileName(paddleSlug: string, globalIndex: number): string {
-    return `${String(globalIndex + 1).padStart(3, "0")}-${paddleSlug}.png`;
+    return `${String(globalIndex + 1).padStart(3, "0")}-${paddleSlug}-${format}.png`;
   }
 
   async function captureCard(visibleIndex: number): Promise<string> {
@@ -220,31 +233,67 @@ export default function SpecsPage() {
           </p>
         </div>
 
-        {/* Sort dropdown — six options covering name (A-Z / Z-A), price,
-            and added-date. Native <select> so it works without extra deps
-            and matches OS-level affordances. Reset to page 1 on change is
-            handled by an effect higher up. */}
-        <div className="flex items-center justify-center gap-3 mb-8">
-          <label htmlFor="specs-sort" className="text-xs font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.50)" }}>
-            Sort by
-          </label>
-          <select
-            id="specs-sort"
-            value={sortKey}
-            onChange={(e) => setSortKey(e.target.value as SortKey)}
-            className="text-sm font-bold px-3 py-2 rounded-lg cursor-pointer focus:outline-none focus:ring-2"
-            style={{
-              background: "rgba(15,23,42,0.85)",
-              border: "1px solid rgba(45,212,191,0.35)",
-              color: "#5eead4",
-            }}
-          >
-            {(Object.keys(SORT_LABELS) as SortKey[]).map((k) => (
-              <option key={k} value={k} style={{ background: "#0f172a", color: "#fff" }}>
-                {SORT_LABELS[k]}
-              </option>
-            ))}
-          </select>
+        {/* Format toggle + sort dropdown — controls grouped on one row.
+            Format is a segmented control (IG portrait vs YT vertical)
+            since there are only two options. Sort uses a native <select>
+            since there are six. */}
+        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 mb-8">
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.50)" }}>
+              Format
+            </span>
+            <div
+              role="radiogroup"
+              aria-label="Export format"
+              className="inline-flex rounded-lg p-1"
+              style={{ background: "rgba(15,23,42,0.85)", border: "1px solid rgba(45,212,191,0.35)" }}
+            >
+              {([
+                { key: "ig" as const, label: "IG · 1080×1350" },
+                { key: "yt" as const, label: "YT · 1080×1920" },
+              ]).map((opt) => {
+                const active = format === opt.key;
+                return (
+                  <button
+                    key={opt.key}
+                    role="radio"
+                    aria-checked={active}
+                    onClick={() => setFormat(opt.key)}
+                    className="text-sm font-bold px-3 py-1.5 rounded-md transition-colors"
+                    style={{
+                      background: active ? "rgba(45,212,191,0.18)" : "transparent",
+                      color: active ? "#5eead4" : "rgba(255,255,255,0.55)",
+                    }}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <label htmlFor="specs-sort" className="text-xs font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.50)" }}>
+              Sort by
+            </label>
+            <select
+              id="specs-sort"
+              value={sortKey}
+              onChange={(e) => setSortKey(e.target.value as SortKey)}
+              className="text-sm font-bold px-3 py-2 rounded-lg cursor-pointer focus:outline-none focus:ring-2"
+              style={{
+                background: "rgba(15,23,42,0.85)",
+                border: "1px solid rgba(45,212,191,0.35)",
+                color: "#5eead4",
+              }}
+            >
+              {(Object.keys(SORT_LABELS) as SortKey[]).map((k) => (
+                <option key={k} value={k} style={{ background: "#0f172a", color: "#fff" }}>
+                  {SORT_LABELS[k]}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {/* Grid anchor — used for scroll-to-top on page change */}
@@ -256,9 +305,10 @@ export default function SpecsPage() {
             const globalIndex = startIdx + i;
             return (
               <div key={paddle.id} className="flex flex-col gap-2">
-                {/* Scaled-card wrapper. The outer div is aspect-ratio 4:5
-                    and uses container-type: inline-size so the inner
-                    600 × 750 card scales to exactly the column width via
+                {/* Scaled-card wrapper. The outer div mirrors the export
+                    aspect (4:5 for IG, 9:16 for YT) and uses
+                    container-type: inline-size so the inner 600 × N card
+                    scales to exactly the column width via
                     `transform: scale(calc(100cqw / 600px))`. Result:
                     proportions are identical to the PNG export at any
                     viewport, no flicker, no JS measurement. */}
@@ -266,7 +316,7 @@ export default function SpecsPage() {
                   style={{
                     position: "relative",
                     width: "100%",
-                    aspectRatio: "4 / 5",
+                    aspectRatio: cardAspect,
                     containerType: "inline-size",
                   } as React.CSSProperties}
                 >
@@ -276,7 +326,7 @@ export default function SpecsPage() {
                       top: 0,
                       left: 0,
                       width: EXPORT_WIDTH,
-                      height: EXPORT_HEIGHT,
+                      height: cardDesignHeight,
                       transformOrigin: "top left",
                       // Modern CSS: dividing a length by a length yields a
                       // unitless number that scale() accepts. Supported in
@@ -290,6 +340,7 @@ export default function SpecsPage() {
                         rank={0}           // hide podium badge — these aren't ranked
                         code={getCode(paddle.brand, paddle.discountLink)}
                         totalCards={0}     // hide bottom dot pager
+                        format={format}
                       />
                     </div>
                   </div>
