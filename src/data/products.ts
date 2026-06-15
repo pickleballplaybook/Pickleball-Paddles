@@ -17,6 +17,21 @@ export interface GearProduct {
   bg: string;
   ctaText: string;
   videoId?: string;
+  // Optional non-affiliate product URL for the brand's own customer reviews.
+  // Surfaced as a "Read customer reviews" link on the gear detail page so
+  // shoppers can see third-party feedback without going through the
+  // discount/affiliate URL.
+  reviewsUrl?: string;
+  // Optional bulleted highlights — rendered as a "Why we love it" card on
+  // the gear detail page. Three to six short benefits work best.
+  highlights?: string[];
+  // Optional FAQ list — rendered as an accordion on the detail page and
+  // emitted as FAQPage JSON-LD for SEO.
+  faqs?: { q: string; a: string }[];
+  // Optional natural-language "best for" line — e.g.
+  // "Intermediate players who want better grip feel without changing tack."
+  // Rendered as a small callout near the CTA.
+  bestFor?: string;
 }
 
 // ── All gear / affiliate products ─────────────────────────────────────────────
@@ -234,6 +249,39 @@ export const gearProducts: GearProduct[] = [
     subtitle: "Tour-quality undergrip from Ethos — built for comfort, tack, and feel on every shot.",
     bg: "#0d1f1f",
     ctaText: "Get 10% Off",
+    // Brand's own product page — surfaces their on-site customer reviews
+    // without sending the click through the affiliate/discount link.
+    reviewsUrl: "https://www.ethospickleball.com/products/pro-undergrip-right-hand-lightweight",
+    bestFor: "Players who want a tour-quality grip feel without adding weight or losing tack mid-match.",
+    highlights: [
+      "Tour-quality tack — holds up through sweat, humidity, and long sessions without going slick.",
+      "Ergonomic underlayer designed for natural hand position, reduces wrist fatigue on drives.",
+      "Lightweight construction so paddle balance stays where you tuned it.",
+      "Hand-specific (right or left) build for a contoured fit that overgrips can't replicate.",
+      "Premium materials — clean install, no slippage over time.",
+    ],
+    faqs: [
+      {
+        q: "Is this an overgrip or a replacement grip?",
+        a: "It's a replacement undergrip — you remove your paddle's stock grip and install the Ethos Pro in its place. You can still add an overgrip on top if you want extra tack or cushion.",
+      },
+      {
+        q: "Will it change the swing weight of my paddle?",
+        a: "Marginally. The Ethos Pro Undergrip is engineered to be lightweight so your paddle's balance and swing weight stay close to factory spec. Most players don't feel a difference.",
+      },
+      {
+        q: "Right-hand or left-hand — what's the difference?",
+        a: "The grip is contoured to the dominant hand's natural finger and palm position. Pick the version that matches the hand you hold the paddle with for the best feel. Order the opposite if you're left-handed.",
+      },
+      {
+        q: "How long does the tack last?",
+        a: "Significantly longer than most stock grips. Most players get several months of regular play before noticing any meaningful drop in tack, depending on humidity and sweat level.",
+      },
+      {
+        q: "Does the 10% discount stack with sales on the Ethos site?",
+        a: "Use code PLAYBOOK at checkout — it works on the full Ethos catalog. Sale stacking depends on the brand's current promo rules; PLAYBOOK reliably gets you the 10% on regular-priced items.",
+      },
+    ],
   },
   {
     id: "academy",

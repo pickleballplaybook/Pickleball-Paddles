@@ -43,7 +43,7 @@ function EditorPickCard({ p }: { p: GearProduct }) {
               src={p.image}
               alt={`${p.brand} ${p.name}`}
               className="w-full h-full object-contain"
-              style={{ maxHeight: "260px" }}
+              style={{ maxHeight: "260px", mixBlendMode: "multiply" }}
             />
           </div>
         </div>
@@ -152,7 +152,7 @@ function GridCard({ p }: { p: GearProduct }) {
               src={p.image}
               alt={`${p.brand} ${p.name}`}
               className="w-full h-full object-contain"
-              style={{ maxHeight: "170px" }}
+              style={{ maxHeight: "170px", mixBlendMode: "multiply" }}
             />
           ) : (
             <div

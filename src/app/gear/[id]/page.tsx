@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Star, ExternalLink, ChevronRight } from "lucide-react";
 import { gearProducts } from "@/data/products";
 import { siteConfig } from "@/config/site";
 import YouTubeEmbed from "@/components/YouTubeEmbed";
@@ -78,7 +78,9 @@ export default function GearProductPage({ params }: Props) {
   const discountedPrice = calcDiscountedPrice(product.price, product.badge);
   const hasPrice = product.price && product.price !== "Free";
 
-  // JSON-LD
+  // JSON-LD — Product, Breadcrumb, FAQ (when present). Browsers ignore;
+  // Google reads them to enable rich results (price + review snippets,
+  // breadcrumb trail in SERPs, FAQ accordion under the listing).
   const productSchema = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -102,26 +104,69 @@ export default function GearProductPage({ params }: Props) {
     },
   };
 
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": siteConfig.siteUrl },
+      { "@type": "ListItem", "position": 2, "name": "Gear", "item": `${siteConfig.siteUrl}/gear` },
+      { "@type": "ListItem", "position": 3, "name": fullName, "item": `${siteConfig.siteUrl}/gear/${product.id}` },
+    ],
+  };
+
+  const faqSchema = product.faqs && product.faqs.length > 0 ? {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": product.faqs.map((f) => ({
+      "@type": "Question",
+      "name": f.q,
+      "acceptedAnswer": { "@type": "Answer", "text": f.a },
+    })),
+  } : null;
+
+  const reviewsHost = product.reviewsUrl ? (() => {
+    try { return new URL(product.reviewsUrl).hostname.replace(/^www\./, ""); } catch { return null; }
+  })() : null;
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      {faqSchema && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      )}
 
       <div className="min-h-screen pt-[156px]" style={{ background: "var(--bg-page)" }}>
         <div className="container-xl py-10">
 
-          {/* Back nav */}
-          <Link
-            href="/gear"
-            className="inline-flex items-center gap-1.5 text-sm mb-10 transition-colors hover:text-brand-500"
-            style={{ color: "var(--text-muted)" }}
-          >
-            <ArrowLeft className="w-4 h-4" />
-            All Gear
-          </Link>
+          {/* Breadcrumb nav — matches the JSON-LD breadcrumb so users and
+              search engines see the same path. */}
+          <nav aria-label="Breadcrumb" className="mb-8">
+            <ol className="inline-flex flex-wrap items-center gap-1.5 text-sm" style={{ color: "var(--text-muted)" }}>
+              <li>
+                <Link href="/" className="transition-colors hover:text-brand-500">Home</Link>
+              </li>
+              <li aria-hidden><ChevronRight className="w-3.5 h-3.5" /></li>
+              <li>
+                <Link href="/gear" className="inline-flex items-center gap-1 transition-colors hover:text-brand-500">
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  All Gear
+                </Link>
+              </li>
+              <li aria-hidden><ChevronRight className="w-3.5 h-3.5" /></li>
+              <li aria-current="page" style={{ color: "var(--text-primary)" }} className="font-semibold">
+                {fullName}
+              </li>
+            </ol>
+          </nav>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
 
-            {/* Image */}
+            {/* Image — `mix-blend-mode: multiply` blends the product photo's
+                baked-in white background into the radial-gradient backdrop so
+                manufacturer shots with white walls/floors stop looking like
+                a hard rectangle. Product colors darken slightly; trade-off
+                worth it for the visual cohesion across the gear catalog. */}
             <div
               className="rounded-3xl overflow-hidden w-full"
               style={{
@@ -136,6 +181,7 @@ export default function GearProductPage({ params }: Props) {
                   src={product.image}
                   alt={`${fullName} for pickleball`}
                   className="w-full h-full object-cover object-center"
+                  style={{ mixBlendMode: "multiply" }}
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
@@ -197,6 +243,25 @@ export default function GearProductPage({ params }: Props) {
                 {product.subtitle}
               </p>
 
+              {/* "Best for" callout — one-line audience targeting that
+                  helps the right shopper self-identify in seconds. */}
+              {product.bestFor && (
+                <div
+                  className="rounded-xl px-4 py-3 mb-5 flex items-start gap-3"
+                  style={{ background: "rgba(20,184,166,0.08)", border: "1px solid rgba(20,184,166,0.20)" }}
+                >
+                  <Star className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: "#2dd4bf" }} />
+                  <div>
+                    <p className="text-[11px] font-bold uppercase tracking-widest mb-1" style={{ color: "#14b8a6" }}>
+                      Best For
+                    </p>
+                    <p className="text-sm leading-snug" style={{ color: "var(--text-primary)" }}>
+                      {product.bestFor}
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* Star ratings */}
               <div className="flex items-center gap-4 mb-1">
                 <PaddleStarRating paddleId={`gear-${product.id}`} />
@@ -228,6 +293,26 @@ export default function GearProductPage({ params }: Props) {
               <p className="text-[11px] mb-8" style={{ color: "var(--text-muted)" }}>
                 Affiliate link. We may earn a commission — it never affects our recommendations.
               </p>
+
+              {/* Highlights — quick-scan bullet list of standout benefits. */}
+              {product.highlights && product.highlights.length > 0 && (
+                <div
+                  className="rounded-2xl p-5 mb-8"
+                  style={{ background: "var(--bg-section)", border: "1px solid var(--border)" }}
+                >
+                  <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: "#14b8a6" }}>
+                    Why We Recommend It
+                  </p>
+                  <ul className="flex flex-col gap-3">
+                    {product.highlights.map((h) => (
+                      <li key={h} className="flex items-start gap-2.5">
+                        <Check className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: "#2dd4bf" }} />
+                        <span className="text-sm leading-snug" style={{ color: "var(--text-secondary)" }}>{h}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
               {product.features && (
                 <pre
@@ -328,11 +413,60 @@ export default function GearProductPage({ params }: Props) {
             </div>
           )}
 
-          {/* Community reviews */}
+          {/* FAQ — surfaced before reviews so shoppers find common
+              answers fast. Mirrors the FAQPage JSON-LD above for SEO. */}
+          {product.faqs && product.faqs.length > 0 && (
+            <div className="mt-14 max-w-3xl">
+              <h2 className="text-2xl font-extrabold mb-6" style={{ color: "var(--text-primary)" }}>
+                Frequently Asked Questions
+              </h2>
+              <div className="flex flex-col gap-3">
+                {product.faqs.map((f, i) => (
+                  <details
+                    key={i}
+                    className="group rounded-2xl px-5 py-4"
+                    style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.08)" }}
+                  >
+                    <summary className="cursor-pointer list-none flex items-start justify-between gap-4">
+                      <span className="text-base font-bold leading-snug" style={{ color: "var(--text-primary)" }}>
+                        {f.q}
+                      </span>
+                      <ChevronRight
+                        className="w-4 h-4 mt-1 flex-shrink-0 transition-transform group-open:rotate-90"
+                        style={{ color: "var(--text-muted)" }}
+                      />
+                    </summary>
+                    <p className="text-sm leading-relaxed mt-3" style={{ color: "var(--text-muted)" }}>
+                      {f.a}
+                    </p>
+                  </details>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Community reviews — plus an outbound link to the brand's own
+              customer reviews page when provided (non-affiliate, so shoppers
+              can vet feedback independently before clicking through the
+              discount link). */}
           <div id="discussion" className="mt-14 max-w-3xl scroll-mt-40">
-            <h2 className="text-2xl font-extrabold mb-6" style={{ color: "var(--text-primary)" }}>
-              Reviews
-            </h2>
+            <div className="flex flex-wrap items-baseline justify-between gap-4 mb-6">
+              <h2 className="text-2xl font-extrabold" style={{ color: "var(--text-primary)" }}>
+                Reviews
+              </h2>
+              {product.reviewsUrl && reviewsHost && (
+                <a
+                  href={product.reviewsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-sm font-semibold transition-colors hover:text-brand-500"
+                  style={{ color: "#2dd4bf" }}
+                >
+                  Customer reviews on {reviewsHost}
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              )}
+            </div>
             <div id="community-reviews" />
           </div>
 
