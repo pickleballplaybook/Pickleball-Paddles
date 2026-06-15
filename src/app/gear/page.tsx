@@ -24,7 +24,8 @@ function EditorPickCard({ p }: { p: GearProduct }) {
     >
       <div className="flex flex-col md:flex-row">
 
-        {/* Image — white background */}
+        {/* Image — sits on the card's own dark background so PNGs with a
+            transparent background blend in instead of getting a white frame. */}
         <div className="relative md:w-[42%] flex-shrink-0">
           <div
             className="absolute top-4 left-4 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-white"
@@ -34,7 +35,7 @@ function EditorPickCard({ p }: { p: GearProduct }) {
             Editor&apos;s Pick
           </div>
           <div
-            className="w-full bg-white flex items-center justify-center p-8"
+            className="w-full flex items-center justify-center p-8"
             style={{ minHeight: "300px", height: "100%" }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -139,9 +140,10 @@ function GridCard({ p }: { p: GearProduct }) {
           boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
         }}
       >
-        {/* White image area */}
+        {/* Image area — uses the card's own dark background so transparent
+            PNGs blend in instead of getting a white frame. */}
         <div
-          className="w-full bg-white flex items-center justify-center p-6"
+          className="w-full flex items-center justify-center p-6"
           style={{ aspectRatio: "4/3" }}
         >
           {p.imageAspect !== "none" && p.image ? (
