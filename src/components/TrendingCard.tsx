@@ -19,27 +19,26 @@
 import { Paddle } from "@/types";
 import { siteConfig } from "@/config/site";
 
-// Design dimensions: width 600 across both supported formats so the existing
-// pixel-tuned measurements (paddings, font sizes, bar widths) keep working.
-// pixelRatio 1.8 → output width 1080 in both cases:
-//   - format "ig" (4:5 IG portrait):   600 × 750  → 1080 × 1350
-//   - format "yt" (9:16 YT vertical):  600 × 1067 → 1080 × 1920
-// The 9:16 height is sub-pixel rounded (1067 × 1.8 = 1920.6 → effectively
-// 1080 × 1920 once the browser snaps to whole pixels).
+// Design dimensions per export format. pixelRatio 1.8 scales each design
+// canvas to its target PNG size:
+//   - format "ig" (4:5 IG portrait):    600 × 750  → 1080 × 1350
+//   - format "yt" (16:9 YT thumbnail): 1067 × 600  → 1920 × 1080
+// Sub-pixel imprecision (1067 × 1.8 = 1920.6) collapses to whole pixels
+// at capture time. Pixel-tuned measurements inside the card (font sizes,
+// paddings, bar widths) were originally hand-tuned at width 600, so they
+// read slightly smaller at the YT canvas's 1067 design width. The
+// percentage-positioned content row (top-[20%] / bottom-[10%]) auto-
+// stretches across whichever aspect the format provides.
 export type CardFormat = "ig" | "yt";
-export const EXPORT_WIDTH = 600;
-export const EXPORT_HEIGHT_IG = 750;
-export const EXPORT_HEIGHT_YT = 1067;
-export const EXPORT_HEIGHT = EXPORT_HEIGHT_IG;  // back-compat default for /trending
+export type FormatSpec = { width: number; height: number; aspect: string };
+export const FORMAT_SPECS: Record<CardFormat, FormatSpec> = {
+  ig: { width: 600,  height: 750, aspect: "4 / 5"  },
+  yt: { width: 1067, height: 600, aspect: "16 / 9" },
+};
 export const EXPORT_PIXEL_RATIO = 1.8;
-export const ASPECT_BY_FORMAT: Record<CardFormat, string> = {
-  ig: "4 / 5",
-  yt: "9 / 16",
-};
-export const HEIGHT_BY_FORMAT: Record<CardFormat, number> = {
-  ig: EXPORT_HEIGHT_IG,
-  yt: EXPORT_HEIGHT_YT,
-};
+// Back-compat exports for /trending (always renders the IG 4:5 card).
+export const EXPORT_WIDTH  = FORMAT_SPECS.ig.width;
+export const EXPORT_HEIGHT = FORMAT_SPECS.ig.height;
 
 // Returns the discount code to print on a card. Selkirk paddles use the
 // influencer code ("INF-PLAYBOOK") unless the link points to Locker Room
@@ -176,10 +175,10 @@ export default function TrendingCard({ paddle, rank, code, totalCards, bareBackg
    *  master template (paddle, specs, discount chip, footer all hidden). */
   bareBackground?: boolean;
   /** Aspect ratio to render at. "ig" = 4:5 (IG portrait 1080×1350, default),
-   *  "yt" = 9:16 (vertical YouTube/Shorts thumbnail 1080×1920). The interior
-   *  layout is identical — header pins top, footer pins bottom, the
-   *  paddle/specs row stretches percentage-positioned into the extra
-   *  vertical space the 9:16 frame provides. */
+   *  "yt" = 16:9 (YouTube thumbnail 1920×1080). The interior layout is
+   *  identical between formats — header pins top, footer pins bottom, the
+   *  paddle/specs row stretches percentage-positioned into whatever frame
+   *  the format provides. */
   format?: CardFormat;
 }) {
   const hasRealDiscount = !!paddle.discountLink?.trim() && !!paddle.amountOff && paddle.amountOff !== "$0" && paddle.amountOff !== "";
@@ -266,7 +265,7 @@ export default function TrendingCard({ paddle, rank, code, totalCards, bareBackg
     <div
       className="relative rounded-3xl overflow-hidden"
       style={{
-        aspectRatio: ASPECT_BY_FORMAT[format],
+        aspectRatio: FORMAT_SPECS[format].aspect,
         background: [
           // Soft teal aurora top
           "radial-gradient(ellipse 90% 55% at 50% -10%, rgba(20,184,166,0.16) 0%, transparent 65%)",

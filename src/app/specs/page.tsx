@@ -32,10 +32,8 @@ import { ChevronLeft, ChevronRight, Download, Loader2 } from "lucide-react";
 import { toPng } from "html-to-image";
 import { paddles } from "@/data/paddles";
 import TrendingCard, {
-  EXPORT_WIDTH,
   EXPORT_PIXEL_RATIO,
-  ASPECT_BY_FORMAT,
-  HEIGHT_BY_FORMAT,
+  FORMAT_SPECS,
   getCode,
   type CardFormat,
 } from "@/components/TrendingCard";
@@ -80,8 +78,7 @@ export default function SpecsPage() {
   // dimensions of the downloaded PNG. "ig" = 4:5 portrait (1080×1350,
   // Instagram feed). "yt" = 9:16 vertical (1080×1920, YouTube/Shorts).
   const [format, setFormat] = useState<CardFormat>("ig");
-  const cardDesignHeight = HEIGHT_BY_FORMAT[format];
-  const cardAspect = ASPECT_BY_FORMAT[format];
+  const { width: cardDesignWidth, height: cardDesignHeight, aspect: cardAspect } = FORMAT_SPECS[format];
 
   // Apply the selected sort. A-Z (default) sorts by brand then name so the
   // catalog browses predictably. The other options re-shuffle by the
@@ -250,7 +247,7 @@ export default function SpecsPage() {
             >
               {([
                 { key: "ig" as const, label: "IG · 1080×1350" },
-                { key: "yt" as const, label: "YT · 1080×1920" },
+                { key: "yt" as const, label: "YT · 1920×1080" },
               ]).map((opt) => {
                 const active = format === opt.key;
                 return (
@@ -325,13 +322,13 @@ export default function SpecsPage() {
                       position: "absolute",
                       top: 0,
                       left: 0,
-                      width: EXPORT_WIDTH,
+                      width: cardDesignWidth,
                       height: cardDesignHeight,
                       transformOrigin: "top left",
                       // Modern CSS: dividing a length by a length yields a
                       // unitless number that scale() accepts. Supported in
                       // all evergreen browsers since 2023.
-                      transform: `scale(calc(100cqw / ${EXPORT_WIDTH}px))`,
+                      transform: `scale(calc(100cqw / ${cardDesignWidth}px))`,
                     }}
                   >
                     <div ref={(el) => { cardRefs.current[i] = el; }}>
