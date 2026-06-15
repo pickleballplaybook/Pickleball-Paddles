@@ -283,17 +283,4 @@ export const gearProducts: GearProduct[] = [
       },
     ],
   },
-  {
-    id: "academy",
-    brand: "Pickleball Playbook Academy",
-    name: "FREE 6-Week Program",
-    price: "Free",
-    badge: "100% Free",
-    link: "https://skool.com/pickleballplaybook",
-    image: "",
-    imageAspect: "none",
-    subtitle: "Go from beginner to competitive in 6 structured weeks. Drills, lessons, and community.",
-    bg: "#0a1828",
-    ctaText: "Join Free",
-  },
 ];
