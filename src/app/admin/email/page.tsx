@@ -218,21 +218,116 @@ const CHURN_STEP_LABELS: Record<number, string> = {
 };
 
 /**
- * Combines Firestore churn_signups + churn_email_log + live Stripe state
- * to figure out:
- *   - Who got won back (anyone in churn_signups whose email currently has
- *     an active/trialing Stripe sub created AFTER their original cancel)
- *   - Which email gets credit (most recent sent email before the comeback)
+ * Detects winback patterns directly from subscription_mirror — the
+ * authoritative source. A "winback" = an email that has BOTH a canceled
+ * row AND a later active/trialing row created after the cancel.
  *
- * Catches both drip-detected winbacks (completedReason: "resubscribed")
- * AND organic ones (came back later, after drip moved on).
+ * Why query the mirror instead of Firestore churn_signups: churn_signups
+ * only contains users the churn-drip sync caught (Stripe events API,
+ * 30-day retention). Users who churned before the drip existed — or
+ * before the 30-day events window — wouldn't appear there, so we'd
+ * miss real winbacks. Reading subscription_mirror catches everyone with
+ * full Stripe history.
+ *
+ * Window filter is applied to wonBackAt — the date they came back. So
+ * "last 30 days" = "members who came back in the last 30 days," not
+ * "members who cancelled in the last 30 days."
+ *
+ * Per-step performance: for the same window,
+ *   recipients = unique emails who received that step in the window
+ *   attributedWinbacks = of those recipients, how many came back AFTER
+ *   the email and where this step was the last email they got pre-comeback
  */
 async function loadChurnWinbackData(
-  stripeByEmail: Map<string, StripeSubInfo>,
+  windowDays: number | null,
 ): Promise<ChurnWinbackData> {
   const db = getFirebaseFirestore();
+  const supabase = getSupabaseAdmin();
+  const windowStartIso =
+    windowDays !== null
+      ? new Date(Date.now() - windowDays * 86_400_000).toISOString()
+      : null;
 
-  // 1. Pull all successful churn email log entries.
+  // 1. Pull ALL subscription_mirror rows. Paginates past the 1000-row default.
+  type MirrorRow = {
+    email: string;
+    status: string;
+    subscription_created_at: string;
+    canceled_at: string | null;
+    trial_end: string | null;
+  };
+  const allRows: MirrorRow[] = [];
+  try {
+    const PAGE = 1000;
+    let offset = 0;
+    while (offset < 100_000) {
+      const { data, error } = await supabase
+        .from("subscription_mirror")
+        .select("email, status, subscription_created_at, canceled_at, trial_end")
+        .order("subscription_created_at", { ascending: true })
+        .range(offset, offset + PAGE - 1);
+      if (error || !data || data.length === 0) break;
+      allRows.push(...(data as MirrorRow[]));
+      if (data.length < PAGE) break;
+      offset += PAGE;
+    }
+  } catch {
+    // Empty mirror — page still renders with zeros.
+  }
+
+  // Group rows by email.
+  const byEmail = new Map<string, MirrorRow[]>();
+  for (const r of allRows) {
+    const e = (r.email || "").toLowerCase().trim();
+    if (!e) continue;
+    const list = byEmail.get(e) ?? [];
+    list.push(r);
+    byEmail.set(e, list);
+  }
+
+  // 2. Find winback pattern per email: latest cancel followed by a NEWER
+  //    active/trialing sub created after that cancel. The "wonBackAt" is
+  //    the new sub's created date.
+  type Winback = {
+    email: string;
+    canceledAt: Date;
+    wonBackAt: Date;
+  };
+  const winbacks: Winback[] = [];
+  byEmail.forEach((list, email) => {
+    // Sort by subscription_created_at ascending.
+    list.sort((a, b) =>
+      new Date(a.subscription_created_at).getTime() -
+      new Date(b.subscription_created_at).getTime(),
+    );
+    // Walk and track most recent cancel; if we hit an active/trialing
+    // created after that cancel, it's a winback.
+    let lastCancel: Date | null = null;
+    for (const row of list) {
+      if (row.status === "canceled" && row.canceled_at) {
+        const cd = new Date(row.canceled_at);
+        if (!isNaN(cd.getTime())) {
+          if (!lastCancel || cd > lastCancel) lastCancel = cd;
+        }
+      }
+      if (row.status === "active" || row.status === "trialing") {
+        const created = new Date(row.subscription_created_at);
+        if (lastCancel && !isNaN(created.getTime()) && created > lastCancel) {
+          winbacks.push({ email, canceledAt: lastCancel, wonBackAt: created });
+          // Reset lastCancel so we don't count the same winback twice if
+          // they churn → comeback → churn → comeback within the same list.
+          lastCancel = null;
+        }
+      }
+    }
+  });
+
+  // Window filter on wonBackAt — "members who came back in this window."
+  const winbacksInWindow = windowStartIso
+    ? winbacks.filter((w) => w.wonBackAt.toISOString() >= windowStartIso)
+    : winbacks;
+
+  // 3. Pull churn email logs for attribution.
   type LogEntry = { email: string; step: number; sentAt: Date; tag: string };
   const logs: LogEntry[] = [];
   try {
@@ -250,74 +345,53 @@ async function loadChurnWinbackData(
       logs.push({ email, step: data.step, sentAt, tag: data.tag ?? "" });
     });
   } catch {
-    // Firestore unavailable — return empty state rather than erroring page.
+    // Empty logs — every winback shows as ORGANIC. Page still renders.
   }
 
-  // 2. Pull churn_signups (cancellation records).
-  type SignupRec = { email: string; canceledAt: Date };
-  const signupsByEmail = new Map<string, SignupRec>();
-  try {
-    const snap = await db.collection("churn_signups").get();
-    snap.docs.forEach((d) => {
-      const data = d.data() as {
-        email?: string;
-        canceledAt?: { toDate?: () => Date };
-      };
-      const email = data.email?.toLowerCase().trim();
-      const canceledAt = data.canceledAt?.toDate?.();
-      if (!email || !canceledAt) return;
-      signupsByEmail.set(email, { email, canceledAt });
-    });
-  } catch {
-    // Empty — fine.
-  }
-
-  // 3. Find winbacks: anyone in churn_signups whose email currently has an
-  //    active/trialing Stripe sub created AFTER their cancellation.
-  const winbacks: WinbackEntry[] = [];
-  signupsByEmail.forEach((signup, email) => {
-    const stripeNow = stripeByEmail.get(email);
-    if (!stripeNow) return;
-    if (stripeNow.status !== "active" && stripeNow.status !== "trial") return;
-
-    const wonBackAt = new Date(stripeNow.subscriptionCreatedAt);
-    if (isNaN(wonBackAt.getTime())) return;
-    if (wonBackAt <= signup.canceledAt) return; // existing sub, not a comeback
-
-    // Find the most recent email this person got BEFORE coming back.
-    const priorLogs = logs
-      .filter((l) => l.email === email && l.sentAt <= wonBackAt)
+  // 4. Build display entries with attribution.
+  const winbackEntries: WinbackEntry[] = winbacksInWindow.map((wb) => {
+    const prior = logs
+      .filter((l) => l.email === wb.email && l.sentAt <= wb.wonBackAt)
       .sort((a, b) => b.sentAt.getTime() - a.sentAt.getTime());
-    const lastLog = priorLogs[0];
-
+    const last = prior[0];
     const daysToWinBack = Math.max(
       0,
-      Math.floor((wonBackAt.getTime() - signup.canceledAt.getTime()) / 86_400_000),
+      Math.floor((wb.wonBackAt.getTime() - wb.canceledAt.getTime()) / 86_400_000),
     );
-
-    winbacks.push({
-      email,
-      canceledAt: signup.canceledAt.toISOString(),
-      wonBackAt: wonBackAt.toISOString(),
+    return {
+      email: wb.email,
+      canceledAt: wb.canceledAt.toISOString(),
+      wonBackAt: wb.wonBackAt.toISOString(),
       daysToWinBack,
-      attributedStep: lastLog?.step ?? null,
-      attributedTag: lastLog?.tag ?? null,
-      attributedSentAt: lastLog?.sentAt.toISOString() ?? null,
-    });
+      attributedStep: last?.step ?? null,
+      attributedTag: last?.tag ?? null,
+      attributedSentAt: last?.sentAt.toISOString() ?? null,
+    };
   });
 
-  // 4. Per-step aggregates.
+  // 5. Per-step performance — scoped to the window:
+  //    recipients = unique emails who got that step IN the window
+  //    attributedWinbacks = of THOSE recipients, how many came back AFTER
+  //    the email AND this was the most-recent step they got pre-comeback.
+  const windowLogs = windowStartIso
+    ? logs.filter((l) => l.sentAt.toISOString() >= windowStartIso)
+    : logs;
+
   const perStepMap: Record<number, { recipients: Set<string>; winbacks: number }> = {
     1: { recipients: new Set(), winbacks: 0 },
     2: { recipients: new Set(), winbacks: 0 },
     3: { recipients: new Set(), winbacks: 0 },
   };
-  for (const log of logs) {
+  for (const log of windowLogs) {
     if (perStepMap[log.step]) perStepMap[log.step].recipients.add(log.email);
   }
-  for (const wb of winbacks) {
+  for (const wb of winbackEntries) {
     if (wb.attributedStep && perStepMap[wb.attributedStep]) {
-      perStepMap[wb.attributedStep].winbacks++;
+      // Only credit the step if that step was sent in window AND came
+      // before the winback (the prior-logs filter already enforced that).
+      if (perStepMap[wb.attributedStep].recipients.has(wb.email)) {
+        perStepMap[wb.attributedStep].winbacks++;
+      }
     }
   }
   const perStep: ChurnStepStat[] = [1, 2, 3].map((step) => ({
@@ -327,16 +401,16 @@ async function loadChurnWinbackData(
     attributedWinbacks: perStepMap[step].winbacks,
   }));
 
-  const totalRecipients = new Set(logs.map((l) => l.email)).size;
-  const organicWinbacks = winbacks.filter((w) => w.attributedStep === null).length;
+  const totalRecipients = new Set(windowLogs.map((l) => l.email)).size;
+  const organicWinbacks = winbackEntries.filter((w) => w.attributedStep === null).length;
 
   // Newest comeback first.
-  winbacks.sort((a, b) => b.wonBackAt.localeCompare(a.wonBackAt));
+  winbackEntries.sort((a, b) => b.wonBackAt.localeCompare(a.wonBackAt));
 
   return {
-    winbacks,
+    winbacks: winbackEntries,
     perStep,
-    totalWinbacks: winbacks.length,
+    totalWinbacks: winbackEntries.length,
     organicWinbacks,
     totalRecipients,
   };
@@ -382,9 +456,9 @@ export default async function EmailAdminPage({
 
   const stripe = await fetchStripeStatusByEmail();
   const hiddenEmails = await loadHiddenEmails();
-  // Load winback data unconditionally — it powers the tab badge AND the
-  // view content. Two Firestore queries (~50ms total at our volumes).
-  const winbackData = await loadChurnWinbackData(stripe.byEmail);
+  // Window-aware winback metrics: "members who came back in this window"
+  // and "step performance for emails sent in this window."
+  const winbackData = await loadChurnWinbackData(win.days);
   // Unfiltered set — used to compute "paid at start of window" for the
   // Stripe-style churn rate (which needs the denominator from BEFORE the
   // window, not just rows whose events landed in the window).
@@ -580,15 +654,20 @@ export default async function EmailAdminPage({
           </p>
         )}
 
-        {/* Time window — only relevant on the funnel view */}
-        {view === "funnel" && (
+        {/* Time window — applies to the Funnel and Win-backs views.
+            Live totals is always all-time so no window selector there. */}
+        {(view === "funnel" || view === "winbacks") && (
           <div className="flex items-center gap-2 mb-4 flex-wrap">
             {Object.entries(WINDOWS).map(([key, w]) => {
               const active = key === winKey;
+              const href =
+                view === "winbacks"
+                  ? `/admin/email?view=winbacks&window=${key}`
+                  : `/admin/email?window=${key}`;
               return (
                 <Link
                   key={key}
-                  href={`/admin/email?window=${key}`}
+                  href={href}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
                     active ? "bg-accent-500 text-black" : "text-gray-400 hover:text-white"
                   }`}
