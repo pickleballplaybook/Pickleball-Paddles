@@ -1004,7 +1004,7 @@ function FinalCTA() {
               boxShadow: "0 0 64px rgba(222,250,50,0.45), 0 6px 24px rgba(0,0,0,0.45)",
             }}
           >
-            SIGN UP NOW — START FREE →
+            START FREE TODAY →
           </a>
         </div>
 

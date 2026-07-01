@@ -179,9 +179,9 @@ export default function DrillFinder() {
               {LEVEL_LABEL[level]} · {FOCUS_LABEL[focus]} drills
             </h3>
             <p className="text-base mb-6" style={{ color: "rgba(255,255,255,0.75)" }}>
-              Open the app — your full library unlocks for 7 days, including
-              every drill at your level on {FOCUS_LABEL[focus].toLowerCase()} and
-              the other seven focuses.
+              Open the app — your full library unlocks free, including every
+              drill at your level on {FOCUS_LABEL[focus].toLowerCase()} and the
+              other seven focuses.
             </p>
 
             <a
@@ -195,7 +195,7 @@ export default function DrillFinder() {
                 boxShadow: "0 0 32px rgba(222,250,50,0.35)",
               }}
             >
-              Start Free 7-Day Trial →
+              GET STARTED →
             </a>
             <p className="text-[11px] text-center mt-3" style={{ color: "rgba(255,255,255,0.5)" }}>
               Full library access. Cancel anytime in the app.
