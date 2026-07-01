@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import DrillFinder from "./_components/DrillFinder";
 import AppPreviewClient from "./_components/AppPreview";
 import LandingViewBeacon from "./_components/LandingViewBeacon";
 
@@ -117,8 +116,10 @@ function Hero() {
       }}
     >
       <div className="container-xl">
-        <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_1fr] gap-6 lg:gap-12 items-center">
-          {/* Left — copy */}
+        <div className="max-w-3xl">
+          {/* Copy — single-column hero after the DrillFinder was removed.
+              Constrained to max-w-3xl so the paragraph doesn't stretch
+              to sprawl width on desktops. */}
           <div>
             <span
               className="inline-flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.22em] px-3 py-1.5 rounded-full mb-4"
@@ -212,27 +213,6 @@ function Hero() {
               <span>Trusted by 1,000+ serious pickleball players</span>
               <span aria-hidden>·</span>
               <span>Cancel anytime</span>
-            </p>
-          </div>
-
-          {/* Right — interactive drill picker. The same 3-question flow runs
-              inside the app on first launch — this is a live preview of that
-              onboarding, so anyone who tries it on the landing page knows
-              exactly what the personalized setup will feel like. */}
-          <div>
-            <p
-              className="text-[10px] md:text-[11px] font-extrabold uppercase tracking-[0.22em] mb-3 text-center"
-              style={{ color: TEAL }}
-            >
-              Preview the In-App Onboarding
-            </p>
-            <DrillFinder />
-            <p
-              className="text-[11px] mt-4 text-center"
-              style={{ color: "rgba(255,255,255,0.5)" }}
-            >
-              These are the same questions the app asks on first launch to
-              personalize your training plan.
             </p>
           </div>
         </div>
