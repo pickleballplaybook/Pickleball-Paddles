@@ -105,10 +105,11 @@ function Hero() {
       style={{
         background:
           "radial-gradient(ellipse 90% 60% at 50% 0%, rgba(60,172,174,0.18) 0%, transparent 65%), #0a1628",
-        // Tightened top padding — pulls the whole Hero (and its CTA) up
-        // so the yellow button sits above the fold on typical laptop
-        // heights instead of forcing a scroll to find it.
-        paddingTop: "calc(var(--topbar-h, 108px) + 1.5rem)",
+        // Compromise top padding: enough breathing room from the sticky
+        // topbar that the eyebrow + headline don't feel cramped, but
+        // still tight enough that the yellow CTA stays above the fold
+        // on standard laptop heights.
+        paddingTop: "calc(var(--topbar-h, 108px) + 2.75rem)",
         paddingBottom: "3.5rem",
       }}
     >
