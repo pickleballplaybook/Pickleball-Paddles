@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import AppPreviewClient from "./_components/AppPreview";
 import LandingViewBeacon from "./_components/LandingViewBeacon";
+import CoachesCarousel from "./_components/CoachesCarousel";
 
 // Every CTA on this page routes through PBDRILLS. The ?ref tag is
 // captured by the Flutter app on cold boot and stamped onto the
@@ -214,52 +215,12 @@ function Hero() {
             </p>
           </div>
 
-          {/* Right — Jack Munro trust anchor. The whole "drills built by
-              real pros" pitch lives or dies on WHO the coaches are, and
-              Munro (APP World #1) is the strongest name we have. Big
-              photo card, credential badges, a secondary line naming the
-              other PPA pros so it doesn't read as a one-man app.
-              Hidden below lg to keep mobile clean. */}
-          <div className="hidden lg:flex flex-col items-center">
-            <p
-              className="text-[10px] font-extrabold uppercase tracking-[0.22em] mb-4"
-              style={{ color: TEAL }}
-            >
-              Drills Built By
-            </p>
-            <div
-              className="relative rounded-3xl overflow-hidden w-full max-w-md"
-              style={{
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.10)",
-                boxShadow: "0 30px 80px -20px rgba(60,172,174,0.35)",
-              }}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/images/pbdrills-coaches/Jack-Munro.png"
-                alt="Jack Munro — APP World #1"
-                className="w-full aspect-square object-cover"
-              />
-              <div
-                className="p-5 text-center"
-                style={{ borderTop: "1px solid rgba(255,255,255,0.10)" }}
-              >
-                <p className="text-2xl font-extrabold text-white mb-1 leading-none">Jack Munro</p>
-                <p className="text-xs font-bold" style={{ color: CHARTREUSE, letterSpacing: "0.05em" }}>
-                  APP WORLD #1 · 6.67 RATED
-                </p>
-              </div>
-            </div>
-            <p
-              className="text-[12px] text-center mt-4 max-w-xs leading-relaxed"
-              style={{ color: "rgba(255,255,255,0.55)" }}
-            >
-              Plus PPA Signed Pros{" "}
-              <span style={{ color: "rgba(255,255,255,0.85)", fontWeight: 700 }}>Augie Ge</span> &amp;{" "}
-              <span style={{ color: "rgba(255,255,255,0.85)", fontWeight: 700 }}>Judit Castillo</span>{" "}
-              — every drill built by players you watch on tour.
-            </p>
+          {/* Right — coaches carousel. Starts on Jack Munro (biggest
+              name we can put in front of a cold visitor) and lets the
+              user scroll through the roster: Augie Ge, Judit Castillo,
+              Austin Hardy. Hidden below lg to keep mobile lean. */}
+          <div className="hidden lg:block">
+            <CoachesCarousel />
           </div>
         </div>
       </div>
