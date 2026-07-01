@@ -6,6 +6,7 @@ import { getFirebaseFirestore } from "@/lib/firebase-admin";
 import { fetchStripeStatusByEmail, type StripeSubInfo } from "@/lib/stripeSubscriptionStatus";
 import LocalDateTime from "./LocalDateTime";
 import DeleteRowButton from "./DeleteRowButton";
+import SyncFromStripeButton from "./SyncFromStripeButton";
 
 // 60-second cache for the Firestore hidden-email set so we don't round-trip
 // to Firestore on every admin page load.
@@ -918,6 +919,12 @@ export default async function EmailAdminPage({
           Status is pulled live from Stripe (the source of truth for what happened after
           someone hit the paywall).
         </p>
+
+        {/* Manual re-sync button — hit this when the mirror looks stale
+            (user shows Canceled here but Active in Stripe, or vice versa).
+            Fires the /api/admin/stripe-backfill route which re-scans every
+            Stripe subscription and re-upserts subscription_mirror. */}
+        <SyncFromStripeButton />
 
         {/* View toggle — Funnel (window-scoped events) vs Live (current totals from Stripe) */}
         <div
