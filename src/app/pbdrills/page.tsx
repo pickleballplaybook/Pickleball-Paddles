@@ -185,7 +185,7 @@ function Hero() {
                   letterSpacing: "0.02em",
                 }}
               >
-                Get My Free Plan →
+                GET STARTED →
               </a>
               {DEMO_VIDEO && (
                 <a
@@ -999,7 +999,7 @@ function FinalCTA() {
               boxShadow: "0 0 64px rgba(222,250,50,0.45), 0 6px 24px rgba(0,0,0,0.45)",
             }}
           >
-            Get My Free Plan →
+            SIGN UP NOW — START FREE →
           </a>
           <a
             href={PBDRILLS}
@@ -1012,7 +1012,7 @@ function FinalCTA() {
               border: `2px solid ${TEAL}`,
             }}
           >
-            See the App First
+            START FREE TODAY →
           </a>
         </div>
 
