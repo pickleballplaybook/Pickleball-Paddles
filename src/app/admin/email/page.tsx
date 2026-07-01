@@ -177,7 +177,209 @@ function relevantDateFor(row: CategorizedRow): string | null {
   }
 }
 
-type ViewKey = "funnel" | "live" | "winbacks";
+type ViewKey = "funnel" | "live" | "winbacks" | "landing";
+
+// ============================================================================
+// Landing-page attribution (currently only /pbdrills)
+// ============================================================================
+
+type LandingFunnel = {
+  windowLabel: string;
+  views: number;
+  arrivals: number;
+  emailsCaptured: number;
+  trialStarters: number;
+  paidCustomers: number;
+  canceledDuringTrial: number;
+  churnedAfterPaid: number;
+  // Recent emails captured (newest first). Includes their current status.
+  recent: {
+    email: string;
+    capturedAt: string;
+    status: "captured" | "trial" | "active" | "canceled" | "churned";
+  }[];
+};
+
+/**
+ * Attribution funnel for the /pbdrills landing page.
+ *
+ * Views + arrivals come from Firestore `landing_events` (written by
+ * /api/landing-event — page beacon on mount + Flutter app on cold boot
+ * when it sees ?ref=pbdrills-landing).
+ *
+ * Emails captured come from Supabase `trial_signups` filtered by
+ * source='pbdrills-landing' — the Flutter app stamps this after reading
+ * the ref from SharedPreferences.
+ *
+ * Trial/paid buckets are derived by joining those emails against
+ * `subscription_mirror` — the same source of truth the winbacks view
+ * uses. That way "active" here matches "active" everywhere else.
+ *
+ * Window filter applies to:
+ *   - views/arrivals: their event timestamp
+ *   - emailsCaptured: trial_signups.created_at
+ *   - subscription statuses: NOT windowed — we want to know how the
+ *     captured cohort has performed, even if their trial ended outside
+ *     the window.
+ */
+async function loadLandingPageData(
+  windowDays: number | null,
+  windowLabel: string,
+): Promise<LandingFunnel> {
+  const db = getFirebaseFirestore();
+  const supabase = getSupabaseAdmin();
+  const cutoffIso =
+    windowDays !== null
+      ? new Date(Date.now() - windowDays * 86_400_000).toISOString()
+      : null;
+
+  // 1. Views + arrivals from landing_events. Filter by ts >= cutoff and
+  //    page='pbdrills'. Volume ceiling here is landing-page traffic ×
+  //    2 — small; a single collection scan is fine at current scale.
+  let views = 0;
+  let arrivals = 0;
+  try {
+    let q = db.collection("landing_events").where("page", "==", "pbdrills");
+    if (cutoffIso) {
+      q = q.where("ts", ">=", new Date(cutoffIso));
+    }
+    const snap = await q.get();
+    snap.docs.forEach((d) => {
+      const type = (d.data() as { type?: string }).type;
+      if (type === "view") views++;
+      else if (type === "arrival") arrivals++;
+    });
+  } catch (err) {
+    console.error("[landing] failed to read landing_events", err);
+  }
+
+  // 2. Emails captured — trial_signups filtered by source, in window.
+  type CapturedRow = { email: string; created_at: string };
+  const captured: CapturedRow[] = [];
+  try {
+    const PAGE = 1000;
+    let offset = 0;
+    while (offset < 50_000) {
+      let q = supabase
+        .from("trial_signups")
+        .select("email, created_at")
+        .eq("source", "pbdrills-landing")
+        .order("created_at", { ascending: false })
+        .range(offset, offset + PAGE - 1);
+      if (cutoffIso) q = q.gte("created_at", cutoffIso);
+      const { data, error } = await q;
+      if (error || !data || data.length === 0) break;
+      captured.push(...(data as CapturedRow[]));
+      if (data.length < PAGE) break;
+      offset += PAGE;
+    }
+  } catch (err) {
+    console.error("[landing] failed to read trial_signups", err);
+  }
+
+  const emailsCaptured = captured.length;
+  const capturedEmails = new Set(
+    captured.map((r) => r.email.toLowerCase().trim()).filter(Boolean),
+  );
+
+  // 3. Bucket captured emails by their current subscription_mirror status.
+  //    Not windowed on purpose — we want to know cohort performance even
+  //    if their trial ended outside the window.
+  type MirrorRow = {
+    email: string;
+    status: string;
+    subscription_created_at: string;
+    canceled_at: string | null;
+    trial_end: string | null;
+  };
+  const mirrorByEmail = new Map<string, MirrorRow[]>();
+  if (capturedEmails.size > 0) {
+    try {
+      const emailList = Array.from(capturedEmails);
+      // Chunk to keep the IN clause under Supabase's limit.
+      const CHUNK = 200;
+      for (let i = 0; i < emailList.length; i += CHUNK) {
+        const slice = emailList.slice(i, i + CHUNK);
+        const { data, error } = await supabase
+          .from("subscription_mirror")
+          .select("email, status, subscription_created_at, canceled_at, trial_end")
+          .in("email", slice);
+        if (error || !data) continue;
+        for (const r of data as MirrorRow[]) {
+          const e = (r.email || "").toLowerCase().trim();
+          if (!e) continue;
+          const list = mirrorByEmail.get(e) ?? [];
+          list.push(r);
+          mirrorByEmail.set(e, list);
+        }
+      }
+    } catch (err) {
+      console.error("[landing] failed to read subscription_mirror", err);
+    }
+  }
+
+  // Reduce each email's mirror rows to a single status. Same logic as the
+  // rest of the admin page uses: prefer the newest row, then classify
+  // canceled_at < trial_end as canceled-during-trial (not churn).
+  let trialStarters = 0;
+  let paidCustomers = 0;
+  let canceledDuringTrial = 0;
+  let churnedAfterPaid = 0;
+  const emailStatus = new Map<string, LandingFunnel["recent"][number]["status"]>();
+
+  mirrorByEmail.forEach((rows, email) => {
+    rows.sort(
+      (a, b) =>
+        new Date(b.subscription_created_at).getTime() -
+        new Date(a.subscription_created_at).getTime(),
+    );
+    const latest = rows[0];
+    let bucket: LandingFunnel["recent"][number]["status"];
+    if (latest.status === "active") {
+      bucket = "active";
+      trialStarters++;
+      paidCustomers++;
+    } else if (latest.status === "trialing") {
+      bucket = "trial";
+      trialStarters++;
+    } else if (latest.status === "canceled") {
+      trialStarters++;
+      const canceledAt = latest.canceled_at ? new Date(latest.canceled_at) : null;
+      const trialEnd = latest.trial_end ? new Date(latest.trial_end) : null;
+      if (canceledAt && trialEnd && canceledAt < trialEnd) {
+        bucket = "canceled";
+        canceledDuringTrial++;
+      } else {
+        bucket = "churned";
+        churnedAfterPaid++;
+      }
+    } else {
+      bucket = "captured";
+    }
+    emailStatus.set(email, bucket);
+  });
+
+  const recent = captured.slice(0, 25).map((r) => {
+    const e = r.email.toLowerCase().trim();
+    return {
+      email: r.email,
+      capturedAt: r.created_at,
+      status: emailStatus.get(e) ?? "captured",
+    };
+  });
+
+  return {
+    windowLabel,
+    views,
+    arrivals,
+    emailsCaptured,
+    trialStarters,
+    paidCustomers,
+    canceledDuringTrial,
+    churnedAfterPaid,
+    recent,
+  };
+}
 
 // ============================================================================
 // Win-back analytics
@@ -425,7 +627,13 @@ export default async function EmailAdminPage({
   const winKey = sp.window && WINDOWS[sp.window] ? sp.window : "30";
   const win = WINDOWS[winKey];
   const view: ViewKey =
-    sp.view === "live" ? "live" : sp.view === "winbacks" ? "winbacks" : "funnel";
+    sp.view === "live"
+      ? "live"
+      : sp.view === "winbacks"
+      ? "winbacks"
+      : sp.view === "landing"
+      ? "landing"
+      : "funnel";
 
   let rows: Row[] = [];
   let loadError: string | null = null;
@@ -459,6 +667,13 @@ export default async function EmailAdminPage({
   // Window-aware winback metrics: "members who came back in this window"
   // and "step performance for emails sent in this window."
   const winbackData = await loadChurnWinbackData(win.days);
+  // Landing-page attribution data — only computed when actually rendering
+  // the landing view so we don't pay for the Firestore/Supabase reads on
+  // every admin page load.
+  const landingData =
+    view === "landing"
+      ? await loadLandingPageData(win.days, win.label)
+      : null;
   // Unfiltered set — used to compute "paid at start of window" for the
   // Stripe-style churn rate (which needs the denominator from BEFORE the
   // window, not just rows whose events landed in the window).
@@ -621,6 +836,7 @@ export default async function EmailAdminPage({
             { key: "funnel",   label: "Funnel · this period" },
             { key: "live",     label: "Live totals · all time" },
             { key: "winbacks", label: "Win-backs · churn drip" },
+            { key: "landing",  label: "Landing · /pbdrills" },
           ] as const).map((v) => {
             const isActive = view === v.key;
             const href =
@@ -654,15 +870,17 @@ export default async function EmailAdminPage({
           </p>
         )}
 
-        {/* Time window — applies to the Funnel and Win-backs views.
+        {/* Time window — applies to Funnel, Win-backs, and Landing.
             Live totals is always all-time so no window selector there. */}
-        {(view === "funnel" || view === "winbacks") && (
+        {(view === "funnel" || view === "winbacks" || view === "landing") && (
           <div className="flex items-center gap-2 mb-4 flex-wrap">
             {Object.entries(WINDOWS).map(([key, w]) => {
               const active = key === winKey;
               const href =
                 view === "winbacks"
                   ? `/admin/email?view=winbacks&window=${key}`
+                  : view === "landing"
+                  ? `/admin/email?view=landing&window=${key}`
                   : `/admin/email?window=${key}`;
               return (
                 <Link
@@ -709,6 +927,8 @@ export default async function EmailAdminPage({
           />
         ) : view === "winbacks" ? (
           <WinBacksView data={winbackData} />
+        ) : view === "landing" && landingData ? (
+          <LandingPageView data={landingData} />
         ) : (
           <>
             {/* Total signups headline — answers "how many emails did I collect
@@ -1068,6 +1288,225 @@ function WinBacksView({ data }: { data: ChurnWinbackData }) {
           </table>
         )}
       </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// Landing-page attribution view (currently /pbdrills only)
+// ============================================================================
+
+function LandingPageView({ data }: { data: LandingFunnel }) {
+  // Conversion rates between adjacent funnel steps. "—" when the
+  // denominator is zero so we don't display 0% and imply a fail.
+  const rate = (num: number, den: number): string => {
+    if (den === 0) return "—";
+    const v = (num / den) * 100;
+    if (v >= 10) return `${Math.round(v)}%`;
+    if (v >= 1) return `${v.toFixed(1)}%`;
+    return `${v.toFixed(2)}%`;
+  };
+
+  const clickThroughRate = rate(data.arrivals, data.views);
+  const captureRate = rate(data.emailsCaptured, data.arrivals);
+  const trialRate = rate(data.trialStarters, data.emailsCaptured);
+  const paidRate = rate(data.paidCustomers, data.trialStarters);
+
+  return (
+    <div className="space-y-5">
+      {/* Header banner — page URL + window */}
+      <div
+        className="rounded-2xl p-5 flex items-baseline justify-between flex-wrap gap-3"
+        style={{
+          background: "linear-gradient(180deg, rgba(222,250,50,0.10), rgba(222,250,50,0.02))",
+          border: "1px solid rgba(222,250,50,0.30)",
+        }}
+      >
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "#defa32" }}>
+            Landing page · playbookpaddles.com/pbdrills · {data.windowLabel.toLowerCase()}
+          </p>
+          <p className="text-4xl md:text-5xl font-extrabold tabular-nums" style={{ color: "var(--text-primary)" }}>
+            {data.views.toLocaleString()}
+            <span className="text-lg md:text-xl ml-2 font-semibold" style={{ color: "var(--text-muted)" }}>
+              views
+            </span>
+          </p>
+        </div>
+        <div className="text-right">
+          <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "var(--text-muted)" }}>
+            Overall conversion
+          </p>
+          <p className="text-2xl md:text-3xl font-extrabold tabular-nums" style={{ color: "#22c55e" }}>
+            {rate(data.paidCustomers, data.views)}
+          </p>
+          <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>
+            views → paid
+          </p>
+        </div>
+      </div>
+
+      {/* 5-step funnel — one card per stage, with the conversion rate
+          into the NEXT stage shown as a tagline. */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <FunnelStepCard
+          label="Views"
+          value={data.views}
+          accent="#60a5fa"
+          nextLabel={`${clickThroughRate} clicked through`}
+        />
+        <FunnelStepCard
+          label="Arrivals"
+          value={data.arrivals}
+          accent="#3cacae"
+          nextLabel={`${captureRate} gave email`}
+        />
+        <FunnelStepCard
+          label="Emails captured"
+          value={data.emailsCaptured}
+          accent="#a78bfa"
+          nextLabel={`${trialRate} started trial`}
+        />
+        <FunnelStepCard
+          label="Trials started"
+          value={data.trialStarters}
+          accent="#defa32"
+          nextLabel={`${paidRate} converted to paid`}
+        />
+        <FunnelStepCard
+          label="Paid customers"
+          value={data.paidCustomers}
+          accent="#22c55e"
+          nextLabel={data.paidCustomers > 0 ? "🎉" : ""}
+        />
+      </div>
+
+      {/* Secondary trial-outcome breakdown, for the emails that DID make it
+          past onboarding. Useful for spotting whether landing-page traffic
+          converts worse than organic (a UX/onboarding signal). */}
+      <div
+        className="rounded-2xl p-5"
+        style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}
+      >
+        <p className="text-[10px] font-bold uppercase tracking-widest mb-4" style={{ color: "var(--text-muted)" }}>
+          Trial outcomes · this cohort
+        </p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <LandingMiniStat label="Active"                value={data.paidCustomers}       color="#22c55e" />
+          <LandingMiniStat label="Still trialing"        value={data.trialStarters - data.paidCustomers - data.canceledDuringTrial - data.churnedAfterPaid} color="#defa32" />
+          <LandingMiniStat label="Canceled in trial"     value={data.canceledDuringTrial} color="#f59e0b" />
+          <LandingMiniStat label="Churned after paying"  value={data.churnedAfterPaid}    color="#ef4444" />
+        </div>
+      </div>
+
+      {/* Recent captured emails table (last 25) */}
+      <div
+        className="rounded-2xl overflow-hidden"
+        style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}
+      >
+        <div
+          className="flex items-center justify-between gap-4 px-5 py-4"
+          style={{ borderBottom: "1px solid var(--flip-card-border)" }}
+        >
+          <h2 className="text-base font-extrabold" style={{ color: "var(--text-primary)" }}>
+            Recent captures ({Math.min(data.recent.length, 25)})
+          </h2>
+          <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+            Newest first · status current
+          </span>
+        </div>
+        {data.recent.length === 0 ? (
+          <p className="px-5 py-6 text-sm" style={{ color: "var(--text-muted)" }}>
+            No landing-page captures in this window yet. Once someone hits
+            /pbdrills, arrives in the app, and gives their email, they show up here.
+          </p>
+        ) : (
+          <table className="w-full text-sm">
+            <thead>
+              <tr style={{ borderBottom: "1px solid var(--flip-card-border)" }}>
+                <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Email</th>
+                <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Captured</th>
+                <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.recent.map((r) => {
+                const meta = STATUS_META[r.status];
+                return (
+                  <tr key={r.email} style={{ borderTop: "1px solid var(--flip-card-border)" }}>
+                    <td className="px-4 py-3 font-mono text-xs" style={{ color: "var(--text-primary)" }}>
+                      {r.email}
+                    </td>
+                    <td className="px-4 py-3 text-xs tabular-nums" style={{ color: "var(--text-muted)" }}>
+                      <LocalDateTime iso={r.capturedAt} />
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className="inline-block px-2 py-0.5 rounded font-bold uppercase tracking-wider"
+                        style={{
+                          background: meta.bg,
+                          color: meta.color,
+                          fontSize: 10,
+                          letterSpacing: 0.5,
+                        }}
+                      >
+                        {meta.label}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function FunnelStepCard({
+  label,
+  value,
+  accent,
+  nextLabel,
+}: {
+  label: string;
+  value: number;
+  accent: string;
+  nextLabel: string;
+}) {
+  return (
+    <div
+      className="rounded-xl p-4"
+      style={{
+        background: "var(--flip-bg-card)",
+        border: `1px solid ${accent}40`,
+      }}
+    >
+      <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: accent }}>
+        {label}
+      </p>
+      <p className="text-3xl font-extrabold tabular-nums mb-2" style={{ color: "var(--text-primary)" }}>
+        {value.toLocaleString()}
+      </p>
+      {nextLabel && (
+        <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+          {nextLabel}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function LandingMiniStat({ label, value, color }: { label: string; value: number; color: string }) {
+  return (
+    <div>
+      <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "var(--text-muted)" }}>
+        {label}
+      </p>
+      <p className="text-2xl font-extrabold tabular-nums" style={{ color }}>
+        {Math.max(0, value).toLocaleString()}
+      </p>
     </div>
   );
 }

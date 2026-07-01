@@ -15,7 +15,14 @@ export const dynamic = "force-dynamic";
  *     of truth for Flutter signups; this row is the marketing-list copy).
  *
  * Body:
- *   { email: string, flutter_user_id?: string, source?: 'app_onboarding' | 'web' }
+ *   { email: string, flutter_user_id?: string, source?: string }
+ *
+ *   `source` is a short slug identifying signup origin. Common values:
+ *     - "app_onboarding" (default, native app first launch)
+ *     - "web" (Flutter web app, no attribution)
+ *     - "pbdrills-landing" (came from playbookpaddles.com/pbdrills)
+ *   Anything up to 64 chars is accepted; /admin/email?view=landing
+ *   filters by exact match.
  *
  * Returns:
  *   200 { success: true, alreadyExisted: boolean }
@@ -46,10 +53,11 @@ export async function POST(req: NextRequest) {
       ? body.flutter_user_id
       : null;
 
-  const source =
-    body.source === "web" || body.source === "app_onboarding"
-      ? (body.source as string)
-      : "app_onboarding";
+  // Accept any short slug — historically only 'app_onboarding' and 'web'
+  // were used, but landing-page ?ref= values (e.g. 'pbdrills-landing')
+  // now flow through this same field. Clamp to 64 chars.
+  const rawSource = typeof body.source === "string" ? body.source : "";
+  const source = rawSource.length > 0 ? rawSource.slice(0, 64) : "app_onboarding";
 
   const supabase = getSupabaseAdmin();
 
