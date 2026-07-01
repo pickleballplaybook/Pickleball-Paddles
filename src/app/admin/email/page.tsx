@@ -233,21 +233,31 @@ async function loadLandingPageData(
       ? new Date(Date.now() - windowDays * 86_400_000).toISOString()
       : null;
 
-  // 1. Views + arrivals from landing_events. Filter by ts >= cutoff and
-  //    page='pbdrills'. Volume ceiling here is landing-page traffic ×
-  //    2 — small; a single collection scan is fine at current scale.
+  // 1. Views + arrivals from landing_events. Single-field query on
+  //    `page` (no composite index required — Firestore auto-indexes
+  //    single fields) with the ts window filter applied in memory.
+  //    Volume ceiling here is landing-page traffic × 2 — small; a
+  //    full scan of one landing page's events at current scale is
+  //    cheaper than maintaining a composite index we'll never need
+  //    to sort by.
   let views = 0;
   let arrivals = 0;
   try {
-    let q = db.collection("landing_events").where("page", "==", "pbdrills");
-    if (cutoffIso) {
-      q = q.where("ts", ">=", new Date(cutoffIso));
-    }
-    const snap = await q.get();
+    const snap = await db
+      .collection("landing_events")
+      .where("page", "==", "pbdrills")
+      .get();
     snap.docs.forEach((d) => {
-      const type = (d.data() as { type?: string }).type;
-      if (type === "view") views++;
-      else if (type === "arrival") arrivals++;
+      const data = d.data() as { type?: string; ts?: { toDate?: () => Date } | Date };
+      if (cutoffIso) {
+        const ts =
+          data.ts && typeof (data.ts as { toDate?: () => Date }).toDate === "function"
+            ? (data.ts as { toDate: () => Date }).toDate()
+            : (data.ts as Date | undefined);
+        if (!ts || ts.toISOString() < cutoffIso) return;
+      }
+      if (data.type === "view") views++;
+      else if (data.type === "arrival") arrivals++;
     });
   } catch (err) {
     console.error("[landing] failed to read landing_events", err);
