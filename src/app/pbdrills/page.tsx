@@ -116,10 +116,8 @@ function Hero() {
       }}
     >
       <div className="container-xl">
-        <div className="max-w-3xl">
-          {/* Copy — single-column hero after the DrillFinder was removed.
-              Constrained to max-w-3xl so the paragraph doesn't stretch
-              to sprawl width on desktops. */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_1fr] gap-8 lg:gap-14 items-center">
+          {/* Left — copy */}
           <div>
             <span
               className="inline-flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.22em] px-3 py-1.5 rounded-full mb-4"
@@ -213,6 +211,54 @@ function Hero() {
               <span>Trusted by 1,000+ serious pickleball players</span>
               <span aria-hidden>·</span>
               <span>Cancel anytime</span>
+            </p>
+          </div>
+
+          {/* Right — Jack Munro trust anchor. The whole "drills built by
+              real pros" pitch lives or dies on WHO the coaches are, and
+              Munro (APP World #1) is the strongest name we have. Big
+              photo card, credential badges, a secondary line naming the
+              other PPA pros so it doesn't read as a one-man app.
+              Hidden below lg to keep mobile clean. */}
+          <div className="hidden lg:flex flex-col items-center">
+            <p
+              className="text-[10px] font-extrabold uppercase tracking-[0.22em] mb-4"
+              style={{ color: TEAL }}
+            >
+              Drills Built By
+            </p>
+            <div
+              className="relative rounded-3xl overflow-hidden w-full max-w-md"
+              style={{
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.10)",
+                boxShadow: "0 30px 80px -20px rgba(60,172,174,0.35)",
+              }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/images/pbdrills-coaches/Jack-Munro.png"
+                alt="Jack Munro — APP World #1"
+                className="w-full aspect-square object-cover"
+              />
+              <div
+                className="p-5 text-center"
+                style={{ borderTop: "1px solid rgba(255,255,255,0.10)" }}
+              >
+                <p className="text-2xl font-extrabold text-white mb-1 leading-none">Jack Munro</p>
+                <p className="text-xs font-bold" style={{ color: CHARTREUSE, letterSpacing: "0.05em" }}>
+                  APP WORLD #1 · 6.67 RATED
+                </p>
+              </div>
+            </div>
+            <p
+              className="text-[12px] text-center mt-4 max-w-xs leading-relaxed"
+              style={{ color: "rgba(255,255,255,0.55)" }}
+            >
+              Plus PPA Signed Pros{" "}
+              <span style={{ color: "rgba(255,255,255,0.85)", fontWeight: 700 }}>Augie Ge</span> &amp;{" "}
+              <span style={{ color: "rgba(255,255,255,0.85)", fontWeight: 700 }}>Judit Castillo</span>{" "}
+              — every drill built by players you watch on tour.
             </p>
           </div>
         </div>
