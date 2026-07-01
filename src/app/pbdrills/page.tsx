@@ -174,7 +174,10 @@ function Hero() {
             </ul>
 
             {/* CTAs — one primary action. Secondary is a text link, not a
-                competing button, so the eye lands on Start Free Trial. */}
+                competing button, so the eye lands on the primary CTA. The
+                trial doesn't start on click — clicking takes them to the
+                app's onboarding flow (personalized plan → paywall → trial).
+                Button copy reflects that. */}
             <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 mb-7">
               <a
                 href={PBDRILLS}
@@ -188,7 +191,7 @@ function Hero() {
                   letterSpacing: "0.02em",
                 }}
               >
-                Start Free 7-Day Trial →
+                Get My Free Plan →
               </a>
               {DEMO_VIDEO && (
                 <a
@@ -991,7 +994,7 @@ function Pricing() {
                   boxShadow: t.highlight ? "0 0 24px rgba(222,250,50,0.30)" : "none",
                 }}
               >
-                Start Free 7-Day Trial →
+                Get My Free Plan →
               </a>
             </div>
           ))}
@@ -1137,7 +1140,7 @@ function FinalCTA() {
               boxShadow: "0 0 64px rgba(222,250,50,0.45), 0 6px 24px rgba(0,0,0,0.45)",
             }}
           >
-            Start My Free 7-Day Trial →
+            Get My Free Plan →
           </a>
           <a
             href={PBDRILLS}
