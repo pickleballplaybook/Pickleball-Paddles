@@ -12,8 +12,20 @@ export const dynamic = "force-dynamic";
  * Admin-gated by the shorts_auth cookie via src/middleware.ts.
  *
  * Query params:
- *   window  = 7 | 30 | 90 | 365 | all   (default 30) — filters by created_at
- *   segment = no_trial | subscribed | all (default all) — splits the export
+ *   window          = 7 | 30 | 90 | 365 | all   (default 30) — filters by created_at
+ *   segment         = no_trial | subscribed | all (default all) — splits the export
+ *   includePrevious = true                       (default false) — bypass the past-exports
+ *                                                  dedup and include emails from prior exports
+ *   id              = <firestore doc id>         — re-download a past export verbatim;
+ *                                                  overrides window/segment/includePrevious
+ *
+ * By default we skip emails that appear in ANY past admin_email_exports doc so
+ * Austin can upload each CSV to Substack without re-adding people. When id is
+ * present we return the frozen email list from that doc — exact same rows as
+ * the day it was exported.
+ *
+ * Every fresh export (i.e. not a re-download) records a Firestore doc so future
+ * exports can dedup against it.
  *
  * Status is sourced from Stripe (same logic as /admin/email). If Stripe is
  * unreachable, every row exports as "no_trial" — we don't fall back to
@@ -37,6 +49,45 @@ export async function GET(req: NextRequest) {
   const segRaw = req.nextUrl.searchParams.get("segment") ?? "all";
   const segment: Segment =
     segRaw === "no_trial" || segRaw === "subscribed" ? segRaw : "all";
+  const includePrevious =
+    req.nextUrl.searchParams.get("includePrevious") === "true";
+  const reDownloadId = req.nextUrl.searchParams.get("id")?.trim() || null;
+
+  // Re-download path — return the frozen email list from a past export doc
+  // as a bare CSV (email column only, matching what got uploaded to
+  // Substack). Skip all the Supabase/Stripe/dedup pipeline.
+  if (reDownloadId) {
+    try {
+      const db = getFirebaseFirestore();
+      const doc = await db
+        .collection("admin_email_exports")
+        .doc(reDownloadId)
+        .get();
+      if (!doc.exists) {
+        return new Response("Export not found.", { status: 404 });
+      }
+      const data = doc.data() as {
+        filename?: string;
+        emails?: string[];
+        createdAt?: { toDate?: () => Date };
+      };
+      const emails = Array.isArray(data.emails) ? data.emails : [];
+      const filename =
+        data.filename ??
+        `pbdrills-export-${reDownloadId.slice(0, 8)}.csv`;
+      const csv = "email\n" + emails.map(csvEscape).join("\n") + (emails.length ? "\n" : "");
+      return new Response(csv, {
+        headers: {
+          "content-type": "text/csv; charset=utf-8",
+          "content-disposition": `attachment; filename="${filename}"`,
+          "cache-control": "no-store",
+        },
+      });
+    } catch (err) {
+      console.error("[email/export] re-download failed", err);
+      return new Response("Failed to load export.", { status: 500 });
+    }
+  }
 
   type Row = {
     email: string;
@@ -206,13 +257,38 @@ export async function GET(req: NextRequest) {
   }
 
   const cutoffIso = days === null ? null : new Date(Date.now() - days * 86_400_000).toISOString();
-  const filtered = enriched.filter((r) => {
+  let filtered = enriched.filter((r) => {
     if (hiddenEmails.has(r.email.toLowerCase().trim())) return false;
     if (cutoffIso !== null && (r.relevant_date || "") < cutoffIso) return false;
     if (segment === "all") return true;
     if (segment === "no_trial") return r.status === "captured";
     return r.status !== "captured";
   });
+
+  // Dedup against every past export unless the caller explicitly asked to
+  // include previously-exported emails. This is the whole point of the
+  // history table — one CSV upload to Substack shouldn't re-add anyone.
+  const previouslyExported = new Set<string>();
+  if (!includePrevious) {
+    try {
+      const db = getFirebaseFirestore();
+      const snap = await db.collection("admin_email_exports").get();
+      snap.docs.forEach((d) => {
+        const emails = (d.data() as { emails?: string[] }).emails;
+        if (!Array.isArray(emails)) return;
+        emails.forEach((e) => {
+          if (typeof e === "string") previouslyExported.add(e.toLowerCase().trim());
+        });
+      });
+    } catch (err) {
+      console.error("[email/export] failed to load past exports (proceeding without dedup)", err);
+    }
+    if (previouslyExported.size > 0) {
+      filtered = filtered.filter(
+        (r) => !previouslyExported.has(r.email.toLowerCase().trim()),
+      );
+    }
+  }
 
   const header =
     "email,source,captured_at,trial_start_at,status,canceled_at,canceled_plan,flutter_user_id,unsubscribed_at,bounced_at\n";
@@ -236,6 +312,27 @@ export async function GET(req: NextRequest) {
   const winLabel = days === null ? "all" : `${days}d`;
   const segLabel = segment === "all" ? "all" : segment;
   const filename = `pbdrills-${segLabel}-${winLabel}-${new Date().toISOString().slice(0, 10)}.csv`;
+
+  // Record this export so future ones can dedup against it. Also powers
+  // the "Past exports" table on /admin/email. Fire-and-forget with a
+  // best-effort log so a Firestore hiccup can't block the download.
+  if (filtered.length > 0) {
+    try {
+      const db = getFirebaseFirestore();
+      const emailList = filtered.map((r) => r.email.toLowerCase().trim());
+      await db.collection("admin_email_exports").add({
+        createdAt: new Date(),
+        filename,
+        window: winKey,
+        segment,
+        includePrevious,
+        emailCount: emailList.length,
+        emails: emailList,
+      });
+    } catch (err) {
+      console.error("[email/export] failed to record export doc", err);
+    }
+  }
 
   return new Response(header + body + (body.length > 0 ? "\n" : ""), {
     headers: {

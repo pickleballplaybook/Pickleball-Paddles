@@ -720,6 +720,55 @@ export default async function EmailAdminPage({
     view === "landing"
       ? await loadLandingPageData(win.days, win.label)
       : null;
+
+  // Past-exports history — only load for the funnel view since that's the
+  // only place we render the CSV button + history panel. Newest first.
+  type PastExport = {
+    id: string;
+    createdAt: string;
+    filename: string;
+    window: string;
+    segment: string;
+    emailCount: number;
+    includePrevious: boolean;
+  };
+  const pastExports: PastExport[] = [];
+  if (view === "funnel") {
+    try {
+      const db = getFirebaseFirestore();
+      const snap = await db
+        .collection("admin_email_exports")
+        .orderBy("createdAt", "desc")
+        .limit(50)
+        .get();
+      snap.docs.forEach((d) => {
+        const data = d.data() as {
+          createdAt?: { toDate?: () => Date } | Date;
+          filename?: string;
+          window?: string;
+          segment?: string;
+          emailCount?: number;
+          includePrevious?: boolean;
+        };
+        const raw = data.createdAt as { toDate?: () => Date } | Date | undefined;
+        const ts =
+          raw && typeof (raw as { toDate?: () => Date }).toDate === "function"
+            ? (raw as { toDate: () => Date }).toDate()
+            : (raw as Date | undefined);
+        pastExports.push({
+          id: d.id,
+          createdAt: ts ? ts.toISOString() : "",
+          filename: data.filename ?? "export.csv",
+          window: data.window ?? "?",
+          segment: data.segment ?? "all",
+          emailCount: data.emailCount ?? 0,
+          includePrevious: !!data.includePrevious,
+        });
+      });
+    } catch (err) {
+      console.error("[admin/email] failed to load past exports", err);
+    }
+  }
   // Unfiltered set — used to compute "paid at start of window" for the
   // Stripe-style churn rate (which needs the denominator from BEFORE the
   // window, not just rows whose events landed in the window).
@@ -1017,14 +1066,25 @@ export default async function EmailAdminPage({
             <h2 className="text-base font-extrabold" style={{ color: "var(--text-primary)" }}>
               All signups ({categorized.length})
             </h2>
-            <a
-              href={`/api/admin/email/export?window=${winKey}`}
-              className="inline-flex items-center gap-1.5 text-xs font-bold py-2 px-3 rounded-lg transition active:scale-[0.98]"
-              style={{ background: "var(--btn-buy-bg)", color: "var(--btn-buy-text)" }}
-            >
-              <Download className="w-3.5 h-3.5" />
-              CSV
-            </a>
+            <div className="flex items-center gap-2 flex-wrap">
+              <a
+                href={`/api/admin/email/export?window=${winKey}`}
+                className="inline-flex items-center gap-1.5 text-xs font-bold py-2 px-3 rounded-lg transition active:scale-[0.98]"
+                style={{ background: "var(--btn-buy-bg)", color: "var(--btn-buy-text)" }}
+                title="New emails only — skips anyone already in a past export"
+              >
+                <Download className="w-3.5 h-3.5" />
+                CSV (new only)
+              </a>
+              <a
+                href={`/api/admin/email/export?window=${winKey}&includePrevious=true`}
+                className="inline-flex items-center gap-1.5 text-[11px] font-semibold py-2 px-3 rounded-lg transition active:scale-[0.98]"
+                style={{ background: "transparent", color: "var(--text-muted)", border: "1px solid var(--flip-card-border)" }}
+                title="Include everyone in the window, even if they've been exported before"
+              >
+                Include all
+              </a>
+            </div>
           </div>
 
           {categorized.length === 0 ? (
@@ -1084,6 +1144,86 @@ export default async function EmailAdminPage({
           <p className="text-xs mt-3" style={{ color: "var(--text-muted)" }}>
             Showing 2000 most-recent rows. Widen the window or download CSV for the full list.
           </p>
+        )}
+
+        {view === "funnel" && (
+          <div
+            className="rounded-2xl overflow-hidden mt-6"
+            style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}
+          >
+            <div
+              className="flex items-center justify-between gap-4 px-5 py-4"
+              style={{ borderBottom: "1px solid var(--flip-card-border)" }}
+            >
+              <div>
+                <h2 className="text-base font-extrabold" style={{ color: "var(--text-primary)" }}>
+                  Past exports ({pastExports.length})
+                </h2>
+                <p className="text-[11px] mt-0.5" style={{ color: "var(--text-muted)" }}>
+                  Each CSV download is logged here. New downloads exclude anyone in this list unless you tap “Include all.”
+                </p>
+              </div>
+            </div>
+            {pastExports.length === 0 ? (
+              <p className="px-5 py-6 text-sm" style={{ color: "var(--text-muted)" }}>
+                No exports yet. Your first CSV download will appear here.
+              </p>
+            ) : (
+              <table className="w-full text-sm">
+                <thead>
+                  <tr style={{ borderBottom: "1px solid var(--flip-card-border)" }}>
+                    <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Date</th>
+                    <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Window</th>
+                    <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Segment</th>
+                    <th className="text-right px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Emails</th>
+                    <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Mode</th>
+                    <th className="px-4 py-3" aria-label="Actions" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {pastExports.map((e) => (
+                    <tr key={e.id} style={{ borderTop: "1px solid var(--flip-card-border)" }}>
+                      <td className="px-4 py-3 text-xs tabular-nums" style={{ color: "var(--text-primary)" }}>
+                        <LocalDateTime iso={e.createdAt} />
+                      </td>
+                      <td className="px-4 py-3 text-xs" style={{ color: "var(--text-muted)" }}>
+                        {e.window === "all" ? "All time" : `${e.window}d`}
+                      </td>
+                      <td className="px-4 py-3 text-xs" style={{ color: "var(--text-muted)" }}>
+                        {e.segment}
+                      </td>
+                      <td className="px-4 py-3 text-xs tabular-nums text-right" style={{ color: "var(--text-primary)" }}>
+                        {e.emailCount.toLocaleString()}
+                      </td>
+                      <td className="px-4 py-3 text-[10px] uppercase tracking-wider">
+                        <span
+                          className="inline-block px-2 py-0.5 rounded font-bold"
+                          style={{
+                            background: e.includePrevious ? "rgba(245,158,11,0.15)" : "rgba(34,197,94,0.15)",
+                            color: e.includePrevious ? "#f59e0b" : "#22c55e",
+                            letterSpacing: 0.5,
+                          }}
+                        >
+                          {e.includePrevious ? "all" : "new only"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <a
+                          href={`/api/admin/email/export?id=${e.id}`}
+                          className="inline-flex items-center gap-1 text-[11px] font-bold"
+                          style={{ color: "var(--text-primary)" }}
+                          title="Re-download the exact same emails from this export"
+                        >
+                          <Download className="w-3 h-3" />
+                          Re-download
+                        </a>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
         )}
       </div>
     </div>
