@@ -55,14 +55,14 @@ const TESTIMONIALS: { quote: string; name: string; stars?: number; source?: stri
 ];
 
 export const metadata: Metadata = {
-  title: "Pickleball Drills App — Train Like the Pros, Free 7-Day Trial",
+  title: "Pickleball Drills App — Train Like the Pros",
   description:
-    "Stop guessing what to practice. Hundreds of drills built by APP & PPA pros — every shot, every level, in your pocket. Try it free for 7 days. Cancel anytime.",
+    "Stop guessing what to practice. Hundreds of drills built by APP & PPA pros — every shot, every level, in your pocket. Try it free. Cancel anytime.",
   alternates: { canonical: "https://playbookpaddles.com/pbdrills" },
   openGraph: {
-    title: "Pickleball Drills App — Train Like the Pros, Free 7-Day Trial",
+    title: "Pickleball Drills App — Train Like the Pros",
     description:
-      "The drill library used by 5.0+ players and coaches. Free for 7 days, cancel anytime.",
+      "The drill library used by 5.0+ players and coaches. Free trial, cancel anytime.",
     url: "https://playbookpaddles.com/pbdrills",
     type: "website",
   },
@@ -105,44 +105,48 @@ function Hero() {
       style={{
         background:
           "radial-gradient(ellipse 90% 60% at 50% 0%, rgba(60,172,174,0.18) 0%, transparent 65%), #0a1628",
-        paddingTop: "calc(var(--topbar-h, 108px) + 4rem)",
-        paddingBottom: "5rem",
+        // Tightened top padding — pulls the whole Hero (and its CTA) up
+        // so the yellow button sits above the fold on typical laptop
+        // heights instead of forcing a scroll to find it.
+        paddingTop: "calc(var(--topbar-h, 108px) + 1.5rem)",
+        paddingBottom: "3.5rem",
       }}
     >
       <div className="container-xl">
-        <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_1fr] gap-10 lg:gap-16 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_1fr] gap-6 lg:gap-12 items-center">
           {/* Left — copy */}
           <div>
             <span
-              className="inline-flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.22em] px-3 py-1.5 rounded-full mb-6"
+              className="inline-flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.22em] px-3 py-1.5 rounded-full mb-4"
               style={{
                 background: "rgba(222,250,50,0.10)",
                 color: CHARTREUSE,
                 border: "1px solid rgba(222,250,50,0.35)",
               }}
             >
-              <span aria-hidden>✓</span> Free 7-Day Trial · Cancel Anytime
+              <span aria-hidden>✓</span> Free Trial · Cancel Anytime
             </span>
 
             <h1
-              className="font-extrabold tracking-tight leading-[0.95] mb-6 text-white"
-              style={{ fontSize: "clamp(2.7rem, 6.5vw, 5.25rem)" }}
+              className="font-extrabold tracking-tight leading-[0.95] mb-4 text-white"
+              style={{ fontSize: "clamp(2.3rem, 5.2vw, 4rem)" }}
             >
               Stop guessing what to practice.{" "}
               <span style={{ color: CHARTREUSE }}>Drill like a pro.</span>
             </h1>
 
             <p
-              className="text-lg md:text-xl leading-relaxed mb-7"
+              className="text-base md:text-lg leading-snug mb-5"
               style={{ color: "rgba(255,255,255,0.75)", maxWidth: "32em" }}
             >
-              The drill library that APP &amp; PPA pros built for the rest of us.
-              Every shot, every situation, every level — with the technique,
-              tactics, and strategy you&apos;d only get from a $200 lesson.
+              The drill library that APP &amp; PPA pros built for the rest of us —
+              every shot, every level, with the technique and strategy you&apos;d
+              only get from a $200 lesson.
             </p>
 
-            {/* Value bullets — equivalent of Easy Lemon's "Manufacturer pays" callout */}
-            <ul className="space-y-3 mb-9 text-base">
+            {/* Value bullets — tightened spacing to keep the primary CTA
+                above the fold on laptop heights. */}
+            <ul className="space-y-1.5 mb-6 text-[15px]">
               {[
                 "Hundreds of drills sorted by shot, level, and time available",
                 "Step-by-step technique breakdowns from real pros",
@@ -172,7 +176,7 @@ function Hero() {
                 trial doesn't start on click — clicking takes them to the
                 app's onboarding flow (personalized plan → paywall → trial).
                 Button copy reflects that. */}
-            <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 mb-7">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 mb-5">
               <a
                 href={PBDRILLS}
                 target="_blank"
@@ -185,7 +189,7 @@ function Hero() {
                   letterSpacing: "0.02em",
                 }}
               >
-                GET STARTED →
+                SIGN UP NOW — START FREE →
               </a>
               {DEMO_VIDEO && (
                 <a
@@ -360,9 +364,9 @@ function ZeroRisk() {
     },
     {
       icon: "💳",
-      title: "$0 Charged for 7 Days",
+      title: "$0 to Start",
       body:
-        "Yes, you add a card to start the trial — but nothing is charged for seven full days. Cancel before day 8 and you pay zero. We don't bury the renewal.",
+        "Yes, you add a card to start the trial — but nothing is charged during the trial. Cancel before it converts and you pay zero. We don't bury the renewal.",
     },
     {
       icon: "🚪",
@@ -798,7 +802,7 @@ function HowItWorks() {
     {
       n: 1,
       title: "Start your free trial",
-      body: "Sign up in 30 seconds. Add a card, get 7 free days, cancel anytime.",
+      body: "Sign up in 30 seconds. Add a card, start free, cancel anytime.",
     },
     {
       n: 2,
@@ -874,8 +878,8 @@ function HowItWorks() {
 function FAQ() {
   const faqs = [
     {
-      q: "Is it actually free for 7 days?",
-      a: "Yes. You add a card at signup so the trial can roll into a subscription if you love it — but nothing is charged for 7 full days. Full library access from minute one. Cancel before day 8 in two taps and you pay zero.",
+      q: "Is the trial actually free?",
+      a: "Yes. You add a card at signup so the trial can roll into a subscription if you love it — but nothing is charged during the trial. Full library access from minute one. Cancel before it converts in two taps and you pay zero.",
     },
     {
       q: "Why pay when YouTube is free?",
@@ -980,14 +984,14 @@ function FinalCTA() {
           <span style={{ color: CHARTREUSE }}>Are you?</span>
         </h2>
         <p className="text-lg mb-2" style={{ color: "rgba(255,255,255,0.75)" }}>
-          Seven days. Every drill. Every coach. Zero out of pocket.
+          Every drill. Every coach. Zero out of pocket to start.
         </p>
         <p className="text-sm mb-9 inline-flex items-center gap-2" style={{ color: "rgba(255,255,255,0.55)" }}>
           <span aria-hidden>💸</span>
           Less than one group lesson. Way less than a single private hour.
         </p>
 
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+        <div className="flex items-center justify-center">
           <a
             href={PBDRILLS}
             target="_blank"
@@ -1001,23 +1005,10 @@ function FinalCTA() {
           >
             SIGN UP NOW — START FREE →
           </a>
-          <a
-            href={PBDRILLS}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 font-bold text-base px-10 py-5 rounded-2xl transition-all hover:scale-[1.01]"
-            style={{
-              background: "transparent",
-              color: TEAL,
-              border: `2px solid ${TEAL}`,
-            }}
-          >
-            START FREE TODAY →
-          </a>
         </div>
 
         <p className="text-xs mt-7" style={{ color: "rgba(255,255,255,0.45)" }}>
-          7 days free · Cancel anytime · iOS &amp; Android
+          Cancel anytime · iOS &amp; Android
         </p>
       </div>
     </section>
