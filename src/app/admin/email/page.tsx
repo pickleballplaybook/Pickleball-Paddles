@@ -672,6 +672,42 @@ export default async function EmailAdminPage({
     loadError = e instanceof Error ? e.message : "Failed to read trial_signups.";
   }
 
+  // Merge in abandoned_signups — Firestore docs written when a user typed
+  // their email at onboarding but bailed before completing Firebase Auth.
+  // Without this they'd never appear on the admin dashboard even though
+  // the abandoned drip is still emailing them, and they'd be missing from
+  // the CSV export.
+  try {
+    const db = getFirebaseFirestore();
+    const snap = await db.collection("abandoned_signups").get();
+    const existingEmails = new Set(rows.map((r) => r.email.toLowerCase().trim()));
+    snap.docs.forEach((d) => {
+      const data = d.data() as {
+        email?: string;
+        source?: string | null;
+        capturedAt?: { toDate?: () => Date } | Date;
+      };
+      const email = (data.email ?? d.id).toLowerCase().trim();
+      if (!email || existingEmails.has(email)) return;
+      const raw = data.capturedAt as { toDate?: () => Date } | Date | undefined;
+      const ts =
+        raw && typeof (raw as { toDate?: () => Date }).toDate === "function"
+          ? (raw as { toDate: () => Date }).toDate()
+          : (raw as Date | undefined);
+      rows.push({
+        email,
+        source: data.source ?? null,
+        created_at: ts ? ts.toISOString() : null,
+        trial_start_at: null,
+        unsubscribed_at: null,
+        bounced_at: null,
+      });
+      existingEmails.add(email);
+    });
+  } catch (err) {
+    console.error("[admin/email] failed to read abandoned_signups", err);
+  }
+
   const stripe = await fetchStripeStatusByEmail();
   const hiddenEmails = await loadHiddenEmails();
   // Window-aware winback metrics: "members who came back in this window"
