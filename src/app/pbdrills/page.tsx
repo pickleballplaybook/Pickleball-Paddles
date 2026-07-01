@@ -14,14 +14,9 @@ const CHARTREUSE = "#defa32";
 const TEAL = "#3cacae";
 
 // ─── Quick-edit knobs ────────────────────────────────────────────────────────
-// Pricing — four real tiers. Used by the Pricing section + Final CTA copy.
-const PRICING = {
-  basicMonthly: { price: "$19", per: "mo", label: "Basic Monthly" },
-  basicYearly:  { price: "$149", per: "yr", label: "Basic Yearly", save: "Save $79" },
-  proMonthly:   { price: "$49", per: "mo", label: "Pro Monthly" },
-  proYearly:    { price: "$299", per: "yr", label: "Pro Yearly", save: "Save $289" },
-};
-const PRICE_FROM = "from $19/mo"; // shorthand used in Final CTA copy
+// Prices are intentionally NOT on this page. The landing page's job is to get
+// the user into the app onboarding, where they get their personalized plan
+// first and see pricing in context. Pricing debates belong post-value.
 
 // Drop in an MP4 (in /public) or a YouTube/Vimeo embed URL. When set, the
 // AppPreview section renders below the hero. Empty = section hidden.
@@ -94,7 +89,6 @@ export default function PbDrillsLandingPage() {
       <Coaches />
       <Testimonials />
       <HowItWorks />
-      <Pricing />
       <FAQ />
       <FinalCTA />
     </main>
@@ -872,141 +866,6 @@ function HowItWorks() {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  Pricing — two tiers (Basic / Pro) with monthly + yearly. Yearly savings are
-//  the conversion lever; we highlight them. Pro is the "Most Popular" anchor.
-//  Per-tier features list is intentionally short so we can't accidentally
-//  misrepresent gating; tweak the lists once Pro-only features are nailed down.
-// ─────────────────────────────────────────────────────────────────────────────
-function Pricing() {
-  const tiers = [
-    {
-      name: "Basic",
-      monthly: PRICING.basicMonthly,
-      yearly: PRICING.basicYearly,
-      tagline: "For the rec player who's done plateauing.",
-      features: [
-        "Pro-led coaching videos — hundreds of drills, every skill level",
-        "Progress tracking — log sessions, see improvement",
-        "Schedule Your Sessions — plan drilling on your calendar",
-        "Achievements — earn badges as you climb",
-      ],
-      highlight: false,
-    },
-    {
-      name: "Pro",
-      monthly: PRICING.proMonthly,
-      yearly: PRICING.proYearly,
-      tagline: "For the player chasing the next rating.",
-      features: [
-        "Everything in Basic",
-        "PickleAI Coach — finds drills, plans your sessions, answers any question",
-        "Technique Library — learn every shot, step by step",
-      ],
-      highlight: true,
-    },
-  ];
-
-  return (
-    <section className="py-20 md:py-24">
-      <div className="container-xl">
-        <div className="text-center mb-12">
-          <p className="text-[11px] font-bold uppercase tracking-[0.22em] mb-3" style={{ color: CHARTREUSE }}>
-            Simple Pricing
-          </p>
-          <h2 className="text-3xl md:text-5xl font-extrabold text-white tracking-tight mb-4">
-            One trial. <span style={{ color: CHARTREUSE }}>Two plans.</span>
-          </h2>
-          <p className="text-lg max-w-2xl mx-auto" style={{ color: "rgba(255,255,255,0.65)" }}>
-            7 days free on either plan. Cancel before day 8 in three taps and
-            pay zero. Annual saves you a private lesson&apos;s worth.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-4xl mx-auto">
-          {tiers.map((t) => (
-            <div
-              key={t.name}
-              className="relative rounded-2xl p-7 md:p-8 flex flex-col"
-              style={{
-                background: t.highlight ? "rgba(222,250,50,0.06)" : "rgba(255,255,255,0.04)",
-                border: `1px solid ${t.highlight ? CHARTREUSE : "rgba(255,255,255,0.10)"}`,
-                boxShadow: t.highlight ? "0 30px 80px -20px rgba(222,250,50,0.18)" : "none",
-              }}
-            >
-              {t.highlight && (
-                <span
-                  className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-extrabold uppercase tracking-[0.2em] px-3 py-1 rounded-full"
-                  style={{
-                    background: CHARTREUSE,
-                    color: "#0a1628",
-                  }}
-                >
-                  Most Popular
-                </span>
-              )}
-
-              <h3 className="text-2xl font-extrabold text-white mb-1">{t.name}</h3>
-              <p className="text-sm mb-6" style={{ color: "rgba(255,255,255,0.6)" }}>
-                {t.tagline}
-              </p>
-
-              <div className="mb-1 flex items-baseline gap-1.5">
-                <span className="text-5xl font-extrabold text-white tracking-tight">{t.monthly.price}</span>
-                <span className="text-base font-bold" style={{ color: "rgba(255,255,255,0.55)" }}>
-                  /{t.monthly.per}
-                </span>
-              </div>
-              <p className="text-sm mb-6" style={{ color: TEAL, fontWeight: 700 }}>
-                or {t.yearly.price}/{t.yearly.per}
-                {t.yearly.save && (
-                  <span style={{ color: CHARTREUSE }}> · {t.yearly.save}</span>
-                )}
-              </p>
-
-              <ul className="space-y-2.5 mb-7 flex-1">
-                {t.features.map((f) => (
-                  <li key={f} className="flex items-start gap-2.5 text-[14px]" style={{ color: "rgba(255,255,255,0.85)" }}>
-                    <span
-                      className="flex-shrink-0 mt-0.5 w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-extrabold"
-                      style={{
-                        background: t.highlight ? CHARTREUSE : "rgba(60,172,174,0.18)",
-                        color: t.highlight ? "#0a1628" : TEAL,
-                      }}
-                      aria-hidden
-                    >
-                      ✓
-                    </span>
-                    <span>{f}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <a
-                href={PBDRILLS}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block w-full text-center font-extrabold text-base px-6 py-3.5 rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
-                style={{
-                  background: t.highlight ? CHARTREUSE : "transparent",
-                  color: t.highlight ? "#0a1628" : "#fff",
-                  border: t.highlight ? "none" : `2px solid ${TEAL}`,
-                  boxShadow: t.highlight ? "0 0 24px rgba(222,250,50,0.30)" : "none",
-                }}
-              >
-                Get My Free Plan →
-              </a>
-            </div>
-          ))}
-        </div>
-
-        <p className="text-center text-xs mt-7" style={{ color: "rgba(255,255,255,0.45)" }}>
-          Card required at signup · $0 charged for 7 days · Cancel anytime in the app
-        </p>
-      </div>
-    </section>
-  );
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  FAQ — accordion. Server-rendered with details/summary so we don't need
@@ -1125,7 +984,7 @@ function FinalCTA() {
         </p>
         <p className="text-sm mb-9 inline-flex items-center gap-2" style={{ color: "rgba(255,255,255,0.55)" }}>
           <span aria-hidden>💸</span>
-          Less than one group lesson. Less than a single private hour. Plans {PRICE_FROM}.
+          Less than one group lesson. Way less than a single private hour.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -1158,7 +1017,7 @@ function FinalCTA() {
         </div>
 
         <p className="text-xs mt-7" style={{ color: "rgba(255,255,255,0.45)" }}>
-          7 days free · Plans {PRICE_FROM} · Cancel anytime · iOS &amp; Android
+          7 days free · Cancel anytime · iOS &amp; Android
         </p>
       </div>
     </section>
