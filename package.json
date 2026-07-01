@@ -6,9 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "gen:gear-content": "node --env-file=.env.local --import tsx scripts/generate-gear-content.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.104.2",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.101.1",
     "@tiptap/extension-image": "^3.26.0",
@@ -25,7 +27,8 @@
     "lucide-react": "^0.400.0",
     "next": "14.2.5",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "stripe": "^22.3.0"
   },
   "devDependencies": {
     "@types/node": "^20",
@@ -34,6 +37,7 @@
     "autoprefixer": "^10.0.1",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
+    "tsx": "^4.22.4",
     "typescript": "^5"
   }
 }
