@@ -105,11 +105,14 @@ function Hero() {
       style={{
         background:
           "radial-gradient(ellipse 90% 60% at 50% 0%, rgba(60,172,174,0.18) 0%, transparent 65%), #0a1628",
-        // Compromise top padding: enough breathing room from the sticky
-        // topbar that the eyebrow + headline don't feel cramped, but
-        // still tight enough that the yellow CTA stays above the fold
-        // on standard laptop heights.
-        paddingTop: "calc(var(--topbar-h, 108px) + 2.75rem)",
+        // Top padding has to clear BOTH the sticky navbar AND the
+        // promo banner ("Rate Paddles You've Tried") that sits above
+        // it. --topbar-h is dynamically measured but there's a
+        // hydration window where the fallback of 108px was too short
+        // and clipped the eyebrow badge under the promo bar. 5rem of
+        // extra headroom guarantees the eyebrow is visible even when
+        // both bars are showing.
+        paddingTop: "calc(var(--topbar-h, 108px) + 5rem)",
         paddingBottom: "3.5rem",
       }}
     >

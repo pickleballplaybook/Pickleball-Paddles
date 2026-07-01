@@ -80,13 +80,6 @@ export default function DrillFinder() {
       <div className="h-1" style={{ background: "#defa32" }} />
 
       <div className="p-6 md:p-8">
-        {/* Progress strip */}
-        <div className="flex items-center justify-center gap-2 mb-2 text-[11px] font-bold tracking-[0.18em] uppercase" style={{ color: "rgba(255,255,255,0.5)" }}>
-          <span style={{ color: "#defa32" }}>100% Free</span>
-          <span aria-hidden>·</span>
-          <span>20-Second Setup</span>
-        </div>
-
         <div className="flex items-center justify-between mb-3">
           {stepLabels.map((label, i) => (
             <span
