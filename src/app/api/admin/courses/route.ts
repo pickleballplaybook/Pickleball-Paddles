@@ -46,13 +46,20 @@ export async function POST(req: NextRequest) {
     const snap = await col.orderBy("sortOrder", "desc").limit(1).get();
     const maxOrder = snap.empty ? 0 : ((snap.docs[0].data().sortOrder as number) ?? 0);
     const ref = col.doc();
+    const accessType = typeof body.accessType === "string" ? body.accessType : "open";
     await ref.set({
       title,
       description: typeof body.description === "string" ? body.description.trim() : "",
-      accessType: typeof body.accessType === "string" ? body.accessType : "open",
+      accessType,
       coverImageUrl: typeof body.coverImageUrl === "string" && body.coverImageUrl ? body.coverImageUrl : null,
       published: body.published === true,
       sortOrder: maxOrder + 1,
+      // level unlock fields
+      minLevel: accessType === "level" && typeof body.minLevel === "number" ? body.minLevel : null,
+      orMemberTierEnabled: accessType === "level" && body.orMemberTierEnabled === true,
+      memberTier: accessType === "level" && typeof body.memberTier === "string" ? body.memberTier : null,
+      // pro only tier
+      proTier: accessType === "pro" && typeof body.proTier === "string" ? body.proTier : null,
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
     });

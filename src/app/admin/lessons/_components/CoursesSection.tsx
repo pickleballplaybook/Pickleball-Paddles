@@ -20,10 +20,19 @@ const ACCESS_TYPES = [
   { value: "private", label: "Private", desc: "Hidden from member view." },
 ] as const;
 
+const MEMBER_TIERS = [
+  { value: "basic", label: "Basic" },
+  { value: "pro", label: "Pro" },
+] as const;
+
 type FormState = {
   title: string;
   description: string;
   accessType: string;
+  minLevel: number;
+  orMemberTierEnabled: boolean;
+  memberTier: "basic" | "pro";
+  proTier: "basic" | "pro";
   published: boolean;
   coverImageUrl: string | null;
 };
@@ -32,6 +41,10 @@ const EMPTY: FormState = {
   title: "",
   description: "",
   accessType: "pro",
+  minLevel: 3,
+  orMemberTierEnabled: false,
+  memberTier: "pro",
+  proTier: "pro",
   published: true,
   coverImageUrl: null,
 };
@@ -75,10 +88,19 @@ export function CoursesSection({ initial }: { initial: Course[] }) {
     setBusy(true);
     setError(null);
     try {
+      const payload = {
+        ...form,
+        ...(form.accessType === "level"
+          ? { minLevel: form.minLevel, orMemberTierEnabled: form.orMemberTierEnabled, memberTier: form.memberTier }
+          : { minLevel: null, orMemberTierEnabled: false }),
+        ...(form.accessType === "pro"
+          ? { proTier: form.proTier }
+          : { proTier: null }),
+      };
       const res = await fetch("/api/admin/courses", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
       const json = (await res.json().catch(() => ({}))) as { ok?: boolean; id?: string; error?: string };
       if (!res.ok || !json.ok) throw new Error(json?.error ?? "Create failed.");
@@ -233,6 +255,69 @@ export function CoursesSection({ initial }: { initial: Course[] }) {
                     </label>
                   ))}
                 </div>
+
+                {/* Level unlock sub-options */}
+                {form.accessType === "level" && (
+                  <div className="space-y-3 bg-gray-800/50 border border-gray-700 rounded-xl px-4 py-4">
+                    <div>
+                      <label className="text-xs text-gray-400 font-medium block mb-1.5">Access starts at level</label>
+                      <select
+                        value={form.minLevel}
+                        onChange={(e) => setForm((f) => ({ ...f, minLevel: Number(e.target.value) }))}
+                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-accent-500"
+                      >
+                        {[1, 2, 3, 3.5, 4, 4.5, 5].map((l) => (
+                          <option key={l} value={l}>{l}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setForm((f) => ({ ...f, orMemberTierEnabled: !f.orMemberTierEnabled }))}
+                        className="flex-shrink-0"
+                      >
+                        <div className={`w-9 h-5 rounded-full relative transition-colors ${form.orMemberTierEnabled ? "bg-accent-500" : "bg-gray-600"}`}>
+                          <div className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${form.orMemberTierEnabled ? "translate-x-4" : ""}`} />
+                        </div>
+                      </button>
+                      <span className="text-sm text-gray-300">Or members on/above</span>
+                      <select
+                        value={form.memberTier}
+                        onChange={(e) => setForm((f) => ({ ...f, memberTier: e.target.value as "basic" | "pro" }))}
+                        disabled={!form.orMemberTierEnabled}
+                        className="ml-auto bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-accent-500 disabled:opacity-40"
+                      >
+                        {MEMBER_TIERS.map((t) => (
+                          <option key={t.value} value={t.value}>{t.label} tier</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                )}
+
+                {/* Pro only sub-options */}
+                {form.accessType === "pro" && (
+                  <div className="bg-gray-800/50 border border-gray-700 rounded-xl px-4 py-4">
+                    <label className="text-xs text-gray-400 font-medium block mb-2">Minimum tier required</label>
+                    <div className="flex gap-2">
+                      {MEMBER_TIERS.map((t) => (
+                        <button
+                          key={t.value}
+                          type="button"
+                          onClick={() => setForm((f) => ({ ...f, proTier: t.value }))}
+                          className={`flex-1 py-2 rounded-lg text-sm font-semibold border transition ${
+                            form.proTier === t.value
+                              ? "border-accent-500 bg-accent-500/10 text-accent-400"
+                              : "border-gray-700 text-gray-400 hover:border-gray-500"
+                          }`}
+                        >
+                          {t.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Cover image */}
                 <div>
