@@ -58,7 +58,7 @@ function EditorPickCard({ p }: { p: GearProduct }) {
           </p>
           <h2
             className="text-2xl md:text-3xl font-extrabold mb-4 leading-tight"
-            style={{ color: "#2dd4bf" }}
+            style={{ color: "#60a5fa" }}
           >
             {p.name}
           </h2>
@@ -76,7 +76,7 @@ function EditorPickCard({ p }: { p: GearProduct }) {
               <div className="flex flex-wrap items-center gap-3 mb-6">
                 {salePrice ? (
                   <>
-                    <span className="text-2xl font-extrabold" style={{ color: "#2dd4bf" }}>{salePrice}</span>
+                    <span className="text-2xl font-extrabold" style={{ color: "#60a5fa" }}>{salePrice}</span>
                     <span className="text-xl font-semibold line-through" style={{ color: "rgba(255,255,255,0.45)" }}>{p.price}</span>
                   </>
                 ) : (
@@ -102,8 +102,8 @@ function EditorPickCard({ p }: { p: GearProduct }) {
               href={`/gear/${p.id}`}
               className="inline-flex items-center gap-2 font-bold text-sm px-6 py-3 rounded-xl text-white transition-all duration-200 hover:scale-[1.02]"
               style={{
-                background: "linear-gradient(135deg, #0d9488, #14b8a6)",
-                boxShadow: "0 0 24px rgba(20,184,166,0.35)",
+                background: "linear-gradient(135deg, #11295f, #0a64bc)",
+                boxShadow: "0 0 24px rgba(10, 100, 188,0.35)",
               }}
             >
               Read Full Review
@@ -114,8 +114,8 @@ function EditorPickCard({ p }: { p: GearProduct }) {
               rel="noopener noreferrer sponsored"
               className="inline-flex items-center gap-2 font-bold text-sm px-6 py-3 rounded-xl transition-all duration-200 hover:scale-[1.02]"
               style={{
-                border: "1.5px solid rgba(45,212,191,0.45)",
-                color: "#2dd4bf",
+                border: "1.5px solid rgba(10, 100, 188,0.45)",
+                color: "#60a5fa",
               }}
             >
               Buy Now
@@ -157,7 +157,7 @@ function GridCard({ p }: { p: GearProduct }) {
           ) : (
             <div
               className="w-14 h-14 rounded-full flex items-center justify-center"
-              style={{ background: "rgba(20,184,166,0.12)" }}
+              style={{ background: "rgba(10, 100, 188,0.30)" }}
             >
               <span className="text-2xl">🎾</span>
             </div>
@@ -184,7 +184,7 @@ function GridCard({ p }: { p: GearProduct }) {
           <div className="mt-auto flex items-center justify-between gap-2">
             <span
               className="text-base font-bold"
-              style={{ color: p.price === "Free" ? "#14b8a6" : "var(--text-primary)" }}
+              style={{ color: p.price === "Free" ? "#0a64bc" : "var(--text-primary)" }}
             >
               {p.price || ""}
             </span>
@@ -215,7 +215,7 @@ export default function GearPage() {
 
         {/* Header */}
         <div className="mb-10">
-          <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "#14b8a6" }}>
+          <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "#60a5fa" }}>
             Equipment & Accessories
           </p>
           <h1

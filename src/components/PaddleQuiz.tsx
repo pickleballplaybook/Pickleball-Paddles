@@ -148,7 +148,7 @@ function QuizOption({
       className="w-full text-left px-4 py-3.5 rounded-xl font-semibold text-sm transition-all duration-150 border"
       style={
         selected
-          ? { background: "rgba(20,184,166,0.15)", borderColor: "#14b8a6", color: "var(--text-primary)" }
+          ? { background: "rgba(10, 100, 188,0.30)", borderColor: "#60a5fa", color: "var(--text-primary)" }
           : { background: "var(--bg-section)", borderColor: "var(--border)", color: "var(--text-secondary)" }
       }
     >
@@ -174,7 +174,7 @@ function ResultCard({ paddle, rank }: { paddle: Paddle; rank: number }) {
       <div
         className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-extrabold flex-shrink-0"
         style={rank === 1
-          ? { background: "#defa32", color: "#111" }
+          ? { background: "#0a64bc", color: "#111" }
           : { background: "var(--bg-card)", color: "var(--text-muted)", border: "1px solid var(--border)" }}
       >
         {rank}
@@ -190,7 +190,7 @@ function ResultCard({ paddle, rank }: { paddle: Paddle; rank: number }) {
 
       {/* Info */}
       <div className="flex-1 min-w-0">
-        <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: "#14b8a6" }}>{paddle.brand}</p>
+        <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: "#60a5fa" }}>{paddle.brand}</p>
         <p className="text-sm font-bold truncate" style={{ color: "var(--text-primary)" }}>{paddle.name}</p>
         <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>
           {paddle.shape} · {paddle.thickness} · {paddle.price ?? "—"}
@@ -202,7 +202,7 @@ function ResultCard({ paddle, rank }: { paddle: Paddle; rank: number }) {
         <Link
           href={`/paddles/${paddle.slug}`}
           className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
-          style={{ background: "rgba(20,184,166,0.15)", color: "#2dd4bf", border: "1px solid rgba(20,184,166,0.2)" }}
+          style={{ background: "rgba(10, 100, 188,0.30)", color: "#60a5fa", border: "1px solid rgba(10, 100, 188,0.30)" }}
         >
           View
         </Link>
@@ -212,7 +212,7 @@ function ResultCard({ paddle, rank }: { paddle: Paddle; rank: number }) {
             target="_blank"
             rel="noopener noreferrer sponsored"
             className="text-xs font-semibold px-3 py-1.5 rounded-lg inline-flex items-center gap-1 transition-colors"
-            style={{ background: "var(--btn-buy-bg)", color: "var(--btn-buy-text)" }}
+            style={{ background: "var(--btn-buy-bg)", color: "var(--btn-buy-text)", border: "var(--btn-buy-border)", boxShadow: "var(--btn-buy-shadow)" }}
           >
             {buyAtLabel(paddle.brand)} <ExternalLink className="w-3 h-3" />
           </a>
@@ -279,7 +279,7 @@ export default function PaddleQuiz({ onClose }: { onClose: () => void }) {
           <div className="h-1 rounded-full overflow-hidden" style={{ background: "var(--border)" }}>
             <div
               className="h-full rounded-full transition-all duration-500"
-              style={{ width: `${progress}%`, background: "linear-gradient(90deg, #0d9488, #14b8a6)" }}
+              style={{ width: `${progress}%`, background: "linear-gradient(90deg, #11295f, #0a64bc)" }}
             />
           </div>
         </div>
@@ -393,7 +393,7 @@ export default function PaddleQuiz({ onClose }: { onClose: () => void }) {
                   <button
                     onClick={() => setStep((s) => s + 1)}
                     className="inline-flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
-                    style={{ background: "rgba(20,184,166,0.15)", color: "#2dd4bf", border: "1px solid rgba(20,184,166,0.2)" }}
+                    style={{ background: "rgba(10, 100, 188,0.30)", color: "#60a5fa", border: "1px solid rgba(10, 100, 188,0.30)" }}
                   >
                     Skip <ChevronRight className="w-4 h-4" />
                   </button>

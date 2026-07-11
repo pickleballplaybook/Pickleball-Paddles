@@ -65,14 +65,14 @@ export default function DiscountCodeBox({ code, giftCard, savings, compact }: Pr
     return (
       <div
         className="rounded-2xl p-5 mb-4"
-        style={{ background: "rgba(20,184,166,0.08)", border: "1px solid rgba(20,184,166,0.22)" }}
+        style={{ background: "rgba(10, 100, 188,0.28)", border: "1px solid rgba(10, 100, 188,0.30)" }}
       >
         <div className="flex items-start gap-3">
           <div
             className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
-            style={{ background: "rgba(20,184,166,0.15)" }}
+            style={{ background: "rgba(10, 100, 188,0.30)" }}
           >
-            <Gift className="w-4 h-4" style={{ color: "#14b8a6" }} strokeWidth={1.75} />
+            <Gift className="w-4 h-4" style={{ color: "#60a5fa" }} strokeWidth={1.75} />
           </div>
           <div className="flex-1">
             <p className="font-bold text-sm mb-2" style={{ color: "var(--flip-text-head)" }}>
@@ -109,14 +109,14 @@ export default function DiscountCodeBox({ code, giftCard, savings, compact }: Pr
   return (
     <div
       className="rounded-2xl p-5 mb-4"
-      style={{ background: "rgba(20,184,166,0.08)", border: "1px solid rgba(20,184,166,0.22)" }}
+      style={{ background: "rgba(10, 100, 188,0.28)", border: "1px solid rgba(10, 100, 188,0.30)" }}
     >
       <div className="flex items-center gap-3 mb-3">
         <div
           className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{ background: "rgba(20,184,166,0.15)" }}
+          style={{ background: "rgba(10, 100, 188,0.30)" }}
         >
-          <Tag className="w-4 h-4" style={{ color: "#14b8a6" }} strokeWidth={1.75} />
+          <Tag className="w-4 h-4" style={{ color: "#60a5fa" }} strokeWidth={1.75} />
         </div>
         <div className="flex items-center gap-3">
           <div>

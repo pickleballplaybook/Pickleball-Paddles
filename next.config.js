@@ -19,6 +19,20 @@ const nextConfig = {
         destination: '/paddles/luzz-glider-hybrid',
         permanent: true,
       },
+      // Newsletter route rename — /playbook → /pickleball-101.
+      // Google Search Console flagged /playbook/* as 404 after the
+      // folder was swapped. 301 transfers ranking signal + clears the
+      // "Not found" report.
+      {
+        source: '/playbook',
+        destination: '/pickleball-101',
+        permanent: true,
+      },
+      {
+        source: '/playbook/:slug*',
+        destination: '/pickleball-101/:slug*',
+        permanent: true,
+      },
     ];
   },
 };

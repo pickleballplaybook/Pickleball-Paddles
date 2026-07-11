@@ -66,8 +66,8 @@ export default function InlineNewsletterCTA({
     <div
       className="relative rounded-2xl overflow-hidden my-10"
       style={{
-        background: "linear-gradient(135deg, rgba(20,184,166,0.10) 0%, rgba(8,18,32,0.65) 50%, rgba(212,163,90,0.08) 100%)",
-        border: "1px solid rgba(45,212,191,0.25)",
+        background: "linear-gradient(135deg, rgba(10, 100, 188,0.30) 0%, rgba(8,18,32,0.65) 50%, rgba(212,163,90,0.08) 100%)",
+        border: "1px solid rgba(10, 100, 188,0.30)",
         boxShadow: "0 12px 36px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.06)",
       }}
     >
@@ -75,7 +75,7 @@ export default function InlineNewsletterCTA({
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 opacity-60"
-        style={{ background: "radial-gradient(ellipse 60% 80% at 0% 50%, rgba(20,184,166,0.10), transparent 70%)" }}
+        style={{ background: "radial-gradient(ellipse 60% 80% at 0% 50%, rgba(10, 100, 188,0.30), transparent 70%)" }}
       />
 
       <div className={`relative z-10 ${isCompact ? "p-5 sm:p-6" : "p-6 sm:p-8"}`}>
@@ -84,11 +84,11 @@ export default function InlineNewsletterCTA({
           <div className="flex items-start gap-3 flex-1 min-w-0">
             <div
               className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{ background: "rgba(20,184,166,0.15)", border: "1px solid rgba(20,184,166,0.30)" }}
+              style={{ background: "rgba(10, 100, 188,0.30)", border: "1px solid rgba(10, 100, 188,0.30)" }}
             >
               {isCompact
-                ? <Mail className="w-4 h-4" style={{ color: "#2dd4bf" }} strokeWidth={2} />
-                : <Tag className="w-5 h-5" style={{ color: "#2dd4bf" }} strokeWidth={2} />
+                ? <Mail className="w-4 h-4" style={{ color: "#60a5fa" }} strokeWidth={2} />
+                : <Tag className="w-5 h-5" style={{ color: "#60a5fa" }} strokeWidth={2} />
               }
             </div>
             <div className="min-w-0">
@@ -134,8 +134,8 @@ export default function InlineNewsletterCTA({
                 disabled={state === "loading"}
                 className="h-11 inline-flex items-center justify-center gap-1.5 font-extrabold text-sm px-5 rounded-xl text-white whitespace-nowrap transition-all hover:scale-[1.02] disabled:opacity-70"
                 style={{
-                  background: "linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)",
-                  boxShadow: "0 0 24px rgba(20,184,166,0.32)",
+                  background: "#0a64bc",
+                  boxShadow: "0 0 24px rgba(10, 100, 188,0.32)",
                   letterSpacing: "0.04em",
                 }}
               >

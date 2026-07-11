@@ -85,7 +85,7 @@ export default function ExternalReviewBadge({ paddleSlug }: Props) {
         target="_blank"
         rel="noopener noreferrer"
         className="text-xs font-medium transition-colors hover:opacity-80"
-        style={{ color: "#2dd4bf" }}
+        style={{ color: "#60a5fa" }}
       >
         via {review.sourceName}
       </a>

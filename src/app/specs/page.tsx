@@ -216,7 +216,7 @@ export default function SpecsPage() {
 
         {/* Header */}
         <div className="mb-10 text-center">
-          <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#14b8a6" }}>
+          <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#60a5fa" }}>
             Catalog
           </p>
           <h1
@@ -243,7 +243,7 @@ export default function SpecsPage() {
               role="radiogroup"
               aria-label="Export format"
               className="inline-flex rounded-lg p-1"
-              style={{ background: "rgba(15,23,42,0.85)", border: "1px solid rgba(45,212,191,0.35)" }}
+              style={{ background: "rgba(15,23,42,0.85)", border: "1px solid rgba(10, 100, 188,0.35)" }}
             >
               {([
                 { key: "ig" as const, label: "IG · 1080×1350" },
@@ -258,8 +258,8 @@ export default function SpecsPage() {
                     onClick={() => setFormat(opt.key)}
                     className="text-sm font-bold px-3 py-1.5 rounded-md transition-colors"
                     style={{
-                      background: active ? "rgba(45,212,191,0.18)" : "transparent",
-                      color: active ? "#5eead4" : "rgba(255,255,255,0.55)",
+                      background: active ? "rgba(10, 100, 188,0.30)" : "transparent",
+                      color: active ? "#0a64bc" : "rgba(255,255,255,0.55)",
                     }}
                   >
                     {opt.label}
@@ -280,8 +280,8 @@ export default function SpecsPage() {
               className="text-sm font-bold px-3 py-2 rounded-lg cursor-pointer focus:outline-none focus:ring-2"
               style={{
                 background: "rgba(15,23,42,0.85)",
-                border: "1px solid rgba(45,212,191,0.35)",
-                color: "#5eead4",
+                border: "1px solid rgba(10, 100, 188,0.35)",
+                color: "#60a5fa",
               }}
             >
               {(Object.keys(SORT_LABELS) as SortKey[]).map((k) => (
@@ -358,7 +358,7 @@ export default function SpecsPage() {
                     disabled={exporting !== null}
                     aria-label={`Download ${paddle.brand} ${paddle.name} card as PNG`}
                     className="inline-flex items-center gap-1.5 font-bold text-xs px-3 py-1.5 rounded-lg flex-shrink-0 transition-all hover:scale-[1.03] disabled:opacity-50 disabled:hover:scale-100"
-                    style={{ background: "rgba(20,184,166,0.18)", border: "1px solid rgba(45,212,191,0.40)", color: "#5eead4" }}
+                    style={{ background: "rgba(10, 100, 188,0.30)", border: "1px solid rgba(10, 100, 188,0.40)", color: "#60a5fa" }}
                   >
                     {exporting === i
                       ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Saving…</>
@@ -422,7 +422,7 @@ export default function SpecsPage() {
               <button
                 type="submit"
                 className="text-xs font-bold px-3 py-1.5 rounded-md"
-                style={{ background: "rgba(20,184,166,0.18)", border: "1px solid rgba(45,212,191,0.35)", color: "#5eead4" }}
+                style={{ background: "rgba(10, 100, 188,0.30)", border: "1px solid rgba(10, 100, 188,0.35)", color: "#60a5fa" }}
               >
                 Go
               </button>

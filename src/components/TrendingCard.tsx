@@ -136,7 +136,7 @@ function StatBar({ label, value, displayValue, min, max, fill, glow, zones, thre
           {descriptor && (
             <span
               className="text-[11px] font-bold uppercase tracking-wider whitespace-nowrap"
-              style={{ color: "rgba(45,212,191,0.85)", letterSpacing: "0.12em" }}
+              style={{ color: "rgba(10, 100, 188,0.85)", letterSpacing: "0.12em" }}
             >
               {descriptor}
             </span>
@@ -195,7 +195,7 @@ export default function TrendingCard({ paddle, rank, code, totalCards, bareBackg
     "all-court": { dot: "#facc15", text: "rgba(250,204,21,0.95)" },
     spin:        { dot: "#fb923c", text: "rgba(251,146,60,0.95)" },
   } as const;
-  const pc = playColors[paddle.playStyle as keyof typeof playColors] ?? { dot: "#2dd4bf", text: "rgba(45,212,191,0.95)" };
+  const pc = playColors[paddle.playStyle as keyof typeof playColors] ?? { dot: "#0a64bc", text: "rgba(10, 100, 188,0.95)" };
 
   // Podium colors — gold for #1, silver for #2, bronze for #3, on-brand
   // teal for everything else. Each variant tunes background, border,
@@ -223,9 +223,9 @@ export default function TrendingCard({ paddle, rank, code, totalCards, bareBackg
       num:    "#1a0a05",
     },
     teal: {
-      bg:     "linear-gradient(135deg, rgba(20,184,166,0.55) 0%, rgba(13,148,136,0.30) 100%)",
-      border: "rgba(45,212,191,0.55)",
-      shadow: "0 6px 20px rgba(20,184,166,0.28), inset 0 1px 0 rgba(255,255,255,0.18)",
+      bg:     "linear-gradient(135deg, rgba(10, 100, 188,0.55) 0%, rgba(17, 41, 95,0.30) 100%)",
+      border: "rgba(10, 100, 188,0.55)",
+      shadow: "0 6px 20px rgba(10, 100, 188,0.30), inset 0 1px 0 rgba(255,255,255,0.18)",
       num:    "#fff",
     },
   };
@@ -239,8 +239,8 @@ export default function TrendingCard({ paddle, rank, code, totalCards, bareBackg
   // the meaning (Light / Average / Heavy etc.) so the bar color doesn't
   // need to differentiate. Reads as a cohesive premium dashboard instead
   // of a multi-color stack.
-  const TEAL_FILL = "linear-gradient(90deg, #0d9488 0%, #14b8a6 50%, #5eead4 100%)";
-  const TEAL_GLOW = "0 0 8px rgba(45,212,191,0.40)";
+  const TEAL_FILL = "linear-gradient(90deg, #11295f 0%, #0a64bc 50%, #0a64bc 100%)";
+  const TEAL_GLOW = "0 0 8px rgba(10, 100, 188,0.40)";
   const BARS = {
     weight:  { fill: TEAL_FILL, glow: TEAL_GLOW },
     swing:   { fill: TEAL_FILL, glow: TEAL_GLOW },
@@ -248,10 +248,10 @@ export default function TrendingCard({ paddle, rank, code, totalCards, bareBackg
     balance: { fill: TEAL_FILL, glow: TEAL_GLOW },
   };
   // Balance line + 'BAL PT' label use the site's yellow-green discount
-  // accent (#defa32). It's the one place we let a non-teal color through
+  // accent (#0a64bc). It's the one place we let a non-teal color through
   // on the card so the line stays visible against the now all-teal stat
   // bars — the previous teal-on-teal treatment was getting lost.
-  const BAL_ACCENT = "rgba(222,250,50,0.75)";
+  const BAL_ACCENT = "rgba(10, 100, 188,0.75)";
 
   // Vertical position (% from bottom of paddle image) where the balance
   // line should sit on the paddle. Clamped to leave a little headroom
@@ -268,7 +268,7 @@ export default function TrendingCard({ paddle, rank, code, totalCards, bareBackg
         aspectRatio: FORMAT_SPECS[format].aspect,
         background: [
           // Soft teal aurora top
-          "radial-gradient(ellipse 90% 55% at 50% -10%, rgba(20,184,166,0.16) 0%, transparent 65%)",
+          "radial-gradient(ellipse 90% 55% at 50% -10%, rgba(10, 100, 188,0.30) 0%, transparent 65%)",
           // Subtle warm vignette bottom-right
           "radial-gradient(ellipse 70% 50% at 95% 95%, rgba(212,163,90,0.05) 0%, transparent 60%)",
           // Base gradient
@@ -607,16 +607,16 @@ export default function TrendingCard({ paddle, rank, code, totalCards, bareBackg
               className="rounded-xl px-4 py-3 text-center"
               style={{
                 background: "linear-gradient(180deg, rgba(6,14,26,0.85) 0%, rgba(10,22,40,0.85) 100%)",
-                border: "1.5px solid rgba(45,212,191,0.65)",
-                boxShadow: "0 0 22px rgba(20,184,166,0.22), inset 0 1px 0 rgba(255,255,255,0.05)",
+                border: "1.5px solid rgba(10, 100, 188,0.65)",
+                boxShadow: "0 0 22px rgba(10, 100, 188,0.30), inset 0 1px 0 rgba(255,255,255,0.05)",
               }}
             >
               <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] mb-1.5" style={{ color: "rgba(255,255,255,0.55)" }}>
                 Discount Code
               </p>
               <div className="flex items-baseline justify-center gap-2">
-                <span className="text-xl font-extrabold font-mono tracking-wider" style={{ color: "#5eead4" }}>{code}</span>
-                <span className="text-[15px] font-extrabold" style={{ color: "#defa32" }}>
+                <span className="text-xl font-extrabold font-mono tracking-wider" style={{ color: "#60a5fa" }}>{code}</span>
+                <span className="text-[15px] font-extrabold" style={{ color: "#60a5fa" }}>
                   · {hasRealDiscount ? `${paddle.amountOff} off` : "Free gift card"}
                 </span>
               </div>
@@ -666,7 +666,7 @@ export default function TrendingCard({ paddle, rank, code, totalCards, bareBackg
                 width: i === rank - 1 ? 12 : 4,
                 height: 3,
                 background: i === rank - 1
-                  ? (isTopRank ? "linear-gradient(90deg, #f4d28a, #d4a35a)" : "linear-gradient(90deg, #2dd4bf, #14b8a6)")
+                  ? (isTopRank ? "linear-gradient(90deg, #f4d28a, #d4a35a)" : "linear-gradient(90deg, #0a64bc, #0a64bc)")
                   : "rgba(255,255,255,0.18)",
               }}
             />

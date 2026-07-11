@@ -100,7 +100,7 @@ export default function PaddleBudgetGrid({ paddles, maxPrice }: Props) {
         </select>
 
         {hasFilters && (
-          <button onClick={reset} className="inline-flex items-center gap-1 text-sm font-semibold px-3 py-2 rounded-xl transition-colors" style={{ color: "#2dd4bf" }}>
+          <button onClick={reset} className="inline-flex items-center gap-1 text-sm font-semibold px-3 py-2 rounded-xl transition-colors" style={{ color: "#60a5fa" }}>
             <X className="w-3.5 h-3.5" /> Clear
           </button>
         )}
@@ -113,7 +113,7 @@ export default function PaddleBudgetGrid({ paddles, maxPrice }: Props) {
       {filtered.length === 0 ? (
         <div className="text-center py-16 rounded-2xl" style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.08)" }}>
           <p className="text-base mb-4" style={{ color: "var(--text-muted)" }}>No paddles match those filters.</p>
-          <button onClick={reset} className="inline-flex items-center gap-1.5 font-bold text-sm px-5 py-2.5 rounded-xl text-white" style={{ background: "#14b8a6" }}>
+          <button onClick={reset} className="inline-flex items-center gap-1.5 font-bold text-sm px-5 py-2.5 rounded-xl text-white" style={{ background: "#0a64bc" }}>
             Clear filters
           </button>
         </div>

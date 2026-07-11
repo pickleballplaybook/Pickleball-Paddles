@@ -27,7 +27,7 @@ export default function WhyTrust() {
 
           {/* Left — heading */}
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "#14b8a6" }}>
+            <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "#60a5fa" }}>
               Our Promise
             </p>
             <h2
@@ -49,7 +49,7 @@ export default function WhyTrust() {
                 <div className="flex-shrink-0 mt-0.5">
                   <CheckCircle2
                     className="w-6 h-6"
-                    style={{ color: "#14b8a6" }}
+                    style={{ color: "#60a5fa" }}
                     strokeWidth={2}
                   />
                 </div>

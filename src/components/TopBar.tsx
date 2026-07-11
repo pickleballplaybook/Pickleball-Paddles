@@ -28,7 +28,7 @@ export default function TopBar() {
         className="relative overflow-hidden"
         style={{
           background: "linear-gradient(90deg, #060d18 0%, #0d2240 50%, #060d18 100%)",
-          borderBottom: "1px solid rgba(20,184,166,0.2)",
+          borderBottom: "1px solid rgba(10, 100, 188,0.30)",
         }}
       >
         {/* Sweeping teal shimmer */}
@@ -36,7 +36,7 @@ export default function TopBar() {
           className="banner-shimmer absolute inset-y-0 pointer-events-none"
           style={{
             width: "50%",
-            background: "linear-gradient(90deg, transparent, rgba(20,184,166,0.07), transparent)",
+            background: "linear-gradient(90deg, transparent, rgba(10, 100, 188,0.25), transparent)",
           }}
         />
 
@@ -58,7 +58,7 @@ export default function TopBar() {
             style={{ margin: "5px 0 0", lineHeight: 1.1, fontWeight: 400, color: "rgba(255,255,255,0.5)" }}
           >
             Tap
-            <ThumbsUp className="w-3 h-3 flex-shrink-0" fill="none" stroke="#2dd4bf" strokeWidth={2} />
+            <ThumbsUp className="w-3 h-3 flex-shrink-0" fill="none" stroke="#0a64bc" strokeWidth={2} />
             or
             <ThumbsDown className="w-3 h-3 flex-shrink-0" fill="none" stroke="#fb7185" strokeWidth={2} />
             to shape the rankings
@@ -69,7 +69,7 @@ export default function TopBar() {
             <Link
               href="/review-paddles"
               className="inline-flex items-center gap-1 md:text-[13px] text-[12px]"
-              style={{ fontWeight: 600, color: "#2dd4bf", letterSpacing: "0.01em" }}
+              style={{ fontWeight: 600, color: "#60a5fa", letterSpacing: "0.01em" }}
             >
               Start Voting
               <span aria-hidden style={{ fontSize: "0.85em" }}>→</span>

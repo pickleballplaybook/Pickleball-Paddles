@@ -36,11 +36,11 @@ export default function WeeklyRankingsView({ rankings, heading, subheading }: Pr
           <Link
             href="/best-pickleball-paddles"
             className="inline-flex items-center gap-1 text-sm font-semibold mb-4 transition-colors hover:text-brand-400"
-            style={{ color: "#2dd4bf" }}
+            style={{ color: "#60a5fa" }}
           >
             &larr; Best Paddles
           </Link>
-          <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#14b8a6" }}>
+          <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#60a5fa" }}>
             Weekly Rankings
           </p>
           <h1
@@ -130,7 +130,7 @@ export default function WeeklyRankingsView({ rankings, heading, subheading }: Pr
                     <div className="flex flex-col items-center gap-1">
                       <span
                         className="w-10 h-10 rounded-xl flex items-center justify-center text-lg font-extrabold"
-                        style={{ background: r.rank === 1 ? "rgba(20,184,166,0.2)" : "rgba(255,255,255,0.06)", color: r.rank === 1 ? "#2dd4bf" : "var(--text-muted)" }}
+                        style={{ background: r.rank === 1 ? "rgba(10, 100, 188,0.30)" : "rgba(255,255,255,0.06)", color: r.rank === 1 ? "#0a64bc" : "var(--text-muted)" }}
                       >
                         {r.rank}
                       </span>
@@ -151,7 +151,7 @@ export default function WeeklyRankingsView({ rankings, heading, subheading }: Pr
                       )}
                     </Link>
                     <div className="min-w-0">
-                      <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#14b8a6" }}>
+                      <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#60a5fa" }}>
                         {r.paddle.brand}
                       </p>
                       <Link href={`/paddles/${r.paddle.slug}`}>
@@ -188,7 +188,7 @@ export default function WeeklyRankingsView({ rankings, heading, subheading }: Pr
 
                     {/* Engagement — readable breakdown (composite stays in the DB, not shown) */}
                     <div className="flex items-center flex-wrap gap-1.5 text-[11px]" style={{ color: "var(--text-muted)" }}>
-                      <Bookmark className="w-3 h-3 flex-shrink-0" style={{ color: "#2dd4bf" }} fill="currentColor" />
+                      <Bookmark className="w-3 h-3 flex-shrink-0" style={{ color: "#60a5fa" }} fill="currentColor" />
                       <span>
                         {plural(r.hearts, "save")} · {plural(r.ratings, "rating")} · {plural(r.views, "view")} this week
                       </span>
@@ -207,7 +207,7 @@ export default function WeeklyRankingsView({ rankings, heading, subheading }: Pr
                         </span>
                       )}
                       {!noDiscount && (
-                        <span className="text-[10px] font-bold font-mono px-1.5 py-0.5 rounded-md" style={{ background: "rgba(20,184,166,0.12)", color: "#2dd4bf" }}>
+                        <span className="text-[10px] font-bold font-mono px-1.5 py-0.5 rounded-md" style={{ background: "rgba(10, 100, 188,0.30)", color: "#60a5fa" }}>
                           {code}
                         </span>
                       )}
@@ -217,7 +217,7 @@ export default function WeeklyRankingsView({ rankings, heading, subheading }: Pr
                           target="_blank"
                           rel="noopener noreferrer sponsored"
                           className="inline-flex items-center gap-1 text-[11px] font-bold px-3 py-1.5 rounded-lg text-white transition-all hover:scale-105"
-                          style={{ background: "#14b8a6" }}
+                          style={{ background: "#0a64bc" }}
                         >
                           Buy <ExternalLink className="w-3 h-3" />
                         </a>
@@ -239,7 +239,7 @@ export default function WeeklyRankingsView({ rankings, heading, subheading }: Pr
             <Link
               href="/paddles"
               className="inline-flex items-center gap-2 font-bold text-sm px-6 py-3 rounded-xl text-white transition-all hover:scale-[1.02]"
-              style={{ background: "#14b8a6" }}
+              style={{ background: "#0a64bc" }}
             >
               Browse All Paddles <ArrowRight className="w-4 h-4" />
             </Link>

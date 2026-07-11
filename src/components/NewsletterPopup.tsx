@@ -220,11 +220,11 @@ function ModalCard({
           className="flex items-center justify-center gap-2 w-full rounded-xl font-bold text-[15px] text-white transition-all duration-200 active:scale-[0.98]"
           style={{
             height: 50,
-            background: "linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)",
-            boxShadow: "0 4px 16px rgba(20,184,166,0.3)",
+            background: "#0a64bc",
+            boxShadow: "0 4px 16px rgba(10, 100, 188,0.3)",
           }}
-          onMouseEnter={e => (e.currentTarget.style.boxShadow = "0 6px 22px rgba(20,184,166,0.42)")}
-          onMouseLeave={e => (e.currentTarget.style.boxShadow = "0 4px 16px rgba(20,184,166,0.3)")}
+          onMouseEnter={e => (e.currentTarget.style.boxShadow = "0 6px 22px rgba(10, 100, 188,0.42)")}
+          onMouseLeave={e => (e.currentTarget.style.boxShadow = "0 4px 16px rgba(10, 100, 188,0.3)")}
         >
           Join Free
           <ArrowRight className="w-4 h-4" strokeWidth={2.5} />

@@ -10,7 +10,7 @@ export default function SubstackCard({ variant = "inline" }: SubstackCardProps) 
     return (
       <div
         className="relative overflow-hidden rounded-2xl px-6 py-6 md:px-10 md:py-7"
-        style={{ background: "linear-gradient(135deg, #0d9488 0%, #14b8a6 55%, #2dd4bf 100%)" }}
+        style={{ background: "#0a64bc" }}
       >
         <div
           aria-hidden

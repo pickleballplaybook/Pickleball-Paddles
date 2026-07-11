@@ -51,12 +51,12 @@ export default function PaddleOfTheWeek({ paddle }: Props) {
         <div className="flex items-center gap-3 mb-10">
           <div
             className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ background: "rgba(20,184,166,0.15)", border: "1px solid rgba(20,184,166,0.25)" }}
+            style={{ background: "rgba(10, 100, 188,0.30)", border: "1px solid rgba(10, 100, 188,0.30)" }}
           >
-            <Award className="w-4 h-4" style={{ color: "#14b8a6" }} strokeWidth={2} />
+            <Award className="w-4 h-4" style={{ color: "#60a5fa" }} strokeWidth={2} />
           </div>
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "#14b8a6" }}>
+            <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "#60a5fa" }}>
               Editor&apos;s Pick
             </p>
             <h2
@@ -84,7 +84,7 @@ export default function PaddleOfTheWeek({ paddle }: Props) {
               aria-hidden="true"
               className="absolute inset-0"
               style={{
-                background: "radial-gradient(circle at 50% 45%, rgba(20,184,166,0.1) 0%, transparent 65%)",
+                background: "radial-gradient(circle at 50% 45%, rgba(10, 100, 188,0.30) 0%, transparent 65%)",
               }}
             />
 
@@ -106,13 +106,13 @@ export default function PaddleOfTheWeek({ paddle }: Props) {
                 <rect x="78" y="200" width="44" height="72" rx="22" fill="url(#potw-handle)" />
                 {[55,90,125].map(y =>
                   [55,100,145].map(x => (
-                    <circle key={`${x}-${y}`} cx={x} cy={y} r="7" fill="#0f766e" opacity="0.45" />
+                    <circle key={`${x}-${y}`} cx={x} cy={y} r="7" fill="#11295f" opacity="0.45" />
                   ))
                 )}
                 <ellipse cx="72" cy="55" rx="28" ry="40" fill="white" opacity="0.07" />
                 <defs>
                   <linearGradient id="potw-head" x1="0" y1="0" x2="200" y2="200" gradientUnits="userSpaceOnUse">
-                    <stop offset="0%" stopColor="#1d4ed8" />
+                    <stop offset="0%" stopColor="#11295f" />
                     <stop offset="100%" stopColor="#1e3a8a" />
                   </linearGradient>
                   <linearGradient id="potw-handle" x1="0" y1="0" x2="0" y2="72" gradientUnits="userSpaceOnUse">
@@ -125,7 +125,7 @@ export default function PaddleOfTheWeek({ paddle }: Props) {
 
             {/* Name overlay at bottom */}
             <div className="relative z-10 mt-6 text-center px-4">
-              <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: "#2dd4bf" }}>
+              <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: "#60a5fa" }}>
                 {paddle.brand}
               </p>
               <p className="text-lg font-extrabold leading-tight" style={{ color: "var(--flip-text-head)" }}>
@@ -197,20 +197,20 @@ export default function PaddleOfTheWeek({ paddle }: Props) {
             <div
               className="rounded-2xl p-5"
               style={{
-                background: "rgba(20,184,166,0.07)",
-                border: "1px solid rgba(20,184,166,0.2)",
+                background: "rgba(10, 100, 188,0.25)",
+                border: "1px solid rgba(10, 100, 188,0.30)",
               }}
             >
               {giftCard ? (
                 <div className="flex items-start gap-3">
-                  <Gift className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: "#14b8a6" }} strokeWidth={1.75} />
+                  <Gift className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: "#60a5fa" }} strokeWidth={1.75} />
                   <div>
                     <p className="font-bold text-sm mb-0.5" style={{ color: "var(--flip-text-head)" }}>
                       Free e-Gift Card with Purchase
                     </p>
                     <p className="text-xs" style={{ color: "var(--flip-text-body)" }}>
                       Use code{" "}
-                      <span className="font-mono font-bold" style={{ color: "#2dd4bf" }}>{code}</span>
+                      <span className="font-mono font-bold" style={{ color: "#60a5fa" }}>{code}</span>
                       {" "}at checkout.
                     </p>
                   </div>
@@ -218,7 +218,7 @@ export default function PaddleOfTheWeek({ paddle }: Props) {
               ) : (
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
-                    <Tag className="w-4 h-4 flex-shrink-0" style={{ color: "#14b8a6" }} strokeWidth={1.75} />
+                    <Tag className="w-4 h-4 flex-shrink-0" style={{ color: "#60a5fa" }} strokeWidth={1.75} />
                     <div>
                       <p
                         className="text-[10px] font-semibold uppercase tracking-widest mb-0.5"
@@ -226,13 +226,13 @@ export default function PaddleOfTheWeek({ paddle }: Props) {
                       >
                         Your Code
                       </p>
-                      <p className="font-mono font-extrabold tracking-widest" style={{ color: "#2dd4bf" }}>
+                      <p className="font-mono font-extrabold tracking-widest" style={{ color: "#60a5fa" }}>
                         {code}
                       </p>
                     </div>
                   </div>
                   {paddle.amountOff && paddle.amountOff !== "$0" && (
-                    <span className="text-lg font-extrabold" style={{ color: "#2dd4bf" }}>
+                    <span className="text-lg font-extrabold" style={{ color: "#60a5fa" }}>
                       Save {paddle.amountOff}
                     </span>
                   )}
@@ -248,7 +248,7 @@ export default function PaddleOfTheWeek({ paddle }: Props) {
                   target="_blank"
                   rel="noopener noreferrer sponsored"
                   className="flex-1 flex items-center justify-center gap-2 font-bold text-sm py-3.5 rounded-2xl transition-all duration-200 active:scale-[0.98]"
-                  style={{ background: "var(--btn-buy-bg)", color: "var(--btn-buy-text)" }}
+                  style={{ background: "var(--btn-buy-bg)", color: "var(--btn-buy-text)", border: "var(--btn-buy-border)", boxShadow: "var(--btn-buy-shadow)" }}
                 >
                   {buyAtLabel(paddle.brand)}
                   <ExternalLink className="w-4 h-4" strokeWidth={2.5} />

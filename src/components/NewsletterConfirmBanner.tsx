@@ -45,15 +45,15 @@ export default function NewsletterConfirmBanner({ email, onDismiss }: Props) {
     <div
       className="rounded-2xl px-5 py-4 mb-6 flex items-start gap-3 relative"
       style={{
-        background: "linear-gradient(135deg, rgba(60,172,174,0.10) 0%, rgba(60,172,174,0.04) 100%)",
-        border: "1px solid rgba(60,172,174,0.35)",
+        background: "linear-gradient(135deg, rgba(10, 100, 188,0.30) 0%, rgba(10, 100, 188,0.19) 100%)",
+        border: "1px solid rgba(10, 100, 188,0.35)",
       }}
     >
       <div
         className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center"
-        style={{ background: "rgba(60,172,174,0.20)" }}
+        style={{ background: "rgba(10, 100, 188,0.30)" }}
       >
-        <Mail className="w-5 h-5" style={{ color: "#14b8a6" }} />
+        <Mail className="w-5 h-5" style={{ color: "#60a5fa" }} />
       </div>
       <div className="flex-1 min-w-0 pr-6">
         <p className="text-sm font-bold mb-0.5" style={{ color: "var(--text-primary)" }}>
@@ -68,7 +68,7 @@ export default function NewsletterConfirmBanner({ email, onDismiss }: Props) {
           onClick={handleSubscribe}
           disabled={busy}
           className="inline-flex items-center gap-1.5 text-xs font-bold px-3.5 py-2 rounded-lg transition-all active:scale-[0.98] disabled:opacity-50"
-          style={{ background: "#14b8a6", color: "#0a1628" }}
+          style={{ background: "#0a64bc", color: "#0a1628" }}
         >
           Confirm subscription <ExternalLink className="w-3 h-3" />
         </button>

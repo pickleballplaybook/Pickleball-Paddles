@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Download, Users, Zap, UserCheck, UserX, AlertTriangle, Heart, RefreshCw, Mail } from "lucide-react";
+import { Download, UserCheck, UserX, AlertTriangle, Mail } from "lucide-react";
 import { AdminNav } from "../_components/AdminNav";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { getFirebaseFirestore } from "@/lib/firebase-admin";
@@ -67,6 +67,12 @@ type CategorizedRow = {
   // When the trial ended (or will end) in Stripe. Used by the time-window
   // filter so "became active" is bucketed by trial-end date, not sub.created.
   trial_ended_at: string | null;
+  // When the Stripe subscription was created. Needed as the "became paid"
+  // fallback for anti-abuse deny_repeat converts whose trial_end is null:
+  // they were charged the moment the sub was created, so sub.created IS
+  // their trial-to-paid moment. Signup date (display_date) is wrong here
+  // because email capture can happen days earlier via marketing.
+  stripe_sub_created_at: string | null;
   canceled_at: string | null;
   plan: string | null;
   // Source of the row — useful for the diagnostic banner. "stripe" means
@@ -139,6 +145,7 @@ function buildUnifiedRows(
         status: stripeToStatus(stripe.status),
         display_date: signupDate,
         trial_ended_at: stripe.trialEndedAt,
+        stripe_sub_created_at: stripe.subscriptionCreatedAt,
         canceled_at: stripe.canceledAt,
         plan: stripe.plan,
         source: "stripe",
@@ -149,6 +156,7 @@ function buildUnifiedRows(
         status: "captured",
         display_date: supa.created_at,
         trial_ended_at: null,
+        stripe_sub_created_at: null,
         canceled_at: null,
         plan: null,
         source: "supabase",
@@ -171,14 +179,19 @@ function relevantDateFor(row: CategorizedRow): string | null {
     case "trial":
       return row.display_date;
     case "active":
-      return row.trial_ended_at ?? row.display_date;
+      // Fallback order:
+      //   trial_ended_at → normal trial-to-paid path
+      //   stripe_sub_created_at → anti-abuse deny_repeat converts (no trial;
+      //     charged immediately on sub creation, so sub.created = "became paid")
+      //   display_date → last resort (should never hit for stripe rows)
+      return row.trial_ended_at ?? row.stripe_sub_created_at ?? row.display_date;
     case "canceled":
     case "churned":
       return row.canceled_at ?? row.display_date;
   }
 }
 
-type ViewKey = "funnel" | "live" | "winbacks" | "landing";
+type ViewKey = "funnel" | "winbacks" | "landing";
 
 // ============================================================================
 // Landing-page attribution (currently only /pbdrills)
@@ -396,14 +409,25 @@ async function loadLandingPageData(
 // Win-back analytics
 // ============================================================================
 
+type WinbackKind = "abandoned" | "canceled" | "churned";
+
 type WinbackEntry = {
   email: string;
-  canceledAt: string;       // ISO
+  kind: WinbackKind;
+  // "left" event date, semantics depend on kind:
+  //   abandoned → email capture date (never paid before)
+  //   canceled  → canceled-during-trial date
+  //   churned   → canceled-after-paying date
+  leftAt: string;           // ISO
   wonBackAt: string;        // ISO
   daysToWinBack: number;
-  attributedStep: number | null;     // last drip step before resubscribe
+  // Attribution against the matching Firestore email-log:
+  //   abandoned → abandoned_email_log
+  //   canceled  → trial_cancel_email_log
+  //   churned   → churn_email_log
+  attributedStep: number | null;
   attributedTag: string | null;
-  attributedSentAt: string | null;   // ISO
+  attributedSentAt: string | null;
 };
 
 type ChurnStepStat = {
@@ -422,6 +446,9 @@ type ChurnWinbackData = {
   totalWinbacks: number;
   organicWinbacks: number;     // came back without any drip email attribution
   totalRecipients: number;     // unique emails who got at least one churn email
+  // Per-kind headline counts so the tab reads at a glance "you got 3 back
+  // from abandoned, 1 from canceled, 5 from churned."
+  countByKind: Record<WinbackKind, number>;
 };
 
 const CHURN_STEP_LABELS: Record<number, string> = {
@@ -498,12 +525,19 @@ async function loadChurnWinbackData(
     byEmail.set(e, list);
   }
 
-  // 2. Find winback pattern per email: latest cancel followed by a NEWER
-  //    active/trialing sub created after that cancel. The "wonBackAt" is
-  //    the new sub's created date.
+  // 2. Find winback patterns per email. Three flavors:
+  //   - churned  → last event was a paid cancel (canceled_at > trial_end
+  //     OR trial_end was null and they'd paid at least one cycle)
+  //   - canceled → last event was a trial cancel (canceled_at ≤ trial_end)
+  //   - abandoned → no prior mirror row at all; only appears here later
+  //     via the abandoned-signup path (detected separately below)
+  //
+  // For churned/canceled, walk the mirror rows chronologically and pair
+  // each "left" event with the next new-sub created after it.
   type Winback = {
     email: string;
-    canceledAt: Date;
+    kind: WinbackKind;
+    leftAt: Date;
     wonBackAt: Date;
   };
   const winbacks: Winback[] = [];
@@ -513,67 +547,208 @@ async function loadChurnWinbackData(
       new Date(a.subscription_created_at).getTime() -
       new Date(b.subscription_created_at).getTime(),
     );
-    // Walk and track most recent cancel; if we hit an active/trialing
-    // created after that cancel, it's a winback.
-    let lastCancel: Date | null = null;
+    let lastLeft: { at: Date; kind: WinbackKind } | null = null;
     for (const row of list) {
       if (row.status === "canceled" && row.canceled_at) {
         const cd = new Date(row.canceled_at);
-        if (!isNaN(cd.getTime())) {
-          if (!lastCancel || cd > lastCancel) lastCancel = cd;
-        }
+        if (isNaN(cd.getTime())) continue;
+        // Trial cancel vs paid churn: canceled_at ≤ trial_end = quit
+        // during trial (never paid). Otherwise paid then churned.
+        const trialEnd = row.trial_end ? new Date(row.trial_end) : null;
+        const kind: WinbackKind =
+          trialEnd && !isNaN(trialEnd.getTime()) && cd <= trialEnd
+            ? "canceled"
+            : "churned";
+        if (!lastLeft || cd > lastLeft.at) lastLeft = { at: cd, kind };
       }
       if (row.status === "active" || row.status === "trialing") {
         const created = new Date(row.subscription_created_at);
-        if (lastCancel && !isNaN(created.getTime()) && created > lastCancel) {
-          winbacks.push({ email, canceledAt: lastCancel, wonBackAt: created });
-          // Reset lastCancel so we don't count the same winback twice if
-          // they churn → comeback → churn → comeback within the same list.
-          lastCancel = null;
+        if (lastLeft && !isNaN(created.getTime()) && created > lastLeft.at) {
+          winbacks.push({
+            email,
+            kind: lastLeft.kind,
+            leftAt: lastLeft.at,
+            wonBackAt: created,
+          });
+          // Reset so we don't double-count churn→back→churn→back cycles.
+          lastLeft = null;
         }
       }
     }
   });
 
+  // 3. Abandoned winbacks: users who captured an email (Supabase
+  //    trial_signups or Firestore abandoned_signups) but never had a
+  //    Stripe sub — then later showed up in the mirror as active/trialing.
+  //    Attribution via abandoned_email_log below. Only counts when the
+  //    capture is >6h before their first mirror sub (otherwise it's just
+  //    a normal same-session signup, not an abandonment recovery).
+  const capturedByEmail = new Map<string, Date>();
+  try {
+    // Supabase trial_signups first — bigger source of captures.
+    let offset = 0;
+    while (offset < 100_000) {
+      const { data, error } = await supabase
+        .from("trial_signups")
+        .select("email, created_at")
+        .order("created_at", { ascending: true })
+        .range(offset, offset + 999);
+      if (error || !data || data.length === 0) break;
+      for (const r of data as Array<{ email: string | null; created_at: string }>) {
+        const key = (r.email ?? "").toLowerCase().trim();
+        if (!key) continue;
+        const dt = new Date(r.created_at);
+        if (isNaN(dt.getTime())) continue;
+        const existing = capturedByEmail.get(key);
+        if (!existing || dt < existing) capturedByEmail.set(key, dt);
+      }
+      if (data.length < 1000) break;
+      offset += 1000;
+    }
+    // Merge Firestore abandoned_signups (paywall-abandoners, not in Supabase).
+    const abandonedSnap = await db.collection("abandoned_signups").get();
+    abandonedSnap.docs.forEach((d) => {
+      const data = d.data() as { email?: string; capturedAt?: { toDate?: () => Date } | Date };
+      const key = (data.email ?? d.id).toLowerCase().trim();
+      if (!key) return;
+      const raw = data.capturedAt;
+      const dt =
+        raw && typeof (raw as { toDate?: () => Date }).toDate === "function"
+          ? (raw as { toDate: () => Date }).toDate()
+          : (raw as Date | undefined);
+      if (!dt || isNaN(dt.getTime())) return;
+      const existing = capturedByEmail.get(key);
+      if (!existing || dt < existing) capturedByEmail.set(key, dt);
+    });
+  } catch {
+    // Non-fatal — abandoned winbacks just won't be detected this tick.
+  }
+
+  // Abandoned winback detection — use `abandoned_email_log` as source
+  // of truth. Anyone who received an abandoned drip email (sent=true)
+  // AND has an active/trialing sub in the mirror created AFTER that
+  // email = attributed abandoned winback. The prior heuristic (6h gap
+  // between capture and first sub) missed Almeo 2026-07-02 who captured,
+  // trialed, got the email misfired, then paid via 80%-off — her first
+  // sub was minutes after capture so the 6h rule excluded her.
+  const abandonedLogEmails = new Map<string, Date>();
+  try {
+    const snap = await db
+      .collection("abandoned_email_log")
+      .where("sent", "==", true)
+      .get();
+    snap.docs.forEach((d) => {
+      const data = d.data() as { email?: string; sentAt?: { toDate?: () => Date } };
+      const email = data.email?.toLowerCase().trim();
+      const sentAt = data.sentAt?.toDate?.();
+      if (!email || !sentAt || isNaN(sentAt.getTime())) return;
+      const existing = abandonedLogEmails.get(email);
+      // Keep earliest sent date (attribution belongs to the first email
+      // in the sequence that could have driven the eventual comeback).
+      if (!existing || sentAt < existing) abandonedLogEmails.set(email, sentAt);
+    });
+  } catch {
+    // Collection may not exist yet — non-fatal.
+  }
+
+  abandonedLogEmails.forEach((firstEmailSentAt, email) => {
+    // Skip if already caught by churn/canceled loop (higher priority —
+    // a paid customer who churned is a churn winback, not abandoned).
+    if (winbacks.some((w) => w.email === email)) return;
+    const list = byEmail.get(email);
+    if (!list) return;
+    // Exclude Almeo-style false positives: if the user's earliest mirror
+    // row (of ANY status) was created BEFORE the abandoned email fired,
+    // they weren't actually abandoned when we emailed them — they had
+    // already subscribed. Any post-email sub is a duplicate caused by
+    // the drip misfire race condition, not a genuine comeback.
+    const earliestSub = list[0]; // sorted ascending above
+    if (
+      earliestSub &&
+      new Date(earliestSub.subscription_created_at) <= firstEmailSentAt
+    ) {
+      return;
+    }
+    // Find first active/trialing sub CREATED AFTER the email was sent.
+    // If nothing after, they haven't converted yet.
+    const converted = list.find(
+      (r) =>
+        (r.status === "active" || r.status === "trialing") &&
+        new Date(r.subscription_created_at) > firstEmailSentAt,
+    );
+    if (!converted) return;
+    // leftAt: the capture date if we have it, else the first email date
+    // (Supabase / abandoned_signups may not have the row anymore).
+    const leftAt = capturedByEmail.get(email) ?? firstEmailSentAt;
+    winbacks.push({
+      email,
+      kind: "abandoned",
+      leftAt,
+      wonBackAt: new Date(converted.subscription_created_at),
+    });
+  });
+
   // Window filter on wonBackAt — "members who came back in this window."
+  // Applied after all three detection passes (churn/canceled + abandoned).
   const winbacksInWindow = windowStartIso
     ? winbacks.filter((w) => w.wonBackAt.toISOString() >= windowStartIso)
     : winbacks;
 
-  // 3. Pull churn email logs for attribution.
+  // 4. Pull attribution logs — three parallel Firestore collections, one
+  //    per drip type. Each row's kind decides which log to attribute against.
   type LogEntry = { email: string; step: number; sentAt: Date; tag: string };
-  const logs: LogEntry[] = [];
-  try {
-    const snap = await db.collection("churn_email_log").where("sent", "==", true).get();
-    snap.docs.forEach((d) => {
-      const data = d.data() as {
-        email?: string;
-        step?: number;
-        sentAt?: { toDate?: () => Date };
-        tag?: string;
-      };
-      const email = data.email?.toLowerCase().trim();
-      const sentAt = data.sentAt?.toDate?.();
-      if (!email || !sentAt || typeof data.step !== "number") return;
-      logs.push({ email, step: data.step, sentAt, tag: data.tag ?? "" });
-    });
-  } catch {
-    // Empty logs — every winback shows as ORGANIC. Page still renders.
-  }
+  const logsByKind: Record<WinbackKind, LogEntry[]> = {
+    abandoned: [],
+    canceled: [],
+    churned: [],
+  };
+  const LOG_COLLECTION_FOR_KIND: Record<WinbackKind, string> = {
+    abandoned: "abandoned_email_log",
+    canceled: "trial_cancel_email_log",
+    churned: "churn_email_log",
+  };
+  await Promise.all(
+    (Object.keys(logsByKind) as WinbackKind[]).map(async (kind) => {
+      try {
+        const snap = await db
+          .collection(LOG_COLLECTION_FOR_KIND[kind])
+          .where("sent", "==", true)
+          .get();
+        snap.docs.forEach((d) => {
+          const data = d.data() as {
+            email?: string;
+            step?: number;
+            sentAt?: { toDate?: () => Date };
+            tag?: string;
+          };
+          const email = data.email?.toLowerCase().trim();
+          const sentAt = data.sentAt?.toDate?.();
+          if (!email || !sentAt || typeof data.step !== "number") return;
+          logsByKind[kind].push({ email, step: data.step, sentAt, tag: data.tag ?? "" });
+        });
+      } catch {
+        // Collection might not exist yet — leave empty.
+      }
+    }),
+  );
 
-  // 4. Build display entries with attribution.
+  // 5. Build display entries with attribution. Each winback attributes
+  //    against ONLY its matching drip log (a churn winback should not
+  //    get credit for the abandoned-drip email they got months earlier).
   const winbackEntries: WinbackEntry[] = winbacksInWindow.map((wb) => {
+    const logs = logsByKind[wb.kind];
     const prior = logs
       .filter((l) => l.email === wb.email && l.sentAt <= wb.wonBackAt)
       .sort((a, b) => b.sentAt.getTime() - a.sentAt.getTime());
     const last = prior[0];
     const daysToWinBack = Math.max(
       0,
-      Math.floor((wb.wonBackAt.getTime() - wb.canceledAt.getTime()) / 86_400_000),
+      Math.floor((wb.wonBackAt.getTime() - wb.leftAt.getTime()) / 86_400_000),
     );
     return {
       email: wb.email,
-      canceledAt: wb.canceledAt.toISOString(),
+      kind: wb.kind,
+      leftAt: wb.leftAt.toISOString(),
       wonBackAt: wb.wonBackAt.toISOString(),
       daysToWinBack,
       attributedStep: last?.step ?? null,
@@ -582,26 +757,28 @@ async function loadChurnWinbackData(
     };
   });
 
-  // 5. Per-step performance — scoped to the window:
-  //    recipients = unique emails who got that step IN the window
-  //    attributedWinbacks = of THOSE recipients, how many came back AFTER
-  //    the email AND this was the most-recent step they got pre-comeback.
-  const windowLogs = windowStartIso
-    ? logs.filter((l) => l.sentAt.toISOString() >= windowStartIso)
-    : logs;
+  // 6. Per-step performance — scoped to the CHURN drip logs only (this
+  //    is the chart most useful for tuning the paid-cancel win-back
+  //    playbook, which is your highest-value comeback bucket). The
+  //    Abandoned/Canceled drips have their own emails but the per-step
+  //    chart historically referred to churn steps — we keep that scope
+  //    to avoid confusing step-1 abandoned with step-1 churned.
+  const churnLogs = logsByKind.churned;
+  const windowChurnLogs = windowStartIso
+    ? churnLogs.filter((l) => l.sentAt.toISOString() >= windowStartIso)
+    : churnLogs;
 
   const perStepMap: Record<number, { recipients: Set<string>; winbacks: number }> = {
     1: { recipients: new Set(), winbacks: 0 },
     2: { recipients: new Set(), winbacks: 0 },
     3: { recipients: new Set(), winbacks: 0 },
   };
-  for (const log of windowLogs) {
+  for (const log of windowChurnLogs) {
     if (perStepMap[log.step]) perStepMap[log.step].recipients.add(log.email);
   }
   for (const wb of winbackEntries) {
+    if (wb.kind !== "churned") continue;
     if (wb.attributedStep && perStepMap[wb.attributedStep]) {
-      // Only credit the step if that step was sent in window AND came
-      // before the winback (the prior-logs filter already enforced that).
       if (perStepMap[wb.attributedStep].recipients.has(wb.email)) {
         perStepMap[wb.attributedStep].winbacks++;
       }
@@ -614,8 +791,11 @@ async function loadChurnWinbackData(
     attributedWinbacks: perStepMap[step].winbacks,
   }));
 
-  const totalRecipients = new Set(windowLogs.map((l) => l.email)).size;
+  const totalRecipients = new Set(windowChurnLogs.map((l) => l.email)).size;
   const organicWinbacks = winbackEntries.filter((w) => w.attributedStep === null).length;
+
+  const countByKind: Record<WinbackKind, number> = { abandoned: 0, canceled: 0, churned: 0 };
+  for (const w of winbackEntries) countByKind[w.kind]++;
 
   // Newest comeback first.
   winbackEntries.sort((a, b) => b.wonBackAt.localeCompare(a.wonBackAt));
@@ -626,6 +806,7 @@ async function loadChurnWinbackData(
     totalWinbacks: winbackEntries.length,
     organicWinbacks,
     totalRecipients,
+    countByKind,
   };
 }
 
@@ -637,10 +818,11 @@ export default async function EmailAdminPage({
   const sp = await searchParams;
   const winKey = sp.window && WINDOWS[sp.window] ? sp.window : "30";
   const win = WINDOWS[winKey];
+  // Live is intentionally not in the ViewKey union anymore — the old
+  // /admin/email?view=live URL is silently redirected to Signups, which
+  // now shows the same all-time state at the top of the page.
   const view: ViewKey =
-    sp.view === "live"
-      ? "live"
-      : sp.view === "winbacks"
+    sp.view === "winbacks"
       ? "winbacks"
       : sp.view === "landing"
       ? "landing"
@@ -861,7 +1043,9 @@ export default async function EmailAdminPage({
     const windowStartIso = new Date(Date.now() - win.days * 86_400_000).toISOString();
     for (const r of unifiedRows) {
       if (r.source !== "stripe") continue;
-      const becamePaidIso = r.trial_ended_at ?? r.display_date;
+      // Same fallback order as relevantDateFor("active"): trial_end, then
+      // sub.created (deny_repeat converts had no trial), then display_date.
+      const becamePaidIso = r.trial_ended_at ?? r.stripe_sub_created_at ?? r.display_date;
       if (!becamePaidIso || becamePaidIso > windowStartIso) continue;
       if (r.canceled_at && r.canceled_at <= windowStartIso) continue;
       paidAtStart++;
@@ -909,24 +1093,16 @@ export default async function EmailAdminPage({
       <div className="container-xl py-10 max-w-6xl mx-auto">
         <AdminNav />
 
-        <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#60a5fa" }}>
-          Admin · Email
-        </p>
-        <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2" style={{ color: "var(--text-primary)" }}>
-          Onboarding signups
-        </h1>
-        <p className="text-sm md:text-base mb-6" style={{ color: "var(--text-muted)" }}>
-          Status is pulled live from Stripe (the source of truth for what happened after
-          someone hit the paywall).
-        </p>
+        {/* Header row — title left, sync icon right. Everything the user
+            needs to orient is in one line: page name + when-refreshed action. */}
+        <div className="flex items-start justify-between gap-4 mb-6 flex-wrap">
+          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight" style={{ color: "var(--text-primary)" }}>
+            Email
+          </h1>
+          <SyncFromStripeButton />
+        </div>
 
-        {/* Manual re-sync button — hit this when the mirror looks stale
-            (user shows Canceled here but Active in Stripe, or vice versa).
-            Fires the /api/admin/stripe-backfill route which re-scans every
-            Stripe subscription and re-upserts subscription_mirror. */}
-        <SyncFromStripeButton />
-
-        {/* View toggle — Funnel (window-scoped events) vs Live (current totals from Stripe) */}
+        {/* View toggle */}
         <div
           className="inline-flex p-1 rounded-xl mb-5"
           style={{
@@ -935,10 +1111,9 @@ export default async function EmailAdminPage({
           }}
         >
           {([
-            { key: "funnel",   label: "Funnel · this period" },
-            { key: "live",     label: "Live totals · all time" },
-            { key: "winbacks", label: "Win-backs · churn drip" },
-            { key: "landing",  label: "Landing · /pbdrills" },
+            { key: "funnel",   label: "Signups" },
+            { key: "winbacks", label: "Win-backs" },
+            { key: "landing",  label: "Landing" },
           ] as const).map((v) => {
             const isActive = view === v.key;
             const href =
@@ -961,29 +1136,18 @@ export default async function EmailAdminPage({
           })}
         </div>
 
-        {view === "funnel" && (
-          <p className="text-xs mb-6" style={{ color: "var(--text-muted)" }}>
-            <strong style={{ color: "var(--text-primary)" }}>The funnel:</strong>{" "}
-            <span style={{ color: "#60a5fa" }}>Captured</span> (gave email) →{" "}
-            <span style={{ color: "#defa32" }}>Trial</span> (in 7-day free trial) →{" "}
-            <span style={{ color: "#22c55e" }}>Active</span> (paying) /{" "}
-            <span style={{ color: "#f59e0b" }}>Canceled</span> (quit mid-trial) /{" "}
-            <span style={{ color: "#ef4444" }}>Churned</span> (paid then canceled).
-          </p>
-        )}
-
-        {/* Time window — applies to Funnel, Win-backs, and Landing.
-            Live totals is always all-time so no window selector there. */}
-        {(view === "funnel" || view === "winbacks" || view === "landing") && (
+        {/* Time window selector — only shows on Win-backs / Landing, which
+            are entirely window-scoped. On Signups it's rendered inline below,
+            right above the "This period" section, so it's clear that the
+            "Right now" block above is unaffected by the window choice. */}
+        {(view === "winbacks" || view === "landing") && (
           <div className="flex items-center gap-2 mb-4 flex-wrap">
             {Object.entries(WINDOWS).map(([key, w]) => {
               const active = key === winKey;
               const href =
                 view === "winbacks"
                   ? `/admin/email?view=winbacks&window=${key}`
-                  : view === "landing"
-                  ? `/admin/email?view=landing&window=${key}`
-                  : `/admin/email?window=${key}`;
+                  : `/admin/email?view=landing&window=${key}`;
               return (
                 <Link
                   key={key}
@@ -1015,53 +1179,71 @@ export default async function EmailAdminPage({
           sampleSignupEmails={sampleSignupEmails}
         />
 
-        {view === "live" ? (
-          <LiveTotalsView
-            activeNow={liveActiveTotal}
-            trialNow={liveTrialTotal}
-            ever={{
-              paid: liveTotalEverPaid,
-              trialStarters: liveAllTimeTrialStarters,
-              signups: liveAllTimeSignups,
-              canceledDuringTrial: liveCanceledTotal,
-              churnedAfterPaid: liveChurnedTotal,
-            }}
-          />
-        ) : view === "winbacks" ? (
+        {view === "winbacks" ? (
           <WinBacksView data={winbackData} />
         ) : view === "landing" && landingData ? (
           <LandingPageView data={landingData} />
         ) : (
           <>
-            {/* Total signups headline — answers "how many emails did I collect
-                in this window?" up-front so it's not buried in a sum of cards.
-                The 5 status buckets below partition this total. */}
-            <div
-              className="rounded-2xl p-5 mb-4 flex items-baseline justify-between flex-wrap gap-3"
-              style={{
-                background: "linear-gradient(180deg, rgba(96,165,250,0.10), rgba(96,165,250,0.02))",
-                border: "1px solid rgba(96,165,250,0.30)",
+            {/* ── RIGHT NOW ─────────────────────────────────────────
+                Live state snapshot — matches Stripe's Subscriptions
+                tab. Independent of the window selector below. */}
+            <LiveTotalsView
+              activeNow={liveActiveTotal}
+              trialNow={liveTrialTotal}
+              ever={{
+                paid: liveTotalEverPaid,
+                trialStarters: liveAllTimeTrialStarters,
+                signups: liveAllTimeSignups,
+                canceledDuringTrial: liveCanceledTotal,
+                churnedAfterPaid: liveChurnedTotal,
               }}
-            >
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "#60a5fa" }}>
-                  Total Emails Collected · {win.label.toLowerCase()}
-                </p>
-                <p className="text-4xl md:text-5xl font-extrabold tabular-nums" style={{ color: "var(--text-primary)" }}>
-                  {signupsInWindow}
-                </p>
+            />
+
+            {/* ── THIS PERIOD ───────────────────────────────────────
+                Everything below is window-scoped: what happened to
+                signups collected inside the selected time window. */}
+            <div className="flex items-center justify-between gap-4 mt-10 mb-3 flex-wrap">
+              <h2 className="text-sm font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+                This period
+              </h2>
+              <div className="flex items-center gap-2 flex-wrap">
+                {Object.entries(WINDOWS).map(([key, w]) => {
+                  const active = key === winKey;
+                  return (
+                    <Link
+                      key={key}
+                      href={`/admin/email?window=${key}`}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+                        active ? "bg-accent-500 text-black" : "text-gray-400 hover:text-white"
+                      }`}
+                      style={{
+                        background: active ? undefined : "var(--flip-bg-card)",
+                        border: "1px solid var(--flip-card-border)",
+                      }}
+                    >
+                      {w.label}
+                    </Link>
+                  );
+                })}
               </div>
-              <p className="text-xs max-w-md" style={{ color: "var(--text-muted)" }}>
-                Unique emails captured at onboarding in this window — ties out
-                against Firebase signups. The 4 cards below show what
-                <em> happened </em>in this window (events), not a breakdown of this total.
-              </p>
             </div>
+            {/* 4 window-scoped flow cards. Trial (a state, not a flow)
+                was removed — currently-in-trial lives in the Right Now
+                row above. Active → "Trial → Paid" because on the funnel
+                it represents cohort conversion, not current headcount. */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              <StatCard icon={<Zap />}        iconColor="#defa32" label="Trial"    value={counts.trial}    rate={rates.trial}    rateLabel={rateLabels.trial} />
-              <StatCard icon={<UserCheck />}  iconColor="#22c55e" label="Active"   value={counts.active}   rate={rates.active}   rateLabel={rateLabels.active} />
-              <StatCard icon={<UserX />}      iconColor="#f59e0b" label="Canceled" value={`${counts.canceled} / ${trialStarters}`} rate={rates.canceled} rateLabel={rateLabels.canceled} />
-              <StatCard icon={<UserX />}      iconColor="#ef4444" label="Churned"  value={counts.churned}  rate={rates.churned}  rateLabel={rateLabels.churned} />
+              <StatCard
+                icon={<Mail />}
+                iconColor="#60a5fa"
+                label="Captured"
+                value={signupsInWindow}
+                rateLabel={win.label.toLowerCase()}
+                hero
+              />
+              <StatCard icon={<UserCheck />}  iconColor="#22c55e" label="Trial → Paid" value={counts.active}   rate={rates.active}   rateLabel={rateLabels.active} />
+              <StatCard icon={<UserX />}      iconColor="#f59e0b" label="Canceled"     value={`${counts.canceled} / ${trialStarters}`} rate={rates.canceled} rateLabel={rateLabels.canceled} />
+              <StatCard icon={<UserX />}      iconColor="#ef4444" label="Churned"      value={counts.churned}  rate={rates.churned}  rateLabel={rateLabels.churned} />
             </div>
           </>
         )}
@@ -1071,9 +1253,17 @@ export default async function EmailAdminPage({
         <div className="rounded-2xl overflow-hidden" style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}>
           <div className="flex items-center justify-between gap-4 px-5 py-4" style={{ borderBottom: "1px solid var(--flip-card-border)" }}>
             <h2 className="text-base font-extrabold" style={{ color: "var(--text-primary)" }}>
-              All signups ({categorized.length})
+              All signups <span className="font-medium" style={{ color: "var(--text-muted)" }}>({categorized.length})</span>
             </h2>
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-3 flex-wrap">
+              <a
+                href={`/api/admin/email/export?window=${winKey}&includePrevious=true`}
+                className="text-[11px] font-semibold transition hover:underline"
+                style={{ color: "var(--text-muted)" }}
+                title="Include everyone in the window, even if they've been exported before"
+              >
+                Include all
+              </a>
               <a
                 href={`/api/admin/email/export?window=${winKey}`}
                 className="inline-flex items-center gap-1.5 text-xs font-bold py-2 px-3 rounded-lg transition active:scale-[0.98]"
@@ -1081,15 +1271,7 @@ export default async function EmailAdminPage({
                 title="New emails only — skips anyone already in a past export"
               >
                 <Download className="w-3.5 h-3.5" />
-                CSV (new only)
-              </a>
-              <a
-                href={`/api/admin/email/export?window=${winKey}&includePrevious=true`}
-                className="inline-flex items-center gap-1.5 text-[11px] font-semibold py-2 px-3 rounded-lg transition active:scale-[0.98]"
-                style={{ background: "transparent", color: "var(--text-muted)", border: "1px solid var(--flip-card-border)" }}
-                title="Include everyone in the window, even if they've been exported before"
-              >
-                Include all
+                Export CSV
               </a>
             </div>
           </div>
@@ -1154,29 +1336,35 @@ export default async function EmailAdminPage({
         )}
 
         {view === "funnel" && (
-          <div
-            className="rounded-2xl overflow-hidden mt-6"
+          <details
+            className="rounded-2xl overflow-hidden mt-6 group"
             style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}
           >
-            <div
-              className="flex items-center justify-between gap-4 px-5 py-4"
-              style={{ borderBottom: "1px solid var(--flip-card-border)" }}
+            <summary
+              className="flex items-center justify-between gap-4 px-5 py-4 cursor-pointer list-none select-none"
+              style={{ borderBottom: "1px solid transparent" }}
             >
-              <div>
-                <h2 className="text-base font-extrabold" style={{ color: "var(--text-primary)" }}>
-                  Past exports ({pastExports.length})
+              <div className="flex items-baseline gap-2">
+                <h2 className="text-sm font-bold" style={{ color: "var(--text-muted)" }}>
+                  Past exports
                 </h2>
-                <p className="text-[11px] mt-0.5" style={{ color: "var(--text-muted)" }}>
-                  Each CSV download is logged here. New downloads exclude anyone in this list unless you tap “Include all.”
-                </p>
+                <span className="text-xs tabular-nums" style={{ color: "var(--text-muted)" }}>
+                  ({pastExports.length})
+                </span>
               </div>
-            </div>
+              <span className="text-[11px] font-semibold group-open:hidden" style={{ color: "var(--text-muted)" }}>
+                Show
+              </span>
+              <span className="text-[11px] font-semibold hidden group-open:inline" style={{ color: "var(--text-muted)" }}>
+                Hide
+              </span>
+            </summary>
             {pastExports.length === 0 ? (
-              <p className="px-5 py-6 text-sm" style={{ color: "var(--text-muted)" }}>
+              <p className="px-5 py-6 text-sm" style={{ color: "var(--text-muted)", borderTop: "1px solid var(--flip-card-border)" }}>
                 No exports yet. Your first CSV download will appear here.
               </p>
             ) : (
-              <table className="w-full text-sm">
+              <table className="w-full text-sm" style={{ borderTop: "1px solid var(--flip-card-border)" }}>
                 <thead>
                   <tr style={{ borderBottom: "1px solid var(--flip-card-border)" }}>
                     <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Date</th>
@@ -1230,7 +1418,7 @@ export default async function EmailAdminPage({
                 </tbody>
               </table>
             )}
-          </div>
+          </details>
         )}
       </div>
     </div>
@@ -1363,6 +1551,27 @@ function WinBacksView({ data }: { data: ChurnWinbackData }) {
         />
       </div>
 
+      {/* Per-kind breakdown — which funnel each comeback originated from.
+          Abandoned = never paid before, Canceled = quit during trial,
+          Churned = paid then left. Each has its own drip playbook. */}
+      <div className="grid grid-cols-3 gap-4">
+        <MiniStat
+          label="Abandoned → back"
+          value={data.countByKind.abandoned}
+          sub="captured email, never paid, later subscribed"
+        />
+        <MiniStat
+          label="Canceled → back"
+          value={data.countByKind.canceled}
+          sub="quit during trial, later returned"
+        />
+        <MiniStat
+          label="Churned → back"
+          value={data.countByKind.churned}
+          sub="paid, canceled, then re-subscribed"
+        />
+      </div>
+
       {/* Per-step performance — the meat. Best step gets a green border. */}
       <div className="rounded-2xl p-6" style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}>
         <div className="flex items-center justify-between mb-5 flex-wrap gap-2">
@@ -1437,18 +1646,33 @@ function WinBacksView({ data }: { data: ChurnWinbackData }) {
             <thead>
               <tr style={{ borderBottom: "1px solid var(--flip-card-border)" }}>
                 <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Email</th>
-                <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Canceled</th>
+                <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Status</th>
+                <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Left</th>
                 <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Won back</th>
                 <th className="text-right px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Days</th>
                 <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Attributed to</th>
               </tr>
             </thead>
             <tbody>
-              {data.winbacks.map((w) => (
-                <tr key={w.email} style={{ borderTop: "1px solid var(--flip-card-border)" }}>
+              {data.winbacks.map((w) => {
+                const kindMeta = {
+                  abandoned: { bg: "rgba(96,165,250,0.15)", color: "#60a5fa", label: "ABANDONED" },
+                  canceled:  { bg: "rgba(245,158,11,0.15)", color: "#f59e0b", label: "CANCELED"  },
+                  churned:   { bg: "rgba(239,68,68,0.15)",  color: "#ef4444", label: "CHURNED"   },
+                }[w.kind];
+                return (
+                <tr key={w.email + w.wonBackAt} style={{ borderTop: "1px solid var(--flip-card-border)" }}>
                   <td className="px-4 py-3 font-mono text-xs" style={{ color: "var(--text-primary)" }}>{w.email}</td>
+                  <td className="px-4 py-3 text-xs">
+                    <span
+                      className="inline-block px-2 py-0.5 rounded font-bold"
+                      style={{ background: kindMeta.bg, color: kindMeta.color, fontSize: 10, letterSpacing: 0.5 }}
+                    >
+                      {kindMeta.label}
+                    </span>
+                  </td>
                   <td className="px-4 py-3 text-xs tabular-nums" style={{ color: "var(--text-muted)" }}>
-                    <LocalDateTime iso={w.canceledAt} />
+                    <LocalDateTime iso={w.leftAt} />
                   </td>
                   <td className="px-4 py-3 text-xs tabular-nums" style={{ color: "var(--text-muted)" }}>
                     <LocalDateTime iso={w.wonBackAt} />
@@ -1476,7 +1700,8 @@ function WinBacksView({ data }: { data: ChurnWinbackData }) {
                     )}
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         )}
@@ -1794,7 +2019,7 @@ function FunnelBar({ segments }: { segments: { label: string; value: number; col
 // ─────────────────────────────────────────────────────────────────────────────
 
 function StatCard({
-  icon, iconColor, label, value, rate, rateLabel,
+  icon, iconColor, label, value, rate, rateLabel, hero,
 }: {
   icon: React.ReactNode;
   iconColor: string;
@@ -1802,12 +2027,22 @@ function StatCard({
   value: number | string;
   rate?: string;
   rateLabel?: string;
+  hero?: boolean;
 }) {
   return (
-    <div className="rounded-2xl p-5" style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}>
+    <div
+      className="rounded-2xl p-5 transition"
+      style={{
+        background: hero
+          ? `linear-gradient(180deg, ${iconColor}18, ${iconColor}04)`
+          : "var(--flip-bg-card)",
+        border: `1px solid ${hero ? `${iconColor}40` : "var(--flip-card-border)"}`,
+        boxShadow: hero ? `0 8px 24px -12px ${iconColor}30` : undefined,
+      }}
+    >
       <div style={{ color: iconColor }} className="mb-2 [&>svg]:w-4 [&>svg]:h-4">{icon}</div>
       <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "var(--text-muted)" }}>{label}</p>
-      <p className="text-3xl font-extrabold tabular-nums" style={{ color: "var(--text-primary)" }}>{value}</p>
+      <p className={`${hero ? "text-4xl" : "text-3xl"} font-extrabold tabular-nums`} style={{ color: "var(--text-primary)" }}>{value}</p>
       {(rate || rateLabel) && (
         <div className="mt-1.5 flex items-baseline gap-1.5 flex-wrap">
           {rate && (

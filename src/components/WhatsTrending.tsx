@@ -59,8 +59,8 @@ export default function WhatsTrending({ paddles }: WhatsTrendingProps) {
                 />
               ) : (
                 <svg viewBox="0 0 120 160" fill="none" className="w-20 h-auto opacity-15" aria-hidden="true">
-                  <rect x="5" y="5" width="110" height="115" rx="55" fill="#14b8a6" />
-                  <rect x="45" y="116" width="30" height="40" rx="15" fill="#0d9488" />
+                  <rect x="5" y="5" width="110" height="115" rx="55" fill="#60a5fa" />
+                  <rect x="45" y="116" width="30" height="40" rx="15" fill="#11295f" />
                 </svg>
               )}
               <div className="absolute top-3 left-3">
@@ -116,8 +116,8 @@ export default function WhatsTrending({ paddles }: WhatsTrendingProps) {
                       />
                     ) : (
                       <svg viewBox="0 0 120 160" fill="none" className="w-8 h-auto opacity-20" aria-hidden="true">
-                        <rect x="5" y="5" width="110" height="115" rx="55" fill="#14b8a6" />
-                        <rect x="45" y="116" width="30" height="40" rx="15" fill="#0d9488" />
+                        <rect x="5" y="5" width="110" height="115" rx="55" fill="#60a5fa" />
+                        <rect x="45" y="116" width="30" height="40" rx="15" fill="#11295f" />
                       </svg>
                     )}
                   </div>

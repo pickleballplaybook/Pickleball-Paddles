@@ -63,8 +63,8 @@ export default function ReactionButtons({ paddleId }: { paddleId: string }) {
     <div
       className="inline-flex items-stretch rounded-full overflow-hidden text-sm font-bold tabular-nums"
       style={{
-        border: "1px solid rgba(45,212,191,0.32)",
-        background: "rgba(45,212,191,0.04)",
+        border: "1px solid rgba(10, 100, 188,0.32)",
+        background: "rgba(10, 100, 188,0.19)",
         boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03)",
       }}
     >
@@ -74,15 +74,15 @@ export default function ReactionButtons({ paddleId }: { paddleId: string }) {
         aria-pressed={isUp}
         className="inline-flex items-center gap-2 px-4 py-2.5 transition-colors active:scale-[0.97]"
         style={{
-          color: isUp ? "#2dd4bf" : "var(--flip-text-muted)",
-          background: isUp ? "rgba(45,212,191,0.14)" : "transparent",
+          color: isUp ? "#0a64bc" : "var(--flip-text-muted)",
+          background: isUp ? "rgba(10, 100, 188,0.30)" : "transparent",
         }}
       >
         <ThumbsUp className="w-4 h-4" strokeWidth={2} fill={isUp ? "currentColor" : "none"} />
         <span>{upCount}</span>
       </button>
 
-      <span aria-hidden style={{ width: 1, background: "rgba(45,212,191,0.32)" }} />
+      <span aria-hidden style={{ width: 1, background: "rgba(10, 100, 188,0.32)" }} />
 
       <button
         onClick={() => toggle("dislike")}

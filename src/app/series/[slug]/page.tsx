@@ -132,7 +132,7 @@ export default function SeriesPage({ params }: Props) {
 
       {/* Header */}
       <section className="container-xl pb-10">
-        <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#14b8a6" }}>
+        <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#60a5fa" }}>
           {series.brand} &middot; {sorted.length} Shapes
         </p>
         <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight leading-[1.05] mb-3" style={{ color: "var(--flip-text-head)" }}>
@@ -140,7 +140,7 @@ export default function SeriesPage({ params }: Props) {
         </h1>
         <p className="text-base mb-2" style={{ color: "var(--flip-text-body)" }}>
           Compare all {sorted.length} shapes side by side. Use code{" "}
-          <span className="font-mono font-bold" style={{ color: "#2dd4bf" }}>{code}</span>
+          <span className="font-mono font-bold" style={{ color: "#60a5fa" }}>{code}</span>
           {" "}at checkout.
         </p>
       </section>
@@ -188,7 +188,7 @@ export default function SeriesPage({ params }: Props) {
                   )}
                   <span
                     className="absolute top-3 left-3 text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full"
-                    style={{ background: "rgba(20,184,166,0.15)", color: "#2dd4bf", border: "1px solid rgba(20,184,166,0.3)" }}
+                    style={{ background: "rgba(10, 100, 188,0.30)", color: "#60a5fa", border: "1px solid rgba(10, 100, 188,0.3)" }}
                   >
                     {paddle.shape}
                   </span>
@@ -231,7 +231,7 @@ export default function SeriesPage({ params }: Props) {
                             <span className="text-lg font-semibold line-through" style={{ color: "var(--flip-text-muted)" }}>
                               {paddle.price}
                             </span>
-                            <span className="text-2xl font-extrabold" style={{ color: "#2dd4bf" }}>
+                            <span className="text-2xl font-extrabold" style={{ color: "#60a5fa" }}>
                               {discounted}
                             </span>
                           </>
@@ -250,7 +250,7 @@ export default function SeriesPage({ params }: Props) {
                         target="_blank"
                         rel="noopener noreferrer sponsored"
                         className="flex-1 flex items-center justify-center gap-2 font-bold text-sm py-3 rounded-xl transition-all active:scale-[0.98]"
-                        style={{ background: "var(--btn-buy-bg)", color: "var(--btn-buy-text)" }}
+                        style={{ background: "var(--btn-buy-bg)", color: "var(--btn-buy-text)", border: "var(--btn-buy-border)", boxShadow: "var(--btn-buy-shadow)" }}
                       >
                         {buyAtLabel(paddle.brand)}
                         <ExternalLink className="w-3.5 h-3.5" />

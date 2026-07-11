@@ -1,6 +1,7 @@
 import { getApps, initializeApp, cert, type App } from "firebase-admin/app";
 import { getFirestore, type Firestore } from "firebase-admin/firestore";
 import { getStorage, type Storage } from "firebase-admin/storage";
+import { getRemoteConfig, type RemoteConfig } from "firebase-admin/remote-config";
 
 let cachedApp: App | null = null;
 
@@ -37,4 +38,36 @@ export function getFirebaseFirestore(): Firestore {
 
 export function getFirebaseStorage(): Storage {
   return getStorage(getApp());
+}
+
+export function getFirebaseRemoteConfig(): RemoteConfig {
+  return getRemoteConfig(getApp());
+}
+
+/**
+ * Fetches a string parameter from the Firebase Remote Config template.
+ * Reused by the comeback-checkout flow so the Stripe secret can live in
+ * Remote Config (same place the Drills app reads `stripe_client_secret`
+ * from) instead of forcing a duplicate Vercel env var.
+ *
+ * Returns null if the key is missing or set to a non-string explicit
+ * value — callers fall back to env vars in that case.
+ */
+let _remoteConfigCache: { fetchedAt: number; values: Record<string, string> } | null = null;
+const REMOTE_CONFIG_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+export async function getRemoteConfigString(key: string): Promise<string | null> {
+  const now = Date.now();
+  if (!_remoteConfigCache || now - _remoteConfigCache.fetchedAt > REMOTE_CONFIG_TTL_MS) {
+    const template = await getFirebaseRemoteConfig().getTemplate();
+    const values: Record<string, string> = {};
+    for (const [k, p] of Object.entries(template.parameters)) {
+      const v = p.defaultValue;
+      if (v && "value" in v && typeof v.value === "string") {
+        values[k] = v.value;
+      }
+    }
+    _remoteConfigCache = { fetchedAt: now, values };
+  }
+  return _remoteConfigCache.values[key] ?? null;
 }

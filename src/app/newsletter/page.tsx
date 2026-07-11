@@ -38,9 +38,9 @@ export default function NewsletterPage() {
           {/* Icon */}
           <div
             className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-6"
-            style={{ background: "rgba(20,184,166,0.15)", border: "1px solid rgba(20,184,166,0.3)" }}
+            style={{ background: "rgba(10, 100, 188,0.30)", border: "1px solid rgba(10, 100, 188,0.3)" }}
           >
-            <Mail className="w-7 h-7" style={{ color: "#2dd4bf" }} />
+            <Mail className="w-7 h-7" style={{ color: "#60a5fa" }} />
           </div>
 
           {/* Headline */}
@@ -65,13 +65,13 @@ export default function NewsletterPage() {
             className="rounded-2xl p-8 text-left mb-12"
             style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.08)" }}
           >
-            <p className="text-xs font-bold uppercase tracking-widest mb-5" style={{ color: "#14b8a6" }}>
+            <p className="text-xs font-bold uppercase tracking-widest mb-5" style={{ color: "#60a5fa" }}>
               What You Get
             </p>
             <div className="flex flex-col gap-4">
               {BENEFITS.map((benefit) => (
                 <div key={benefit} className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: "#14b8a6" }} />
+                  <CheckCircle2 className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: "#60a5fa" }} />
                   <p className="text-base" style={{ color: "var(--text-primary)" }}>
                     {benefit}
                   </p>
@@ -86,8 +86,8 @@ export default function NewsletterPage() {
             style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.08)" }}
           >
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: "rgba(20,184,166,0.15)" }}>
-                <span className="text-sm font-bold" style={{ color: "#2dd4bf" }}>AH</span>
+              <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: "rgba(10, 100, 188,0.30)" }}>
+                <span className="text-sm font-bold" style={{ color: "#60a5fa" }}>AH</span>
               </div>
               <div>
                 <p className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>Austin Hardy</p>
@@ -107,7 +107,7 @@ export default function NewsletterPage() {
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 font-bold text-sm px-8 py-3 rounded-xl text-white transition-all hover:scale-[1.02]"
-              style={{ background: "#14b8a6" }}
+              style={{ background: "#0a64bc" }}
             >
               <Mail className="w-4 h-4" /> Subscribe to Newsletter
             </a>

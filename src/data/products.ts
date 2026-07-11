@@ -17,6 +17,11 @@ export interface GearProduct {
   bg: string;
   ctaText: string;
   videoId?: string;
+  // Optional locally-hosted MP4 (in /public/images/products/*.mp4). Used
+  // for on-court demo clips that aren't on YouTube. If both videoId and
+  // videoUrl are set, YouTube wins (single source of truth). Rendered
+  // as an inline <video> element with controls on the detail page.
+  videoUrl?: string;
   // Optional non-affiliate product URL for the brand's own customer reviews.
   // Surfaced as a "Read customer reviews" link on the gear detail page so
   // shoppers can see third-party feedback without going through the
@@ -32,6 +37,18 @@ export interface GearProduct {
   // "Intermediate players who want better grip feel without changing tack."
   // Rendered as a small callout near the CTA.
   bestFor?: string;
+  // Optional long-form buying-guide / overview content. Markdown-flavored
+  // plain text (paragraphs separated by blank lines). Rendered as the
+  // "Overview & Buying Guide" section on the gear detail page and emitted
+  // as Article JSON-LD for SEO. Typically AI-generated via
+  // scripts/generate-gear-content.ts and stored in src/data/gear-content.json,
+  // but can also be set inline here for hand-tuned overrides.
+  overview?: string;
+  // Optional "Who is this for?" / use-case list. Each entry is a short
+  // headline + 1-2 sentence description. Rendered as a card grid on the
+  // detail page; strong for long-tail SEO queries like
+  // "best <category> for <player type>".
+  useCases?: { title: string; description: string }[];
 }
 
 // ── All gear / affiliate products ─────────────────────────────────────────────
@@ -43,11 +60,11 @@ export const gearProducts: GearProduct[] = [
     name: "Ball Machine",
     price: "$2,299.00",
     badge: "$250 Off",
-    link: "https://titanballmachines.com/products/titan-pickleball-machine?sca_ref=5510919.3e3QLH63Ya",
+    link: "https://titanballmachines.com/discount/PLAYBOOK?redirect=/products/titan-pickleball-machine&sca_ref=5510919.3e3QLH63Ya",
     image: "/images/products/Titan-Ball-Machine.png",
     imageAspect: "square",
     subtitle: "The best training partner. Hit more balls and improve faster — on your own schedule.",
-    description: "The Titan One is one of the two best pickleball ball machines on the market right now, and it's the one I personally use. After testing it head-to-head against the Titan Ace, I chose the Titan One because it holds all the balls inside — no separate ball basket needed. You just wheel it out, turn it on, and start drilling.\n\nWhat makes this machine special is the consistency. Most ball machines are 1–2 feet off from shot to shot. The Titan is only about 2–5 inches off — that's a massive difference when you're drilling third-shot drops or resets. And the consistency holds whether you're at 100% battery or 2%.\n\nThe Titan Drills app is where things get really powerful. You can program up to 24 custom drills where each ball goes to a different location — baseline, kitchen, overhead — and control the speed (up to 75 mph), spin, and feed rate (1–10 seconds between balls) for every single ball. The app just got a major update that made it way more user-friendly. You can also download drills from other Titan users via QR code.\n\nIt holds 85 balls internally (or 240 with the add-on hopper), uses a Ryobi-compatible lithium-ion battery that lasts weeks on a single charge, and the machine auto-shuts off between drills to save power. The battery charges separately — no lugging the whole machine inside.\n\nThe 60° oscillation covers the entire court. For almost every drill, you just park the machine at center baseline and it stays there. Delivery typically arrives within 3–5 business days.\n\nAt $2,299 with $250 off through our link, it's a serious investment — but if you want to get better faster without relying on a drilling partner, this is the machine that does it.",
+    description: "The Titan One is one of the two best pickleball ball machines on the market right now, and it's the one I personally use. After testing it head-to-head against the Titan Ace, I chose the Titan One because it holds all the balls inside — no separate ball basket needed. You just wheel it out, turn it on, and start drilling.\n\nWhat makes this machine special is the consistency. Most ball machines are 1–2 feet off from shot to shot. The Titan is only about 2–5 inches off — that's a massive difference when you're drilling third-shot drops or resets. And the consistency holds whether you're at 100% battery or 2%.\n\nThe Titan Drills app is where things get really powerful. You can program up to 24 custom drills where each ball goes to a different location — baseline, kitchen, overhead — and control the speed (up to 75 mph), spin, and feed rate (1–10 seconds between balls) for every single ball. The app just got a major update that made it way more user-friendly. You can also download drills from other Titan users via QR code.\n\nIt holds 85 balls internally (or 240 with the add-on hopper), uses a Ryobi-compatible lithium-ion battery that lasts weeks on a single charge, and the machine auto-shuts off between drills to save power. The battery charges separately — no lugging the whole machine inside.\n\nThe 60° oscillation covers the entire court. For almost every drill, you just park the machine at center baseline and it stays there. Delivery typically arrives within 3–5 business days.\n\nAt $2,299 with $250 off using code PLAYBOOK, it's a serious investment — but if you want to get better faster without relying on a drilling partner, this is the machine that does it.",
     specs: [
       { label: "Ball Capacity", value: "85 (240 with add-on)" },
       { label: "Max Speed", value: "75 mph" },
@@ -222,6 +239,50 @@ export const gearProducts: GearProduct[] = [
     ctaText: "Shop Now",
   },
   {
+    id: "reflect-sport-backpack",
+    brand: "Reflect Sport",
+    name: "Tournament Pro Backpack",
+    // Reflect Sport lists the Tournament Pro at $150 on their site;
+    // PLAYBOOK code gets 15% off (Shopify /discount/ URL). Adjust if
+    // Reflect changes list price on their end.
+    price: "$150.00",
+    badge: "15% Off",
+    link: "https://reflectsport.com/discount/PLAYBOOK?redirect=/products/tournament-pro-pickleball-backpack?variant=49998282785087",
+    image: "/images/products/Reflect-Sport-Pickleball-Bag-1.png",
+    featuredImage: "/images/products/Reflect-Sport-Pickleball-Bag.png",
+    imageAspect: "square",
+    subtitle: "The tournament backpack Austin actually carries. Fits up to 9 paddles comfortably (4 dedicated slots), insulated water bottle pocket, and enough room for a full match-day loadout.",
+    videoUrl: "/images/products/Reflect-Sport-Pickleball-Bag.MP4",
+    bg: "#0f1720",
+    ctaText: "Get 15% Off",
+    bestFor: "Players who want a real tournament-grade bag — 4 dedicated paddle slots (fits up to 9 total), water/gear organization, and a fit that survives shuttling between courts all day.",
+    highlights: [
+      "4 dedicated paddle slots with padding — fits up to 9 paddles total if you're stacking, or leave the extras out to make room for towels, camera gear, and other essentials.",
+      "Insulated water bottle pocket keeps drinks cold across a full tournament day.",
+      "Clamshell main compartment opens flat so you can find gear without dumping the bag out.",
+      "Ventilated shoe compartment separates sweaty court shoes from clean gear.",
+      "Padded straps + back panel — comfortable when you're carrying a full loadout between courts.",
+    ],
+    faqs: [
+      {
+        q: "How many paddles does it fit?",
+        a: "4 dedicated paddle slots, and it will fit up to 9 paddles comfortably if you stack them. If you also want room for towels, camera equipment, or other essentials, plan on using the 4 dedicated slots and leave the rest of the space for gear.",
+      },
+      {
+        q: "Does it fit court shoes plus everyday shoes?",
+        a: "Yes — the ventilated shoe compartment fits a pair of court shoes and there's still room in the main compartment for a change of clothes or a second pair.",
+      },
+      {
+        q: "Is the water bottle pocket insulated?",
+        a: "Yes, the side pocket is insulated to keep water cold for a full tournament day. Fits standard sport bottles.",
+      },
+      {
+        q: "How do I redeem the PLAYBOOK discount?",
+        a: "The link above auto-applies the PLAYBOOK code at checkout — no manual entry needed. If you land on the product page and the discount isn't showing, add code PLAYBOOK at checkout for 15% off.",
+      },
+    ],
+  },
+  {
     id: "trigger-grip",
     brand: "TriggerGrip",
     name: "Pro",
@@ -238,7 +299,7 @@ export const gearProducts: GearProduct[] = [
     id: "ethos-pro-undergrip",
     brand: "Ethos",
     name: "Pro Undergrip",
-    price: "",
+    price: "$24.95",
     badge: "10% Off",
     link: "https://www.ethospickleball.com/discount/PLAYBOOK?redirect=/?sca_ref=11559688.Hf8GGHu0NO",
     image: "/images/products/Ethos-Pro-Undergrip.png",

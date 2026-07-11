@@ -255,7 +255,7 @@ export default function TrendingPage() {
 
         {/* Header */}
         <div className="mb-10 text-center">
-          <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#14b8a6" }}>
+          <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#60a5fa" }}>
             Weekly Trending
           </p>
           <h1
@@ -325,7 +325,7 @@ export default function TrendingPage() {
                 onClick={() => downloadOne(currentIndex)}
                 disabled={exporting !== "none"}
                 className="inline-flex items-center justify-center gap-2 font-bold text-sm px-6 py-3 rounded-xl text-white transition-all hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100 w-full sm:w-auto"
-                style={{ background: "#14b8a6" }}
+                style={{ background: "#0a64bc" }}
               >
                 {exporting === currentIndex
                   ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</>
@@ -356,7 +356,7 @@ export default function TrendingPage() {
                   onClick={() => setCurrentIndex(i)}
                   className="w-2.5 h-2.5 rounded-full transition-all"
                   style={{
-                    background: i === currentIndex ? "#14b8a6" : "rgba(255,255,255,0.2)",
+                    background: i === currentIndex ? "#0a64bc" : "rgba(255,255,255,0.2)",
                     transform: i === currentIndex ? "scale(1.3)" : "scale(1)",
                   }}
                 />
@@ -381,7 +381,7 @@ export default function TrendingPage() {
                 >
                   <span
                     className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-extrabold flex-shrink-0"
-                    style={{ background: "rgba(20,184,166,0.2)", color: "#2dd4bf" }}
+                    style={{ background: "rgba(10, 100, 188,0.30)", color: "#60a5fa" }}
                   >
                     {i + 1}
                   </span>
@@ -403,7 +403,7 @@ export default function TrendingPage() {
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
                     {hasLink && (
-                      <span className="text-[10px] font-bold font-mono px-2 py-0.5 rounded-md" style={{ background: "rgba(20,184,166,0.12)", color: "#2dd4bf" }}>
+                      <span className="text-[10px] font-bold font-mono px-2 py-0.5 rounded-md" style={{ background: "rgba(10, 100, 188,0.30)", color: "#60a5fa" }}>
                         {getCode(paddle.brand, paddle.discountLink)}
                       </span>
                     )}

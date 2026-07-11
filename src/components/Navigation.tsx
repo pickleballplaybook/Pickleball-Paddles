@@ -12,12 +12,14 @@ import { guides, GUIDE_CATEGORIES } from "@/data/guides";
 import { brands } from "@/data/brands";
 import PaddleQuiz from "@/components/PaddleQuiz";
 
+// Primary nav — high-intent, conversion-driving destinations only. Compare
+// and Guides moved to footer-only to slim the hamburger; both still reachable
+// from every page via Footer.tsx's main column.
 const navLinks = [
   { label: "Paddles",        href: "/paddles" },
   { label: "Best Paddles",   href: "/best-pickleball-paddles" },
   { label: "Reviews",        href: "/reviews" },
-  { label: "Compare",        href: "/compare" },
-  { label: "Guides",         href: "/guides" },
+  { label: "Pickleball 101", href: "/pickleball-101" },
   { label: "Gear",           href: "/gear"    },
   { label: "Discount Codes", href: "/discount-codes" },
 ];
@@ -191,7 +193,7 @@ function GlobalSearch({ onClose }: { onClose: () => void }) {
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#14b8a6" }}>{p.brand}</p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#60a5fa" }}>{p.brand}</p>
                         <p className="text-sm font-bold truncate">{p.name}</p>
                       </div>
                       <p className="text-xs flex-shrink-0" style={{ color: "rgba(255,255,255,0.5)" }}>
@@ -215,12 +217,12 @@ function GlobalSearch({ onClose }: { onClose: () => void }) {
                     >
                       <div
                         className="w-9 h-9 flex-shrink-0 rounded-lg flex items-center justify-center"
-                        style={{ background: "rgba(20,184,166,0.10)" }}
+                        style={{ background: "rgba(10, 100, 188,0.30)" }}
                       >
-                        <FileText className="w-4 h-4" style={{ color: "#2dd4bf" }} />
+                        <FileText className="w-4 h-4" style={{ color: "#60a5fa" }} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#14b8a6" }}>
+                        <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#60a5fa" }}>
                           {b.brand} Review
                         </p>
                         <p className="text-sm font-bold truncate">{b.title.replace(/ Review:.*$/, "")}</p>
@@ -243,12 +245,12 @@ function GlobalSearch({ onClose }: { onClose: () => void }) {
                     >
                       <div
                         className="w-9 h-9 flex-shrink-0 rounded-lg flex items-center justify-center"
-                        style={{ background: "rgba(20,184,166,0.10)" }}
+                        style={{ background: "rgba(10, 100, 188,0.30)" }}
                       >
-                        <BookOpen className="w-4 h-4" style={{ color: "#2dd4bf" }} />
+                        <BookOpen className="w-4 h-4" style={{ color: "#60a5fa" }} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#14b8a6" }}>
+                        <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#60a5fa" }}>
                           {GUIDE_CATEGORIES[g.category].label}
                         </p>
                         <p className="text-sm font-bold truncate">{g.title}</p>
@@ -271,12 +273,12 @@ function GlobalSearch({ onClose }: { onClose: () => void }) {
                     >
                       <div
                         className="w-9 h-9 flex-shrink-0 rounded-lg flex items-center justify-center"
-                        style={{ background: "rgba(20,184,166,0.10)" }}
+                        style={{ background: "rgba(10, 100, 188,0.30)" }}
                       >
-                        <Tag className="w-4 h-4" style={{ color: "#2dd4bf" }} />
+                        <Tag className="w-4 h-4" style={{ color: "#60a5fa" }} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#14b8a6" }}>Brand</p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#60a5fa" }}>Brand</p>
                         <p className="text-sm font-bold truncate">{b.name}</p>
                       </div>
                     </button>
@@ -368,7 +370,7 @@ export default function Navigation() {
                 <span className="font-extrabold text-[14px] tracking-tight leading-tight" style={{ color: "#e2e8f0" }}>
                   Pickleball
                 </span>
-                <span className="font-extrabold text-brand-500 text-[14px] tracking-tight leading-tight">
+                <span className="font-extrabold text-[14px] tracking-tight leading-tight" style={{ color: "#60a5fa" }}>
                   Playbook
                 </span>
               </div>
@@ -407,7 +409,7 @@ export default function Navigation() {
                 <span className="font-extrabold text-[14px] tracking-tight leading-tight" style={{ color: "#e2e8f0" }}>
                   Pickleball
                 </span>
-                <span className="font-extrabold text-brand-500 text-[14px] tracking-tight leading-tight">
+                <span className="font-extrabold text-[14px] tracking-tight leading-tight" style={{ color: "#60a5fa" }}>
                   Playbook
                 </span>
               </div>
@@ -449,7 +451,8 @@ export default function Navigation() {
               </button>
               <button
                 onClick={() => setQuizOpen(true)}
-                className="btn-primary text-sm py-2 px-5"
+                className="inline-flex items-center gap-2 font-semibold text-sm py-2 px-5 rounded-xl transition-all duration-200 active:scale-[0.98]"
+                style={{ background: "#ffffff", color: "#0a64bc" }}
               >
                 Find My Paddle Quiz
               </button>

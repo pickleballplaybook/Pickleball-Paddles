@@ -117,7 +117,7 @@ function ThumbDesign({ paddles, weekOf }: { paddles: Paddle[]; weekOf: string })
         overflow: "hidden",
         background: [
           // Top-center teal aurora — focuses attention on headline
-          "radial-gradient(ellipse 80% 50% at 50% -5%, rgba(20,184,166,0.28) 0%, transparent 70%)",
+          "radial-gradient(ellipse 80% 50% at 50% -5%, rgba(10, 100, 188,0.30) 0%, transparent 70%)",
           // Mid-canvas champagne spotlight under paddles
           "radial-gradient(ellipse 55% 35% at 50% 62%, rgba(212,163,90,0.10) 0%, transparent 70%)",
           // Bottom-right warm vignette
@@ -356,8 +356,8 @@ function ThumbDesign({ paddles, weekOf }: { paddles: Paddle[]; weekOf: string })
             height: 130,
             borderRadius: 26,
             overflow: "hidden",
-            border: "3px solid rgba(45,212,191,0.65)",
-            boxShadow: "0 14px 36px rgba(20,184,166,0.35), inset 0 1px 0 rgba(255,255,255,0.12), 0 0 0 1px rgba(0,0,0,0.4)",
+            border: "3px solid rgba(10, 100, 188,0.65)",
+            boxShadow: "0 14px 36px rgba(10, 100, 188,0.35), inset 0 1px 0 rgba(255,255,255,0.12), 0 0 0 1px rgba(0,0,0,0.4)",
             background: "#0a1628",
             flexShrink: 0,
           }}
@@ -382,7 +382,7 @@ function ThumbDesign({ paddles, weekOf }: { paddles: Paddle[]; weekOf: string })
               fontWeight: 800,
               letterSpacing: "0.30em",
               textTransform: "uppercase",
-              color: "rgba(45,212,191,0.95)",
+              color: "rgba(10, 100, 188,0.95)",
               marginBottom: 4,
             }}
           >
@@ -409,7 +409,7 @@ function ThumbDesign({ paddles, weekOf }: { paddles: Paddle[]; weekOf: string })
           gap: 16,
         }}
       >
-        <span style={{ flex: 1, height: 1, background: "linear-gradient(90deg, transparent, rgba(20,184,166,0.30), transparent)" }} />
+        <span style={{ flex: 1, height: 1, background: "linear-gradient(90deg, transparent, rgba(10, 100, 188,0.30), transparent)" }} />
         <span
           style={{
             fontSize: 14,
@@ -422,7 +422,7 @@ function ThumbDesign({ paddles, weekOf }: { paddles: Paddle[]; weekOf: string })
         >
           PlaybookPaddles.com
         </span>
-        <span style={{ flex: 1, height: 1, background: "linear-gradient(90deg, transparent, rgba(20,184,166,0.30), transparent)" }} />
+        <span style={{ flex: 1, height: 1, background: "linear-gradient(90deg, transparent, rgba(10, 100, 188,0.30), transparent)" }} />
       </div>
     </div>
   );

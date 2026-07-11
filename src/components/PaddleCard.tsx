@@ -93,8 +93,8 @@ export default function PaddleCard({ paddle, index = 0, heartCount = 0, dislikeC
           ) : (
             <>
               <svg viewBox="0 0 120 160" fill="none" className="w-20 h-auto mb-2 opacity-15" aria-hidden>
-                <rect x="5" y="5" width="110" height="115" rx="55" fill="#14b8a6" />
-                <rect x="45" y="116" width="30" height="40" rx="15" fill="#0d9488" />
+                <rect x="5" y="5" width="110" height="115" rx="55" fill="#60a5fa" />
+                <rect x="45" y="116" width="30" height="40" rx="15" fill="#11295f" />
               </svg>
               <p className="text-[10px] font-medium tracking-wide" style={{ color: "var(--text-muted)" }}>
                 Image coming soon
@@ -115,7 +115,10 @@ export default function PaddleCard({ paddle, index = 0, heartCount = 0, dislikeC
       {/* Content */}
       <div className="flex flex-col flex-1 p-5">
 
-        <p className="text-xs font-bold uppercase tracking-widest text-brand-500 mb-1">
+        <p
+          className="inline-block self-start text-[10px] font-extrabold uppercase tracking-widest mb-2 px-2 py-0.5 rounded"
+          style={{ background: "#DC2626", color: "#fff", border: "2px solid #ffffff", boxShadow: "0 0 0 1px #DC2626" }}
+        >
           {paddle.brand}
         </p>
 
@@ -182,7 +185,7 @@ export default function PaddleCard({ paddle, index = 0, heartCount = 0, dislikeC
                   {paddle.price}
                 </span>
                 {discounted && (
-                  <span className="text-2xl font-extrabold tabular-nums" style={{ color: "#14b8a6" }}>
+                  <span className="text-2xl font-extrabold tabular-nums" style={{ color: "var(--flip-text-head)" }}>
                     {discounted}
                   </span>
                 )}
@@ -191,9 +194,9 @@ export default function PaddleCard({ paddle, index = 0, heartCount = 0, dislikeC
                 <span
                   className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-1 rounded-full flex-shrink-0"
                   style={{
-                    background: "rgba(222,250,50,0.10)",
-                    color: "var(--discount-text)",
-                    border: "1px solid rgba(222,250,50,0.30)",
+                    background: "var(--flip-bg-card)",
+                    color: "var(--flip-text-head)",
+                    border: "1px solid var(--flip-card-border)",
                   }}
                 >
                   Save {paddle.amountOff}
@@ -293,7 +296,7 @@ export default function PaddleCard({ paddle, index = 0, heartCount = 0, dislikeC
               target="_blank"
               rel="noopener noreferrer sponsored"
               className="block w-full inline-flex items-center justify-center gap-1.5 font-semibold rounded-xl text-sm py-2.5 transition-all active:scale-[0.98]"
-              style={{ background: "var(--btn-buy-bg)", color: "var(--btn-buy-text)" }}
+              style={{ background: "var(--btn-buy-bg)", color: "var(--btn-buy-text)", border: "var(--btn-buy-border)", boxShadow: "var(--btn-buy-shadow)" }}
             >
               {buyAtLabel(paddle.brand)}
             </a>
@@ -303,7 +306,7 @@ export default function PaddleCard({ paddle, index = 0, heartCount = 0, dislikeC
               target="_blank"
               rel="noopener noreferrer"
               className="block w-full inline-flex items-center justify-center gap-2 text-sm py-2.5 rounded-xl font-medium transition-colors"
-              style={{ background: "var(--bg-alt)", color: "#cbd5e1", border: "1px solid var(--border)" }}
+              style={{ background: "var(--bg-alt)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}
             >
               <span style={{ color: "#dc2626" }}><YouTubeIcon className="w-4 h-4" /></span>
               Watch Review
@@ -324,8 +327,8 @@ export default function PaddleCard({ paddle, index = 0, heartCount = 0, dislikeC
               href={reviewLink!}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-white"
-              style={{ color: "#cbd5e1" }}
+              className="inline-flex items-center gap-1.5 text-sm font-medium transition-colors hover:opacity-80"
+              style={{ color: "var(--text-secondary)" }}
             >
               <span style={{ color: "#dc2626" }}><YouTubeIcon className="w-3.5 h-3.5" /></span>
               Watch Review

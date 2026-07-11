@@ -64,7 +64,7 @@ export default function StickyBottomBar({ name, brand, price, discountLink, slug
               href={discountLink as string}
               code={hasCode ? code : undefined}
               className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-bold text-white transition-all active:scale-[0.97]"
-              style={{ background: "#14b8a6" }}
+              style={{ background: "#0a64bc" }}
               ariaLabel={hasCode ? `Buy ${brand} ${name} with discount code ${code}` : `Buy ${brand} ${name}`}
             >
               Apply Discount <ExternalLink className="w-3.5 h-3.5" />

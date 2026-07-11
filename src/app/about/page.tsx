@@ -174,7 +174,7 @@ export default function AboutPage() {
             >
               Finding the Right Paddle
               <br />
-              <span style={{ color: "#14b8a6" }}>Shouldn&apos;t Be a Guessing Game.</span>
+              <span style={{ color: "#60a5fa" }}>Shouldn&apos;t Be a Guessing Game.</span>
             </h1>
 
             {/* Intro with headshot */}
@@ -184,7 +184,7 @@ export default function AboutPage() {
                 src="/images/Austin-head-shot.png"
                 alt="Austin Hardy — Pickleball Playbook founder"
                 className="w-16 h-16 rounded-full object-cover flex-shrink-0 mt-1"
-                style={{ border: "2px solid rgba(20,184,166,0.4)" }}
+                style={{ border: "2px solid rgba(10, 100, 188,0.4)" }}
               />
               <div>
                 <p className="font-bold text-base" style={{ color: "var(--text-primary)" }}>Austin Hardy</p>
@@ -228,7 +228,7 @@ export default function AboutPage() {
 
           {/* ── CREDENTIALS GRID ────────────────────────────────────────────── */}
           <div className="mt-20 max-w-5xl">
-            <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#14b8a6" }}>
+            <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#60a5fa" }}>
               Credentials
             </p>
             <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-8" style={{ color: "var(--text-primary)" }}>
@@ -246,7 +246,7 @@ export default function AboutPage() {
                   className="rounded-2xl p-5"
                   style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}
                 >
-                  <Icon className="w-5 h-5 mb-3" style={{ color: "#14b8a6" }} />
+                  <Icon className="w-5 h-5 mb-3" style={{ color: "#60a5fa" }} />
                   <p className="text-2xl font-extrabold mb-1" style={{ color: "var(--text-primary)" }}>{value}</p>
                   <p className="text-xs uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>{label}</p>
                 </div>
@@ -256,7 +256,7 @@ export default function AboutPage() {
 
           {/* ── HOW WE REVIEW (existing 3-step content preserved) ───────────── */}
           <div className="mt-24 max-w-4xl">
-            <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#14b8a6" }}>
+            <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#60a5fa" }}>
               The Process
             </p>
             <h2
@@ -305,7 +305,7 @@ export default function AboutPage() {
                     <img src={image} alt={alt} className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1">
-                    <span className="inline-block text-5xl font-extrabold leading-none mb-4" style={{ color: "rgba(20,184,166,0.18)" }}>
+                    <span className="inline-block text-5xl font-extrabold leading-none mb-4" style={{ color: "rgba(10, 100, 188,0.30)" }}>
                       {step}
                     </span>
                     <h3 className="text-2xl font-extrabold mb-3" style={{ color: "var(--text-primary)" }}>
@@ -323,14 +323,14 @@ export default function AboutPage() {
               <p className="text-sm" style={{ color: "var(--text-muted)" }}>
                 <strong style={{ color: "var(--text-primary)" }}>Want the full protocol?</strong>{" "}
                 The complete testing methodology — exact equipment, scoring rubric, and how we translate specs to gameplay — is documented on the{" "}
-                <Link href="/how-we-test" className="font-bold" style={{ color: "#14b8a6" }}>How We Test page →</Link>
+                <Link href="/how-we-test" className="font-bold" style={{ color: "#60a5fa" }}>How We Test page →</Link>
               </p>
             </div>
           </div>
 
           {/* ── EDITORIAL STANDARDS / DISCLOSURE ────────────────────────────── */}
           <div className="mt-24 max-w-3xl">
-            <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#14b8a6" }}>
+            <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#60a5fa" }}>
               Editorial Standards
             </p>
             <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-6" style={{ color: "var(--text-primary)" }}>
@@ -366,7 +366,7 @@ export default function AboutPage() {
 
           {/* ── FAQ ─────────────────────────────────────────────────────────── */}
           <div className="mt-24 max-w-3xl">
-            <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#14b8a6" }}>
+            <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#60a5fa" }}>
               FAQ
             </p>
             <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-8" style={{ color: "var(--text-primary)" }}>
@@ -392,7 +392,7 @@ export default function AboutPage() {
 
           {/* ── CONNECT ─────────────────────────────────────────────────────── */}
           <div className="mt-24 max-w-3xl">
-            <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#14b8a6" }}>
+            <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#60a5fa" }}>
               Connect
             </p>
             <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-8" style={{ color: "var(--text-primary)" }}>
@@ -417,7 +417,7 @@ export default function AboutPage() {
                 className="rounded-2xl p-5 transition-colors hover:border-teal-400/50"
                 style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}
               >
-                <Mail className="w-5 h-5 mb-3" style={{ color: "#14b8a6" }} />
+                <Mail className="w-5 h-5 mb-3" style={{ color: "#60a5fa" }} />
                 <p className="font-bold text-base mb-1" style={{ color: "var(--text-primary)" }}>Newsletter</p>
                 <p className="text-xs" style={{ color: "var(--text-muted)" }}>Weekly paddle picks + discount codes</p>
               </a>
@@ -426,7 +426,7 @@ export default function AboutPage() {
                 className="rounded-2xl p-5 transition-colors hover:border-teal-400/50"
                 style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}
               >
-                <Mail className="w-5 h-5 mb-3" style={{ color: "#14b8a6" }} />
+                <Mail className="w-5 h-5 mb-3" style={{ color: "#60a5fa" }} />
                 <p className="font-bold text-base mb-1" style={{ color: "var(--text-primary)" }}>Contact</p>
                 <p className="text-xs" style={{ color: "var(--text-muted)" }}>Review request, partnerships, feedback</p>
               </Link>

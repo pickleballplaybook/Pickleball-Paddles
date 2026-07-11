@@ -25,7 +25,7 @@ export default function FeatureBar() {
             {/* Titan image — shown when titanImage is set */}
             {titanImage && (
               <div className="flex-shrink-0 w-16 h-16 rounded-2xl overflow-hidden"
-                style={{ background: "rgba(20,184,166,0.12)" }}
+                style={{ background: "rgba(10, 100, 188,0.30)" }}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -52,7 +52,7 @@ export default function FeatureBar() {
             href="/categories"
             className="flex-shrink-0 inline-flex items-center gap-2 font-bold text-sm px-5 py-2.5 rounded-xl transition-all duration-200 active:scale-[0.98] whitespace-nowrap"
             style={{
-              background: "#14b8a6",
+              background: "#0a64bc",
               color: "#fff",
             }}
           >

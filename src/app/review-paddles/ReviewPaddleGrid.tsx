@@ -34,8 +34,8 @@ function PaddleReviewCard({ paddle, heartCount = 0 }: { paddle: PaddleEntry; hea
           <img src={paddle.image} alt={paddle.name} className="w-full h-full object-contain p-1" />
         ) : (
           <svg viewBox="0 0 120 160" fill="none" className="w-7 h-auto opacity-20" aria-hidden>
-            <rect x="5" y="5" width="110" height="115" rx="55" fill="#14b8a6" />
-            <rect x="45" y="116" width="30" height="40" rx="15" fill="#0d9488" />
+            <rect x="5" y="5" width="110" height="115" rx="55" fill="#60a5fa" />
+            <rect x="45" y="116" width="30" height="40" rx="15" fill="#11295f" />
           </svg>
         )}
       </div>
@@ -60,7 +60,7 @@ function PaddleReviewCard({ paddle, heartCount = 0 }: { paddle: PaddleEntry; hea
           onClick={() => toggle("heart")}
           aria-label="Save this paddle"
           className="p-2 rounded-lg transition-all duration-150 active:scale-90"
-          style={{ color: reaction === "heart" ? "#2dd4bf" : "var(--text-muted)" }}
+          style={{ color: reaction === "heart" ? "#0a64bc" : "var(--text-muted)" }}
         >
           <Bookmark
             className="w-5 h-5"

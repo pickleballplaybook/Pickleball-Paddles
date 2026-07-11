@@ -168,9 +168,9 @@ export default function DiscountsPage() {
 
         {/* Hero */}
         <div className="text-center mb-14 max-w-2xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6" style={{ background: "rgba(20,184,166,0.12)", border: "1px solid rgba(20,184,166,0.3)" }}>
-            <Tag className="w-4 h-4" style={{ color: "#2dd4bf" }} />
-            <span className="text-sm font-bold" style={{ color: "#2dd4bf" }}>{deals.length} Deals Available</span>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6" style={{ background: "rgba(10, 100, 188,0.30)", border: "1px solid rgba(10, 100, 188,0.3)" }}>
+            <Tag className="w-4 h-4" style={{ color: "#60a5fa" }} />
+            <span className="text-sm font-bold" style={{ color: "#60a5fa" }}>{deals.length} Deals Available</span>
           </div>
           <h1
             className="text-4xl md:text-5xl font-extrabold tracking-tight mb-5"
@@ -179,7 +179,7 @@ export default function DiscountsPage() {
             Pickleball Discount Codes
           </h1>
           <p className="text-xl mb-3" style={{ color: "var(--text-muted)" }}>
-            Use code <span className="font-mono font-extrabold" style={{ color: "#2dd4bf" }}>&quot;PLAYBOOK&quot;</span> to
+            Use code <span className="font-mono font-extrabold" style={{ color: "#60a5fa" }}>&quot;PLAYBOOK&quot;</span> to
             save on paddles, gear, and more.
           </p>
           <p className="text-sm" style={{ color: "var(--text-muted)" }}>
@@ -204,7 +204,7 @@ export default function DiscountsPage() {
                 className="text-xs font-bold px-3 py-1.5 rounded-[10px] transition-all"
                 style={
                   sort === mode
-                    ? { background: "#14b8a6", color: "#fff" }
+                    ? { background: "#0a64bc", color: "#fff" }
                     : { color: "var(--text-muted)" }
                 }
               >
@@ -231,8 +231,8 @@ export default function DiscountsPage() {
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={deal.image} alt={deal.name} className="max-h-20 w-auto object-contain" />
                 ) : (
-                  <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ background: "rgba(20,184,166,0.15)" }}>
-                    <Tag className="w-6 h-6" style={{ color: "#2dd4bf" }} />
+                  <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ background: "rgba(10, 100, 188,0.30)" }}>
+                    <Tag className="w-6 h-6" style={{ color: "#60a5fa" }} />
                   </div>
                 )}
               </div>
@@ -244,18 +244,18 @@ export default function DiscountsPage() {
                     {deal.name}
                   </h2>
                   {deal.type === "gear" && (
-                    <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md" style={{ background: "rgba(20,184,166,0.12)", color: "#2dd4bf" }}>
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md" style={{ background: "rgba(10, 100, 188,0.30)", color: "#60a5fa" }}>
                       Gear
                     </span>
                   )}
                 </div>
                 <p className="text-sm mb-4" style={{ color: "var(--text-muted)" }}>
                   {deal.code ? (
-                    <>Use code <span className="font-mono font-bold" style={{ color: "#2dd4bf" }}>&quot;{deal.code}&quot;</span> for{" "}</>
+                    <>Use code <span className="font-mono font-bold" style={{ color: "#60a5fa" }}>&quot;{deal.code}&quot;</span> for{" "}</>
                   ) : (
                     <>Get </>
                   )}
-                  <span className="font-bold" style={{ color: "#2dd4bf" }}>{deal.discount}{deal.code ? " off" : ""}</span>
+                  <span className="font-bold" style={{ color: "#60a5fa" }}>{deal.discount}{deal.code ? " off" : ""}</span>
                 </p>
 
                 <div className="mt-auto flex items-center gap-3">
@@ -264,7 +264,7 @@ export default function DiscountsPage() {
                     target="_blank"
                     rel="noopener noreferrer sponsored"
                     className="flex-1 inline-flex items-center justify-center gap-2 font-bold text-sm py-3 rounded-xl text-white transition-all hover:scale-[1.02]"
-                    style={{ background: "#14b8a6" }}
+                    style={{ background: "#0a64bc" }}
                   >
                     Shop {deal.name.split(" ").slice(0, 2).join(" ")} <ArrowRight className="w-4 h-4" />
                   </a>
@@ -300,7 +300,7 @@ export default function DiscountsPage() {
                   className="w-8 h-8 rounded-lg text-xs font-bold transition-all"
                   style={
                     i === page
-                      ? { background: "#14b8a6", color: "#fff" }
+                      ? { background: "#0a64bc", color: "#fff" }
                       : { background: "var(--bg-card)", color: "var(--text-muted)", border: "1px solid rgba(255,255,255,0.08)" }
                   }
                 >

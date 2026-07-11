@@ -76,7 +76,7 @@ export default function FeaturedGearPanel({ paddleId }: Props) {
           )}
           <span
             className="absolute top-3 left-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest"
-            style={{ background: "rgba(20,184,166,0.95)", color: "#0a1628" }}
+            style={{ background: "#0a64bc", color: "#ffffff", border: "2px solid #ffffff", boxShadow: "0 0 0 1px #0a64bc" }}
           >
             <Sparkles className="w-3 h-3" strokeWidth={3} />
             Recommended
@@ -94,7 +94,7 @@ export default function FeaturedGearPanel({ paddleId }: Props) {
 
       {/* Body */}
       <div className="p-5">
-        <p className="text-[10px] font-bold uppercase tracking-widest mb-1.5" style={{ color: "#2dd4bf" }}>
+        <p className="text-[10px] font-bold uppercase tracking-widest mb-1.5" style={{ color: "#60a5fa" }}>
           {gear.brand}
         </p>
         <Link href={`/gear/${gear.id}`} className="block group">
@@ -118,7 +118,7 @@ export default function FeaturedGearPanel({ paddleId }: Props) {
           target="_blank"
           rel="noopener noreferrer sponsored"
           className="flex items-center justify-center gap-2 w-full font-bold text-sm py-3 rounded-xl mb-2 transition-all active:scale-[0.98]"
-          style={{ background: "var(--btn-buy-bg)", color: "var(--btn-buy-text)" }}
+          style={{ background: "var(--btn-gear-bg)", color: "var(--btn-buy-text)", border: "var(--btn-buy-border)", boxShadow: "var(--btn-gear-shadow)" }}
         >
           Buy at {gear.brand} <ExternalLink className="w-3.5 h-3.5" />
         </a>

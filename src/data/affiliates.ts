@@ -44,7 +44,7 @@ export interface AffiliateBrand {
 // keyboard navigation, and search results match a single canonical order.
 export const affiliateBrands: AffiliateBrand[] = [
   { id: "11six24",         name: "11SIX24",        discountOff: "$10 off", commission: "10%",                  adminUrl: "https://af.uppromote.com/11six24-pickleball/dashboard",                                   platform: "Uppromote" },
-  { id: "six-zero",        name: "6.0",            discountOff: "10%",     commission: "10%",                  adminUrl: "https://af.uppromote.com/six-zero-usa/login",                                              platform: "Uppromote" },
+  { id: "six-zero",        name: "Six Zero",            discountOff: "10%",     commission: "10%",                  adminUrl: "https://af.uppromote.com/six-zero-usa/login",                                              platform: "Uppromote" },
   { id: "aireo",           name: "Aireo",          discountOff: "15%",     commission: "15%" },
   { id: "battle-paddles",  name: "Battle Paddles",                          commission: "10%",                  adminUrl: "https://af.uppromote.com/battle-paddles/login",                                            platform: "Uppromote" },
   { id: "beyond-measure",  name: "Beyond Measure", discountOff: "10%",     commission: "10%",                  adminUrl: "https://collabs.shopify.com/collab/5891607",                                               platform: "Shopify Collabs" },

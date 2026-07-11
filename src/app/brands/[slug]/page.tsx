@@ -185,7 +185,7 @@ export default function BrandPage({ params }: Props) {
                 {brand.description}
               </p>
               <div className="flex flex-wrap gap-2 text-sm">
-                <span className="px-3 py-1.5 rounded-full font-semibold" style={{ background: "rgba(20,184,166,0.12)", color: "#2dd4bf" }}>
+                <span className="px-3 py-1.5 rounded-full font-semibold" style={{ background: "rgba(10, 100, 188,0.30)", color: "#60a5fa" }}>
                   {brandPaddles.length} Paddle{brandPaddles.length !== 1 ? "s" : ""}
                 </span>
                 {/* Shape breakdown — one chip per shape with count, instead of */}
@@ -208,7 +208,7 @@ export default function BrandPage({ params }: Props) {
                   </span>
                 )}
                 {hasDiscount && (
-                  <span className="px-3 py-1.5 rounded-full font-bold font-mono" style={{ background: "rgba(20,184,166,0.12)", color: "#2dd4bf", border: "1px solid rgba(20,184,166,0.25)" }}>
+                  <span className="px-3 py-1.5 rounded-full font-bold font-mono" style={{ background: "rgba(10, 100, 188,0.30)", color: "#60a5fa", border: "1px solid rgba(10, 100, 188,0.30)" }}>
                     Code: {code}
                   </span>
                 )}
@@ -222,13 +222,13 @@ export default function BrandPage({ params }: Props) {
               <Link
                 href={`/paddles/${featured.slug}`}
                 className="group block rounded-3xl overflow-hidden transition-all hover:scale-[1.005]"
-                style={{ background: "var(--bg-card)", border: "1px solid rgba(20,184,166,0.25)" }}
+                style={{ background: "var(--bg-card)", border: "1px solid rgba(10, 100, 188,0.30)" }}
               >
                 <div className="grid grid-cols-1 md:grid-cols-2">
                   {/* Image */}
                   <div
                     className="relative flex items-center justify-center aspect-[5/4] md:aspect-auto md:min-h-[320px] p-8"
-                    style={{ background: "linear-gradient(135deg, rgba(20,184,166,0.08) 0%, rgba(20,184,166,0.02) 100%)" }}
+                    style={{ background: "linear-gradient(135deg, rgba(10, 100, 188,0.28) 0%, rgba(10, 100, 188,0.14) 100%)" }}
                   >
                     {featured.image && (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -240,7 +240,7 @@ export default function BrandPage({ params }: Props) {
                     )}
                     <span
                       className="absolute top-5 left-5 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-widest"
-                      style={{ background: "rgba(20,184,166,0.95)", color: "#0a1628" }}
+                      style={{ background: "rgba(10, 100, 188,0.95)", color: "#0a1628" }}
                     >
                       <Sparkles className="w-3 h-3" strokeWidth={3} />
                       Featured
@@ -248,7 +248,7 @@ export default function BrandPage({ params }: Props) {
                   </div>
                   {/* Details */}
                   <div className="p-6 md:p-10 flex flex-col justify-center">
-                    <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#2dd4bf" }}>
+                    <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#60a5fa" }}>
                       Most Popular {brand.name}
                     </p>
                     <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight mb-3 group-hover:text-teal-400 transition-colors" style={{ color: "var(--text-primary)" }}>
@@ -279,7 +279,7 @@ export default function BrandPage({ params }: Props) {
                         </div>
                       ))}
                     </div>
-                    <div className="inline-flex items-center gap-2 text-sm font-bold transition-colors" style={{ color: "#2dd4bf" }}>
+                    <div className="inline-flex items-center gap-2 text-sm font-bold transition-colors" style={{ color: "#60a5fa" }}>
                       Read the full review
                       <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
                     </div>
@@ -347,7 +347,7 @@ export default function BrandPage({ params }: Props) {
                       </div>
                     )}
                     <div className="p-4">
-                      <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "#14b8a6" }}>
+                      <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "#60a5fa" }}>
                         {post.brand}
                       </p>
                       <h3 className="text-sm font-bold line-clamp-2 group-hover:text-teal-400 transition-colors" style={{ color: "var(--text-primary)" }}>
@@ -368,7 +368,7 @@ export default function BrandPage({ params }: Props) {
             <Link
               href="/paddles"
               className="inline-flex items-center gap-2 font-bold text-sm px-6 py-3 rounded-xl text-white transition-all hover:scale-[1.02]"
-              style={{ background: "#14b8a6" }}
+              style={{ background: "#0a64bc" }}
             >
               Browse All Paddles <ArrowRight className="w-4 h-4" />
             </Link>

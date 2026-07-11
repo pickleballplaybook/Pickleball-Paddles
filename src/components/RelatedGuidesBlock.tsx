@@ -38,12 +38,12 @@ export default function RelatedGuidesBlock({
   return (
     <section className="mt-20 max-w-5xl mx-auto">
       {eyebrow && (
-        <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "#14b8a6" }}>
+        <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "#60a5fa" }}>
           {eyebrow}
         </p>
       )}
       <div className="flex items-center gap-2.5 mb-6">
-        <BookOpen className="w-5 h-5" style={{ color: "#2dd4bf" }} />
+        <BookOpen className="w-5 h-5" style={{ color: "#60a5fa" }} />
         <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight" style={{ color: "var(--text-primary)" }}>
           {title}
         </h2>
@@ -59,7 +59,7 @@ export default function RelatedGuidesBlock({
               border: "1px solid rgba(255,255,255,0.08)",
             }}
           >
-            <p className="text-[10px] font-extrabold uppercase tracking-widest mb-1.5" style={{ color: "rgba(45,212,191,0.9)" }}>
+            <p className="text-[10px] font-extrabold uppercase tracking-widest mb-1.5" style={{ color: "rgba(10, 100, 188,0.9)" }}>
               {GUIDE_CATEGORIES[g.category].label}
             </p>
             <p className="font-bold text-base leading-snug mb-1.5" style={{ color: "var(--text-primary)" }}>

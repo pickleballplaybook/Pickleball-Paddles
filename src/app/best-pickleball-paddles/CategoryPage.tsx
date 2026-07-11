@@ -5,6 +5,7 @@ import { siteConfig } from "@/config/site";
 import { getPaddleCountLabel } from "@/lib/catalogStats";
 import type { Paddle } from "@/types";
 import RelatedGuidesBlock from "@/components/RelatedGuidesBlock";
+import RelatedDrillsBlock from "@/components/RelatedDrillsBlock";
 
 function getCode(brand: string, discountLink?: string): string {
   if (brand === "Selkirk" || brand === "SLK") {
@@ -242,6 +243,18 @@ export default function CategoryPage({ category, accent, headline, intro, picks,
             title={`Learn More About ${category}`}
           />
         )}
+
+        {/* Drill/training content cluster — every category page links into
+            the drill hub. Universal pick across categories. */}
+        <RelatedDrillsBlock
+          slugs={[
+            "best-pickleball-drills",
+            "pickleball-third-shot-drop",
+            "how-to-get-better-at-pickleball",
+            "best-pickleball-training-tools",
+          ]}
+        />
+
 
         {/* CTA */}
         <div className="mt-16 flex flex-col items-center text-center gap-5">

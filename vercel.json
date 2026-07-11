@@ -2,6 +2,7 @@
   "crons": [
     { "path": "/api/cron/weekly-rankings", "schedule": "0 6 * * 1" },
     { "path": "/api/cron/sync-external-reviews", "schedule": "0 7 * * *" },
-    { "path": "/api/cron/stripe-mirror-sync", "schedule": "0 8 * * *" }
+    { "path": "/api/cron/stripe-mirror-sync", "schedule": "0 8 * * *" },
+    { "path": "/api/cron/sync-substack", "schedule": "0 */6 * * *" }
   ]
 }

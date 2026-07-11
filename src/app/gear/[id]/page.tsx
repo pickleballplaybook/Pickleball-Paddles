@@ -5,9 +5,16 @@ import { ArrowLeft, ArrowRight, Check, Star, ExternalLink, ChevronRight } from "
 import { gearProducts } from "@/data/products";
 import { siteConfig } from "@/config/site";
 import YouTubeEmbed from "@/components/YouTubeEmbed";
+import AutoCutVideo from "@/components/AutoCutVideo";
 import ViewCounter from "@/components/ViewCounter";
 import PaddleStarRating from "@/components/PaddleStarRating";
 import ExternalReviewBadge from "@/components/ExternalReviewBadge";
+import gearContent from "@/data/gear-content.json";
+
+type GearLongFormContent = {
+  overview: string;
+  useCases: { title: string; description: string }[];
+};
 
 interface Props {
   params: { id: string };
@@ -78,6 +85,10 @@ export default function GearProductPage({ params }: Props) {
   const discountedPrice = calcDiscountedPrice(product.price, product.badge);
   const hasPrice = product.price && product.price !== "Free";
 
+  // Long-form SEO content — overview + use cases. Populated by
+  // scripts/generate-gear-content.ts. Missing entries render nothing.
+  const longForm = (gearContent as Record<string, GearLongFormContent>)[product.id] as GearLongFormContent | undefined;
+
   // JSON-LD — Product, Breadcrumb, FAQ (when present). Browsers ignore;
   // Google reads them to enable rich results (price + review snippets,
   // breadcrumb trail in SERPs, FAQ accordion under the listing).
@@ -124,6 +135,24 @@ export default function GearProductPage({ params }: Props) {
     })),
   } : null;
 
+  // Article JSON-LD — emitted whenever long-form overview content exists.
+  // Tells Google this page is a substantive editorial review, not just a
+  // product listing, which unlocks article-type rich results.
+  const articleSchema = longForm?.overview ? {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": `${fullName} Review and Buying Guide`,
+    "author": { "@type": "Person", "name": "Austin Hardy", "url": `${siteConfig.siteUrl}/about` },
+    "publisher": {
+      "@type": "Organization",
+      "name": siteConfig.name,
+      "url": siteConfig.siteUrl,
+    },
+    "image": product.image ? `${siteConfig.siteUrl}${product.image}` : undefined,
+    "articleBody": longForm.overview,
+    "mainEntityOfPage": { "@type": "WebPage", "@id": `${siteConfig.siteUrl}/gear/${product.id}` },
+  } : null;
+
   const reviewsHost = product.reviewsUrl ? (() => {
     try { return new URL(product.reviewsUrl).hostname.replace(/^www\./, ""); } catch { return null; }
   })() : null;
@@ -134,6 +163,9 @@ export default function GearProductPage({ params }: Props) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       {faqSchema && (
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      )}
+      {articleSchema && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
       )}
 
       <div className="min-h-screen pt-[156px]" style={{ background: "var(--bg-page)" }}>
@@ -173,10 +205,10 @@ export default function GearProductPage({ params }: Props) {
                 aspectRatio: "1/1",
               }}
             >
-              {product.imageAspect !== "none" && product.image ? (
+              {product.imageAspect !== "none" && (product.featuredImage || product.image) ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={product.image}
+                  src={product.featuredImage ?? product.image}
                   alt={`${fullName} for pickleball`}
                   className="w-full h-full object-cover object-center"
                 />
@@ -196,18 +228,23 @@ export default function GearProductPage({ params }: Props) {
                 <span
                   className="self-start text-[11px] font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-5"
                   style={{
-                    background: "rgba(20,184,166,0.15)",
-                    color: "#2dd4bf",
-                    border: "1px solid rgba(20,184,166,0.35)",
+                    background: "rgba(10, 100, 188,0.30)",
+                    color: "#60a5fa",
+                    border: "1px solid rgba(10, 100, 188,0.35)",
                   }}
                 >
                   {product.badge}
                 </span>
               )}
 
-              <p className="text-xs font-bold uppercase tracking-widest text-brand-500 mb-2">
-                {product.brand}
-              </p>
+              <div className="flex items-center gap-2 flex-wrap mb-2">
+                <p
+                  className="inline-block text-[11px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded"
+                  style={{ background: "#DC2626", color: "#ffffff", border: "2px solid #ffffff", boxShadow: "0 0 0 1px #DC2626" }}
+                >
+                  {product.brand}
+                </p>
+              </div>
 
               <h1
                 className="font-extrabold tracking-tight leading-tight mb-3"
@@ -224,7 +261,7 @@ export default function GearProductPage({ params }: Props) {
                       <span className="text-2xl font-semibold line-through" style={{ color: "var(--text-muted)" }}>
                         {product.price}
                       </span>
-                      <span className="text-3xl font-extrabold" style={{ color: "#2dd4bf" }}>
+                      <span className="text-3xl font-extrabold" style={{ color: "#60a5fa" }}>
                         {discountedPrice}
                       </span>
                     </>
@@ -245,11 +282,11 @@ export default function GearProductPage({ params }: Props) {
               {product.bestFor && (
                 <div
                   className="rounded-xl px-4 py-3 mb-5 flex items-start gap-3"
-                  style={{ background: "rgba(20,184,166,0.08)", border: "1px solid rgba(20,184,166,0.20)" }}
+                  style={{ background: "rgba(10, 100, 188,0.28)", border: "1px solid rgba(10, 100, 188,0.30)" }}
                 >
-                  <Star className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: "#2dd4bf" }} />
+                  <Star className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: "#60a5fa" }} />
                   <div>
-                    <p className="text-[11px] font-bold uppercase tracking-widest mb-1" style={{ color: "#14b8a6" }}>
+                    <p className="text-[11px] font-bold uppercase tracking-widest mb-1" style={{ color: "#60a5fa" }}>
                       Best For
                     </p>
                     <p className="text-sm leading-snug" style={{ color: "var(--text-primary)" }}>
@@ -279,8 +316,9 @@ export default function GearProductPage({ params }: Props) {
                 rel="noopener noreferrer sponsored"
                 className="self-start inline-flex items-center gap-2 font-bold text-base px-8 py-4 rounded-2xl text-white transition-all duration-200 active:scale-[0.97] mb-2"
                 style={{
-                  background: "linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)",
-                  boxShadow: "0 0 32px rgba(20,184,166,0.35), 0 4px 12px rgba(0,0,0,0.25)",
+                  background: "#0a64bc",
+                  border: "2px solid #ffffff",
+                  boxShadow: "0 0 0 1px #0a64bc, 0 0 32px rgba(10,100,188,0.35), 0 4px 12px rgba(0,0,0,0.25)",
                 }}
               >
                 {product.ctaText}
@@ -297,13 +335,13 @@ export default function GearProductPage({ params }: Props) {
                   className="rounded-2xl p-5 mb-8"
                   style={{ background: "var(--bg-section)", border: "1px solid var(--border)" }}
                 >
-                  <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: "#14b8a6" }}>
+                  <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: "#60a5fa" }}>
                     Why We Recommend It
                   </p>
                   <ul className="flex flex-col gap-3">
                     {product.highlights.map((h) => (
                       <li key={h} className="flex items-start gap-2.5">
-                        <Check className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: "#2dd4bf" }} />
+                        <Check className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: "#60a5fa" }} />
                         <span className="text-sm leading-snug" style={{ color: "var(--text-secondary)" }}>{h}</span>
                       </li>
                     ))}
@@ -330,7 +368,7 @@ export default function GearProductPage({ params }: Props) {
                   className="rounded-2xl p-5 mb-8"
                   style={{ background: "var(--bg-section)", border: "1px solid var(--border)" }}
                 >
-                  <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: "#14b8a6" }}>
+                  <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: "#60a5fa" }}>
                     Specifications
                   </p>
                   {product.specs.map((spec, i) => (
@@ -349,6 +387,56 @@ export default function GearProductPage({ params }: Props) {
             </div>
           </div>
 
+          {/* Overview & Buying Guide — long-form AI-generated SEO content.
+              Targets the high-intent "<product name> review" query. */}
+          {longForm?.overview && (
+            <section className="mt-14 max-w-3xl">
+              <h2 className="text-2xl md:text-3xl font-extrabold mb-6" style={{ color: "var(--text-primary)" }}>
+                {fullName} Review &amp; Buying Guide
+              </h2>
+              <div
+                className="rounded-2xl p-6 md:p-8"
+                style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.08)" }}
+              >
+                {longForm.overview.split("\n\n").map((paragraph, i) => (
+                  <p
+                    key={i}
+                    className="text-base leading-relaxed mb-4 last:mb-0"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
+                    {paragraph}
+                  </p>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Use cases — "Who is this for?" card grid. Each card targets a
+              long-tail search intent like "best <category> for <player type>". */}
+          {longForm?.useCases && longForm.useCases.length > 0 && (
+            <section className="mt-14 max-w-4xl">
+              <h2 className="text-2xl md:text-3xl font-extrabold mb-6" style={{ color: "var(--text-primary)" }}>
+                Who Is the {fullName} For?
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {longForm.useCases.map((uc, i) => (
+                  <div
+                    key={i}
+                    className="rounded-2xl p-5"
+                    style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.08)" }}
+                  >
+                    <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#60a5fa" }}>
+                      {uc.title}
+                    </p>
+                    <p className="text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
+                      {uc.description}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
           {/* Austin's Take */}
           {product.description && (
             <div className="mt-14 max-w-3xl">
@@ -356,7 +444,7 @@ export default function GearProductPage({ params }: Props) {
                 className="rounded-2xl p-6 md:p-8"
                 style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.08)" }}
               >
-                <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: "#14b8a6" }}>
+                <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: "#60a5fa" }}>
                   Austin&apos;s Take
                 </p>
                 {product.description.split("\n\n").map((paragraph, i) => (
@@ -377,7 +465,7 @@ export default function GearProductPage({ params }: Props) {
             <div className="mt-10 max-w-3xl">
               <div
                 className="rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4"
-                style={{ background: "rgba(20,184,166,0.06)", border: "1px solid rgba(20,184,166,0.15)" }}
+                style={{ background: "rgba(10, 100, 188,0.23)", border: "1px solid rgba(10, 100, 188,0.30)" }}
               >
                 <div>
                   <p className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>
@@ -392,7 +480,7 @@ export default function GearProductPage({ params }: Props) {
                   target="_blank"
                   rel="noopener noreferrer sponsored"
                   className="inline-flex items-center gap-2 font-bold text-sm px-6 py-3 rounded-xl text-white transition-all hover:scale-[1.02] flex-shrink-0"
-                  style={{ background: "#14b8a6" }}
+                  style={{ background: "#0a64bc", border: "2px solid #ffffff", boxShadow: "0 0 0 1px #0a64bc" }}
                 >
                   {product.ctaText} <ArrowRight className="w-4 h-4" />
                 </a>
@@ -400,15 +488,27 @@ export default function GearProductPage({ params }: Props) {
             </div>
           )}
 
-          {/* Video review */}
-          {product.videoId && (
+          {/* Video review — YouTube first, then local MP4 as fallback. */}
+          {product.videoId ? (
             <div className="mt-14 max-w-3xl">
-              <p className="text-xs font-bold uppercase tracking-widest mb-5" style={{ color: "#14b8a6" }}>
+              <p className="text-xs font-bold uppercase tracking-widest mb-5" style={{ color: "#60a5fa" }}>
                 Video Review
               </p>
               <YouTubeEmbed videoId={product.videoId} title={`${fullName} Review`} />
             </div>
-          )}
+          ) : product.videoUrl ? (
+            <div className="mt-14 max-w-3xl">
+              <p className="text-xs font-bold uppercase tracking-widest mb-5" style={{ color: "#60a5fa" }}>
+                On-Court Video
+              </p>
+              <AutoCutVideo
+                src={product.videoUrl}
+                poster={product.image}
+                className="w-full rounded-2xl"
+                style={{ aspectRatio: "16 / 9", background: "#000" }}
+              />
+            </div>
+          ) : null}
 
           {/* FAQ — surfaced before reviews so shoppers find common
               answers fast. Mirrors the FAQPage JSON-LD above for SEO. */}
@@ -457,7 +557,7 @@ export default function GearProductPage({ params }: Props) {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 text-sm font-semibold transition-colors hover:text-brand-500"
-                  style={{ color: "#2dd4bf" }}
+                  style={{ color: "#60a5fa" }}
                 >
                   Customer reviews on {reviewsHost}
                   <ExternalLink className="w-3.5 h-3.5" />

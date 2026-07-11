@@ -38,10 +38,10 @@ export default async function NewsletterEmailsAdminPage() {
   }
 
   return (
-    <div className="min-h-screen pt-[156px] pb-20" style={{ background: "var(--bg-page)" }}>
+    <div className="min-h-screen pb-20" style={{ background: "var(--bg-page)", paddingTop: "calc(var(--topbar-h, 108px) + 1rem)" }}>
       <div className="container-xl py-10 max-w-2xl mx-auto">
 
-        <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#14b8a6" }}>
+        <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#60a5fa" }}>
           Admin · Newsletter
         </p>
         <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2" style={{ color: "var(--text-primary)" }}>
@@ -63,7 +63,7 @@ export default async function NewsletterEmailsAdminPage() {
           <>
             <div className="grid grid-cols-3 gap-4 mb-6">
               <div className="rounded-2xl p-5" style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}>
-                <Users className="w-4 h-4 mb-2" style={{ color: "#14b8a6" }} />
+                <Users className="w-4 h-4 mb-2" style={{ color: "#60a5fa" }} />
                 <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "var(--text-muted)" }}>
                   Total opted-in
                 </p>

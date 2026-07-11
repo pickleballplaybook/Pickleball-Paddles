@@ -75,7 +75,7 @@ const CONFIG: AudienceConfig = {
   faq: [
     {
       q: "What's the best pickleball paddle for women?",
-      a: "There's no inherently 'women's paddle' — the right paddle depends on your game, not your gender. That said, many women prefer a lighter setup (7.5–8.0 oz, SW 107–115). The 6.0 Coral Hybrid is the cleanest single pick — perfectly balanced specs at a fair price.",
+      a: "There's no inherently 'women's paddle' — the right paddle depends on your game, not your gender. That said, many women prefer a lighter setup (7.5–8.0 oz, SW 107–115). The Six Zero Coral Hybrid is the cleanest single pick — perfectly balanced specs at a fair price.",
     },
     {
       q: "Are there pickleball paddles specifically designed for women?",
@@ -87,7 +87,7 @@ const CONFIG: AudienceConfig = {
     },
     {
       q: "What's a good first paddle if I'm new to pickleball?",
-      a: "See our dedicated beginners page — the 6.0 Coral Hybrid here is a strong pick, but the Beyond Measure Ronin (under $125) is the cleanest first paddle for any new player regardless of preferred weight setup.",
+      a: "See our dedicated beginners page — the Six Zero Coral Hybrid here is a strong pick, but the Beyond Measure Ronin (under $125) is the cleanest first paddle for any new player regardless of preferred weight setup.",
     },
   ],
   relatedGuides: [

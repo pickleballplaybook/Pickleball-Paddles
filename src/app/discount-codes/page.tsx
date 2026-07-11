@@ -110,8 +110,8 @@ export default function DiscountCodesPage() {
           {/* Hero */}
           <div className="mb-10 max-w-3xl">
             <div className="flex items-center gap-2 mb-3">
-              <Tag className="w-4 h-4" style={{ color: "#14b8a6" }} />
-              <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "#14b8a6" }}>
+              <Tag className="w-4 h-4" style={{ color: "#60a5fa" }} />
+              <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "#60a5fa" }}>
                 Codes for Every Paddle
               </p>
             </div>
@@ -121,15 +121,15 @@ export default function DiscountCodesPage() {
             <p className="text-lg leading-relaxed mb-6" style={{ color: "var(--text-muted)" }}>
               Every active discount we&apos;ve negotiated, in one searchable list. Look up any paddle by name or brand
               and grab its code in one click — most brands accept{" "}
-              <code className="font-mono font-bold px-2 py-0.5 rounded" style={{ background: "rgba(20,184,166,0.12)", color: "#2dd4bf" }}>PLAYBOOK</code>,
+              <code className="font-mono font-bold px-2 py-0.5 rounded" style={{ background: "rgba(10, 100, 188,0.30)", color: "#60a5fa" }}>PLAYBOOK</code>,
               {" "}while Selkirk on selkirk.com uses{" "}
-              <code className="font-mono font-bold px-2 py-0.5 rounded" style={{ background: "rgba(20,184,166,0.12)", color: "#2dd4bf" }}>INF-PLAYBOOK</code>.
+              <code className="font-mono font-bold px-2 py-0.5 rounded" style={{ background: "rgba(10, 100, 188,0.30)", color: "#60a5fa" }}>INF-PLAYBOOK</code>.
               Tap any code to copy it.
             </p>
             <div className="flex flex-wrap gap-4">
               {[`${deals.length} Active Codes`, `${brandCount} Brands`, "One-Click Copy", "Always Up to Date"].map((t) => (
                 <div key={t} className="flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4 flex-shrink-0" style={{ color: "#14b8a6" }} />
+                  <CheckCircle2 className="w-4 h-4 flex-shrink-0" style={{ color: "#60a5fa" }} />
                   <span className="text-sm font-medium" style={{ color: "var(--text-muted)" }}>{t}</span>
                 </div>
               ))}
@@ -166,7 +166,7 @@ export default function DiscountCodesPage() {
               <Link
                 href="/paddles"
                 className="inline-flex items-center gap-2 font-bold text-sm px-6 py-3 rounded-xl text-white transition-all hover:scale-[1.02]"
-                style={{ background: "#14b8a6" }}
+                style={{ background: "#0a64bc" }}
               >
                 Browse all paddles <ArrowRight className="w-4 h-4" />
               </Link>

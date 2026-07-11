@@ -53,9 +53,9 @@ function FilterPill({ label, onRemove }: { label: string; onRemove: () => void }
     <span
       className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl"
       style={{
-        background: "rgba(20,184,166,0.10)",
-        color:      "#2dd4bf",
-        border:     "1px solid rgba(20,184,166,0.25)",
+        background: "rgba(10, 100, 188,0.30)",
+        color:      "#60a5fa",
+        border:     "1px solid rgba(10, 100, 188,0.30)",
       }}
     >
       {label}
@@ -143,7 +143,7 @@ export default function FilterSystem({
           {activeCount > 0 && (
             <span
               className="inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-extrabold"
-              style={{ background: "#14b8a6", color: "#fff" }}
+              style={{ background: "#0a64bc", color: "#fff" }}
             >
               {activeCount}
             </span>

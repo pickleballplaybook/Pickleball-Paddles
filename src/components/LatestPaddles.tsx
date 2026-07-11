@@ -66,7 +66,7 @@ function PaddleCard({ paddle }: { paddle: Paddle }) {
         {/* subtle teal glow */}
         <div
           className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-          style={{ background: "radial-gradient(ellipse 70% 60% at 50% 50%, rgba(20,184,166,0.10) 0%, transparent 70%)" }}
+          style={{ background: "radial-gradient(ellipse 70% 60% at 50% 50%, rgba(10, 100, 188,0.30) 0%, transparent 70%)" }}
         />
         {paddle.image ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -102,7 +102,7 @@ function PaddleCard({ paddle }: { paddle: Paddle }) {
 
       {/* Content */}
       <div className="p-4 flex flex-col flex-1">
-        <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "#14b8a6" }}>
+        <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "#60a5fa" }}>
           {paddle.brand}
         </p>
         <p className="font-bold text-sm leading-snug mb-1" style={{ color: "var(--text-primary)" }}>
@@ -125,7 +125,7 @@ function PaddleCard({ paddle }: { paddle: Paddle }) {
                   {paddle.price}
                 </span>
                 {discounted && (
-                  <span className="text-sm font-bold" style={{ color: "#14b8a6" }}>
+                  <span className="text-sm font-bold" style={{ color: "#60a5fa" }}>
                     {discounted}
                   </span>
                 )}
@@ -147,9 +147,9 @@ function PaddleCard({ paddle }: { paddle: Paddle }) {
           <span
             className="inline-flex items-center text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
             style={{
-              background: "rgba(20,184,166,0.12)",
-              color: "#2dd4bf",
-              border: "1px solid rgba(20,184,166,0.2)",
+              background: "rgba(10, 100, 188,0.30)",
+              color: "#60a5fa",
+              border: "1px solid rgba(10, 100, 188,0.30)",
             }}
           >
             View Paddle
@@ -174,7 +174,7 @@ export default function LatestPaddles({ paddles }: { paddles: Paddle[] }) {
         {/* Header row */}
         <div className="flex items-end justify-between mb-8 gap-4">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.28em] mb-2" style={{ color: "#14b8a6" }}>
+            <p className="text-[10px] font-bold uppercase tracking-[0.28em] mb-2" style={{ color: "#60a5fa" }}>
               New Arrivals
             </p>
             <h2

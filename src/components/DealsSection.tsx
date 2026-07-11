@@ -17,7 +17,7 @@ export default function DealsSection() {
         {/* Heading */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#14b8a6" }}>
+            <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#60a5fa" }}>
               Exclusive Deals
             </p>
             <h2
@@ -61,7 +61,7 @@ export default function DealsSection() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className={`flex-shrink-0 inline-flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-xl border-2 transition-all duration-150 active:scale-[0.97] whitespace-nowrap hover:bg-brand-50 ${!paddle.discountLink ? "opacity-40 pointer-events-none" : ""}`}
-                style={{ borderColor: "#14b8a6", color: "#0d9488" }}
+                style={{ borderColor: "#60a5fa", color: "#11295f" }}
               >
                 View Deal
                 <ExternalLink className="w-3.5 h-3.5" strokeWidth={2} />

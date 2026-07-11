@@ -23,7 +23,7 @@ export default function BrandsPage() {
       <div className="container-xl py-16">
 
         <div className="mb-12">
-          <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#14b8a6" }}>
+          <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#60a5fa" }}>
             All Brands
           </p>
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-3" style={{ color: "var(--text-primary)" }}>

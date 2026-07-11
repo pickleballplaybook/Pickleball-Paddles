@@ -76,10 +76,10 @@ export default function PromoBar({
               <span
                 className="self-start inline-block text-[11px] font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-5"
                 style={{
-                  background: "rgba(20,184,166,0.15)",
-                  color: "#2dd4bf",
-                  border: "1px solid rgba(20,184,166,0.35)",
-                  boxShadow: "0 0 10px rgba(20,184,166,0.15)",
+                  background: "rgba(10, 100, 188,0.30)",
+                  color: "#60a5fa",
+                  border: "1px solid rgba(10, 100, 188,0.35)",
+                  boxShadow: "0 0 10px rgba(10, 100, 188,0.30)",
                 }}
               >
                 {badge}
@@ -105,8 +105,8 @@ export default function PromoBar({
               {...linkProps}
               className="self-start inline-flex items-center gap-2 font-bold text-sm px-7 py-3.5 rounded-2xl text-white transition-all duration-200 active:scale-[0.97] whitespace-nowrap"
               style={{
-                background: "linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)",
-                boxShadow: "0 0 32px rgba(20,184,166,0.35), 0 4px 12px rgba(0,0,0,0.25)",
+                background: "#0a64bc",
+                boxShadow: "0 0 32px rgba(10, 100, 188,0.35), 0 4px 12px rgba(0,0,0,0.25)",
               }}
             >
               {ctaText}
@@ -137,7 +137,7 @@ export default function PromoBar({
             {icon && (
               <div
                 className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0"
-                style={{ background: "rgba(20,184,166,0.2)", color: "#14b8a6" }}
+                style={{ background: "rgba(10, 100, 188,0.30)", color: "#60a5fa" }}
               >
                 {icon}
               </div>
@@ -147,9 +147,9 @@ export default function PromoBar({
                 <span
                   className="inline-block mb-2 text-[11px] font-bold uppercase tracking-widest px-3 py-1 rounded-full"
                   style={{
-                    background: "rgba(20,184,166,0.15)",
-                    color: "#2dd4bf",
-                    border: "1px solid rgba(20,184,166,0.3)",
+                    background: "rgba(10, 100, 188,0.30)",
+                    color: "#60a5fa",
+                    border: "1px solid rgba(10, 100, 188,0.3)",
                   }}
                 >
                   {badge}
@@ -169,8 +169,8 @@ export default function PromoBar({
             {...linkProps}
             className="flex-shrink-0 inline-flex items-center gap-2 font-bold text-sm px-7 py-3.5 rounded-2xl text-white transition-all duration-200 active:scale-[0.97] whitespace-nowrap"
             style={{
-              background: "linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)",
-              boxShadow: "0 0 28px rgba(20,184,166,0.3)",
+              background: "#0a64bc",
+              boxShadow: "0 0 28px rgba(10, 100, 188,0.3)",
             }}
           >
             {ctaText}

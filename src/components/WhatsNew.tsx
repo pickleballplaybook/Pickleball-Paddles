@@ -10,7 +10,7 @@ export interface AnnouncementItem {
 }
 
 const TAG_META: Record<string, { color: string; icon: React.ReactNode }> = {
-  "New Arrival":   { color: "#14b8a6", icon: <Zap  className="w-3.5 h-3.5" /> },
+  "New Arrival":   { color: "#60a5fa", icon: <Zap  className="w-3.5 h-3.5" /> },
   "Latest Review": { color: "#818cf8", icon: <Play className="w-3.5 h-3.5" /> },
   "Deal Alert":    { color: "#f59e0b", icon: <Star className="w-3.5 h-3.5" /> },
 };
@@ -121,8 +121,8 @@ export default function WhatsNew({
                     <img src={paddle.image} alt={paddle.name} className="w-9 h-9 object-contain" />
                   ) : (
                     <svg viewBox="0 0 60 80" fill="none" className="w-6 h-auto opacity-30" aria-hidden="true">
-                      <rect x="2" y="2" width="56" height="58" rx="28" fill="#14b8a6" />
-                      <rect x="22" y="58" width="16" height="20" rx="8" fill="#0d9488" />
+                      <rect x="2" y="2" width="56" height="58" rx="28" fill="#60a5fa" />
+                      <rect x="22" y="58" width="16" height="20" rx="8" fill="#11295f" />
                     </svg>
                   )}
                 </div>
@@ -144,9 +144,9 @@ export default function WhatsNew({
                   <span
                     className="text-[10px] font-bold px-2 py-0.5 rounded-lg flex-shrink-0 font-mono"
                     style={{
-                      background: "rgba(20,184,166,0.1)",
-                      color: "#14b8a6",
-                      border: "1px solid rgba(20,184,166,0.2)",
+                      background: "rgba(10, 100, 188,0.30)",
+                      color: "#60a5fa",
+                      border: "1px solid rgba(10, 100, 188,0.30)",
                     }}
                   >
                     {paddle.amountOff}

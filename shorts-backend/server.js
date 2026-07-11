@@ -131,10 +131,38 @@ const YT_COOKIES_FILE = loadCookies();
 app.use('/clips', express.static(OUTPUT_DIR));
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+// Wrap anthropic.messages.create with retries on transient failures. The SDK
+// retries connection errors by default but NOT 5xx — and we lost a whole job
+// to a single `api_error: Internal server error` mid-pipeline. Retries on
+// 429 (rate limit) and 5xx with exponential backoff: 1s, 2s, 4s.
+async function callClaudeWithRetry(opts, { retries = 3, baseDelayMs = 1000 } = {}) {
+  let lastErr;
+  for (let attempt = 0; attempt < retries; attempt++) {
+    try {
+      return await anthropic.messages.create(opts);
+    } catch (err) {
+      lastErr = err;
+      const status = err?.status ?? err?.response?.status;
+      const transient = status === 429 || (status >= 500 && status < 600);
+      if (!transient || attempt === retries - 1) throw err;
+      const delay = baseDelayMs * Math.pow(2, attempt);
+      console.warn(`[claude] transient ${status} (${err.message}); retry ${attempt + 1}/${retries - 1} in ${delay}ms`);
+      await new Promise(r => setTimeout(r, delay));
+    }
+  }
+  throw lastErr;
+}
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 // Job status store (in-memory mirror; canonical state lives in output/<jobId>/meta.json)
 const jobs = {};
+
+// jobIds whose video.mp4 is currently being read by ffmpeg/whisper. diskCleanup
+// must skip these — otherwise the 15-min interval (or a concurrent /api/process
+// pre-job cleanup) wipes the source mid-cut and ffmpeg errors with "No such
+// file or directory" partway through the clip loop.
+const activeJobIds = new Set();
 
 function metaPath(jobId) {
   return path.join(OUTPUT_DIR, jobId, 'meta.json');
@@ -251,12 +279,15 @@ function diskCleanup({ wipeUploads = false } = {}) {
   let freed = 0;
   let removed = 0;
 
-  // JOBS_DIR only ever holds the raw downloaded video for an in-flight job —
-  // it's wiped at the end of processVideo. Anything still here on startup is
-  // an orphan from a crashed/interrupted run, so wipe unconditionally.
+  // JOBS_DIR holds the raw downloaded video for an in-flight job — wiped at
+  // the end of processVideo. Anything still here that ISN'T in activeJobIds
+  // is an orphan from a crashed/interrupted run, so wipe it. Skipping active
+  // jobs is critical: the 15-min interval used to nuke video.mp4 mid-cut and
+  // ffmpeg errored "No such file or directory" partway through clip cutting.
   if (fs.existsSync(JOBS_DIR)) {
     for (const entry of fs.readdirSync(JOBS_DIR, { withFileTypes: true })) {
       if (!entry.isDirectory()) continue;
+      if (activeJobIds.has(entry.name)) continue;
       const dir = path.join(JOBS_DIR, entry.name);
       try {
         freed += dirSize(dir);
@@ -283,6 +314,8 @@ function diskCleanup({ wipeUploads = false } = {}) {
     }
     jobDirs.sort((a, b) => b.mtime - a.mtime); // newest first
     for (const j of jobDirs.slice(CLEANUP_KEEP_JOBS)) {
+      // Don't wipe an output dir whose clips are still being written.
+      if (activeJobIds.has(j.name)) continue;
       try {
         freed += dirSize(j.dir);
         fs.rmSync(j.dir, { recursive: true, force: true });
@@ -353,11 +386,37 @@ function escapeDrawText(s) {
     .replace(/%/g, '\\%');
 }
 
+function normalizeOverlayOptions(raw = {}) {
+  return { topTitle: raw.topTitle === true };
+}
+
+// Brand-styled drawtext: red filled box with a white outline and white text.
+// ffmpeg's drawtext can only draw a SOLID box, so the outline is faked with
+// two stacked drawtexts at the same position: an outer white box (larger
+// padding) and an inner red box on top. The padding difference is the
+// visible white border width.
+const BRAND_BOX_RED = '#DC2626';
+const BRAND_BOX_OUTER_PAD = 28;
+const BRAND_BOX_INNER_PAD = 22; // → 6 px white outline
+function brandDrawText({ text, fontSize, x, y, enable }) {
+  if (!DRAWTEXT_FONT) return [];
+  const escaped = escapeDrawText(text);
+  const common =
+    `fontfile='${DRAWTEXT_FONT}':text='${escaped}':fontsize=${fontSize}:fontcolor=white:` +
+    `x=${x}:y=${y}`;
+  const enableSuffix = enable ? `:enable='${enable}'` : '';
+  return [
+    `drawtext=${common}:box=1:boxcolor=white:boxborderw=${BRAND_BOX_OUTER_PAD}${enableSuffix}`,
+    `drawtext=${common}:box=1:boxcolor=${BRAND_BOX_RED}:boxborderw=${BRAND_BOX_INNER_PAD}${enableSuffix}`,
+  ];
+}
+
 // ─── ROUTES ──────────────────────────────────────────────────────────────────
 
 app.post('/api/process', async (req, res) => {
-  const { youtubeUrl } = req.body;
+  const { youtubeUrl, topTitle } = req.body;
   if (!youtubeUrl) return res.status(400).json({ error: 'youtubeUrl is required' });
+  const overlayOpts = normalizeOverlayOptions({ topTitle });
 
   // Free disk BEFORE we start a new ~300 MB yt-dlp download. The hourly
   // interval can't catch up fast enough on the 1 GB volume, so without
@@ -380,14 +439,18 @@ app.post('/api/process', async (req, res) => {
     status: 'queued',
     message: 'Starting…',
     clips: [],
+    overlayOpts,
   };
   persistJob(jobId);
   res.json({ jobId });
 
   // Run async — don't await
-  processVideo(jobId, jobDir, youtubeUrl).catch(err => {
-    setJobStatus(jobId, { status: 'error', message: err.message });
-  });
+  activeJobIds.add(jobId);
+  processVideo(jobId, jobDir, youtubeUrl, overlayOpts)
+    .catch(err => {
+      setJobStatus(jobId, { status: 'error', message: err.message });
+    })
+    .finally(() => activeJobIds.delete(jobId));
 });
 
 // Sibling of /api/process for the laptop-driven yt-dlp flow. The caller (the
@@ -399,10 +462,11 @@ app.post('/api/process', async (req, res) => {
 // videoPath must resolve to a file under UPLOADS_DIR — anything else is
 // rejected so a misbehaving client can't read arbitrary disk.
 app.post('/api/process-local', express.json(), async (req, res) => {
-  const { videoPath, sourceUrl } = req.body || {};
+  const { videoPath, sourceUrl, topTitle } = req.body || {};
   if (typeof videoPath !== 'string' || !videoPath) {
     return res.status(400).json({ error: 'videoPath is required' });
   }
+  const overlayOpts = normalizeOverlayOptions({ topTitle });
 
   const abs = path.resolve(videoPath);
   const root = path.resolve(UPLOADS_DIR);
@@ -432,13 +496,16 @@ app.post('/api/process-local', express.json(), async (req, res) => {
     status: 'queued',
     message: 'Starting (local ingest)…',
     clips: [],
+    overlayOpts,
   };
   persistJob(jobId);
   res.json({ jobId });
 
-  analyzeAndCutVideo(jobId, jobDir, abs)
+  activeJobIds.add(jobId);
+  analyzeAndCutVideo(jobId, jobDir, abs, overlayOpts)
     .catch(err => setJobStatus(jobId, { status: 'error', message: err.message }))
     .finally(() => {
+      activeJobIds.delete(jobId);
       // Remove the uploaded source's per-upload dir so a successful run
       // doesn't leak the 100–300 MB file under /tmp/shorts-uploads. The
       // 24 h UPLOAD_TTL_MS sweep would eventually catch it, but cleaning
@@ -565,7 +632,6 @@ app.post('/api/clips/:jobId/:filename/edit', async (req, res) => {
     }
     for (const t of texts) {
       if (!t || !t.text) continue;
-      const txt = escapeDrawText(t.text);
       const xPct = Math.max(0, Math.min(100, Number(t.xPct) || 50)) / 100;
       const yPct = Math.max(0, Math.min(100, Number(t.yPct) || 80)) / 100;
       const fontSize = Math.max(12, Math.min(200, Number(t.fontSize) || 64));
@@ -575,11 +641,13 @@ app.post('/api/clips/:jobId/:filename/edit', async (req, res) => {
       // CSS `left: xPct%; top: yPct%; transform: translate(-50%,-50%)` we use
       // in the editor preview, so what the user drags is what they get.
       filters.push(
-        `drawtext=fontfile='${DRAWTEXT_FONT}':text='${txt}':` +
-        `x=(w*${xPct}-text_w/2):y=(h*${yPct}-text_h/2):` +
-        `fontsize=${fontSize}:fontcolor=white:` +
-        `box=1:boxcolor=black@0.55:boxborderw=14:` +
-        `enable='between(t,${start},${end})'`
+        ...brandDrawText({
+          text: t.text,
+          fontSize,
+          x: `(w*${xPct}-text_w/2)`,
+          y: `(h*${yPct}-text_h/2)`,
+          enable: `between(t,${start},${end})`,
+        })
       );
     }
   }
@@ -649,7 +717,7 @@ function cleanJobDir(jobDir) {
   try { fs.mkdirSync(jobDir, { recursive: true }); } catch {}
 }
 
-async function processVideo(jobId, jobDir, youtubeUrl) {
+async function processVideo(jobId, jobDir, youtubeUrl, overlayOpts) {
 
   // Make sure the volume has space before pulling a potentially-large video.
   try { diskCleanup(); } catch (err) { console.error('[cleanup] pre-job sweep failed:', err.message); }
@@ -697,6 +765,25 @@ async function processVideo(jobId, jobDir, youtubeUrl) {
     'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best" ' +
     '--merge-output-format mp4';
   const MUXED = '-f "best[ext=mp4][protocol^=http]/22/18/best[ext=mp4]/best"';
+  // No-codec-constraint fallback. YouTube is increasingly serving webm/AV1
+  // only for newer/specific videos; the MP4-constrained selectors above all
+  // fail with "Requested format is not available" when no MP4 stream exists,
+  // even though /best is supposed to be a universal fallback (the [ext=mp4]
+  // constraints from earlier in the chain still propagate through yt-dlp's
+  // format-spec parsing). This selector accepts ANY codec and lets ffmpeg
+  // remux to mp4 at the merge step.
+  // Height-capped at 1080 so we don't accidentally pull a 4K source and burn
+  // the entire 1GB Railway volume on a single download. The downstream
+  // smart_crop pipeline crops to a 1080x1080 square anyway, so anything above
+  // 1080p in the source is wasted bytes and disk pressure.
+  const ANY =
+    '-f "bv*[height<=1080][height>=720]+ba/bv*[height<=1080]+ba/b[height<=1080]/bv*+ba/b" ' +
+    '--merge-output-format mp4';
+  // Truly-last-resort selector: any single muxed file, no height or codec
+  // constraint. Used only on the final attempt with acceptLow:true so a
+  // 360p source (SABR experiment on YouTube's end) still delivers a clip
+  // instead of failing the whole job.
+  const ANYTHING = '-f "best/b/worst"';
   // Order matters: clients with the best SABR-bypass behavior go first.
   // YouTube's SABR experiment hides URLs for higher-res streams, leaving
   // only muxed 360p/720p — so even when yt-dlp reports "success" it may
@@ -718,6 +805,18 @@ async function processVideo(jobId, jobDir, youtubeUrl) {
     { label: 'ios muxed',          args: `--extractor-args "youtube:player_client=ios" ${MUXED}` },
     { label: 'android muxed',      args: `--extractor-args "youtube:player_client=android" ${MUXED}` },
     { label: 'web muxed',          args: `--extractor-args "youtube:player_client=web" ${MUXED}` },
+    // Final fallbacks: drop the MP4 codec constraint entirely. Accept webm/AV1
+    // and let ffmpeg remux. `acceptLow` lets the smart_crop pipeline run on
+    // sub-720p source rather than failing the whole job — visibly softer, but
+    // the alternative here is "no clip at all."
+    { label: 'tv_embedded any',    args: `--extractor-args "youtube:player_client=tv_embedded" ${ANY}` },
+    { label: 'android any',        args: `--extractor-args "youtube:player_client=android" ${ANY}` },
+    // Absolute last resort: android client (most reliable for SABR-affected
+    // videos that only expose 360p) with NO height or codec filter. If even
+    // this fails, the video is genuinely unreachable (age-gated, private,
+    // region-locked, etc.) and no format gymnastics will help.
+    { label: 'android anything (low ok)', args: `--extractor-args "youtube:player_client=android" ${ANYTHING}`, acceptLow: true },
+    { label: 'web anything (low ok)',     args: `--extractor-args "youtube:player_client=web" ${ANYTHING}`, acceptLow: true },
   ];
   const attemptErrors = [];
   let lastErr;
@@ -756,6 +855,16 @@ async function processVideo(jobId, jobDir, youtubeUrl) {
       // and .fXXX intermediate streams that pile up. Without this, after a
       // few HD-merge failures the volume fills to ENOSPC.
       cleanJobDir(jobDir);
+      // Emergency disk wipe if the failure was ENOSPC. Beyond the per-attempt
+      // job dir cleanup, do an aggressive pass that drops orphan uploads and
+      // older finished jobs so the next attempt has actual headroom — without
+      // this, every subsequent attempt also dies on ENOSPC.
+      if (/ENOSPC|No space left/i.test(err.message)) {
+        console.warn('[yt-dlp] ENOSPC detected — running emergency cleanup');
+        try { diskCleanup({ wipeUploads: true }); } catch (cleanupErr) {
+          console.error('[yt-dlp] emergency cleanup failed:', cleanupErr.message);
+        }
+      }
     }
   }
   if (!downloadedOk) {
@@ -764,7 +873,7 @@ async function processVideo(jobId, jobDir, youtubeUrl) {
     );
   }
 
-  await analyzeAndCutVideo(jobId, jobDir, videoPath);
+  await analyzeAndCutVideo(jobId, jobDir, videoPath, overlayOpts);
 }
 
 // Stages 2–6 of the original processVideo() pipeline (audio extract →
@@ -772,7 +881,7 @@ async function processVideo(jobId, jobDir, youtubeUrl) {
 // factored out so the local-yt-dlp ingest path (/api/process-local) can
 // run them against a video that was uploaded from a laptop instead of
 // downloaded by Railway. videoPath must already exist on disk.
-async function analyzeAndCutVideo(jobId, jobDir, videoPath) {
+async function analyzeAndCutVideo(jobId, jobDir, videoPath, overlayOpts = { topTitle: false }) {
   // 2. Extract audio for Whisper
   // Whisper has a hard 25 MB file cap. -q:a 0 (highest VBR quality) was
   // producing ~245 kbps MP3s that blew past 25 MB for any video >~14 min.
@@ -808,7 +917,7 @@ async function analyzeAndCutVideo(jobId, jobDir, videoPath) {
   // 4. Ask Claude to pick the best clip moments
   setJobStatus(jobId, { status: 'analyzing', message: 'AI is finding the best moments…', progress: 55 });
 
-  const claudeResponse = await anthropic.messages.create({
+  const claudeResponse = await callClaudeWithRetry({
     model: 'claude-sonnet-4-5',
     max_tokens: 2000,
     messages: [{
@@ -824,6 +933,52 @@ Rules:
 - Clips should be 15–60 seconds long.
 - Do not overlap clips.
 
+TITLES MUST BE CLICKBAIT, NOT DESCRIPTIONS.
+
+A descriptive title is a failure. We're competing against every other Short
+in the feed — viewers must feel stupid scrolling past. Use curiosity gaps,
+contrarian takes, callouts, FOMO, big claims, secrets, mistakes.
+
+"title" rules (one per clip, 30–60 chars):
+- Hook + tease, never just a topic.
+- Don't say WHAT it's about — make them tap to find out.
+- Punch up with words like: secret, mistake, wrong, stop, never, hate, the
+  truth about, why, the one thing, nobody tells you, every pro does this.
+- BAD: "Tips for the third shot drop"
+- GOOD: "The third shot drop mistake EVERY rec player makes"
+- BAD: "How to improve your serve"
+- GOOD: "Pros won't tell you this serve secret"
+- BAD: "Six Zero Coral Pro review"
+- GOOD: "I tried the world's hyped paddle. It was bad."
+- The hook MUST pay off in the actual clip — no lies, just irresistible framing.
+
+"topTitle" rules (one per clip, 2–4 words, max 20 chars, ALL CAPS preferred,
+no emojis): a punchy on-screen hook. Match the clickbait energy of the title.
+- BAD: "THIRD SHOT DROP"
+- GOOD: "STOP DOING THIS", "PRO SECRET", "YOU'RE WRONG", "WORST PADDLE EVER",
+        "TRY THIS HACK", "NOBODY TELLS YOU"
+
+"description" rules (one per clip, 2–4 sentences, ~250–400 chars):
+- This is the SOCIAL POST CAPTION for the Reel / Short / TikTok. It's what
+  the viewer reads under the video.
+- Tell the viewer what they're about to see and what they'll learn. Concrete
+  content, not meta-commentary.
+- Hook them in the first sentence (echo the title's energy), then deliver
+  enough of the payoff to justify the watch. End with a soft call to watch.
+- NEVER say "in this clip" or "this short shows" — speak directly to the
+  viewer as if it's already playing.
+- NEVER describe why the clip is good or why we picked it (that's "reason",
+  separate field, internal-only).
+- BAD: "This clip showcases a great moment of instruction about the third
+  shot drop." (meta-commentary)
+- GOOD: "Most rec players push the third shot flat and the ball pops up
+  every time. The fix isn't grip or footwork — it's where your contact
+  point sits on the paddle face. Two seconds of adjustment and your drop
+  lands at their feet instead of their paddle. Save this one."
+
+"reason" rules (one per clip, ONE sentence): internal-only label for the
+admin UI explaining why we chose this segment. NOT used in the public post.
+
 Transcript:
 ${readableTranscript}
 
@@ -833,8 +988,10 @@ Respond ONLY with valid JSON — no preamble, no markdown fences. Format:
     {
       "start": 12.4,
       "end": 45.2,
-      "title": "Short punchy title for the clip",
-      "reason": "One sentence why this makes a great short"
+      "title": "Pros won't tell you this serve secret",
+      "topTitle": "PRO SECRET",
+      "description": "Most rec players spend years working on serve mechanics that don't actually matter. The pros don't think about any of that — they're focused on one tiny pre-serve cue that resets their whole motion and lands every serve where they want it. Once you see it you can't unsee it.",
+      "reason": "Strong rationale paragraph from the host that uniquely names the cue."
     }
   ]
 }`
@@ -877,7 +1034,7 @@ Respond ONLY with valid JSON — no preamble, no markdown fences. Format:
   void width; void height;
   // flags=lanczos on every scale = sharper rescaling than ffmpeg's default
   // (bilinear). Noticeable on 720p sources that have to upscale to 1080.
-  const reelFilter =
+  const reelBaseFilter =
     `[0:v]split=2[bg][fg];` +
     `[bg]scale=1080:1920:force_original_aspect_ratio=increase:flags=lanczos,crop=1080:1920,boxblur=60:3[bg];` +
     `[fg]crop=ih:ih,scale=1080:1080:flags=lanczos[fg];` +
@@ -900,6 +1057,27 @@ Respond ONLY with valid JSON — no preamble, no markdown fences. Format:
       progress: 65 + Math.round((i / clipMoments.length) * 30)
     });
 
+    // Top title (whole-clip overlay) is the only drawtext baked in at cut
+    // time — bottom CTAs are added per-clip via the editor's preset buttons.
+    // The title sits in the upper blurred-letterbox area above the centered
+    // 1080x1080 foreground (which spans y=420..1500 in the 1080x1920 frame).
+    let reelFilter = reelBaseFilter;
+    if (
+      DRAWTEXT_FONT &&
+      overlayOpts.topTitle &&
+      typeof clip.topTitle === 'string' &&
+      clip.topTitle.trim()
+    ) {
+      const brand = brandDrawText({
+        text: clip.topTitle.trim(),
+        fontSize: 64,
+        x: '(w-text_w)/2',
+        y: '260',
+        enable: null,
+      });
+      if (brand.length) reelFilter += ',' + brand.join(',');
+    }
+
     // -preset medium + crf 19 is a much higher-quality target than the old
     // fast/23 (visually near-lossless H264). Encode is ~2-3x slower but
     // these are short clips so it's still seconds, not minutes.
@@ -914,6 +1092,10 @@ Respond ONLY with valid JSON — no preamble, no markdown fences. Format:
       filename,
       url: `/clips/${jobId}/${filename}`,
       title: clip.title,
+      topTitle: clip.topTitle || '',
+      // description = social post body (what viewers read under the Reel).
+      // reason = internal "why we picked this clip" rationale for the admin UI.
+      description: clip.description || '',
       reason: clip.reason,
       start: clip.start,
       end: clip.end,

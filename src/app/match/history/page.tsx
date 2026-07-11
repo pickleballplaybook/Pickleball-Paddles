@@ -110,9 +110,9 @@ function RatioTrend({ matches }: { matches: SavedMatch[] }) {
             y2={H - padY - (1 / max) * (H - padY * 2)}
             stroke="var(--flip-card-border)" strokeDasharray="3 3" />
         )}
-        <path d={areaPath} fill="rgba(20,184,166,0.12)" />
-        <path d={path} fill="none" stroke="#14b8a6" strokeWidth="2" strokeLinejoin="round" />
-        {points.map(([x, y], i) => <circle key={i} cx={x} cy={y} r="3" fill="#2dd4bf" />)}
+        <path d={areaPath} fill="rgba(10, 100, 188,0.30)" />
+        <path d={path} fill="none" stroke="#0a64bc" strokeWidth="2" strokeLinejoin="round" />
+        {points.map(([x, y], i) => <circle key={i} cx={x} cy={y} r="3" fill="#60a5fa" />)}
       </svg>
       <div className="flex justify-between text-[10px] mt-1" style={{ color: "var(--text-muted)" }}>
         <span>Earliest of last {ordered.length}</span>
@@ -244,7 +244,7 @@ export default function MatchHistoryPage() {
     return (
       <div className="min-h-screen pt-[156px] pb-20" style={{ background: "var(--bg-page)" }}>
         <div className="container-xl py-10 max-w-md mx-auto text-center">
-          <Sparkles className="w-8 h-8 mx-auto mb-3" style={{ color: "#14b8a6" }} />
+          <Sparkles className="w-8 h-8 mx-auto mb-3" style={{ color: "#60a5fa" }} />
           <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight mb-2" style={{ color: "var(--text-primary)" }}>
             Sign in to see your match history
           </h1>
@@ -285,7 +285,7 @@ export default function MatchHistoryPage() {
         {/* Header */}
         <div className="flex items-start justify-between gap-4 mb-10 flex-wrap">
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#14b8a6" }}>
+            <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#60a5fa" }}>
               Match History
             </p>
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2" style={{ color: "var(--text-primary)" }}>
@@ -325,8 +325,8 @@ export default function MatchHistoryPage() {
 
         {/* Migration prompt for users with local matches */}
         {localMatches.length > 0 && !migrateMsg && (
-          <div className="rounded-2xl px-5 py-4 mb-6 flex items-start gap-3" style={{ background: "rgba(60,172,174,0.06)", border: "1px solid rgba(60,172,174,0.3)" }}>
-            <Upload className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: "#14b8a6" }} />
+          <div className="rounded-2xl px-5 py-4 mb-6 flex items-start gap-3" style={{ background: "rgba(10, 100, 188,0.23)", border: "1px solid rgba(10, 100, 188,0.3)" }}>
+            <Upload className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: "#60a5fa" }} />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-bold mb-0.5" style={{ color: "var(--text-primary)" }}>
                 Move {localMatches.length} local match{localMatches.length === 1 ? "" : "es"} into your account?
@@ -340,7 +340,7 @@ export default function MatchHistoryPage() {
               onClick={handleMigrate}
               disabled={migrating}
               className="flex-shrink-0 inline-flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-lg transition-all active:scale-[0.98] disabled:opacity-50"
-              style={{ background: "#14b8a6", color: "#0a1628" }}
+              style={{ background: "#0a64bc", color: "#0a1628" }}
             >
               {migrating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Migrate"}
             </button>
@@ -367,7 +367,7 @@ export default function MatchHistoryPage() {
           </div>
         ) : matches.length === 0 ? (
           <div className="rounded-3xl p-12 text-center" style={{ background: "var(--flip-bg-card)", border: "1px dashed var(--flip-card-border)" }}>
-            <Sparkles className="w-8 h-8 mx-auto mb-3" style={{ color: "#14b8a6" }} />
+            <Sparkles className="w-8 h-8 mx-auto mb-3" style={{ color: "#60a5fa" }} />
             <h2 className="text-lg font-extrabold mb-1" style={{ color: "var(--text-primary)" }}>No matches yet</h2>
             <p className="text-sm mb-6 max-w-md mx-auto" style={{ color: "var(--text-muted)" }}>
               Head to the tally sheet, log a match by tallying each rally as you re-watch your film,
@@ -388,7 +388,7 @@ export default function MatchHistoryPage() {
               <StatCard label="Unforced"  value={t.ue}  accent="#ef4444" />
               <StatCard label="Forced"    value={t.fe}  accent="#f59e0b" />
               <StatCard label="Winners"   value={t.wins} accent="#22c55e" />
-              <StatCard label="Avg W : E" value={t.ratio.toFixed(2)} accent="#14b8a6" />
+              <StatCard label="Avg W : E" value={t.ratio.toFixed(2)} accent="#0a64bc" />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-8">
@@ -406,7 +406,7 @@ export default function MatchHistoryPage() {
               <div className="rounded-2xl p-5 md:p-6" style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}>
                 <div className="flex items-baseline justify-between gap-2 mb-4">
                   <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>Winners : Errors ratio trend</p>
-                  <TrendingUp className="w-4 h-4" style={{ color: "#14b8a6" }} />
+                  <TrendingUp className="w-4 h-4" style={{ color: "#60a5fa" }} />
                 </div>
                 <RatioTrend matches={matches} />
               </div>
@@ -451,7 +451,7 @@ export default function MatchHistoryPage() {
                         {" · "}
                         <span style={{ color: "#f59e0b" }}>{m.feTotal} FE</span>
                         {" · ratio "}
-                        <span style={{ color: "#14b8a6" }}>{m.ratio.toFixed(2)}</span>
+                        <span style={{ color: "#60a5fa" }}>{m.ratio.toFixed(2)}</span>
                         {m.notes ? `  ·  ${m.notes}` : ""}
                       </p>
                     </div>

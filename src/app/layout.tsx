@@ -74,6 +74,15 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable}>
       <head>
+        {/* Google AdSense — loader script + site-ownership verification
+            for pub-1759885338421837. Once AdSense verifies + approves
+            the domain, this same script powers the ad slots on
+            /pickleball-101 posts (AdSlot component uses `pb-ad-*` IDs). */}
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1759885338421837"
+          crossOrigin="anonymous"
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify({

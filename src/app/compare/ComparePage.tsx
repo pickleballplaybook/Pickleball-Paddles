@@ -17,7 +17,7 @@ function RatingBar({ value }: { value: number }) {
   return (
     <div className="flex items-center gap-2">
       <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: "var(--border)" }}>
-        <div className="h-full rounded-full" style={{ width: `${pct}%`, background: "#14b8a6" }} />
+        <div className="h-full rounded-full" style={{ width: `${pct}%`, background: "#0a64bc" }} />
       </div>
       <span className="text-xs font-semibold w-6 text-right" style={{ color: "var(--text-primary)" }}>
         {value}
@@ -70,7 +70,7 @@ function BrowsePagination({
           onClick={() => onPage(p)}
           className="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-semibold transition-colors"
           style={p === page
-            ? { background: "#14b8a6", color: "#fff" }
+            ? { background: "#0a64bc", color: "#fff" }
             : { background: "var(--bg-card)", border: "1px solid var(--border)", color: "var(--text-primary)" }}
         >
           {p}
@@ -256,7 +256,7 @@ export default function ComparePage({ paddles }: { paddles: Paddle[] }) {
             {selected.length === 1 && (
               <div
                 className="rounded-2xl p-6 mb-6 flex items-center gap-4"
-                style={{ background: "rgba(20,184,166,0.08)", border: "1px solid rgba(20,184,166,0.2)" }}
+                style={{ background: "rgba(10, 100, 188,0.28)", border: "1px solid rgba(10, 100, 188,0.30)" }}
               >
                 {selected[0].image && (
                   <div className="w-12 h-12 flex-shrink-0 relative">
@@ -264,10 +264,10 @@ export default function ComparePage({ paddles }: { paddles: Paddle[] }) {
                   </div>
                 )}
                 <div className="flex-1">
-                  <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: "#14b8a6" }}>{selected[0].brand}</p>
+                  <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: "#60a5fa" }}>{selected[0].brand}</p>
                   <p className="text-sm font-extrabold" style={{ color: "var(--text-primary)" }}>{selected[0].name}</p>
                 </div>
-                <p className="text-sm font-semibold" style={{ color: "#2dd4bf" }}>
+                <p className="text-sm font-semibold" style={{ color: "#60a5fa" }}>
                   What would you like to compare it to?
                 </p>
               </div>
@@ -331,7 +331,7 @@ export default function ComparePage({ paddles }: { paddles: Paddle[] }) {
                               target="_blank"
                               rel="noopener noreferrer sponsored"
                               className="inline-block text-xs font-bold px-2 py-0.5 rounded-lg font-mono transition-opacity hover:opacity-80"
-                              style={{ background: "rgba(20,184,166,0.12)", color: "#2dd4bf", border: "1px solid rgba(20,184,166,0.2)" }}
+                              style={{ background: "rgba(10, 100, 188,0.30)", color: "#60a5fa", border: "1px solid rgba(10, 100, 188,0.30)" }}
                             >
                               {p.amountOff} off
                             </a>
@@ -386,7 +386,7 @@ export default function ComparePage({ paddles }: { paddles: Paddle[] }) {
                           <Link
                             href={`/paddles/${p.slug}`}
                             className="inline-flex items-center gap-1.5 text-sm font-semibold transition-colors hover:text-brand-400"
-                            style={{ color: "#2dd4bf" }}
+                            style={{ color: "#60a5fa" }}
                           >
                             View <ArrowRight className="w-3.5 h-3.5" />
                           </Link>
@@ -431,7 +431,7 @@ export default function ComparePage({ paddles }: { paddles: Paddle[] }) {
                     className="px-3 py-1 rounded-lg text-xs font-semibold transition-colors"
                     style={
                       s === browseSize
-                        ? { background: "#14b8a6", color: "#fff" }
+                        ? { background: "#0a64bc", color: "#fff" }
                         : { background: "var(--bg-card)", border: "1px solid var(--border)", color: "var(--text-muted)" }
                     }
                   >
@@ -458,7 +458,7 @@ export default function ComparePage({ paddles }: { paddles: Paddle[] }) {
                           <Image src={p.image} alt={p.name} fill className="object-contain" />
                         </div>
                       )}
-                      <p className="text-[10px] font-bold uppercase tracking-widest mb-0.5" style={{ color: "#14b8a6" }}>
+                      <p className="text-[10px] font-bold uppercase tracking-widest mb-0.5" style={{ color: "#60a5fa" }}>
                         {p.brand}
                       </p>
                       <p className="text-sm font-extrabold leading-snug group-hover:text-brand-500 transition-colors" style={{ color: "var(--text-primary)" }}>
@@ -469,7 +469,7 @@ export default function ComparePage({ paddles }: { paddles: Paddle[] }) {
                       </p>
                       <div
                         className="mt-3 inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-lg transition-colors"
-                        style={{ background: "rgba(20,184,166,0.1)", color: "#2dd4bf", border: "1px solid rgba(20,184,166,0.15)" }}
+                        style={{ background: "rgba(10, 100, 188,0.30)", color: "#60a5fa", border: "1px solid rgba(10, 100, 188,0.30)" }}
                       >
                         <Plus className="w-3 h-3" /> Add to compare
                       </div>

@@ -5,6 +5,7 @@ import { siteConfig } from "@/config/site";
 import type { Paddle } from "@/types";
 import InlineNewsletterCTA from "@/components/InlineNewsletterCTA";
 import RelatedGuidesBlock from "@/components/RelatedGuidesBlock";
+import RelatedDrillsBlock from "@/components/RelatedDrillsBlock";
 
 // ── Pick + config types ──────────────────────────────────────────────────────
 
@@ -267,12 +268,23 @@ export default function AudiencePillarView({ config }: { config: AudienceConfig 
             />
           )}
 
+          {/* Drill/training cluster — every audience page links into the
+              drill hub. The slugs picked are universal across audiences. */}
+          <RelatedDrillsBlock
+            slugs={[
+              "best-pickleball-drills",
+              "how-to-get-better-at-pickleball",
+              "pickleball-third-shot-drop",
+              "pickleball-drills-for-beginners",
+            ]}
+          />
+
           {/* Footer CTA */}
           <div className="mt-20 flex flex-col items-center text-center gap-5">
             <p className="text-base" style={{ color: "var(--text-muted)" }}>
               Looking for paddles at every price point?
             </p>
-            <Link href="/best-pickleball-paddles" className="inline-flex items-center gap-2 font-bold text-base px-10 py-4 rounded-2xl text-white transition-all duration-200 hover:scale-[1.02]" style={{ background: "linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)", boxShadow: "0 0 40px rgba(20,184,166,0.4)" }}>
+            <Link href="/best-pickleball-paddles" className="inline-flex items-center gap-2 font-bold text-base px-10 py-4 rounded-2xl text-white transition-all duration-200 hover:scale-[1.02]" style={{ background: "#0a64bc", boxShadow: "0 0 40px rgba(10, 100, 188,0.4)" }}>
               See All Best Pickleball Paddles <ArrowRight className="w-5 h-5" />
             </Link>
           </div>

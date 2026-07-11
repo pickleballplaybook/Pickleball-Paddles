@@ -41,11 +41,30 @@ export async function GET(req: NextRequest) {
 
   const snap = await q.get();
 
-  const headers = ["capturedAt", "email", "name", "userId", "source", "detail"];
+  const headers = [
+    "capturedAt",
+    "email",
+    "name",
+    "userId",
+    "source",
+    "detail",
+    "goal",
+    "blocker",
+    "playFrequency",
+    "triedOtherApps",
+    "skillLevel",
+    "sessionLength",
+    "weaknesses",
+    "days",
+    "trainingSetup",
+    "signupPlatform",
+  ];
   const lines = [headers.join(",")];
   for (const d of snap.docs) {
     const data = d.data();
     const captured = data.acquisitionCapturedAt?.toDate?.()?.toISOString?.() ?? "";
+    const joinList = (v: unknown) =>
+      Array.isArray(v) ? (v as unknown[]).join("; ") : "";
     lines.push(
       [
         captured,
@@ -54,6 +73,16 @@ export async function GET(req: NextRequest) {
         d.id,
         data.acquisitionSource ?? "",
         data.acquisitionDetail ?? "",
+        data.goal ?? "",
+        data.blocker ?? "",
+        data.playFrequency ?? "",
+        data.triedOtherApps ?? "",
+        data.onboardingLevel ?? "",
+        data.onboardingSessionLength ?? "",
+        joinList(data.onboardingWeaknesses),
+        joinList(data.onboardingDays),
+        joinList(data.onboardingTrainingSetup),
+        data.signupPlatform ?? "",
       ]
         .map(escapeCsv)
         .join(",")

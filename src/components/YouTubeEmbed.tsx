@@ -8,11 +8,13 @@ import { siteConfig } from "@/config/site";
 interface YouTubeEmbedProps {
   videoId: string;
   title?: string;
+  customThumbnail?: string;
 }
 
 export default function YouTubeEmbed({
   videoId,
   title = "Watch Full Paddle Review",
+  customThumbnail,
 }: YouTubeEmbedProps) {
   const [isPlaying, setIsPlaying] = useState(false);
 
@@ -45,7 +47,7 @@ export default function YouTubeEmbed({
     );
   }
 
-  const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+  const thumbnailUrl = customThumbnail ?? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
   const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`;
 
   if (isPlaying) {

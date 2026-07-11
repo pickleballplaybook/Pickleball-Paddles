@@ -157,7 +157,7 @@ export default function PaddleStarRating({ paddleId }: Props) {
                 <a
                   href="#discussion"
                   className="text-xs font-semibold ml-1 transition-colors hover:text-teal-400"
-                  style={{ color: "#2dd4bf" }}
+                  style={{ color: "#60a5fa" }}
                 >
                   Read reviews &darr;
                 </a>
@@ -187,7 +187,7 @@ export default function PaddleStarRating({ paddleId }: Props) {
                 onClick={submitRating}
                 disabled={submitting}
                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold text-white transition-all active:scale-95 disabled:opacity-50"
-                style={{ background: "#14b8a6" }}
+                style={{ background: "#0a64bc" }}
               >
                 <Send className="w-3.5 h-3.5" />
                 {comment.trim() ? "Submit Review" : "Submit Rating"}

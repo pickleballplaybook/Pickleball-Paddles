@@ -24,6 +24,7 @@ import ViewCounter from "@/components/ViewCounter";
 import { getBlogPostForPaddle, BlogSection } from "@/data/blogPosts";
 import { canonicalMatchup } from "@/app/compare/[matchup]/helpers";
 import RelatedGuidesBlock from "@/components/RelatedGuidesBlock";
+import RelatedDrillsBlock, { drillsForPaddle } from "@/components/RelatedDrillsBlock";
 import BalancePointSpec from "@/components/BalancePointSpec";
 import type { Paddle } from "@/types";
 
@@ -556,9 +557,9 @@ export default async function PaddleDetailPage({ params }: Props) {
               <span
                 className="text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full"
                 style={{
-                  background: "rgba(20,184,166,0.15)",
-                  color: "#2dd4bf",
-                  border: "1px solid rgba(20,184,166,0.3)",
+                  background: "var(--flip-bg-card)",
+                  color: "var(--flip-text-head)",
+                  border: "1px solid var(--flip-card-border)",
                   backdropFilter: "blur(8px)",
                 }}
               >
@@ -567,9 +568,9 @@ export default async function PaddleDetailPage({ params }: Props) {
               <span
                 className="text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full"
                 style={{
-                  background: "rgba(20,184,166,0.15)",
-                  color: "#2dd4bf",
-                  border: "1px solid rgba(20,184,166,0.3)",
+                  background: "var(--flip-bg-card)",
+                  color: "var(--flip-text-head)",
+                  border: "1px solid var(--flip-card-border)",
                   backdropFilter: "blur(8px)",
                 }}
               >
@@ -608,8 +609,8 @@ export default async function PaddleDetailPage({ params }: Props) {
             ) : (
               <>
                 <svg viewBox="0 0 120 160" fill="none" className="w-32 h-auto mb-4 opacity-20" aria-hidden="true">
-                  <rect x="5" y="5" width="110" height="115" rx="55" fill="#14b8a6" />
-                  <rect x="45" y="116" width="30" height="40" rx="15" fill="#0d9488" />
+                  <rect x="5" y="5" width="110" height="115" rx="55" fill="#60a5fa" />
+                  <rect x="45" y="116" width="30" height="40" rx="15" fill="#11295f" />
                 </svg>
                 <p className="text-sm font-medium" style={{ color: "var(--flip-text-muted)" }}>
                   Image coming soon
@@ -635,11 +636,11 @@ export default async function PaddleDetailPage({ params }: Props) {
                 src="/images/Austin-head-shot.png"
                 alt="Austin Hardy"
                 className="w-9 h-9 rounded-full object-cover flex-shrink-0"
-                style={{ border: "2px solid rgba(20,184,166,0.4)" }}
+                style={{ border: "2px solid rgba(10, 100, 188,0.4)" }}
               />
               <div>
                 <p className="text-sm font-semibold group-hover:text-teal-400 transition-colors" style={{ color: "var(--flip-text-head)" }}>
-                  Tested by <span style={{ color: "#2dd4bf" }}>Austin Hardy</span>
+                  Tested by <span style={{ color: "#60a5fa" }}>Austin Hardy</span>
                 </p>
                 <p className="text-xs" style={{ color: "var(--flip-text-muted)" }}>
                   PPR Certified Coach &middot; Pro Player &middot; 12+ years coaching
@@ -648,7 +649,10 @@ export default async function PaddleDetailPage({ params }: Props) {
             </Link>
 
             <div className="flex items-center gap-2 flex-wrap mb-2">
-              <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "#14b8a6" }}>
+              <p
+                className="inline-block text-[11px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded"
+                style={{ background: "#DC2626", color: "#ffffff", border: "2px solid #ffffff", boxShadow: "0 0 0 1px #DC2626" }}
+              >
                 {paddle.brand}
               </p>
               {preLaunch && launchDateLong && (
@@ -700,10 +704,10 @@ export default async function PaddleDetailPage({ params }: Props) {
               className="rounded-2xl p-6 mb-5 relative overflow-hidden"
               style={{
                 background:
-                  "linear-gradient(135deg, rgba(60,172,174,0.06) 0%, var(--flip-bg-card) 50%, var(--flip-bg-card) 100%)",
-                border: "1px solid rgba(60,172,174,0.18)",
+                  "linear-gradient(135deg, rgba(10, 100, 188,0.23) 0%, var(--flip-bg-card) 50%, var(--flip-bg-card) 100%)",
+                border: "1px solid rgba(10, 100, 188,0.30)",
                 boxShadow:
-                  "0 12px 40px rgba(60,172,174,0.06), 0 2px 8px rgba(15,23,42,0.06), inset 0 1px 0 rgba(255,255,255,0.04)",
+                  "0 12px 40px rgba(10, 100, 188,0.23), 0 2px 8px rgba(15,23,42,0.06), inset 0 1px 0 rgba(255,255,255,0.04)",
               }}
             >
               {/* Price row with code on the right — stacks on mobile */}
@@ -722,12 +726,12 @@ export default async function PaddleDetailPage({ params }: Props) {
                         <>
                           {/* Bumped to text-4xl + subtle teal glow for editorial-grade emphasis. */}
                           {/* Uses --code-text so it pops in both themes (deeper teal in light, */}
-                          {/* bright teal in dark — same value drove the prev hardcoded #2dd4bf). */}
+                          {/* bright teal in dark — same value drove the prev hardcoded #0a64bc). */}
                           <span
                             className="text-3xl sm:text-4xl font-extrabold tracking-tight"
                             style={{
                               color: "var(--code-text)",
-                              textShadow: "0 0 24px rgba(20,184,166,0.35)",
+                              textShadow: "0 0 24px rgba(10, 100, 188,0.35)",
                             }}
                           >
                             {discountedPrice}
@@ -748,7 +752,7 @@ export default async function PaddleDetailPage({ params }: Props) {
                   {/* CSV (e.g. amountOff = "15%"), since $ savings read as more concrete. */}
                   {/* Color uses --flip-text-head (theme-responsive: near-white in dark, */}
                   {/* near-black in light) — the bold weight is what makes it stand out. */}
-                  {/* Previously used brand lime #defa32, which was invisible in light */}
+                  {/* Previously used brand lime #0a64bc, which was invisible in light */}
                   {/* mode and clashed with the teal price in dark. */}
                   {discountedPrice && paddle.price && (() => {
                     const retail = parseFloat(paddle.price.replace(/[^0-9.]/g, ""));
@@ -808,6 +812,7 @@ export default async function PaddleDetailPage({ params }: Props) {
                   style={{
                     background: "var(--btn-buy-bg)",
                     color: "var(--btn-buy-text)",
+                    border: "var(--btn-buy-border)",
                     boxShadow: "var(--btn-buy-shadow)",
                   }}
                   ariaLabel={noCode ? `Buy ${paddle.brand} ${paddle.name}` : `Buy ${paddle.brand} ${paddle.name} with discount code ${code}`}
@@ -866,7 +871,7 @@ export default async function PaddleDetailPage({ params }: Props) {
                 <Link
                   href={`/series/${paddle.seriesSlug}`}
                   className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-colors"
-                  style={{ background: "rgba(20,184,166,0.12)", color: "#2dd4bf", border: "1px solid rgba(20,184,166,0.2)" }}
+                  style={{ background: "rgba(10, 100, 188,0.30)", color: "#60a5fa", border: "1px solid rgba(10, 100, 188,0.30)" }}
                 >
                   View All Shapes <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
@@ -897,8 +902,8 @@ export default async function PaddleDetailPage({ params }: Props) {
                     Austin&apos;s Take
                   </p>
                   <div className="flex items-start gap-3 mb-4">
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: "rgba(20,184,166,0.15)" }}>
-                      <User className="w-4 h-4" style={{ color: "#14b8a6" }} />
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: "rgba(10, 100, 188,0.30)" }}>
+                      <User className="w-4 h-4" style={{ color: "#60a5fa" }} />
                     </div>
                     <div>
                       <p className="text-sm font-semibold" style={{ color: "var(--flip-text-head)" }}>Austin Hardy</p>
@@ -915,9 +920,9 @@ export default async function PaddleDetailPage({ params }: Props) {
                       <div
                         key={i}
                         className="rounded-xl p-4 mt-4"
-                        style={{ background: "rgba(20,184,166,0.08)", border: "1px solid rgba(20,184,166,0.25)" }}
+                        style={{ background: "rgba(10, 100, 188,0.28)", border: "1px solid rgba(10, 100, 188,0.30)" }}
                       >
-                        <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: "#14b8a6" }}>
+                        <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: "#60a5fa" }}>
                           Verdict
                         </p>
                         <p className="text-sm font-semibold leading-relaxed" style={{ color: "var(--flip-text-head)" }}>
@@ -930,7 +935,7 @@ export default async function PaddleDetailPage({ params }: Props) {
                   <Link
                     href={`/blog/${blogPost.slug}`}
                     className="inline-flex items-center gap-1 text-sm font-semibold mt-4 transition-colors hover:text-teal-400"
-                    style={{ color: "#2dd4bf" }}
+                    style={{ color: "#60a5fa" }}
                   >
                     Read full review <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
@@ -944,7 +949,7 @@ export default async function PaddleDetailPage({ params }: Props) {
                   style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}
                 >
                   <div className="flex items-center gap-2 mb-6">
-                    <BarChart2 className="w-5 h-5" style={{ color: "#14b8a6" }} />
+                    <BarChart2 className="w-5 h-5" style={{ color: "#60a5fa" }} />
                     <h2 className="text-xl font-extrabold" style={{ color: "var(--flip-text-head)" }}>
                       Performance Profile
                     </h2>
@@ -1134,7 +1139,7 @@ export default async function PaddleDetailPage({ params }: Props) {
                 <Link
                   href="/best-pickleball-paddles"
                   className="text-sm font-semibold transition-colors hover:text-teal-400"
-                  style={{ color: "#2dd4bf" }}
+                  style={{ color: "#60a5fa" }}
                 >
                   Best Pickleball Paddles (2026) &rarr;
                 </Link>
@@ -1145,7 +1150,7 @@ export default async function PaddleDetailPage({ params }: Props) {
                 className="rounded-2xl p-5"
                 style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}
               >
-                <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: "#14b8a6" }}>
+                <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: "#60a5fa" }}>
                   Recommended Gear
                 </p>
                 <div className="space-y-4">
@@ -1180,7 +1185,7 @@ export default async function PaddleDetailPage({ params }: Props) {
                 <Link
                   href="/gear"
                   className="inline-flex items-center gap-1 text-xs font-semibold mt-4 transition-colors hover:text-teal-400"
-                  style={{ color: "#2dd4bf" }}
+                  style={{ color: "#60a5fa" }}
                 >
                   View all gear <ArrowRight className="w-3 h-3" />
                 </Link>
@@ -1202,19 +1207,19 @@ export default async function PaddleDetailPage({ params }: Props) {
           {hasLink && (
             <div
               className="rounded-2xl p-5 mt-8 flex items-center justify-between flex-wrap gap-4"
-              style={{ background: "rgba(20,184,166,0.06)", border: "1px solid rgba(20,184,166,0.15)" }}
+              style={{ background: "rgba(10, 100, 188,0.23)", border: "1px solid rgba(10, 100, 188,0.30)" }}
             >
               <p className="text-sm font-semibold" style={{ color: "var(--flip-text-head)" }}>
                 {noCode
                   ? "Ready to buy? Use our link to support Playbook Reviews."
-                  : <>Ready to buy? Use code <strong style={{ color: "#2dd4bf" }}>{code}</strong> for a discount.</>}
+                  : <>Ready to buy? Use code <strong style={{ color: "#60a5fa" }}>{code}</strong> for a discount.</>}
               </p>
               <a
                 href={paddle.discountLink}
                 target="_blank"
                 rel="noopener noreferrer sponsored"
                 className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-bold text-white transition-all active:scale-[0.97]"
-                style={{ background: "#14b8a6" }}
+                style={{ background: "#0a64bc" }}
               >
                 Buy at {paddle.brand}
               </a>
@@ -1233,7 +1238,7 @@ export default async function PaddleDetailPage({ params }: Props) {
             <Link
               href="/gear"
               className="inline-flex items-center gap-1 text-sm font-semibold transition-colors hover:text-teal-400"
-              style={{ color: "#2dd4bf" }}
+              style={{ color: "#60a5fa" }}
             >
               All Gear <ArrowRight className="w-4 h-4" />
             </Link>
@@ -1265,7 +1270,7 @@ export default async function PaddleDetailPage({ params }: Props) {
                     {gear.badge && (
                       <span
                         className="absolute top-3 left-3 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full text-white"
-                        style={{ background: "#14b8a6" }}
+                        style={{ background: "#0a64bc" }}
                       >
                         {gear.badge}
                       </span>
@@ -1280,7 +1285,7 @@ export default async function PaddleDetailPage({ params }: Props) {
                     {gear.subtitle}
                   </p>
                   {gear.price && (
-                    <p className="text-sm font-bold mt-2" style={{ color: "#2dd4bf" }}>
+                    <p className="text-sm font-bold mt-2" style={{ color: "#60a5fa" }}>
                       {gear.price}
                     </p>
                   )}
@@ -1320,7 +1325,7 @@ export default async function PaddleDetailPage({ params }: Props) {
       <section className="py-16" style={{ background: "var(--flip-bg-card)" }}>
         <div className="container-xl">
           <div className="flex items-center gap-3 mb-2">
-            <BarChart2 size={22} style={{ color: "#2dd4bf" }} />
+            <BarChart2 size={22} style={{ color: "#60a5fa" }} />
             <h2 className="text-2xl font-extrabold" style={{ color: "var(--flip-text-head)" }}>
               Compare {paddle.brand} {paddle.name} Head-to-Head
             </h2>
@@ -1352,13 +1357,13 @@ export default async function PaddleDetailPage({ params }: Props) {
                       {p.shape} · {p.thickness}{p.price ? ` · ${p.price}` : ""}
                     </p>
                   </div>
-                  <ArrowRight size={16} className="shrink-0 group-hover:translate-x-0.5 transition-transform" style={{ color: "#2dd4bf" }} />
+                  <ArrowRight size={16} className="shrink-0 group-hover:translate-x-0.5 transition-transform" style={{ color: "#60a5fa" }} />
                 </Link>
               );
             })}
           </div>
           <div className="mt-6 text-sm" style={{ color: "var(--flip-text-muted)" }}>
-            See all <Link href="/compare" className="font-bold hover:text-teal-400" style={{ color: "#2dd4bf" }}>head-to-head paddle comparisons →</Link>
+            See all <Link href="/compare" className="font-bold hover:text-teal-400" style={{ color: "#60a5fa" }}>head-to-head paddle comparisons →</Link>
           </div>
         </div>
       </section>
@@ -1381,7 +1386,7 @@ export default async function PaddleDetailPage({ params }: Props) {
             </div>
             {brandRecord && (
               <div className="mt-6 text-sm" style={{ color: "var(--flip-text-muted)" }}>
-                Browse the full <Link href={`/brands/${brandRecord.slug}`} className="font-bold hover:text-teal-400" style={{ color: "#2dd4bf" }}>{paddle.brand} brand page →</Link>
+                Browse the full <Link href={`/brands/${brandRecord.slug}`} className="font-bold hover:text-teal-400" style={{ color: "#60a5fa" }}>{paddle.brand} brand page →</Link>
               </div>
             )}
           </div>
@@ -1416,9 +1421,9 @@ export default async function PaddleDetailPage({ params }: Props) {
                   <span
                     className="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs font-bold uppercase tracking-wider px-4 py-1.5 rounded-full"
                     style={{
-                      background: "rgba(20,184,166,0.15)",
-                      color: "#2dd4bf",
-                      border: "1px solid rgba(20,184,166,0.3)",
+                      background: "rgba(10, 100, 188,0.30)",
+                      color: "#60a5fa",
+                      border: "1px solid rgba(10, 100, 188,0.3)",
                       backdropFilter: "blur(8px)",
                     }}
                   >
@@ -1552,8 +1557,8 @@ export default async function PaddleDetailPage({ params }: Props) {
           <div className="container-xl max-w-3xl mx-auto">
 
             <div className="flex items-center gap-2 mb-8">
-              <BookOpen className="w-5 h-5" style={{ color: "#14b8a6" }} />
-              <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "#14b8a6" }}>
+              <BookOpen className="w-5 h-5" style={{ color: "#60a5fa" }} />
+              <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "#60a5fa" }}>
                 Written Review
               </p>
             </div>
@@ -1578,7 +1583,7 @@ export default async function PaddleDetailPage({ params }: Props) {
                   <ul key={i} className="mb-4 space-y-1.5 pl-1">
                     {section.items?.map((item, j) => (
                       <li key={j} className="flex items-start gap-2 text-sm" style={{ color: "var(--flip-text-body, var(--text-primary))" }}>
-                        <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: "#14b8a6" }} />
+                        <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: "#0a64bc" }} />
                         {item}
                       </li>
                     ))}
@@ -1588,9 +1593,9 @@ export default async function PaddleDetailPage({ params }: Props) {
                   <div
                     key={i}
                     className="rounded-2xl p-5 my-6"
-                    style={{ background: "rgba(20,184,166,0.08)", border: "1px solid rgba(20,184,166,0.25)" }}
+                    style={{ background: "rgba(10, 100, 188,0.28)", border: "1px solid rgba(10, 100, 188,0.30)" }}
                   >
-                    <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#14b8a6" }}>
+                    <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#60a5fa" }}>
                       Verdict
                     </p>
                     <p className="text-base font-semibold leading-relaxed" style={{ color: "var(--flip-text-head)" }}>
@@ -1606,7 +1611,7 @@ export default async function PaddleDetailPage({ params }: Props) {
               <Link
                 href={`/blog/${blogPost.slug}`}
                 className="inline-flex items-center gap-1.5 text-sm font-semibold transition-colors hover:text-teal-400"
-                style={{ color: "#2dd4bf" }}
+                style={{ color: "#60a5fa" }}
               >
                 Read full review post <ArrowRight className="w-4 h-4" />
               </Link>
@@ -1686,6 +1691,17 @@ export default async function PaddleDetailPage({ params }: Props) {
             slugs={guidesForPaddle(paddle)}
             eyebrow="Learn"
             title="Helpful Guides for This Paddle"
+          />
+        </div>
+      </section>
+
+      {/* ── DRILLS & TRAINING ─────────────────────────────────────────────── */}
+      {/* Drill/training blog posts contextually picked by the paddle's
+          play style. Adds ~4 inbound links per paddle into the drill hub. */}
+      <section className="py-12">
+        <div className="container-xl max-w-5xl mx-auto">
+          <RelatedDrillsBlock
+            slugs={drillsForPaddle({ playStyle: paddle.playStyle, shape: paddle.shape })}
           />
         </div>
       </section>

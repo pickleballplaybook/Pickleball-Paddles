@@ -30,19 +30,41 @@ const config: Config = {
           900: "#173e3f",
           950: "#0c2222",
         },
-        // ── Teal accent (replaces all previous green / emerald) ──────────────
+        // ── Brand blue #0a64bc — primary accent across the site. Every
+        //    text-brand-*, bg-brand-*, border-brand-* token reads as this
+        //    blue (eyebrows, chips, hover states, etc.). Playbook wordmark
+        //    overrides to the deeper brand navy #11295f via inline style so
+        //    the wordmark itself stays distinct from accent text. Red CTA
+        //    palette stays separate for affiliate buy actions.
         brand: {
-          50:  "#f0fdfa",
-          100: "#ccfbf1",
-          200: "#99f6e4",
-          300: "#5eead4",
-          400: "#2dd4bf",
-          500: "#14b8a6",   // ← primary teal
-          600: "#0d9488",
-          700: "#0f766e",
-          800: "#115e59",
-          900: "#134e4a",
-          950: "#042f2e",
+          50:  "#e7f1fb",
+          100: "#c3dcf4",
+          200: "#8db9e8",
+          300: "#4d95d8",
+          400: "#1d77ca",
+          500: "#0a64bc",  // ← primary brand blue
+          600: "#0954a1",
+          700: "#084585",
+          800: "#06366a",
+          900: "#042549",
+          950: "#021631",
+        },
+        // ── CTA red — primary affiliate/buy/shop action. Matches the blog's
+        //    red+white-outline button style and the YouTube thumbnail palette.
+        //    Reserved for high-intent conversion actions; teal stays for
+        //    navigation, eyebrows, secondary "View" links.
+        cta: {
+          50:  "#fef2f2",
+          100: "#fee2e2",
+          200: "#fecaca",
+          300: "#fca5a5",
+          400: "#f87171",
+          500: "#dc2626",  // ← primary brand red
+          600: "#b91c1c",
+          700: "#991b1b",
+          800: "#7f1d1d",
+          900: "#5e1414",
+          950: "#3a0a0a",
         },
         // ── Navy (primary buttons, headlines) ────────────────────────────────
         navy: {

@@ -12,7 +12,7 @@ export interface Brand {
 
 export const brands: Brand[] = [
   { name: "11SIX24", slug: "11six24", logo: "/images/brands/11SIX24-pickleball.png", description: "11SIX24 is one of the most respected independent paddle brands in competitive pickleball, known for premium build quality and power-oriented designs like the Power 2 series." },
-  { name: "6.0", slug: "6-0", logo: "/images/brands/6.0-Pickleball.png", description: "SixZero (6.0) delivers well-spec'd all-court paddles at fair prices. Their Coral series offers balanced performance for players who want versatility." },
+  { name: "Six Zero", slug: "6-0", logo: "/images/brands/6.0-Pickleball.png", description: "Six Zero delivers well-spec'd all-court paddles at fair prices. Their Coral series offers balanced performance for players who want versatility." },
   { name: "Aireo", slug: "aireo", logo: "/images/brands/Aireo-Pickleball.png", description: "Aireo brings NanoGraph technology to pickleball, producing ultra-lightweight paddles like the Cyclone that prioritize hand speed and maneuverability." },
   { name: "Beyond Measure", slug: "beyond-measure", logo: "/images/brands/Beyond-measure-pickleball.png", description: "Beyond Measure delivers competitive specs at accessible prices. The Ronin series proves you don't need to spend $200+ to get a serious all-court paddle." },
   { name: "Bread & Butter", slug: "bread-and-butter", logo: "/images/brands/Bread-and-Butter-Pickleball-Co.png", description: "Bread & Butter has become one of the most talked-about brands in competitive pickleball. Their Loco series delivers serious power across three shapes." },

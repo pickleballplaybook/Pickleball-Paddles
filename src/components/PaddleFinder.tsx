@@ -73,7 +73,7 @@ export default function PaddleFinder() {
 
           {/* Heading */}
           <div className="text-center mb-10">
-            <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "#14b8a6" }}>
+            <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "#60a5fa" }}>
               Paddle Finder
             </p>
             <h2

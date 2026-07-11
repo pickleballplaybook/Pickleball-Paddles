@@ -3,10 +3,15 @@ import { Youtube } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import SubstackEmbed from "@/components/SubstackEmbed";
 
+// Footer main column carries the full sitemap — every nav tab lives here so
+// pages dropped from the hamburger (Compare, Guides) are still one click away
+// from every page. The trust column below stays focused on E-E-A-T pages.
 const NAV_LINKS = [
   { label: "Paddles",         href: "/paddles"          },
+  { label: "Best Paddles",    href: "/best-pickleball-paddles" },
   { label: "Reviews",         href: "/reviews"          },
   { label: "Compare",         href: "/compare"          },
+  { label: "Guides",          href: "/guides"           },
   { label: "Gear",            href: "/gear"             },
   { label: "What's Trending", href: "/#trending"        },
   { label: "What's New",      href: "/#whats-new"       },
@@ -29,7 +34,7 @@ export default function Footer() {
       {/* ── Newsletter capture (Substack official 1-click embed) ──────────── */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-2 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
         <div className="max-w-md">
-          <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#14b8a6" }}>
+          <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#60a5fa" }}>
             Free Newsletter
           </p>
           <p className="text-lg font-extrabold mb-1" style={{ color: "var(--text-primary)" }}>

@@ -67,7 +67,7 @@ function Pagination({
           className="w-9 h-9 flex items-center justify-center rounded-lg text-sm font-semibold transition-colors"
           style={
             p === page
-              ? { background: "#14b8a6", color: "#fff" }
+              ? { background: "#0a64bc", color: "#fff" }
               : { background: "var(--bg-card)", border: "1px solid var(--border)", color: "var(--text-primary)" }
           }
         >
@@ -250,7 +250,7 @@ function PaddlesInner({ paddles, priceCache }: { paddles: Paddle[]; priceCache: 
                   className="px-3 py-1 rounded-lg text-xs font-semibold transition-colors"
                   style={
                     s === pageSize
-                      ? { background: "#14b8a6", color: "#fff" }
+                      ? { background: "#0a64bc", color: "#fff" }
                       : { background: "var(--bg-card)", border: "1px solid var(--border)", color: "var(--text-muted)" }
                   }
                 >

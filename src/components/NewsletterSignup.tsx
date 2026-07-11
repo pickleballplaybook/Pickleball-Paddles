@@ -65,7 +65,7 @@ export default function NewsletterSignup() {
       >
         <div
           className="h-[28rem] w-[64rem] opacity-[0.14] blur-3xl"
-          style={{ background: "radial-gradient(ellipse at top, #14b8a6, transparent 65%)" }}
+          style={{ background: "radial-gradient(ellipse at top, #0a64bc, transparent 65%)" }}
         />
       </div>
 
@@ -84,11 +84,11 @@ export default function NewsletterSignup() {
 
           {/* Eyebrow */}
           <div className="flex items-center justify-center gap-3 mb-6">
-            <span className="h-px w-8" style={{ background: "rgba(45,212,191,0.5)" }} />
-            <p className="text-[10px] font-bold uppercase tracking-[0.3em]" style={{ color: "#2dd4bf" }}>
+            <span className="h-px w-8" style={{ background: "rgba(10, 100, 188,0.5)" }} />
+            <p className="text-[10px] font-bold uppercase tracking-[0.3em]" style={{ color: "#60a5fa" }}>
               Free Newsletter
             </p>
-            <span className="h-px w-8" style={{ background: "rgba(45,212,191,0.5)" }} />
+            <span className="h-px w-8" style={{ background: "rgba(10, 100, 188,0.5)" }} />
           </div>
 
           {/* Headline */}
@@ -97,7 +97,7 @@ export default function NewsletterSignup() {
             style={{ fontSize: "clamp(2.4rem, 6vw, 4.5rem)" }}
           >
             Know Before{" "}
-            <span style={{ color: "#2dd4bf" }}>You Buy.</span>
+            <span style={{ color: "#60a5fa" }}>You Buy.</span>
           </h2>
 
           {/* Sub-copy */}
@@ -125,9 +125,9 @@ export default function NewsletterSignup() {
               >
                 <div
                   className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
-                  style={{ background: "rgba(20,184,166,0.15)", border: "1px solid rgba(20,184,166,0.25)" }}
+                  style={{ background: "rgba(10, 100, 188,0.30)", border: "1px solid rgba(10, 100, 188,0.30)" }}
                 >
-                  <Icon className="w-5 h-5" style={{ color: "#2dd4bf" }} strokeWidth={1.75} />
+                  <Icon className="w-5 h-5" style={{ color: "#60a5fa" }} strokeWidth={1.75} />
                 </div>
                 <p className="font-bold text-white text-sm leading-snug mb-1.5">{title}</p>
                 <p className="text-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.45)" }}>{desc}</p>
@@ -141,9 +141,9 @@ export default function NewsletterSignup() {
               <div className="flex flex-col items-center gap-4 py-8">
                 <div
                   className="w-16 h-16 rounded-full flex items-center justify-center"
-                  style={{ background: "rgba(20,184,166,0.2)", border: "1px solid rgba(20,184,166,0.4)" }}
+                  style={{ background: "rgba(10, 100, 188,0.30)", border: "1px solid rgba(10, 100, 188,0.4)" }}
                 >
-                  <Check className="w-8 h-8" style={{ color: "#2dd4bf" }} strokeWidth={2.5} />
+                  <Check className="w-8 h-8" style={{ color: "#60a5fa" }} strokeWidth={2.5} />
                 </div>
                 <div className="text-center">
                   <p className="text-xl font-extrabold text-white mb-1">You&apos;re in.</p>
@@ -175,8 +175,8 @@ export default function NewsletterSignup() {
                     disabled={state === "loading"}
                     className="h-14 inline-flex items-center justify-center gap-2 font-extrabold text-sm px-8 rounded-2xl text-white transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 whitespace-nowrap"
                     style={{
-                      background: "linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)",
-                      boxShadow: "0 0 32px rgba(20,184,166,0.4)",
+                      background: "#0a64bc",
+                      boxShadow: "0 0 32px rgba(10, 100, 188,0.4)",
                       letterSpacing: "0.04em",
                     }}
                   >

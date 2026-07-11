@@ -88,20 +88,20 @@ export default function AffiliateBuyButton({
           style={{
             top: "max(80px, env(safe-area-inset-top, 0px) + 80px)",
             background: "#0f172a",
-            border: "1px solid rgba(20,184,166,0.45)",
-            boxShadow: "0 18px 40px rgba(0,0,0,0.45), 0 0 0 1px rgba(20,184,166,0.1)",
+            border: "1px solid rgba(10, 100, 188,0.45)",
+            boxShadow: "0 18px 40px rgba(0,0,0,0.45), 0 0 0 1px rgba(10, 100, 188,0.30)",
             maxWidth: "calc(100vw - 24px)",
           }}
         >
           <span
             className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center"
-            style={{ background: "rgba(20,184,166,0.18)" }}
+            style={{ background: "rgba(10, 100, 188,0.30)" }}
           >
-            <Check className="w-4 h-4" style={{ color: "#2dd4bf" }} strokeWidth={3} />
+            <Check className="w-4 h-4" style={{ color: "#60a5fa" }} strokeWidth={3} />
           </span>
           <div className="text-sm leading-tight">
             <p className="font-bold" style={{ color: "#f8fafc" }}>
-              Code <span style={{ color: "#2dd4bf" }}>{toast}</span> copied
+              Code <span style={{ color: "#60a5fa" }}>{toast}</span> copied
             </p>
             <p className="text-xs" style={{ color: "#94a3b8" }}>
               Paste it at checkout to get this price

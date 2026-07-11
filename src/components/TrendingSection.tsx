@@ -23,7 +23,7 @@ function ColumnCard({ icon, title, subtitle, children }: {
       <div className="flex items-start gap-3">
         <div
           className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{ background: "rgba(20,184,166,0.12)", border: "1px solid rgba(20,184,166,0.2)" }}
+          style={{ background: "rgba(10, 100, 188,0.30)", border: "1px solid rgba(10, 100, 188,0.30)" }}
         >
           {icon}
         </div>
@@ -160,7 +160,7 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
   // Sort by combined engagement. Use weightedScore (recency-decayed hearts)
   // as the heart signal, not raw totalHearts — otherwise older hearts in the
   // window outrank today's activity.
-  const trendingPre = allTrending
+  const trendingScored = allTrending
     .map((t) => ({
       ...t,
       ratingCount: ratingCounts[t.paddle.id]?.count ?? 0,
@@ -172,11 +172,17 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
       ),
     }))
     .sort((a, b) => b.engagement - a.engagement || (b.lastHeart ?? 0) - (a.lastHeart ?? 0))
-    // Minimum engagement floor: filters out paddles with one stale heart
-    // and no other signal (Rebl-Alliance-style) so the list reflects actual
-    // momentum, not "one person hearted this once."
-    .filter((t) => (hasHearts || hasRatings || hasViews) ? t.engagement >= MIN_TRENDING_ENGAGEMENT : true)
     .filter((t) => !isTrendingExcluded(t.paddle.slug));
+  // Qualified = meets engagement floor (filters one-stale-heart noise). If
+  // we have 6+ qualified, only show those. If we have fewer (common in the
+  // 7-day window when site-wide activity is low), backfill with the next-
+  // highest-engagement paddles so the homepage always shows a full set of 6.
+  // This is what fixes the "7 Days shows only 2 paddles" bug.
+  const hasSignal = hasHearts || hasRatings || hasViews;
+  const qualifiedTrending = hasSignal
+    ? trendingScored.filter((t) => t.engagement >= MIN_TRENDING_ENGAGEMENT)
+    : trendingScored;
+  const trendingPre = qualifiedTrending.length >= 6 ? qualifiedTrending : trendingScored;
   // Dedupe by series so a single series can't fill multiple slots.
   const trendingSorted = takeTopBySeriesDedup(trendingPre, 10);
 
@@ -187,15 +193,20 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
     brandRatings.set(p.brand, (brandRatings.get(p.brand) ?? 0) + rc);
   }
 
-  const brandsSorted = allBrands
+  // Brands — same backfill pattern: prefer brands with any engagement, but
+  // fall through to the full list when fewer than 6 qualify (keeps the
+  // Rising Brands column from going sparse on quiet days).
+  const brandsScored = allBrands
     .map((b) => ({
       ...b,
       totalRatings: brandRatings.get(b.brand) ?? 0,
       engagement: b.totalHearts + (brandRatings.get(b.brand) ?? 0),
     }))
-    .sort((a, b) => b.engagement - a.engagement || b.totalHearts - a.totalHearts)
-    .filter((b) => (hasHearts || hasRatings) ? b.engagement > 0 : true)
-    .slice(0, 6);
+    .sort((a, b) => b.engagement - a.engagement || b.totalHearts - a.totalHearts);
+  const qualifiedBrands = (hasHearts || hasRatings)
+    ? brandsScored.filter((b) => b.engagement > 0)
+    : brandsScored;
+  const brandsSorted = (qualifiedBrands.length >= 6 ? qualifiedBrands : brandsScored).slice(0, 6);
 
   // Fetch external reviews from Supabase cache
   const [extReviews, setExtReviews] = useState<Record<string, { rating: number; count: number; sourceName: string }>>({});
@@ -276,7 +287,7 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
                     className="text-xs font-bold px-3.5 py-1.5 rounded-[10px] transition-all"
                     style={
                       timeRange === r
-                        ? { background: "#14b8a6", color: "#fff" }
+                        ? { background: "#0a64bc", color: "#fff" }
                         : { color: "var(--flip-text-muted)" }
                     }
                   >
@@ -293,7 +304,7 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
           {/* ── Trending Paddles ─────────────────────────────────────────── */}
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <TrendingUp className="w-4 h-4" style={{ color: "#14b8a6" }} strokeWidth={2} />
+              <TrendingUp className="w-4 h-4" style={{ color: "#60a5fa" }} strokeWidth={2} />
               <p className="font-extrabold text-base" style={{ color: "var(--flip-text-head)" }}>Trending Paddles</p>
             </div>
             <div className="flex flex-col gap-1">
@@ -349,16 +360,24 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
                           })()}
                         </span>
                         {hasLink && (
-                          <a
-                            href={paddle.discountLink}
-                            target="_blank"
-                            rel="noopener noreferrer sponsored"
-                            className="hidden sm:inline-flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-lg text-white transition-all hover:scale-105"
-                            style={{ background: "#14b8a6" }}
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            Buy <ArrowRight className="w-3 h-3" />
-                          </a>
+                          <div className="hidden sm:flex flex-col items-end gap-0.5">
+                            <span
+                              className="text-[9px] font-bold uppercase tracking-widest leading-none"
+                              style={{ color: "var(--flip-text-muted)" }}
+                            >
+                              Code: <span style={{ color: "#60a5fa" }}>{code}</span>
+                            </span>
+                            <a
+                              href={paddle.discountLink}
+                              target="_blank"
+                              rel="noopener noreferrer sponsored"
+                              className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-lg text-white transition-all hover:scale-105"
+                              style={{ background: "#0a64bc" }}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              Buy <ArrowRight className="w-3 h-3" />
+                            </a>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -371,7 +390,7 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
           {/* ── Highest Rated ────────────────────────────────────────────── */}
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <Star className="w-4 h-4" style={{ color: "#14b8a6" }} strokeWidth={2} />
+              <Star className="w-4 h-4" style={{ color: "#60a5fa" }} strokeWidth={2} />
               <p className="font-extrabold text-base" style={{ color: "var(--flip-text-head)" }}>Highest Rated</p>
             </div>
             <div className="flex flex-col gap-1">
@@ -430,7 +449,7 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
           {/* ── Rising Brands ────────────────────────────────────────────── */}
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <Bookmark className="w-4 h-4" style={{ color: "#14b8a6" }} strokeWidth={2} />
+              <Bookmark className="w-4 h-4" style={{ color: "#60a5fa" }} strokeWidth={2} />
               <p className="font-extrabold text-base" style={{ color: "var(--flip-text-head)" }}>Rising Brands</p>
             </div>
             <div className="flex flex-col gap-1">
@@ -495,7 +514,7 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
           <Link
             href="/trending"
             className="inline-flex items-center gap-2 font-bold text-sm px-8 py-3 rounded-xl text-white transition-all hover:scale-[1.02]"
-            style={{ background: "#14b8a6" }}
+            style={{ background: "#0a64bc" }}
           >
             View All Trending Paddles <ArrowRight className="w-4 h-4" />
           </Link>

@@ -119,7 +119,7 @@ export default function StickyNewsletterBar() {
       style={{
         transform: visible ? "translateY(0)" : "translateY(100%)",
         background: "linear-gradient(180deg, rgba(8,18,32,0.96) 0%, rgba(10,22,40,0.98) 100%)",
-        borderTop: "1px solid rgba(45,212,191,0.30)",
+        borderTop: "1px solid rgba(10, 100, 188,0.30)",
         boxShadow: "0 -12px 40px rgba(0,0,0,0.45), 0 -1px 0 rgba(255,255,255,0.06) inset",
         backdropFilter: "blur(14px)",
       }}
@@ -131,9 +131,9 @@ export default function StickyNewsletterBar() {
         <div className="hidden sm:flex items-center gap-3 flex-shrink-0">
           <div
             className="w-9 h-9 rounded-xl flex items-center justify-center"
-            style={{ background: "rgba(20,184,166,0.15)", border: "1px solid rgba(20,184,166,0.30)" }}
+            style={{ background: "rgba(10, 100, 188,0.30)", border: "1px solid rgba(10, 100, 188,0.30)" }}
           >
-            <Mail className="w-4 h-4" style={{ color: "#2dd4bf" }} strokeWidth={2} />
+            <Mail className="w-4 h-4" style={{ color: "#60a5fa" }} strokeWidth={2} />
           </div>
           <div className="leading-tight">
             <p className="text-sm font-extrabold text-white">Get this week&apos;s paddle picks + discount codes</p>
@@ -170,8 +170,8 @@ export default function StickyNewsletterBar() {
               disabled={state === "loading"}
               className="h-10 inline-flex items-center gap-1.5 font-extrabold text-xs sm:text-sm px-4 sm:px-5 rounded-lg text-white whitespace-nowrap transition-all hover:scale-[1.02] disabled:opacity-70"
               style={{
-                background: "linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)",
-                boxShadow: "0 0 20px rgba(20,184,166,0.30)",
+                background: "#0a64bc",
+                boxShadow: "0 0 20px rgba(10, 100, 188,0.30)",
                 letterSpacing: "0.04em",
               }}
             >

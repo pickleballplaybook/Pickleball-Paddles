@@ -30,6 +30,7 @@ export const paddles: Paddle[] = [
     weight: "8.0 oz",
     swingWeight: 113.77,
     twistWeight: 6.73,
+    balancePoint: 23.7,
     thickness: "16mm",
     image: "/images/paddles/Vapor-Power-2-16.png",
     amountOff: "$10",
@@ -50,6 +51,7 @@ export const paddles: Paddle[] = [
     weight: "8.0 oz",
     swingWeight: 111.87,
     twistWeight: 6.06,
+    balancePoint: 23.1,
     thickness: "16mm",
     image: "/images/paddles/Hurache-X-Power-2-16mm.png",
     amountOff: "$10",
@@ -92,6 +94,7 @@ export const paddles: Paddle[] = [
     weight: "8.0 oz",
     swingWeight: 116.40,
     twistWeight: 5.93,
+    balancePoint: 23.9,
     thickness: "16mm",
     image: "/images/paddles/Starion-16mm.png",
     amountOff: "$0",
@@ -191,6 +194,7 @@ export const paddles: Paddle[] = [
     weight: "7.9 oz",
     swingWeight: 116.53,
     twistWeight: 5.91,
+    balancePoint: 24.0,
     thickness: "16mm",
     image: "/images/paddles/Filth-16mm.png",
     amountOff: "10%",
@@ -247,6 +251,7 @@ export const paddles: Paddle[] = [
     weight: "8.2 oz",
     swingWeight: 115.46,
     twistWeight: 6.86,
+    balancePoint: 23.6,
     thickness: "16mm",
     image: "/images/paddles/Loco-Hybrid-16mm.png",
     amountOff: "10%",
@@ -311,6 +316,7 @@ export const paddles: Paddle[] = [
     weight: "8.0 oz",
     swingWeight: 117.97,
     twistWeight: 6.01,
+    balancePoint: 24.1,
     thickness: "14mm",
     image: "/images/paddles/Barrage-1-16mm.png",
     amountOff: "15%",
@@ -330,6 +336,7 @@ export const paddles: Paddle[] = [
     weight: "7.9 oz",
     swingWeight: 108.77,
     twistWeight: 6.88,
+    balancePoint: 23.5,
     thickness: "14mm",
     image: "/images/paddles/Barrage-2-16mm.png",
     amountOff: "15%",
@@ -351,6 +358,7 @@ export const paddles: Paddle[] = [
     weight: "8.0 oz",
     swingWeight: 111.89,
     twistWeight: 6.27,
+    balancePoint: 23.6,
     thickness: "16mm",
     image: "/images/paddles/Alpha-Pro-16mm.png?v=2",
     amountOff: "10%",
@@ -390,6 +398,7 @@ export const paddles: Paddle[] = [
     weight: "8.0 oz",
     swingWeight: 112.03,
     twistWeight: 6.40,
+    balancePoint: 23.5,
     thickness: "14mm",
     image: "/images/paddles/Banger-14mm.png",
     amountOff: "$20",
@@ -408,6 +417,7 @@ export const paddles: Paddle[] = [
     weight: "7.9 oz",
     swingWeight: 115.76,
     twistWeight: 6.12,
+    balancePoint: 24.4,
     thickness: "16mm",
     image: "/images/paddles/Turbo-EPP-Elongated-16mm.png",
     amountOff: "$20",
@@ -468,6 +478,7 @@ export const paddles: Paddle[] = [
     weight: "7.9 oz",
     swingWeight: 116.06,
     twistWeight: 6.10,
+    balancePoint: 24.1,
     thickness: "16mm",
     image: "/images/paddles/Turbo-MPP-Elongated-16mm.png",
     amountOff: "$20",
@@ -487,6 +498,7 @@ export const paddles: Paddle[] = [
     weight: "8.0 oz",
     swingWeight: 114.24,
     twistWeight: 6.48,
+    balancePoint: 23.9,
     thickness: "16mm",
     image: "/images/paddles/Turbo-MPP-Hybrid-16mm.png",
     amountOff: "$20",
@@ -507,13 +519,15 @@ export const paddles: Paddle[] = [
     weight: "7.9 oz",
     swingWeight: 116.33,
     twistWeight: 5.93,
+    balancePoint: 24.0,
     thickness: "16mm",
     image: "/images/paddles/Aura-Pro-Elongated-16mm.png",
-    amountOff: "$10",
+    amountOff: "15%",
     price: "$169.00",
-    // TEMP lockerroom promo — set 2026-06-08, REVERT on 2026-06-28 to:
-    //   "https://www.fridaypickle.com/PLAYBOOK"
-    discountLink: "https://lockerroompickleball.com/products/aura-pro?sca_ref=8334840.yY4rLJi7oU9HDNHD",
+    // Locker Room affiliate URL with /discount/PLAYBOOK?redirect=... so the
+    // 15% code auto-applies on landing — user lands directly on the product
+    // page with the cart discount pre-set.
+    discountLink: "https://lockerroompickleball.com/discount/PLAYBOOK?redirect=/products/aura-pro&sca_ref=8334840.yY4rLJi7oU9HDNHD",
     reviewUrl: "https://youtu.be/l6efRcEngHo",
     addedAt: "2025-06-01",
     trendingScore: 67,
@@ -528,15 +542,15 @@ export const paddles: Paddle[] = [
     weight: "8.0 oz",
     swingWeight: 114.73,
     twistWeight: 5.64,
+    balancePoint: 24.0,
     thickness: "16mm",
     image: "/images/paddles/Aura-Elongated-16mm.png",
-    amountOff: "$10",
+    amountOff: "15%",
     price: "$129.00",
-    // TEMP lockerroom promo — set 2026-06-08, REVERT on 2026-06-28 to:
-    //   "https://www.fridaypickle.com/PLAYBOOK"
-    // Only the Elongated variant is on the lockerroom URL now — Hybrid was
-    // reverted to the Friday affiliate link.
-    discountLink: "https://lockerroompickleball.com/products/aura?sca_ref=8334840.yY4rLJi7oU9HDNHD",
+    // Locker Room affiliate URL with /discount/PLAYBOOK?redirect=... so 15%
+    // off auto-applies. Same product slug as Hybrid (Shopify variant under
+    // one product) — both shapes ride the same lockerroom URL.
+    discountLink: "https://lockerroompickleball.com/discount/PLAYBOOK?redirect=/products/aura&sca_ref=8334840.yY4rLJi7oU9HDNHD",
     reviewUrl: "https://youtu.be/O8555NozXPo",
     addedAt: "2025-06-01",
     trendingScore: 63,
@@ -552,11 +566,12 @@ export const paddles: Paddle[] = [
     weight: "7.6 oz",
     swingWeight: 108.60,
     twistWeight: 5.91,
+    balancePoint: 23.7,
     thickness: "16mm",
     image: "/images/paddles/Aura-Hybrid-16mm.png",
-    amountOff: "$10",
+    amountOff: "15%",
     price: "$129.00",
-    discountLink: "https://www.fridaypickle.com/PLAYBOOK",
+    discountLink: "https://lockerroompickleball.com/discount/PLAYBOOK?redirect=/products/aura&sca_ref=8334840.yY4rLJi7oU9HDNHD",
     reviewUrl: "https://youtu.be/O8555NozXPo",
     addedAt: "2025-06-01",
     trendingScore: 55,
@@ -674,6 +689,27 @@ export const paddles: Paddle[] = [
     reviewUrl: "https://youtu.be/tIcA0rzaB_U",
     addedAt: "2025-06-01",
     trendingScore: 65,
+    playStyle: "all-court",
+    seriesSlug: "holbrook-fuze",
+  },
+  {
+    id: "134",
+    slug: "holbrook-american-fuze-elongated",
+    brand: "Holbrook",
+    name: "American Fuze",
+    shape: "Elongated",
+    weight: "7.9 oz",
+    swingWeight: 118.05,
+    twistWeight: 6.29,
+    balancePoint: 24.6,
+    thickness: "16mm",
+    image: "/images/paddles/Holbrook-Fuze-The-American-Fuze-Elongated-16mm.png",
+    amountOff: "15%",
+    price: "$229.99",
+    discountLink: "https://lockerroompickleball.com/products/fuze?sca_ref=8334840.yY4rLJi7oU9HDNHD",
+    reviewUrl: "https://youtu.be/tIcA0rzaB_U",
+    addedAt: "2026-06-17",
+    trendingScore: 60,
     playStyle: "all-court",
     seriesSlug: "holbrook-fuze",
   },
@@ -986,6 +1022,7 @@ export const paddles: Paddle[] = [
     weight: "8.7 oz",
     swingWeight: 123.47,
     twistWeight: 6.16,
+    balancePoint: 24.1,
     thickness: "18mm",
     image: "/images/paddles/Mon-Ami-18mm.png",
     amountOff: "15%",
@@ -1005,6 +1042,7 @@ export const paddles: Paddle[] = [
     weight: "8.4 oz",
     swingWeight: 112.41,
     twistWeight: 6.04,
+    balancePoint: 22.9,
     thickness: "20mm",
     image: "/images/paddles/Megalodon-20mm.png",
     amountOff: "15%",
@@ -1024,6 +1062,7 @@ export const paddles: Paddle[] = [
     weight: "9.1 oz",
     swingWeight: 123.23,
     twistWeight: 6.17,
+    balancePoint: 23.5,
     thickness: "20mm",
     image: "/images/paddles/Maestro-20mm.png",
     amountOff: "15%",
@@ -1045,6 +1084,7 @@ export const paddles: Paddle[] = [
     weight: "8.2 oz",
     swingWeight: 109.66,
     twistWeight: 6.54,
+    balancePoint: 23.0,
     thickness: "16mm",
     image: "/images/paddles/X-Foam-JMA-16mm.png",
     amountOff: "15%",
@@ -1065,6 +1105,7 @@ export const paddles: Paddle[] = [
     weight: "8.1 oz",
     swingWeight: 114.68,
     twistWeight: 6.06,
+    balancePoint: 23.3,
     thickness: "16mm",
     image: "/images/paddles/X-Foam-JC6-16mm.png",
     amountOff: "15%",
@@ -1087,6 +1128,7 @@ export const paddles: Paddle[] = [
     weight: "7.8 oz",
     swingWeight: 115.40,
     twistWeight: 5.74,
+    balancePoint: 24.2,
     thickness: "16mm",
     image: "/images/paddles/Quanta-R3-16mm.png",
     amountOff: "$20",
@@ -1106,6 +1148,7 @@ export const paddles: Paddle[] = [
     weight: "7.6 oz",
     swingWeight: 105.00,
     twistWeight: 5.75,
+    balancePoint: 23.4,
     thickness: "16mm",
     image: "/images/paddles/Quanta-R4-16mm.png",
     amountOff: "$20",
@@ -1491,6 +1534,7 @@ export const paddles: Paddle[] = [
     weight: "8.0 oz",
     swingWeight: 114.89,
     twistWeight: 5.21,
+    balancePoint: 24.1,
     thickness: "18mm",
     image: "/images/paddles/Thunder-Axe-18mm.png",
     amountOff: "15%",
@@ -1512,6 +1556,7 @@ export const paddles: Paddle[] = [
     weight: "8.3 oz",
     swingWeight: 113.83,
     twistWeight: 6.83,
+    balancePoint: 23.5,
     thickness: "15mm",
     image: "/images/paddles/Radical-Widebody-15mm (2).png",
     amountOff: "15%",
@@ -1532,6 +1577,7 @@ export const paddles: Paddle[] = [
     weight: "8.4 oz",
     swingWeight: 118.67,
     twistWeight: 6.46,
+    balancePoint: 23.6,
     thickness: "15mm",
     image: "/images/paddles/Radical-Elongated-15mm.png",
     amountOff: "15%",
@@ -1554,6 +1600,7 @@ export const paddles: Paddle[] = [
     weight: "7.9 oz",
     swingWeight: 108.27,
     twistWeight: 6.43,
+    balancePoint: 23.2,
     thickness: "16mm",
     image: "/images/paddles/Draco-Hybrid-16mm.png",
     amountOff: "10%",
@@ -1576,6 +1623,7 @@ export const paddles: Paddle[] = [
     weight: "7.8 oz",
     swingWeight: 107.07,
     twistWeight: 6.29,
+    balancePoint: 23.7,
     thickness: "16mm",
     image: "/images/paddles/Lazr-16HD-Hybrid-16mm.png",
     amountOff: "10%",
@@ -1596,6 +1644,7 @@ export const paddles: Paddle[] = [
     weight: "7.8 oz",
     swingWeight: 110.58,
     twistWeight: 5.93,
+    balancePoint: 24.0,
     thickness: "16mm",
     image: "/images/paddles/Lazr-16X-Elongated-16mm.png",
     amountOff: "10%",
@@ -1618,6 +1667,7 @@ export const paddles: Paddle[] = [
     weight: "8.1 oz",
     swingWeight: 115.65,
     twistWeight: 6.36,
+    balancePoint: 23.9,
     thickness: "16mm",
     image: "/images/paddles/Ronin-Hybrid-16mm.png",
     amountOff: "10%",
@@ -1638,6 +1688,7 @@ export const paddles: Paddle[] = [
     weight: "8.0 oz",
     swingWeight: 114.98,
     twistWeight: 6.53,
+    balancePoint: 23.9,
     thickness: "16mm",
     image: "/images/paddles/Ronin-Elongated-16mm.png",
     amountOff: "10%",
@@ -1680,7 +1731,7 @@ export const paddles: Paddle[] = [
     weight: "8.2 oz",
     swingWeight: 120.09,
     twistWeight: 6.84,
-    balancePoint: 24.1,
+    balancePoint: 24.5,
     thickness: "16mm",
     image: "/images/paddles/Boomstik-Elongated-16mm.png",
     amountOff: "15%",
@@ -1722,6 +1773,7 @@ export const paddles: Paddle[] = [
     weight: "7.9 oz",
     swingWeight: 118.52,
     twistWeight: 6.02,
+    balancePoint: 24.7,
     thickness: "16mm",
     image: "/images/paddles/Inferno-Elongated16mm.png",
     amountOff: "15%",
@@ -1741,6 +1793,7 @@ export const paddles: Paddle[] = [
     weight: "7.9 oz",
     swingWeight: 119.19,
     twistWeight: 6.10,
+    balancePoint: 24.6,
     thickness: "16mm",
     image: "/images/paddles/Cannon-Elongated-16mm.png",
     amountOff: "15%",
@@ -1762,6 +1815,7 @@ export const paddles: Paddle[] = [
     weight: "8.0 oz",
     swingWeight: 119.85,
     twistWeight: 6.09,
+    balancePoint: 24.5,
     thickness: "16mm",
     image: "/images/paddles/Flik-F3-Tripple-Core-Elongated-16mm.png",
     amountOff: "10%",
@@ -1782,6 +1836,7 @@ export const paddles: Paddle[] = [
     weight: "8.0 oz",
     swingWeight: 117.38,
     twistWeight: 6.27,
+    balancePoint: 24.7,
     thickness: "16mm",
     image: "/images/paddles/Flik-F3-Triple-Core-Hybrid-16mm.png",
     amountOff: "10%",
@@ -1861,8 +1916,9 @@ export const paddles: Paddle[] = [
     name: "J6CR Crystal Blue Endurance Surface",
     shape: "Elongated",
     weight: "8.0 oz",
-    swingWeight: 0,
-    twistWeight: 0,
+    swingWeight: 115.09,
+    twistWeight: 6.27,
+    balancePoint: 23.8,
     thickness: "16mm",
     image: "/images/paddles/J6CR-Crystal-Blue-Endurance-Surface-16mm.png",
     amountOff: "10%",
@@ -1885,11 +1941,12 @@ export const paddles: Paddle[] = [
     weight: "7.9 oz",
     swingWeight: 107.71,
     twistWeight: 6.80,
+    balancePoint: 23.3,
     thickness: "16mm",
     image: "/images/paddles/RPM-Q2-Widebody-16mm.png",
     amountOff: "15%",
     price: "$249.99",
-    discountLink: "https://rpmpb.com/PLAYBOOK",
+    discountLink: "https://lockerroompickleball.com/discount/PLAYBOOK?redirect=/products/rpm-q2&sca_ref=8334840.yY4rLJi7oU9HDNHD",
     manualVideoId: "6xff-1cCF30",
     addedAt: "2026-04-16",
     trendingScore: 62,
@@ -1909,7 +1966,7 @@ export const paddles: Paddle[] = [
     image: "/images/paddles/RPM-Q2-Elongated-16mm.png",
     amountOff: "15%",
     price: "$249.99",
-    discountLink: "https://rpmpb.com/PLAYBOOK",
+    discountLink: "https://lockerroompickleball.com/discount/PLAYBOOK?redirect=/products/rpm-q2&sca_ref=8334840.yY4rLJi7oU9HDNHD",
     manualVideoId: "6xff-1cCF30",
     addedAt: "2026-04-16",
     trendingScore: 62,
@@ -1925,6 +1982,7 @@ export const paddles: Paddle[] = [
     weight: "8.0 oz",
     swingWeight: 121.4,
     twistWeight: 6.13,
+    balancePoint: 24.4,
     thickness: "14mm",
     image: "/images/paddles/Speedup-Tide-14L-Elongated-14mm.png",
     amountOff: "10%",
@@ -1945,6 +2003,7 @@ export const paddles: Paddle[] = [
     weight: "8.0 oz",
     swingWeight: 113.74,
     twistWeight: 6.09,
+    balancePoint: 23.6,
     thickness: "14mm",
     image: "/images/paddles/Speedup-Tide-14H-Hybrid-14mm.png",
     amountOff: "10%",
@@ -1965,6 +2024,7 @@ export const paddles: Paddle[] = [
     weight: "7.8 oz",
     swingWeight: 113.44,
     twistWeight: 6.5,
+    balancePoint: 24.1,
     thickness: "16mm",
     image: "/images/paddles/Gearbox-GBX-Power-Hybrid-16mm.png",
     amountOff: "10%",
@@ -1985,6 +2045,7 @@ export const paddles: Paddle[] = [
     weight: "7.9 oz",
     swingWeight: 116.87,
     twistWeight: 6.25,
+    balancePoint: 24.4,
     thickness: "16mm",
     image: "/images/paddles/Gearbox-GBX-Power-Elongated-16mm.png",
     amountOff: "10%",
@@ -2005,6 +2066,7 @@ export const paddles: Paddle[] = [
     weight: "7.8 oz",
     swingWeight: 108.67,
     twistWeight: 5.78,
+    balancePoint: 23.0,
     thickness: "14mm",
     image: "/images/paddles/Joysent-Gearfoam-Max-14mm.png",
     reviewUrl: "https://youtu.be/il6Z4hPh-jY",
@@ -2043,6 +2105,7 @@ export const paddles: Paddle[] = [
     weight: "7.6 oz",
     swingWeight: 105.94,
     twistWeight: 6.74,
+    balancePoint: 23.4,
     thickness: "16mm",
     image: "/images/paddles/Gherkin-Draco-Widebody-16mm.png",
     amountOff: "10%",
@@ -2059,7 +2122,7 @@ export const paddles: Paddle[] = [
   {
     id: "94",
     slug: "6-0-coral-hybrid",
-    brand: "6.0",
+    brand: "Six Zero",
     name: "Coral",
     shape: "Hybrid",
     weight: "8.0 oz",
@@ -2079,7 +2142,7 @@ export const paddles: Paddle[] = [
   {
     id: "95",
     slug: "6-0-coral-elongated",
-    brand: "6.0",
+    brand: "Six Zero",
     name: "Coral",
     shape: "Elongated",
     weight: "7.9 oz",
@@ -2107,6 +2170,7 @@ export const paddles: Paddle[] = [
     weight: "7.5 oz",
     swingWeight: 112.04,
     twistWeight: 6.18,
+    balancePoint: 24.0,
     thickness: "16mm",
     image: "/images/paddles/Aireo-Cyclone-NanoGraph-Elongated-16mm.png",
     amountOff: "10%",
@@ -2147,6 +2211,7 @@ export const paddles: Paddle[] = [
     weight: "8.0 oz",
     swingWeight: 111.81,
     twistWeight: 7.41,
+    balancePoint: 23.6,
     thickness: "16mm",
     image: "/images/paddles/Chorus-Coda-Harmony-Grit-Widebody-16mm.png",
     amountOff: "10%",
@@ -2166,6 +2231,7 @@ export const paddles: Paddle[] = [
     weight: "7.9 oz",
     swingWeight: 112.12,
     twistWeight: 6.61,
+    balancePoint: 23.5,
     thickness: "16mm",
     image: "/images/paddles/Chorus-Coda-Harmony-Grit-Hybrid-16mm.png",
     amountOff: "10%",
@@ -2185,6 +2251,7 @@ export const paddles: Paddle[] = [
     weight: "7.9 oz",
     swingWeight: 116.59,
     twistWeight: 6.22,
+    balancePoint: 24.0,
     thickness: "16mm",
     image: "/images/paddles/Chorus-Coda-Harmony-Grit-Elongated-16mm.png",
     amountOff: "10%",
@@ -2206,6 +2273,7 @@ export const paddles: Paddle[] = [
     weight: "8.2 oz",
     swingWeight: 124.18,
     twistWeight: 6.51,
+    balancePoint: 24.9,
     thickness: "16mm",
     image: "/images/paddles/Reload-RLD-1-Hybrid-16mm.png",
     amountOff: "10%",
@@ -2245,6 +2313,7 @@ export const paddles: Paddle[] = [
     weight: "8.1 oz",
     swingWeight: 117.40,
     twistWeight: 6.39,
+    balancePoint: 23.9,
     thickness: "16mm",
     image: "/images/paddles/Rev-Radiance-Elongated-16mm.png",
     amountOff: "20%",
@@ -2287,7 +2356,7 @@ export const paddles: Paddle[] = [
     weight: "8.0 oz",
     swingWeight: 111.16,
     twistWeight: 6.44,
-    balancePoint: 23.3,
+    balancePoint: 23.9,
     thickness: "15.5mm",
     image: "/images/paddles/Thrive-Ignite-Hybrid-15.5mm.png",
     reviewUrl: "https://youtu.be/tLtBiz9bNWc",
@@ -2335,16 +2404,14 @@ export const paddles: Paddle[] = [
     balancePoint: 24.1,
     featuredReviewUrl: "https://youtu.be/SZ8NJn3WxCA",
     thickness: "16mm",
-    // Back on Selkirk's site with the INF-PLAYBOOK gift-card flow.
-    // The variant + discount params pre-apply the code so the user gets a
-    // free gift card at checkout. amountOff stays "$0" so isSelkirkGiftCard()
-    // returns true and the special gift-card badge treatment kicks in.
-    // (Image still using the Selkirk-Omno- file — swap to Selkirk-Omni- if
-    //  needed later.)
+    // Locker Room affiliate URL with /discount/PLAYBOOK?redirect=... so 15%
+    // off auto-applies. Switched off the Selkirk gift-card flow per
+    // 2026-06-24 update — Locker Room is the primary now and the standard
+    // PLAYBOOK code does the 15% discount at checkout.
     image: "/images/paddles/Selkirk-Omno-Widebody-16mm.png",
-    amountOff: "$0",
+    amountOff: "15%",
     price: "$299.99",
-    discountLink: "https://www.selkirk.com/discount/INF-PLAYBOOK?redirect=/pages/omni-pickleball-paddle?variant=45607806173286",
+    discountLink: "https://lockerroompickleball.com/discount/PLAYBOOK?redirect=/products/selkirk-omni&sca_ref=8334840.yY4rLJi7oU9HDNHD",
     reviewUrl: "https://youtu.be/2jXKJrCH9iI",
     addedAt: "2026-05-29",
     trendingScore: 50,
@@ -2361,6 +2428,7 @@ export const paddles: Paddle[] = [
     weight: "7.6 oz",
     swingWeight: 103.79,
     twistWeight: 6.36,
+    balancePoint: 23.3,
     thickness: "16mm",
     image: "/images/paddles/Aireo-Cyclone-Hybrid-UPA-Approved-16mm.png",
     amountOff: "10%",
@@ -2380,6 +2448,7 @@ export const paddles: Paddle[] = [
     weight: "7.6 oz",
     swingWeight: 107.48,
     twistWeight: 6.5,
+    balancePoint: 23.7,
     thickness: "16mm",
     image: "/images/paddles/Aireo-Cyclone-Hybrid-USAP-Certified-16mm.png",
     amountOff: "10%",
@@ -2401,6 +2470,7 @@ export const paddles: Paddle[] = [
     weight: "8.1 oz",
     swingWeight: 116.91,
     twistWeight: 6.28,
+    balancePoint: 24.1,
     thickness: "16mm",
     image: "/images/paddles/RPM-Friction-Pro-V2-Elongated-16mm.png",
     amountOff: "15%",
@@ -2448,6 +2518,7 @@ export const paddles: Paddle[] = [
     weight: "7.9 oz",
     swingWeight: 121.89,
     twistWeight: 6.11,
+    balancePoint: 24.6,
     thickness: "16mm",
     image: "/images/paddles/Luzz-Tornazo-Elongated-16mm.png",
     amountOff: "15%",
@@ -2467,10 +2538,10 @@ export const paddles: Paddle[] = [
   // ── 11SIX24 Ultré Power 2 (joins the Power 2 series) ──────────────────────
   {
     id: "126",
-    slug: "11six24-ultre-power-2-elongated",
+    slug: "11six24-ultre-power-2-hybrid",
     brand: "11SIX24",
     name: "Ultré Power 2",
-    shape: "Elongated",
+    shape: "Hybrid",
     weight: "7.9 oz",
     swingWeight: 114.12,
     twistWeight: 6.36,
@@ -2487,6 +2558,7 @@ export const paddles: Paddle[] = [
     // Launches at 12am ET on June 12, 2026 — until then the buy buttons
     // render as "Coming Soon" via isPreLaunch() in lib/launchStatus.ts.
     launchAt: "2026-06-12T00:00:00-04:00",
+    reviewUrl: "https://youtu.be/rmhgReUhq4g",
   },
 
   // ── Scoop ─────────────────────────────────────────────────────────────────
@@ -2499,10 +2571,13 @@ export const paddles: Paddle[] = [
     weight: "7.6 oz",
     swingWeight: 109.3,
     twistWeight: 5.88,
+    balancePoint: 24.1,
     thickness: "16mm",
     image: "/images/paddles/Scoop-Sidewinder-F2E-16mm.png",
     amountOff: "10%",
+    price: "$119.99",
     discountLink: "https://scooppickleball.com/discount/PLAYBOOK?redirect=/collections/all",
+    reviewUrl: "https://youtu.be/YxV1UbgKRjw",
     addedAt: "2026-06-01",
     trendingScore: 50,
     playStyle: "all-court",
@@ -2518,6 +2593,7 @@ export const paddles: Paddle[] = [
     weight: "7.8 oz",
     swingWeight: 109.32,
     twistWeight: 5.93,
+    balancePoint: 23.4,
     thickness: "16mm",
     image: "/images/paddles/Warping-Point-Neon-16mm.png",
     price: "$99.99",
@@ -2537,6 +2613,7 @@ export const paddles: Paddle[] = [
     weight: "8.0 oz",
     swingWeight: 120.34,
     twistWeight: 6.11,
+    balancePoint: 24.4,
     thickness: "16mm",
     image: "/images/paddles/Warping-Point-Sophon-16mm.png",
     price: "$149.99",
@@ -2556,6 +2633,7 @@ export const paddles: Paddle[] = [
     weight: "8.1 oz",
     swingWeight: 122.19,
     twistWeight: 6.50,
+    balancePoint: 24.5,
     thickness: "16mm",
     image: "/images/paddles/Warping-Point-Phoenix-16mm.png",
     price: "$219.99",
@@ -2577,6 +2655,7 @@ export const paddles: Paddle[] = [
     weight: "7.6 oz",
     swingWeight: 110.26,
     twistWeight: 5.95,
+    balancePoint: 24.6,
     thickness: "16mm",
     image: "/images/paddles/Pakle-Fuse-Elongated-16mm.png",
     price: "$119.00",
@@ -2585,6 +2664,7 @@ export const paddles: Paddle[] = [
     addedAt: "2026-06-10",
     trendingScore: 50,
     playStyle: "power",
+    reviewUrl: "https://youtu.be/hiAuFJnaRXM",
   },
 
   // ── Diadem Blue Core ──────────────────────────────────────────────────────
@@ -2602,6 +2682,7 @@ export const paddles: Paddle[] = [
     weight: "7.9 oz",
     swingWeight: 111.55,
     twistWeight: 5.86,
+    balancePoint: 23.3,
     thickness: "16mm",
     image: "/images/paddles/Diadem-Bluecore-Elongated-16mm.png",
     price: "$249.95",
@@ -2610,9 +2691,10 @@ export const paddles: Paddle[] = [
     addedAt: "2026-06-11",
     trendingScore: 50,
     playStyle: "all-court",
+    reviewUrl: "https://youtu.be/GfTutzUUQoo",
   },
 
-  // ── 6.0 Coral Pro ─────────────────────────────────────────────────────────
+  // ── Six Zero Coral Pro ─────────────────────────────────────────────────────────
   // Launch midnight ET on June 14, 2026. Until then the buy button renders
   // as 'Coming June 14' via isPreLaunch() + StickyBottomBar.launchAt. Lab
   // specs measured on the SW1 rig + balance point measured at home; play
@@ -2620,7 +2702,7 @@ export const paddles: Paddle[] = [
   {
     id: "133",
     slug: "6-0-coral-pro-hybrid",
-    brand: "6.0",
+    brand: "Six Zero",
     name: "Coral Pro",
     shape: "Hybrid",
     playStyle: "all-court",
@@ -2631,10 +2713,12 @@ export const paddles: Paddle[] = [
     thickness: "16mm",
     image: "/images/paddles/6.0-Coral-Pro-Hybrid-16mm.png",
     amountOff: "10%",
+    price: "$220",
     discountLink: "https://us.sixzeropickleball.com/discount/PLAYBOOK?sca_ref=11145669.B01d6tJmnqn5&redirect=/",
     addedAt: "2026-06-12",
     trendingScore: 50,
     launchAt: "2026-06-14T00:00:00-04:00",
+    reviewUrl: "https://youtu.be/c5KQQclgOOU",
   },
 ];
 
@@ -2646,7 +2730,14 @@ export const paddles: Paddle[] = [
 // that moment passes. ISR (revalidate=3600) flips it live within an hour.
 // Date-only strings ("2026-06-06") are treated as already-published.
 export const reviewDates: Record<string, string> = {
+  T3xpQYYPlsI:   "2026-06-15",  // RPM Friction Pro V2            ← newest
+  SZ8NJn3WxCA:   "2026-06-15",  // Selkirk Boomstik vs Omni
+  rmhgReUhq4g:   "2026-06-15",  // 11SIX24 Ultre Power 2
+  hiAuFJnaRXM:   "2026-06-15",  // Pakle Fuse
+  c5KQQclgOOU:   "2026-06-15",  // Six Zero Coral Pro
+  GfTutzUUQoo:   "2026-06-15",  // Diadem Blue Core
   YJfOWjPSe3o:   "2026-06-07T07:00:00-04:00",  // Luzz Tornazo  ← EMBARGOED until tomorrow 7am ET
+  gbTkuJsu_08:   "2026-06-06",  // Paddletek Honeyfoam
   aCBcaFEP3Wg:   "2026-06-06",  // Aireo Cyclone Hybrid (UPA + USAP)
   M6Z0PhqxecA:   "2026-06-06",  // Luzz Glider
   "7KrcRprApZo": "2026-06-04",  // Warping Point (Neon, Sophon, Phoenix)
@@ -2662,7 +2753,7 @@ export const reviewDates: Record<string, string> = {
   hLprDNd4Zxo:   "2026-05-09",  // Enhance Turbo MPP
   Z1e4mRHG2r8:   "2026-05-09",  // SixZero Coral
   "e6-jgFY4Et8": "2026-05-09",  // Aireo Cyclone
-  fo0he1vR2NM:   "2026-05-09",  // Gearbox GBX Power            ← newest
+  fo0he1vR2NM:   "2026-05-09",  // Gearbox GBX Power
   rmkPAroh2BM:   "2026-04-29",  // Speedup Tide 14L + 14H
   "LYdP6v-anyc": "2026-04-29",  // Luzz Inferno
   "0TPukMyrCTQ": "2026-04-28",  // Flik F3 Triple Core
@@ -2689,6 +2780,19 @@ export const reviewDates: Record<string, string> = {
   XLfM3Z3CKlU:   "2026-03-17",  // CRBN TruFoam Barrage 1 & 2
   gRU_Zwn2iwQ:   "2026-03-03",  // Joola Pro V Perseus
   tIcA0rzaB_U:   "2026-02-27",  // Holbrook Fuze             ← oldest
+};
+
+// ── Head-to-head comparison videos ────────────────────────────────────────────
+// Keyed by the canonical matchup slug (alphabetized slugA + "-vs-" + slugB).
+// When the /compare/[matchup] page renders a matchup with an entry here, it
+// surfaces a "Head-to-Head Review" video section using the supplied custom
+// thumbnail (under /public).
+export const comparisonVideos: Record<string, { videoId: string; thumbnail: string; title: string }> = {
+  "selkirk-boomstik-elongated-vs-selkirk-omni-widebody": {
+    videoId: "SZ8NJn3WxCA",
+    thumbnail: "/images/heros/Boomstik-vs-Omni.png",
+    title: "Selkirk Boomstik vs Omni — Full Head-to-Head Review",
+  },
 };
 
 // ── Utility exports ────────────────────────────────────────────────────────────

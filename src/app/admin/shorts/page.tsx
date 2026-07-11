@@ -24,6 +24,11 @@ type Clip = {
   filename?: string;
   url: string;
   title: string;
+  // Social post body — what gets posted as the Reel caption.
+  description?: string;
+  // Internal rationale shown in the Shorts Generator UI ("why we picked
+  // this clip"). Used as a fallback in buildReelDescription for older
+  // clip jobs that don't have a description yet.
   reason: string;
   duration: number;
   edit?: ClipEdit;
@@ -151,6 +156,25 @@ function ClipEditor({
     ]);
   }
 
+  // Drop a preset CTA on the last 10 s of the clip, centered near the
+  // bottom. Used by the "Full video ⬇" and "⬅ Subscribe" buttons.
+  function addCtaPreset(text: string) {
+    const end = sourceDuration;
+    const start = Math.max(0, end - 10);
+    setTexts((prev) => [
+      ...prev,
+      {
+        id: Math.random().toString(36).slice(2, 10),
+        text,
+        start,
+        end,
+        xPct: 50,
+        yPct: 85,
+        fontSize: 72,
+      },
+    ]);
+  }
+
   function updateText(id: string, patch: Partial<TextOverlay>) {
     setTexts((prev) => prev.map((t) => (t.id === id ? { ...t, ...patch } : t)));
   }
@@ -264,13 +288,16 @@ function ClipEditor({
                 <div
                   key={t.id}
                   onPointerDown={(e) => onTextPointerDown(e, t.id)}
-                  className="absolute cursor-move px-3 py-1.5 bg-black/55 text-white font-bold whitespace-nowrap border-2 border-dashed border-white/30"
+                  className="absolute cursor-move px-3 py-1.5 text-white font-bold whitespace-nowrap"
                   style={{
                     left: `${t.xPct}%`,
                     top: `${t.yPct}%`,
                     transform: "translate(-50%, -50%)",
                     fontSize: `${Math.max(10, t.fontSize / 4)}px`,
                     touchAction: "none",
+                    backgroundColor: "#DC2626",
+                    border: "2px solid #ffffff",
+                    boxShadow: "0 0 0 1px rgba(0,0,0,0.2)",
                   }}
                 >
                   {t.text || "(empty)"}
@@ -358,9 +385,26 @@ function ClipEditor({
                   + Add text
                 </button>
               </div>
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                <span className="text-[11px] text-gray-500 self-center mr-1">Presets (last 10s, bottom):</span>
+                <button
+                  type="button"
+                  onClick={() => addCtaPreset("Full video ⬇")}
+                  className="text-xs border border-gray-700 text-gray-300 hover:bg-gray-800 px-2.5 py-1 rounded-lg"
+                >
+                  + Full video ⬇
+                </button>
+                <button
+                  type="button"
+                  onClick={() => addCtaPreset("⬅ Subscribe")}
+                  className="text-xs border border-gray-700 text-gray-300 hover:bg-gray-800 px-2.5 py-1 rounded-lg"
+                >
+                  + ⬅ Subscribe
+                </button>
+              </div>
               {texts.length === 0 && (
                 <p className="text-xs text-gray-500">
-                  Click &quot;Add text&quot; to overlay a caption. Drag it on the video to position.
+                  Click &quot;Add text&quot; for a custom caption or a preset above for a CTA on the last 10 seconds.
                 </p>
               )}
               <div className="space-y-3">
@@ -464,6 +508,7 @@ export default function ShortsPage() {
   const [tab, setTab] = useState<Tab>("new");
 
   const [url, setUrl] = useState("");
+  const [topTitle, setTopTitle] = useState(false);
   const [job, setJob] = useState<Job | null>(null);
   const [jobId, setJobId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -554,7 +599,7 @@ export default function ShortsPage() {
       const res = await fetch("/api/admin/shorts/process", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ youtubeUrl }),
+        body: JSON.stringify({ youtubeUrl, topTitle }),
       });
       const data = await res.json();
       if (!res.ok || data.error) {
@@ -664,21 +709,56 @@ export default function ShortsPage() {
         {tab === "new" && (
           <>
             {!job && (
-              <div className="flex gap-3 mb-8">
-                <input
-                  className="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white outline-none"
-                  placeholder="https://youtube.com/watch?v=..."
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-                />
-                <button
-                  onClick={handleSubmit}
-                  disabled={loading || !url.trim()}
-                  className="bg-accent-500 hover:bg-accent-400 disabled:bg-gray-700 text-black font-bold px-6 rounded-xl"
-                >
-                  Cut It
-                </button>
+              <div className="mb-8 space-y-4">
+                <div className="flex gap-3">
+                  <input
+                    className="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white outline-none"
+                    placeholder="https://youtube.com/watch?v=..."
+                    value={url}
+                    onChange={(e) => setUrl(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+                  />
+                  <button
+                    onClick={handleSubmit}
+                    disabled={loading || !url.trim()}
+                    className="bg-accent-500 hover:bg-accent-400 disabled:bg-gray-700 text-black font-bold px-6 rounded-xl"
+                  >
+                    Cut It
+                  </button>
+                </div>
+
+                <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4">
+                  <label className="block text-xs uppercase tracking-wide text-gray-500 mb-2">
+                    Title at top (whole clip)
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setTopTitle((v) => !v)}
+                    role="switch"
+                    aria-checked={topTitle}
+                    className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border text-sm font-medium transition ${
+                      topTitle
+                        ? "bg-accent-500/15 border-accent-500/50 text-accent-300"
+                        : "bg-gray-950 border-gray-800 text-gray-400 hover:text-white"
+                    }`}
+                  >
+                    <span
+                      className={`w-9 h-5 rounded-full relative transition ${
+                        topTitle ? "bg-accent-500" : "bg-gray-700"
+                      }`}
+                    >
+                      <span
+                        className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${
+                          topTitle ? "left-[18px]" : "left-0.5"
+                        }`}
+                      />
+                    </span>
+                    {topTitle ? "On" : "Off"}
+                  </button>
+                  <p className="text-[11px] text-gray-500 mt-1.5">
+                    AI picks a 2–4 word label per clip. Bottom CTAs (Full video, Subscribe) can be added per clip from the editor.
+                  </p>
+                </div>
               </div>
             )}
 

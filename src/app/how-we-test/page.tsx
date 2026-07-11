@@ -284,7 +284,7 @@ export default function HowWeTestPage() {
             >
               How We Test
               <br />
-              <span style={{ color: "#14b8a6" }}>Pickleball Paddles.</span>
+              <span style={{ color: "#60a5fa" }}>Pickleball Paddles.</span>
             </h1>
             <p className="text-lg leading-relaxed mb-6" style={{ color: "var(--text-muted)" }}>
               Every paddle on this site goes through the same five-step protocol — measured on lab equipment,
@@ -318,7 +318,7 @@ export default function HowWeTestPage() {
 
           {/* ── 5 STEPS ─────────────────────────────────────────────────────── */}
           <div className="mt-24 max-w-4xl">
-            <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#14b8a6" }}>
+            <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#60a5fa" }}>
               The 5-Step Protocol
             </p>
             <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-10" style={{ color: "var(--text-primary)" }}>
@@ -335,12 +335,12 @@ export default function HowWeTestPage() {
                   <div className="flex items-start gap-4 mb-4">
                     <div
                       className="flex-shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center"
-                      style={{ background: "rgba(20,184,166,0.12)" }}
+                      style={{ background: "rgba(10, 100, 188,0.30)" }}
                     >
-                      <Icon className="w-5 h-5" style={{ color: "#14b8a6" }} />
+                      <Icon className="w-5 h-5" style={{ color: "#60a5fa" }} />
                     </div>
                     <div>
-                      <p className="text-xs font-extrabold uppercase tracking-widest" style={{ color: "rgba(20,184,166,0.7)" }}>
+                      <p className="text-xs font-extrabold uppercase tracking-widest" style={{ color: "rgba(10, 100, 188,0.7)" }}>
                         Step {n}
                       </p>
                       <h3 className="text-2xl font-extrabold" style={{ color: "var(--text-primary)" }}>
@@ -361,7 +361,7 @@ export default function HowWeTestPage() {
 
           {/* ── EQUIPMENT ───────────────────────────────────────────────────── */}
           <div className="mt-24 max-w-4xl">
-            <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#14b8a6" }}>
+            <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#60a5fa" }}>
               Equipment
             </p>
             <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-4" style={{ color: "var(--text-primary)" }}>
@@ -407,7 +407,7 @@ export default function HowWeTestPage() {
 
           {/* ── PLAY STYLES ─────────────────────────────────────────────────── */}
           <div className="mt-24 max-w-4xl">
-            <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#14b8a6" }}>
+            <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#60a5fa" }}>
               Play Style Verdicts
             </p>
             <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-4" style={{ color: "var(--text-primary)" }}>
@@ -440,7 +440,7 @@ export default function HowWeTestPage() {
 
           {/* ── INTEGRITY ───────────────────────────────────────────────────── */}
           <div className="mt-24 max-w-3xl">
-            <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#14b8a6" }}>
+            <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#60a5fa" }}>
               Why this matters
             </p>
             <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-6" style={{ color: "var(--text-primary)" }}>
@@ -454,21 +454,21 @@ export default function HowWeTestPage() {
               </p>
               <p>
                 Full disclosure on affiliate links, sample paddles, and review independence is on the{" "}
-                <Link href="/about#editorial-standards" className="font-bold" style={{ color: "#14b8a6" }}>
+                <Link href="/about#editorial-standards" className="font-bold" style={{ color: "#60a5fa" }}>
                   About page&apos;s Editorial Standards section
                 </Link>{" "}
                 — or read the{" "}
-                <Link href="/about" className="font-bold" style={{ color: "#14b8a6" }}>
+                <Link href="/about" className="font-bold" style={{ color: "#60a5fa" }}>
                   full About page
                 </Link>{" "}
                 to see who&apos;s actually behind the reviews.
               </p>
             </div>
             <div className="mt-10 p-5 rounded-2xl flex items-start gap-3" style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}>
-              <ClipboardList className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: "#14b8a6" }} />
+              <ClipboardList className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: "#60a5fa" }} />
               <p className="text-sm" style={{ color: "var(--text-muted)" }}>
                 Have a paddle you want tested? Email through the{" "}
-                <Link href="/contact" className="font-bold" style={{ color: "#14b8a6" }}>contact page</Link>{" "}
+                <Link href="/contact" className="font-bold" style={{ color: "#60a5fa" }}>contact page</Link>{" "}
                 — paddle requests from readers go to the top of the queue.
               </p>
             </div>

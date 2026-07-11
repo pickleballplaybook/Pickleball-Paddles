@@ -1,5 +1,18 @@
 import Link from "next/link";
-import { Download, Megaphone, MessageSquare } from "lucide-react";
+import {
+  Download,
+  Megaphone,
+  MessageSquare,
+  Target,
+  ShieldAlert,
+  Calendar,
+  Timer,
+  Dumbbell,
+  BarChart3,
+  Zap,
+  Users,
+  Smartphone,
+} from "lucide-react";
 import { AdminNav } from "../_components/AdminNav";
 import { getFirebaseFirestore } from "@/lib/firebase-admin";
 import DeleteSignupButton from "./DeleteSignupButton";
@@ -25,6 +38,19 @@ type Row = {
   source: string;
   detail: string | null;
   capturedAt: string | null;
+  // Onboarding qualitative signals — every question the user
+  // answered during onboarding is surfaced here so we can see what
+  // the audience actually wants without hunting through Firestore.
+  goal: string | null;
+  blocker: string | null;
+  playFrequency: string | null;
+  triedOtherApps: string | null;
+  weaknesses: string[];
+  days: string[];
+  sessionLength: string | null;
+  trainingSetup: string[];
+  level: string | null;
+  signupPlatform: string | null;
 };
 
 // Diagnostic row used by the "Recent signups (debug)" section so we can
@@ -88,6 +114,22 @@ export default async function AcquisitionAdminPage({
         source: (data.acquisitionSource as string) ?? "(unknown)",
         detail: (data.acquisitionDetail as string | null) ?? null,
         capturedAt: captured ? captured.toISOString() : null,
+        goal: (data.goal as string | null) ?? null,
+        blocker: (data.blocker as string | null) ?? null,
+        playFrequency: (data.playFrequency as string | null) ?? null,
+        triedOtherApps: (data.triedOtherApps as string | null) ?? null,
+        weaknesses: Array.isArray(data.onboardingWeaknesses)
+          ? (data.onboardingWeaknesses as string[])
+          : [],
+        days: Array.isArray(data.onboardingDays)
+          ? (data.onboardingDays as string[])
+          : [],
+        sessionLength: (data.onboardingSessionLength as string | null) ?? null,
+        trainingSetup: Array.isArray(data.onboardingTrainingSetup)
+          ? (data.onboardingTrainingSetup as string[])
+          : [],
+        level: (data.onboardingLevel as string | null) ?? null,
+        signupPlatform: (data.signupPlatform as string | null) ?? null,
       };
     });
   } catch (e) {
@@ -130,6 +172,75 @@ export default async function AcquisitionAdminPage({
   const sorted = Array.from(bySource.entries()).sort((a, b) => b[1] - a[1]);
   const max = sorted[0]?.[1] ?? 1;
   const withDetail = rows.filter((r) => r.detail && r.detail.trim().length > 0);
+
+  // Goal + blocker distribution for the same signup cohort. Nulls
+  // (users who skipped the screen or signed up on an old app version
+  // that didn't have it) drop out — the % is against those who
+  // actually answered so the mix reflects real preference, not the
+  // capture rate.
+  const byGoal = new Map<string, number>();
+  for (const r of rows) if (r.goal) byGoal.set(r.goal, (byGoal.get(r.goal) ?? 0) + 1);
+  const sortedGoals = Array.from(byGoal.entries()).sort((a, b) => b[1] - a[1]);
+  const goalTotal = sortedGoals.reduce((sum, [, n]) => sum + n, 0);
+  const goalMax = sortedGoals[0]?.[1] ?? 1;
+
+  const byBlocker = new Map<string, number>();
+  for (const r of rows) if (r.blocker) byBlocker.set(r.blocker, (byBlocker.get(r.blocker) ?? 0) + 1);
+  const sortedBlockers = Array.from(byBlocker.entries()).sort((a, b) => b[1] - a[1]);
+  const blockerTotal = sortedBlockers.reduce((sum, [, n]) => sum + n, 0);
+  const blockerMax = sortedBlockers[0]?.[1] ?? 1;
+
+  // Single-select summariser — same shape as goal/blocker aggregation
+  // so we can reuse one render helper.
+  function tally(rowValues: (string | null)[]) {
+    const m = new Map<string, number>();
+    let respondents = 0;
+    for (const v of rowValues) {
+      if (!v) continue;
+      m.set(v, (m.get(v) ?? 0) + 1);
+      respondents++;
+    }
+    const sorted = Array.from(m.entries()).sort((a, b) => b[1] - a[1]);
+    return { sorted, total: respondents, max: sorted[0]?.[1] ?? 1 };
+  }
+
+  // Multi-select summariser — each row can contribute >1 value
+  // (weaknesses, days, trainingSetup are List<String> in Firestore).
+  // "respondents" counts rows that answered AT LEAST one value; %
+  // is against respondents, not against the total value count, so
+  // "70% picked Drives" reads as expected.
+  function tallyMulti(rowLists: string[][]) {
+    const m = new Map<string, number>();
+    let respondents = 0;
+    for (const list of rowLists) {
+      if (!list || list.length === 0) continue;
+      respondents++;
+      for (const v of list) m.set(v, (m.get(v) ?? 0) + 1);
+    }
+    const sorted = Array.from(m.entries()).sort((a, b) => b[1] - a[1]);
+    return { sorted, total: respondents, max: sorted[0]?.[1] ?? 1 };
+  }
+
+  // Pretty labels for the platform values written from the Flutter
+  // client. Falls back to the raw value so any new platform we haven't
+  // named yet still renders instead of vanishing.
+  const platformLabels: Record<string, string> = {
+    web: "Web (pballdrills.app)",
+    ios: "iOS (App Store)",
+    android: "Android",
+    macos: "macOS",
+    unknown: "Unknown",
+  };
+  const platform = tally(
+    rows.map((r) => (r.signupPlatform ? platformLabels[r.signupPlatform] ?? r.signupPlatform : null)),
+  );
+  const playFreq = tally(rows.map((r) => r.playFrequency));
+  const triedApps = tally(rows.map((r) => r.triedOtherApps));
+  const sessionLen = tally(rows.map((r) => r.sessionLength));
+  const skillLevel = tally(rows.map((r) => r.level));
+  const weaknesses = tallyMulti(rows.map((r) => r.weaknesses));
+  const trainingDays = tallyMulti(rows.map((r) => r.days));
+  const trainingSetup = tallyMulti(rows.map((r) => r.trainingSetup));
 
   return (
     <div className="min-h-screen pb-20" style={{ background: "var(--bg-page)", paddingTop: "calc(var(--topbar-h, 108px) + 1rem)" }}>
@@ -240,6 +351,155 @@ export default async function AcquisitionAdminPage({
                   })}
                 </div>
               )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <div className="rounded-2xl p-5" style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}>
+                <div className="flex items-center gap-2 mb-4">
+                  <Target className="w-4 h-4" style={{ color: "#22c55e" }} />
+                  <h2 className="text-sm font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+                    Goals
+                  </h2>
+                  <span className="text-xs ml-auto" style={{ color: "var(--text-muted)" }}>
+                    {goalTotal} answered
+                  </span>
+                </div>
+                {sortedGoals.length === 0 ? (
+                  <p className="text-sm" style={{ color: "var(--text-muted)" }}>No goal data yet.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {sortedGoals.map(([goal, count]) => {
+                      const pct = goalTotal ? Math.round((count / goalTotal) * 100) : 0;
+                      const bar = Math.round((count / goalMax) * 100);
+                      return (
+                        <div key={goal}>
+                          <div className="flex items-baseline justify-between mb-1">
+                            <span className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{goal}</span>
+                            <span className="text-xs tabular-nums" style={{ color: "var(--text-muted)" }}>
+                              {count} · {pct}%
+                            </span>
+                          </div>
+                          <div className="h-2 rounded-full" style={{ background: "rgba(255,255,255,0.06)" }}>
+                            <div
+                              className="h-2 rounded-full"
+                              style={{ width: `${bar}%`, background: "#22c55e" }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              <div className="rounded-2xl p-5" style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}>
+                <div className="flex items-center gap-2 mb-4">
+                  <ShieldAlert className="w-4 h-4" style={{ color: "#f59e0b" }} />
+                  <h2 className="text-sm font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+                    What&apos;s holding them back
+                  </h2>
+                  <span className="text-xs ml-auto" style={{ color: "var(--text-muted)" }}>
+                    {blockerTotal} answered
+                  </span>
+                </div>
+                {sortedBlockers.length === 0 ? (
+                  <p className="text-sm" style={{ color: "var(--text-muted)" }}>No blocker data yet.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {sortedBlockers.map(([blocker, count]) => {
+                      const pct = blockerTotal ? Math.round((count / blockerTotal) * 100) : 0;
+                      const bar = Math.round((count / blockerMax) * 100);
+                      return (
+                        <div key={blocker}>
+                          <div className="flex items-baseline justify-between mb-1">
+                            <span className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{blocker}</span>
+                            <span className="text-xs tabular-nums" style={{ color: "var(--text-muted)" }}>
+                              {count} · {pct}%
+                            </span>
+                          </div>
+                          <div className="h-2 rounded-full" style={{ background: "rgba(255,255,255,0.06)" }}>
+                            <div
+                              className="h-2 rounded-full"
+                              style={{ width: `${bar}%`, background: "#f59e0b" }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Full quiz answer breakdown — every question surfaces its
+                own bar chart so we can see the audience's real distribution
+                without querying Firestore. Multi-select fields use "% of
+                respondents" so "70% picked Drives" reads intuitively. */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <BreakdownCard
+                title="Signup platform"
+                icon={<Smartphone className="w-4 h-4" style={{ color: "#60a5fa" }} />}
+                color="#60a5fa"
+                total={platform.total}
+                sorted={platform.sorted}
+                max={platform.max}
+              />
+              <BreakdownCard
+                title="Weaknesses (multi)"
+                icon={<Zap className="w-4 h-4" style={{ color: "#a78bfa" }} />}
+                color="#a78bfa"
+                total={weaknesses.total}
+                sorted={weaknesses.sorted}
+                max={weaknesses.max}
+              />
+              <BreakdownCard
+                title="Skill level"
+                icon={<BarChart3 className="w-4 h-4" style={{ color: "#38bdf8" }} />}
+                color="#38bdf8"
+                total={skillLevel.total}
+                sorted={skillLevel.sorted}
+                max={skillLevel.max}
+              />
+              <BreakdownCard
+                title="Play frequency / week"
+                icon={<BarChart3 className="w-4 h-4" style={{ color: "#22d3ee" }} />}
+                color="#22d3ee"
+                total={playFreq.total}
+                sorted={playFreq.sorted}
+                max={playFreq.max}
+              />
+              <BreakdownCard
+                title="Training days (multi)"
+                icon={<Calendar className="w-4 h-4" style={{ color: "#34d399" }} />}
+                color="#34d399"
+                total={trainingDays.total}
+                sorted={trainingDays.sorted}
+                max={trainingDays.max}
+              />
+              <BreakdownCard
+                title="Session length"
+                icon={<Timer className="w-4 h-4" style={{ color: "#fbbf24" }} />}
+                color="#fbbf24"
+                total={sessionLen.total}
+                sorted={sessionLen.sorted}
+                max={sessionLen.max}
+              />
+              <BreakdownCard
+                title="Training setup (multi)"
+                icon={<Dumbbell className="w-4 h-4" style={{ color: "#f472b6" }} />}
+                color="#f472b6"
+                total={trainingSetup.total}
+                sorted={trainingSetup.sorted}
+                max={trainingSetup.max}
+              />
+              <BreakdownCard
+                title="Tried other apps"
+                icon={<Users className="w-4 h-4" style={{ color: "#c084fc" }} />}
+                color="#c084fc"
+                total={triedApps.total}
+                sorted={triedApps.sorted}
+                max={triedApps.max}
+              />
             </div>
 
             <div className="rounded-2xl p-5" style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}>
@@ -367,6 +627,59 @@ export default async function AcquisitionAdminPage({
           </>
         )}
       </div>
+    </div>
+  );
+}
+
+function BreakdownCard({
+  title,
+  icon,
+  color,
+  total,
+  sorted,
+  max,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  color: string;
+  total: number;
+  sorted: [string, number][];
+  max: number;
+}) {
+  return (
+    <div className="rounded-2xl p-5" style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}>
+      <div className="flex items-center gap-2 mb-4">
+        {icon}
+        <h2 className="text-sm font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+          {title}
+        </h2>
+        <span className="text-xs ml-auto" style={{ color: "var(--text-muted)" }}>
+          {total} answered
+        </span>
+      </div>
+      {sorted.length === 0 ? (
+        <p className="text-sm" style={{ color: "var(--text-muted)" }}>No data yet.</p>
+      ) : (
+        <div className="space-y-3">
+          {sorted.map(([label, count]) => {
+            const pct = total ? Math.round((count / total) * 100) : 0;
+            const bar = Math.round((count / max) * 100);
+            return (
+              <div key={label}>
+                <div className="flex items-baseline justify-between mb-1">
+                  <span className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{label}</span>
+                  <span className="text-xs tabular-nums" style={{ color: "var(--text-muted)" }}>
+                    {count} · {pct}%
+                  </span>
+                </div>
+                <div className="h-2 rounded-full" style={{ background: "rgba(255,255,255,0.06)" }}>
+                  <div className="h-2 rounded-full" style={{ width: `${bar}%`, background: color }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

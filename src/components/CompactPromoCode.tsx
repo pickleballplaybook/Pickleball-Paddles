@@ -23,7 +23,7 @@ export default function CompactPromoCode({ code, savings }: Props) {
       <button
         onClick={handleCopy}
         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold font-mono transition-all active:scale-95"
-        style={{ border: "1.5px dashed rgba(45,212,191,0.5)", color: "#2dd4bf" }}
+        style={{ border: "1.5px dashed rgba(10, 100, 188,0.5)", color: "#60a5fa" }}
       >
         {code}
         {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}

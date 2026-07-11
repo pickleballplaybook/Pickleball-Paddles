@@ -76,9 +76,9 @@ export default function BrandPaddleGrid({ paddles, shapes }: Props) {
               onClick={() => setShapeFilter(null)}
               className="text-xs font-bold px-3 py-1.5 rounded-full transition-colors"
               style={{
-                background: shapeFilter === null ? "rgba(20,184,166,0.18)" : "transparent",
-                border: `1px solid ${shapeFilter === null ? "rgba(20,184,166,0.45)" : "var(--border)"}`,
-                color: shapeFilter === null ? "#2dd4bf" : "var(--text-muted)",
+                background: shapeFilter === null ? "rgba(10, 100, 188,0.30)" : "transparent",
+                border: `1px solid ${shapeFilter === null ? "rgba(10, 100, 188,0.45)" : "var(--border)"}`,
+                color: shapeFilter === null ? "#0a64bc" : "var(--text-muted)",
               }}
             >
               All
@@ -92,9 +92,9 @@ export default function BrandPaddleGrid({ paddles, shapes }: Props) {
                   onClick={() => setShapeFilter(active ? null : shape)}
                   className="text-xs font-bold px-3 py-1.5 rounded-full transition-colors inline-flex items-center gap-1.5"
                   style={{
-                    background: active ? "rgba(20,184,166,0.18)" : "transparent",
-                    border: `1px solid ${active ? "rgba(20,184,166,0.45)" : "var(--border)"}`,
-                    color: active ? "#2dd4bf" : "var(--text-muted)",
+                    background: active ? "rgba(10, 100, 188,0.30)" : "transparent",
+                    border: `1px solid ${active ? "rgba(10, 100, 188,0.45)" : "var(--border)"}`,
+                    color: active ? "#0a64bc" : "var(--text-muted)",
                   }}
                 >
                   {shape}

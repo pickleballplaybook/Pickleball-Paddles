@@ -26,12 +26,12 @@ export default function TestingMethodologyBlock({ brand, name }: Props) {
           <div className="flex items-start gap-4 mb-5">
             <div
               className="flex-shrink-0 w-11 h-11 rounded-2xl flex items-center justify-center"
-              style={{ background: "rgba(20,184,166,0.15)" }}
+              style={{ background: "rgba(10, 100, 188,0.30)" }}
             >
-              <Beaker className="w-5 h-5" style={{ color: "#2dd4bf" }} />
+              <Beaker className="w-5 h-5" style={{ color: "#60a5fa" }} />
             </div>
             <div>
-              <p className="text-xs font-extrabold uppercase tracking-widest mb-1" style={{ color: "rgba(20,184,166,0.85)" }}>
+              <p className="text-xs font-extrabold uppercase tracking-widest mb-1" style={{ color: "rgba(10, 100, 188,0.85)" }}>
                 Methodology
               </p>
               <h2 className="text-xl md:text-2xl font-extrabold leading-tight" style={{ color: "var(--flip-text-head)" }}>
@@ -70,7 +70,7 @@ export default function TestingMethodologyBlock({ brand, name }: Props) {
               },
             ].map((step) => (
               <li key={step.title} className="flex items-start gap-3">
-                <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: "#2dd4bf" }} />
+                <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: "#60a5fa" }} />
                 <div className="text-sm leading-relaxed" style={{ color: "var(--flip-text-body)" }}>
                   <span className="font-bold" style={{ color: "var(--flip-text-head)" }}>{step.title}.</span>{" "}
                   <span style={{ color: "var(--flip-text-muted)" }}>{step.body}</span>
@@ -83,7 +83,7 @@ export default function TestingMethodologyBlock({ brand, name }: Props) {
             <Link
               href="/how-we-test"
               className="inline-flex items-center gap-2 text-sm font-bold px-4 py-2.5 rounded-full transition-colors hover:bg-teal-400/20"
-              style={{ background: "rgba(20,184,166,0.15)", color: "#2dd4bf", border: "1px solid rgba(20,184,166,0.3)" }}
+              style={{ background: "rgba(10, 100, 188,0.30)", color: "#60a5fa", border: "1px solid rgba(10, 100, 188,0.3)" }}
             >
               Full Testing Protocol
               <ArrowRight className="w-3.5 h-3.5" />

@@ -15,7 +15,7 @@ const CONFIG: AudienceConfig = {
   intro:
     "Intermediate players (3.5–4.5) are at the level where spec choice actually starts to change your game. You're past needing maximum forgiveness, but not yet ready for the brutal swing weights pros play with. These five paddles hit the sweet spot — real spec sheets at fair prices.",
   trustSignals: ["Lab-Measured Specs", "Tour-Level Builds", "Unsponsored Reviews", "Discount Codes Included"],
-  accent: "#60a5fa",
+  accent: "#0a64bc",
   picks: [
     {
       slug: "gruvn-lazr-16hd-hybrid",

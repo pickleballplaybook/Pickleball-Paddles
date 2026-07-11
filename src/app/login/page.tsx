@@ -76,13 +76,13 @@ function LoginForm() {
       className="rounded-3xl p-7 md:p-9"
       style={{
         background:
-          "linear-gradient(135deg, rgba(60,172,174,0.06) 0%, var(--flip-bg-card) 50%, var(--flip-bg-card) 100%)",
-        border: "1px solid rgba(60,172,174,0.18)",
+          "linear-gradient(135deg, rgba(10, 100, 188,0.23) 0%, var(--flip-bg-card) 50%, var(--flip-bg-card) 100%)",
+        border: "1px solid rgba(10, 100, 188,0.30)",
         boxShadow:
-          "0 12px 40px rgba(60,172,174,0.06), 0 2px 8px rgba(15,23,42,0.06), inset 0 1px 0 rgba(255,255,255,0.04)",
+          "0 12px 40px rgba(10, 100, 188,0.23), 0 2px 8px rgba(15,23,42,0.06), inset 0 1px 0 rgba(255,255,255,0.04)",
       }}
     >
-      <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#14b8a6" }}>
+      <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#60a5fa" }}>
         Sign in
       </p>
       <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight mb-2" style={{ color: "var(--text-primary)" }}>

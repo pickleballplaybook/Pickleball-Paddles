@@ -1,0 +1,10 @@
+# Nested subprojects that don't belong in the Next.js deploy tarball.
+# Prior deploys hit Vercel's 15,000-file cap because shorts-backend/node_modules
+# was being included in the archive.
+shorts-backend/
+.git/
+node_modules/
+.next/
+out/
+*.log
+.DS_Store

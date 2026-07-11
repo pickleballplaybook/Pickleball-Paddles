@@ -51,7 +51,7 @@ export default function HottestPaddle() {
       <div
         className="absolute top-1/2 right-0 -translate-y-1/2 w-[70%] h-[80%] pointer-events-none"
         style={{
-          background: "radial-gradient(ellipse at center, rgba(20,184,166,0.08) 0%, transparent 65%)",
+          background: "radial-gradient(ellipse at center, rgba(10, 100, 188,0.28) 0%, transparent 65%)",
         }}
       />
 
@@ -66,9 +66,9 @@ export default function HottestPaddle() {
               <div
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest"
                 style={{
-                  background: "rgba(20,184,166,0.18)",
-                  border: "1px solid rgba(20,184,166,0.45)",
-                  color: "#2dd4bf",
+                  background: "rgba(10, 100, 188,0.30)",
+                  border: "1px solid rgba(10, 100, 188,0.45)",
+                  color: "#60a5fa",
                   backdropFilter: "blur(8px)",
                 }}
               >
@@ -119,7 +119,7 @@ export default function HottestPaddle() {
                     <span className="text-xl font-semibold line-through" style={{ color: "rgba(255,255,255,0.45)" }}>
                       {paddle.price}
                     </span>
-                    <span className="text-4xl font-extrabold" style={{ color: "#2dd4bf" }}>
+                    <span className="text-4xl font-extrabold" style={{ color: "#60a5fa" }}>
                       {discounted}
                     </span>
                   </>
@@ -138,8 +138,8 @@ export default function HottestPaddle() {
                 rel="noopener noreferrer sponsored"
                 className="inline-flex items-center justify-center gap-2 font-extrabold text-base px-9 py-4 rounded-2xl text-white tracking-wide transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
                 style={{
-                  background: "linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)",
-                  boxShadow: "0 0 40px rgba(20,184,166,0.45), 0 4px 16px rgba(0,0,0,0.4)",
+                  background: "#0a64bc",
+                  boxShadow: "0 0 40px rgba(10, 100, 188,0.45), 0 4px 16px rgba(0,0,0,0.4)",
                   letterSpacing: "0.05em",
                 }}
               >
@@ -164,7 +164,7 @@ export default function HottestPaddle() {
             {/* Discount code note */}
             <p className="text-xs font-medium" style={{ color: "rgba(255,255,255,0.45)" }}>
               Use code{" "}
-              <span className="font-mono font-bold" style={{ color: "rgba(45,212,191,0.9)" }}>
+              <span className="font-mono font-bold" style={{ color: "rgba(10, 100, 188,0.9)" }}>
                 {code}
               </span>
               {" "}at checkout for 10% off

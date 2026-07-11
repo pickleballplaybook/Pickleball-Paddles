@@ -3,6 +3,7 @@ import { paddles } from "@/data/paddles";
 import { blogPosts } from "@/data/blogPosts";
 import { brands } from "@/data/brands";
 import { guides } from "@/data/guides";
+import { gearProducts } from "@/data/products";
 import { siteConfig } from "@/config/site";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -70,6 +71,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${siteConfig.siteUrl}/best-pickleball-paddles/all-court`, lastModified: now, changeFrequency: "weekly", priority: 0.85 },
     { url: `${siteConfig.siteUrl}/reviews`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
     { url: `${siteConfig.siteUrl}/blog`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
+    // Topical pillar page for the keyword "pickleball drills". Highest-priority
+    // SEO asset on the site — hub/spoke structure with the 10 guide blog posts
+    // as spokes. Daily change frequency because it should be re-crawled often.
+    { url: `${siteConfig.siteUrl}/pickleball-drills`, lastModified: now, changeFrequency: "daily", priority: 0.95 },
     { url: `${siteConfig.siteUrl}/compare`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
     { url: `${siteConfig.siteUrl}/series`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
     { url: `${siteConfig.siteUrl}/gear`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
@@ -91,6 +96,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     lastModified: new Date(p.addedAt),
     changeFrequency: "weekly" as const,
     priority: 0.8,
+  }));
+
+  // All gear product detail pages — each is a long-form, SEO-rich page
+  // targeting product-name + "review" queries.
+  const gearPages: MetadataRoute.Sitemap = gearProducts.map((g) => ({
+    url: `${siteConfig.siteUrl}/gear/${g.id}`,
+    lastModified: now,
+    changeFrequency: "weekly" as const,
+    priority: 0.75,
   }));
 
   // All blog posts
@@ -144,6 +158,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     ...staticPages,
     ...paddlePages,
+    ...gearPages,
     ...blogPages,
     ...seriesPages,
     ...brandPages,

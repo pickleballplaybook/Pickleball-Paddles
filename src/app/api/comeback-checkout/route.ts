@@ -31,8 +31,14 @@ export const dynamic = "force-dynamic";
 // setup required on Vercel. Both values are non-secret (price IDs and
 // coupon IDs are visible in Stripe to anyone with dashboard access).
 // Override via env var if you need to rotate without a code change.
-const DEFAULT_PRO_ANNUAL_PRICE_ID = "price_1TUHhCE6Dp3VkjviwEUqrpa8";
-const DEFAULT_COMEBACK_COUPON_ID = "comeback50";
+// Dedicated Pro Annual "Comeback" price at $59.80/year (~80% of $299).
+// Created 2026-07-02. Rationale: the comeback80 coupon rendered Stripe
+// Checkout with a strikethrough $299 and a "-$239.20" discount line,
+// which Cal AI's clean "$59.80 per year" presentation doesn't do. A
+// dedicated price shows as a single standalone amount — same visual
+// as the "$19.99 per year" Cal AI checkout that Austin referenced.
+// The old $299 price stays live for full-price signups.
+const DEFAULT_PRO_ANNUAL_PRICE_ID = "price_1TomnvE6Dp3Vkjviz3SqyvTI";
 
 async function resolveStripeKey(): Promise<string | null> {
   const fromEnv = process.env.STRIPE_SECRET_KEY;
@@ -60,7 +66,6 @@ export async function POST(req: NextRequest) {
 
   const stripeKey = await resolveStripeKey();
   const priceId = process.env.STRIPE_PRO_ANNUAL_PRICE_ID || DEFAULT_PRO_ANNUAL_PRICE_ID;
-  const couponId = process.env.STRIPE_COMEBACK_COUPON_ID || DEFAULT_COMEBACK_COUPON_ID;
 
   if (!stripeKey) {
     console.error("Stripe key unavailable: not in env or Remote Config.");
@@ -72,27 +77,74 @@ export async function POST(req: NextRequest) {
 
   const stripe = new Stripe(stripeKey);
 
+  // ── Duplicate-sub guard ────────────────────────────────────────────────
+  // If the caller already has an active or trialing subscription in Stripe
+  // (i.e., they were on trial when they clicked the win-back email — this
+  // is a real bug we hit with Almeo 2026-07-01), do NOT create a second
+  // sub. Double-charge risk: their trial would auto-renew at full price
+  // AFTER we already charged them the discounted annual. Instead, tell
+  // the client we already have an active subscription so it can show a
+  // "you're already on this" screen.
+  try {
+    // customers.search is case-insensitive; .list is not. Emails
+    // stored in Stripe as mixed/upper case (e.g. RAKESHREDDY2K10@... on
+    // 2026-07-02) were escaping this guard because a lowercased .list
+    // query returned zero rows. Search fixes that.
+    const escapedForSearch = email.replace(/'/g, "\\'");
+    const searchResult = await stripe.customers.search({
+      query: `email:'${escapedForSearch}'`,
+      limit: 10,
+    });
+    const existingCustomers = { data: searchResult.data };
+    for (const c of existingCustomers.data) {
+      // Check `active` and `trialing` separately — status="all" returns
+      // canceled/incomplete/etc which don't block a new sub.
+      for (const status of ["active", "trialing"] as const) {
+        const subs = await stripe.subscriptions.list({
+          customer: c.id,
+          status,
+          limit: 5,
+        });
+        if (subs.data.length > 0) {
+          return NextResponse.json(
+            {
+              error: "already_subscribed",
+              message:
+                "You're already subscribed with this email — no need to come back! Open the app and sign in.",
+              existingStatus: status,
+            },
+            { status: 409 },
+          );
+        }
+      }
+    }
+  } catch (e) {
+    // Stripe lookup failure — fall through. Better to occasionally
+    // over-serve a discount than to block a legitimate comeback because
+    // Stripe's list API is having a bad minute.
+    console.warn("Comeback dupe-check failed (falling through):", e);
+  }
+
   try {
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       payment_method_types: ["card"],
+      // Dedicated $59.80/yr price — no coupon. Renders on Stripe Checkout
+      // as a single standalone "$59.80 per year" line, matching Cal AI's
+      // clean-slate presentation (no strikethrough, no discount breakdown).
       line_items: [{ price: priceId, quantity: 1 }],
-      // Coupon applies once (= year 1 at 50% off, renews at full price)
-      discounts: [{ coupon: couponId }],
-      // Prefill email so the user doesn't re-type. Stripe still shows the
-      // field but with this value pre-filled and editable.
       customer_email: email,
-      // Success → app deep link. Cancel → back to /comeback so they can retry.
+      // Enables the full order summary panel Cal AI shows: line item card,
+      // "Billed annually", Subtotal, Tax, Total due today. Without this
+      // the left panel is blank below the price header.
+      automatic_tax: { enabled: true },
+      billing_address_collection: "auto",
       success_url: "https://pballdrills.app/success?tid=comeback",
       cancel_url: "https://playbookpaddles.com/welcome-back?t=" + encodeURIComponent(email),
-      // Tag the session so we can attribute conversions in Stripe.
       metadata: {
         source: "abandoned_signup_drip",
         comeback_email: email,
       },
-      // NOTE: Cannot set allow_promotion_codes when discounts is set —
-      // Stripe rejects the combination. The coupon above is already
-      // applied; users can't stack additional promo codes anyway.
     });
 
     if (!session.url) {

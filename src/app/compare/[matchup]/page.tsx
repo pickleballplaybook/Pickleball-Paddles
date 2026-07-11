@@ -2,11 +2,12 @@ import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, ExternalLink, Check, Trophy, Minus } from "lucide-react";
-import { getPaddleBySlug } from "@/data/paddles";
+import { getPaddleBySlug, comparisonVideos } from "@/data/paddles";
 import { siteConfig } from "@/config/site";
 import { effectivePrice } from "@/lib/price";
 import type { Paddle } from "@/types";
 import InlineNewsletterCTA from "@/components/InlineNewsletterCTA";
+import YouTubeEmbed from "@/components/YouTubeEmbed";
 import { parseMatchup, canonicalMatchup, buildStaticMatchups } from "./helpers";
 
 export const revalidate = 86400;     // daily ISR
@@ -176,7 +177,7 @@ export default function CompareMatchupPage({ params }: Props) {
 
           {/* Hero */}
           <div className="mb-10 max-w-4xl">
-            <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "#14b8a6" }}>Paddle Comparison</p>
+            <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "#60a5fa" }}>Paddle Comparison</p>
             <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-4" style={{ color: "var(--text-primary)" }}>
               {a.brand} {a.name} vs {b.brand} {b.name}
             </h1>
@@ -215,7 +216,7 @@ export default function CompareMatchupPage({ params }: Props) {
                       className="rounded-2xl p-5"
                       style={{
                         background: "var(--bg-card)",
-                        border: `1px solid ${result.which === "tie" ? "rgba(255,255,255,0.08)" : "rgba(20,184,166,0.25)"}`,
+                        border: `1px solid ${result.which === "tie" ? "rgba(255,255,255,0.08)" : "rgba(10, 100, 188,0.30)"}`,
                       }}
                     >
                       <p className="text-[11px] font-bold uppercase tracking-widest mb-2" style={{ color: "var(--text-muted)" }}>
@@ -288,6 +289,27 @@ export default function CompareMatchupPage({ params }: Props) {
             <BuyBlock paddle={b} />
           </div>
 
+          {/* Head-to-head review video — only rendered when a comparison
+              entry exists for this matchup in comparisonVideos. Uses a
+              custom thumbnail (set in the data file) so the still frame
+              matches the brand instead of the YouTube auto-thumb. */}
+          {(() => {
+            const match = comparisonVideos[canonicalMatchup(a.slug, b.slug)];
+            if (!match) return null;
+            return (
+              <div className="mb-14 max-w-3xl">
+                <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight mb-6" style={{ color: "var(--text-primary)" }}>
+                  Watch the Head-to-Head Review
+                </h2>
+                <YouTubeEmbed
+                  videoId={match.videoId}
+                  title={match.title}
+                  customThumbnail={match.thumbnail}
+                />
+              </div>
+            );
+          })()}
+
           {/* Newsletter content upgrade */}
           <InlineNewsletterCTA
             headline="See more comparisons like this — straight to your inbox"
@@ -312,7 +334,7 @@ export default function CompareMatchupPage({ params }: Props) {
               <Link
                 href="/compare"
                 className="inline-flex items-center gap-2 font-bold text-sm px-6 py-3 rounded-xl text-white transition-all hover:scale-[1.02]"
-                style={{ background: "#14b8a6" }}
+                style={{ background: "#0a64bc" }}
               >
                 Open the comparison tool <ArrowRight className="w-4 h-4" />
               </Link>
@@ -359,7 +381,7 @@ function PaddleHeroCard({ paddle, side }: { paddle: Paddle; side: "left" | "righ
           />
         )}
       </div>
-      <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "#14b8a6" }}>{paddle.brand}</p>
+      <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "#60a5fa" }}>{paddle.brand}</p>
       <p className="text-lg font-extrabold leading-tight" style={{ color: "var(--text-primary)" }}>{paddle.name}</p>
       <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
         {paddle.shape} · {paddle.thickness} {paddle.price ? `· ${paddle.price}` : ""}
@@ -373,7 +395,7 @@ function SpecCell({ value, winner }: { value: string; winner?: boolean }) {
     <div className="flex items-center gap-1.5">
       <span
         className="text-sm font-bold font-mono"
-        style={{ color: winner ? "#2dd4bf" : "var(--text-primary)" }}
+        style={{ color: winner ? "#0a64bc" : "var(--text-primary)" }}
       >
         {value}
       </span>
@@ -398,7 +420,7 @@ function BuyBlock({ paddle }: { paddle: Paddle }) {
         {paddle.name}
       </p>
       {price && (
-        <p className="text-sm font-bold mb-3" style={{ color: "#2dd4bf" }}>{price}</p>
+        <p className="text-sm font-bold mb-3" style={{ color: "#60a5fa" }}>{price}</p>
       )}
       <div className="flex flex-wrap items-center gap-2">
         {paddle.discountLink && (
@@ -407,12 +429,12 @@ function BuyBlock({ paddle }: { paddle: Paddle }) {
             target="_blank"
             rel="noopener noreferrer sponsored"
             className="inline-flex items-center gap-1.5 font-bold text-sm px-4 py-2 rounded-xl text-white"
-            style={{ background: "#14b8a6" }}
+            style={{ background: "#0a64bc" }}
           >
             {hasDiscount ? `Get ${paddle.amountOff} off` : "Buy"} <ExternalLink className="w-3.5 h-3.5" />
           </a>
         )}
-        <span className="text-xs font-mono font-bold px-2 py-1 rounded-md" style={{ background: "rgba(20,184,166,0.12)", color: "#2dd4bf" }}>
+        <span className="text-xs font-mono font-bold px-2 py-1 rounded-md" style={{ background: "rgba(10, 100, 188,0.30)", color: "#60a5fa" }}>
           {code}
         </span>
         <Link
@@ -445,13 +467,13 @@ function WhoCard({ paddle, other }: { paddle: Paddle; other: Paddle }) {
       className="rounded-2xl p-5 h-full"
       style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.08)" }}
     >
-      <p className="text-[11px] font-bold uppercase tracking-widest mb-2" style={{ color: "#14b8a6" }}>
+      <p className="text-[11px] font-bold uppercase tracking-widest mb-2" style={{ color: "#60a5fa" }}>
         Pick the {paddle.brand} {paddle.name} if…
       </p>
       <ul className="flex flex-col gap-2">
         {points.map((pt, i) => (
           <li key={i} className="flex items-start gap-2 text-sm leading-snug" style={{ color: "var(--text-muted)" }}>
-            <Check className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: "#14b8a6" }} strokeWidth={2.5} />
+            <Check className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: "#60a5fa" }} strokeWidth={2.5} />
             <span>{pt}</span>
           </li>
         ))}

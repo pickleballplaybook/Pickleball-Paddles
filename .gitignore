@@ -12,6 +12,12 @@ out/
 .env.test.local
 .env.production.local
 
+# large video files — host these on Firebase Storage / Cloudinary instead
+*.MP4
+*.mp4
+*.mov
+*.MOV
+
 # misc
 .DS_Store
 *.pem

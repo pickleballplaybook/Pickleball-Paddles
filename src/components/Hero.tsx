@@ -40,7 +40,7 @@ export default function Hero() {
       <div
         className="absolute bottom-0 left-0 w-[600px] h-[320px] pointer-events-none"
         style={{
-          background: "radial-gradient(ellipse at bottom left, rgba(13,148,136,0.22) 0%, transparent 70%)",
+          background: "radial-gradient(ellipse at bottom left, rgba(17, 41, 95,0.22) 0%, transparent 70%)",
         }}
       />
 
@@ -55,10 +55,10 @@ export default function Hero() {
           <div>
             {/* Eyebrow */}
             <div className="flex items-center gap-3 mb-5">
-              <span className="h-px w-10" style={{ background: "rgba(45,212,191,0.6)" }} />
+              <span className="h-px w-10" style={{ background: "rgba(10, 100, 188,0.6)" }} />
               <p
                 className="text-[10px] font-bold uppercase tracking-[0.35em]"
-                style={{ color: "#2dd4bf" }}
+                style={{ color: "#60a5fa" }}
               >
                 Pickleball Playbook
               </p>
@@ -74,7 +74,7 @@ export default function Hero() {
             >
               Find Your Perfect
               <br />
-              <span style={{ color: "#2dd4bf" }}>Pickleball Paddle.</span>
+              <span style={{ color: "#ffffff" }}>Pickleball Paddle.</span>
             </h1>
 
             {/* Subheadline */}
@@ -95,8 +95,8 @@ export default function Hero() {
                 href="/paddles"
                 className="inline-flex items-center justify-center font-extrabold text-base px-10 py-4 rounded-2xl text-white tracking-wide transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
                 style={{
-                  background: "linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)",
-                  boxShadow: "0 0 48px rgba(20,184,166,0.5), 0 4px 20px rgba(0,0,0,0.4)",
+                  background: "#0a64bc",
+                  boxShadow: "0 0 48px rgba(10, 100, 188,0.5), 0 4px 20px rgba(0,0,0,0.4)",
                   letterSpacing: "0.05em",
                 }}
               >
@@ -120,7 +120,7 @@ export default function Hero() {
             <div className="mt-8 flex items-center gap-3">
               <div className="flex gap-0.5">
                 {[0,1,2,3,4].map((i) => (
-                  <svg key={i} className="w-4 h-4" viewBox="0 0 20 20" fill="#14b8a6" aria-hidden>
+                  <svg key={i} className="w-4 h-4" viewBox="0 0 20 20" fill="#60a5fa" aria-hidden>
                     <path d="M10 1l2.39 7.26H19l-5.81 4.22 2.22 6.85L10 15.27l-5.41 4.06 2.22-6.85L1 8.26h6.61z" />
                   </svg>
                 ))}
@@ -161,12 +161,12 @@ export default function Hero() {
             <div
               className="relative px-6 pt-7 pb-12"
               style={{
-                background: "linear-gradient(135deg, rgba(13,148,136,0.28) 0%, rgba(4,10,20,0.55) 100%)",
+                background: "linear-gradient(135deg, rgba(17, 41, 95,0.28) 0%, rgba(4,10,20,0.55) 100%)",
               }}
             >
               <p
                 className="text-[10px] font-bold uppercase tracking-[0.35em] mb-5"
-                style={{ color: "#2dd4bf" }}
+                style={{ color: "#60a5fa" }}
               >
                 Your Reviewer
               </p>
@@ -176,7 +176,7 @@ export default function Hero() {
                   src="/images/Austin-head-shot.png"
                   alt="Austin Hardy"
                   className="w-16 h-16 rounded-2xl object-cover flex-shrink-0"
-                  style={{ border: "2px solid rgba(45,212,191,0.45)" }}
+                  style={{ border: "2px solid rgba(10, 100, 188,0.45)" }}
                 />
                 <div>
                   <p className="text-xl font-extrabold text-white leading-tight">Austin Hardy</p>
@@ -195,8 +195,8 @@ export default function Hero() {
                   className="text-[11px] font-bold px-3 py-1.5 rounded-full"
                   style={{
                     background: "rgba(4,10,20,0.9)",
-                    border: "1px solid rgba(45,212,191,0.35)",
-                    color: "#2dd4bf",
+                    border: "1px solid rgba(10, 100, 188,0.35)",
+                    color: "#60a5fa",
                   }}
                 >
                   {c}
@@ -214,7 +214,7 @@ export default function Hero() {
                 <div key={n} className="flex items-start gap-3">
                   <span
                     className="text-[11px] font-extrabold tabular-nums mt-0.5 flex-shrink-0 w-6"
-                    style={{ color: "rgba(45,212,191,0.5)" }}
+                    style={{ color: "rgba(10, 100, 188,0.5)" }}
                   >
                     {n}
                   </span>
@@ -231,8 +231,8 @@ export default function Hero() {
                 href="/about"
                 className="flex items-center justify-center gap-2 font-bold text-sm py-3.5 rounded-xl text-white transition-all duration-200 hover:scale-[1.02]"
                 style={{
-                  background: "linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)",
-                  boxShadow: "0 0 28px rgba(20,184,166,0.4)",
+                  background: "#0a64bc",
+                  boxShadow: "0 0 28px rgba(10, 100, 188,0.4)",
                 }}
               >
                 Learn More About My Review Process
@@ -249,9 +249,9 @@ export default function Hero() {
             className="group flex items-center gap-4 pl-3 pr-5 py-3 rounded-2xl transition-all duration-200 hover:scale-[1.01]"
             style={{
               background: "rgba(4,10,20,0.6)",
-              border: "1px solid rgba(45,212,191,0.45)",
+              border: "1px solid rgba(10, 100, 188,0.45)",
               backdropFilter: "blur(12px)",
-              boxShadow: "0 0 32px rgba(20,184,166,0.22)",
+              boxShadow: "0 0 32px rgba(10, 100, 188,0.30)",
             }}
           >
             <span
@@ -266,7 +266,7 @@ export default function Hero() {
               />
             </span>
             <span className="flex flex-col leading-tight flex-1 min-w-0">
-              <span className="text-[11px] font-bold uppercase tracking-[0.22em]" style={{ color: "#2dd4bf" }}>
+              <span className="text-[11px] font-bold uppercase tracking-[0.22em]" style={{ color: "#60a5fa" }}>
                 New Review
               </span>
               <span className="text-base font-extrabold text-white">Selkirk Omni</span>
@@ -274,7 +274,7 @@ export default function Hero() {
                 ReactCore™ Widebody · All-Court
               </span>
             </span>
-            <svg className="w-4 h-4 flex-shrink-0 transition-transform group-hover:translate-x-0.5" viewBox="0 0 16 16" fill="none" aria-hidden style={{ color: "#2dd4bf" }}>
+            <svg className="w-4 h-4 flex-shrink-0 transition-transform group-hover:translate-x-0.5" viewBox="0 0 16 16" fill="none" aria-hidden style={{ color: "#60a5fa" }}>
               <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </a>
@@ -287,7 +287,7 @@ export default function Hero() {
       <div
         aria-hidden
         className="absolute bottom-0 inset-x-0 h-px"
-        style={{ background: "linear-gradient(90deg, transparent, rgba(20,184,166,0.3), transparent)" }}
+        style={{ background: "linear-gradient(90deg, transparent, rgba(10, 100, 188,0.3), transparent)" }}
       />
     </section>
   );

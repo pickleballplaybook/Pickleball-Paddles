@@ -25,7 +25,7 @@
 
 :root {
   --font-inter: "Inter", system-ui, sans-serif;
-  --teal:  #14b8a6;
+  --teal:  #0a64bc;
   --navy:  #163a6a;
 
   /* ── Page backgrounds ──────────────────────────────────────────────────── */
@@ -63,23 +63,28 @@
   --nav-border:   rgba(15,23,42,0.07);
   --nav-shadow:   0 1px 4px rgba(15,23,42,0.06);
   --nav-text:     #0f172a;
-  --nav-hover-bg: rgba(20,184,166,0.06);
+  --nav-hover-bg: rgba(10, 100, 188,0.23);
 
   /* ── Discount savings text — dark teal for legibility on white cards ──── */
-  --discount-text: #0d9488;
+  --discount-text: #11295f;
 
-  /* ── Buy button — brand teal in light mode (warmer than black, on-brand). */
-  /* Subtle gradient + lifted shadow give it a premium "floating" feel. */
-  --btn-buy-bg:       #3cacae;
-  --btn-buy-bg-hover: #2a9596;
+  /* ── Buy button — brand blue #0a64bc for PADDLE buy actions. White
+        outline + outer blue ring carry the same CTA look the red variant
+        had. Gear buys stay red via --btn-gear-* below. */
+  --btn-buy-bg:       #0a64bc;
+  --btn-buy-bg-hover: #084585;
   --btn-buy-text:     #ffffff;
-  --btn-buy-shadow:   0 4px 16px rgba(60,172,174,0.28), 0 2px 4px rgba(60,172,174,0.18);
+  --btn-buy-border:   2px solid #ffffff;
+  --btn-buy-shadow:   0 0 0 1px #0a64bc, 0 4px 16px rgba(10,100,188,0.28), 0 2px 4px rgba(10,100,188,0.18);
+  --btn-gear-bg:      #DC2626;
+  --btn-gear-bg-hover:#B91C1C;
+  --btn-gear-shadow:  0 0 0 1px #DC2626, 0 4px 16px rgba(220,38,38,0.28), 0 2px 4px rgba(220,38,38,0.18);
 
   /* ── Code chip + price accent — theme-responsive for legibility in both modes. */
   /* Light: deeper teal on slightly tinted bg; dark: bright teal on faint tint. */
-  --code-text:   #0d9488;
-  --code-bg:     rgba(60,172,174,0.10);
-  --code-border: rgba(60,172,174,0.55);
+  --code-text:   #11295f;
+  --code-bg:     rgba(10, 100, 188,0.30);
+  --code-border: rgba(10, 100, 188,0.55);
   --code-muted:  #64748b;
 
   /* ── Product photography background — radial "showroom spotlight" effect. */
@@ -106,16 +111,16 @@ html.dark {
   --flip-card-border: rgba(255,255,255,0.08);
   --flip-divider:     rgba(255,255,255,0.06);
   --flip-text-head:   #ffffff;
-  --flip-text-body:   rgba(255,255,255,0.55);
-  --flip-text-muted:  rgba(255,255,255,0.4);
-  --flip-text-faint:  rgba(255,255,255,0.2);
+  --flip-text-body:   rgba(255,255,255,0.78);
+  --flip-text-muted:  rgba(255,255,255,0.62);
+  --flip-text-faint:  rgba(255,255,255,0.42);
 
   --bg-card:     #0f172a;
   --card-border: rgba(255,255,255,0.08);
 
   --text-primary:   #e2e8f0;
-  --text-secondary: rgba(255,255,255,0.6);
-  --text-muted:     rgba(255,255,255,0.4);
+  --text-secondary: rgba(255,255,255,0.78);
+  --text-muted:     rgba(255,255,255,0.62);
 
   --border:        rgba(255,255,255,0.08);
   --border-subtle: rgba(255,255,255,0.06);
@@ -128,19 +133,26 @@ html.dark {
   --nav-hover-bg: rgba(255,255,255,0.06);
 
   /* ── Discount savings text — yellow-green pops on dark cards ─────────── */
-  --discount-text: #defa32;
+  --discount-text: #0a64bc;
 
-  /* ── Buy button — clean white in dark mode (premium editorial CTA). */
-  /* Soft glow gives it the "high-end membership card" feel. */
-  --btn-buy-bg:       #ffffff;
-  --btn-buy-bg-hover: #e2e8f0;
-  --btn-buy-text:     #0a1628;
-  --btn-buy-shadow:   0 4px 24px rgba(255,255,255,0.10), 0 0 0 1px rgba(255,255,255,0.04);
+  /* ── Buy button — brand blue #0a64bc for PADDLE buy actions in dark mode.
+        Gear stays red via --btn-gear-* below. */
+  --btn-buy-bg:       #0a64bc;
+  --btn-buy-bg-hover: #084585;
+  --btn-buy-text:     #ffffff;
+  --btn-buy-border:   2px solid #ffffff;
+  --btn-buy-shadow:   0 0 0 1px #0a64bc, 0 4px 24px rgba(10,100,188,0.28);
+  --btn-gear-bg:      #DC2626;
+  --btn-gear-bg-hover:#B91C1C;
+  --btn-gear-shadow:  0 0 0 1px #DC2626, 0 4px 24px rgba(220,38,38,0.28);
 
-  /* ── Code chip tokens — bright teal pops on dark cards. */
-  --code-text:   #2dd4bf;
-  --code-bg:     rgba(20,184,166,0.06);
-  --code-border: rgba(45,212,191,0.5);
+  /* ── Code chip tokens — neutral white on dark cards. Stays out of a
+        color clash with the red buy CTA right next to it. The chartreuse
+        accent is reserved for eyebrows and "RECOMMENDED" pills, not the
+        big price + code area which sits adjacent to the buy button. */
+  --code-text:   #f1f5f9;
+  --code-bg:     rgba(255,255,255,0.05);
+  --code-border: rgba(255,255,255,0.30);
   --code-muted:  rgba(255,255,255,0.4);
 
   /* ── Product photography background — subtle dark gradient with center spotlight. */
@@ -150,6 +162,16 @@ html.dark {
 
   /* ── Sticky bar bg components — dark navy in dark mode. */
   --sticky-bg-rgb: 15,23,42;
+}
+
+/* Brand product photos hotlinked from manufacturer pages typically ship on
+   a pure white background. In dark mode the white block looks jarring, so
+   we use an SVG color-matrix filter (defined inline in the blog template)
+   to chroma-key near-white pixels to transparent. The paddle itself stays
+   opaque and reads as floating on the dark card. Light-mode is untouched —
+   the white card surface absorbs the photo's white background naturally. */
+html.dark .brand-photo {
+  filter: url(#brand-photo-key);
 }
 
 @layer base {
@@ -204,7 +226,7 @@ html.dark {
     color: var(--teal);
     border-color: var(--teal);
   }
-  .btn-teal:hover { background-color: rgba(20,184,166,0.08); }
+  .btn-teal:hover { background-color: rgba(10, 100, 188,0.28); }
 
   /* Ghost — neutral */
   .btn-secondary {
@@ -224,7 +246,26 @@ html.dark {
            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2;
     background-color: var(--teal);
   }
-  .btn-brand:hover { background-color: #0d9488; }
+  .btn-brand:hover { background-color: #11295f; }
+
+  /* Brand red — primary affiliate/buy CTA. Matches the blog button style
+     (red bg + white outline + white text) and the YouTube thumbnail palette.
+     Reserved for high-intent conversion actions like "Shop now", "Buy with
+     code", "Get $X off". Internal navigation and secondary actions should
+     stay on btn-brand (teal) or btn-secondary so the visual hierarchy
+     (red = money, teal = navigation) stays readable. */
+  .btn-cta {
+    @apply inline-flex items-center gap-2 font-extrabold px-6 py-3 rounded-xl
+           text-white transition-all duration-200 active:scale-[0.98]
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cta-500 focus-visible:ring-offset-2;
+    background-color: #DC2626;
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 0 1px #DC2626, 0 6px 20px -8px rgba(220,38,38,0.45);
+  }
+  .btn-cta:hover {
+    background-color: #B91C1C;
+    box-shadow: 0 0 0 1px #B91C1C, 0 8px 24px -8px rgba(220,38,38,0.55);
+  }
 
   /* ── Layout helpers ───────────────────────────────────────────────────── */
   .section-y    { @apply py-20 md:py-28; }
@@ -245,9 +286,9 @@ html.dark {
   .discount-badge {
     @apply inline-flex items-center gap-2 font-mono font-bold text-sm
            px-4 py-2 rounded-lg tracking-widest uppercase;
-    background: rgba(20,184,166,0.08);
-    border: 1px solid rgba(20,184,166,0.2);
-    color: #14b8a6;
+    background: rgba(10, 100, 188,0.28);
+    border: 1px solid rgba(10, 100, 188,0.30);
+    color: #60a5fa;
   }
 
   /* ── Badge pills ──────────────────────────────────────────────────────── */
@@ -327,7 +368,7 @@ html.dark {
   margin: 0.5rem 0;
 }
 .tiptap-content a {
-  color: #5eead4;
+  color: #60a5fa;
   text-decoration: underline;
 }
 .tiptap-content code {
@@ -370,7 +411,7 @@ html.dark {
   display: block;
 }
 .tiptap-content img.ProseMirror-selectednode {
-  outline: 2px solid #3cacae;
+  outline: 2px solid #0a64bc;
   outline-offset: 2px;
 }
 
@@ -394,7 +435,7 @@ html.dark {
   border: 0;
 }
 .tiptap-content .iframe-embed-wrapper.ProseMirror-selectednode {
-  outline: 2px solid #3cacae;
+  outline: 2px solid #0a64bc;
   outline-offset: 2px;
 }
 
@@ -406,6 +447,6 @@ html.dark {
   transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 .paddle-card:hover {
-  border-color: rgba(20, 184, 166, 0.35);
+  border-color: rgba(10, 100, 188, 0.35);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
 }

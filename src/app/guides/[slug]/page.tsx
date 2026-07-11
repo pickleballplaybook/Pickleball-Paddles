@@ -90,7 +90,7 @@ function RenderSection({ section }: { section: GuideSection }) {
             >
               <span
                 className="mt-2 w-1.5 h-1.5 rounded-full flex-shrink-0"
-                style={{ background: "#14b8a6" }}
+                style={{ background: "#0a64bc" }}
               />
               <span>{item}</span>
             </li>
@@ -116,12 +116,12 @@ function RenderSection({ section }: { section: GuideSection }) {
         <div className="overflow-x-auto mb-6 rounded-xl" style={{ border: "1px solid rgba(255,255,255,0.08)" }}>
           <table className="w-full text-sm">
             <thead>
-              <tr style={{ background: "rgba(20,184,166,0.10)" }}>
+              <tr style={{ background: "rgba(10, 100, 188,0.30)" }}>
                 {section.headers?.map((h, i) => (
                   <th
                     key={i}
                     className="text-left font-extrabold uppercase text-xs tracking-wider px-4 py-3"
-                    style={{ color: "rgba(45,212,191,0.95)" }}
+                    style={{ color: "rgba(10, 100, 188,0.95)" }}
                   >
                     {h}
                   </th>
@@ -155,8 +155,8 @@ function RenderSection({ section }: { section: GuideSection }) {
     case "callout": {
       const v = section.variant ?? "info";
       const colors = {
-        info:    { bg: "rgba(59,130,246,0.10)", border: "rgba(59,130,246,0.30)", label: "Note" },
-        tip:     { bg: "rgba(20,184,166,0.10)", border: "rgba(20,184,166,0.30)", label: "Tip" },
+        info:    { bg: "rgba(10, 100, 188,0.30)", border: "rgba(10, 100, 188,0.30)", label: "Note" },
+        tip:     { bg: "rgba(10, 100, 188,0.30)", border: "rgba(10, 100, 188,0.30)", label: "Tip" },
         warning: { bg: "rgba(245,158,11,0.10)", border: "rgba(245,158,11,0.30)", label: "Heads up" },
       }[v];
       return (
@@ -178,11 +178,11 @@ function RenderSection({ section }: { section: GuideSection }) {
         <div
           className="rounded-2xl p-5 my-8"
           style={{
-            background: "linear-gradient(135deg, rgba(20,184,166,0.18) 0%, rgba(20,184,166,0.05) 100%)",
-            border: "1px solid rgba(45,212,191,0.30)",
+            background: "linear-gradient(135deg, rgba(10, 100, 188,0.30) 0%, rgba(10, 100, 188,0.21) 100%)",
+            border: "1px solid rgba(10, 100, 188,0.30)",
           }}
         >
-          <p className="text-xs font-extrabold uppercase tracking-widest mb-2" style={{ color: "#5eead4" }}>
+          <p className="text-xs font-extrabold uppercase tracking-widest mb-2" style={{ color: "#60a5fa" }}>
             Bottom Line
           </p>
           <p className="text-base leading-relaxed" style={{ color: "var(--flip-text-body, var(--text-primary))" }}>
@@ -231,7 +231,7 @@ function PaddleRecCard({ slug }: { slug: string }) {
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[10px] font-extrabold uppercase tracking-widest" style={{ color: "rgba(45,212,191,0.9)" }}>
+        <p className="text-[10px] font-extrabold uppercase tracking-widest" style={{ color: "rgba(10, 100, 188,0.9)" }}>
           {paddle.brand}
         </p>
         <p className="text-base font-bold leading-tight" style={{ color: "var(--flip-text-head)" }}>
@@ -244,7 +244,7 @@ function PaddleRecCard({ slug }: { slug: string }) {
       {hasDiscount && (
         <span
           className="text-[10px] font-extrabold font-mono px-2 py-1 rounded-md flex-shrink-0"
-          style={{ background: "rgba(20,184,166,0.12)", color: "#2dd4bf" }}
+          style={{ background: "rgba(10, 100, 188,0.30)", color: "#60a5fa" }}
         >
           {paddle.amountOff} OFF
         </span>
@@ -300,7 +300,7 @@ export default function GuidePage({ params }: Props) {
         <Link
           href="/guides"
           className="inline-flex items-center gap-1.5 text-sm font-bold mb-4 transition hover:opacity-80"
-          style={{ color: "rgba(45,212,191,0.9)" }}
+          style={{ color: "rgba(10, 100, 188,0.9)" }}
         >
           <ArrowLeft className="w-4 h-4" />
           All Guides
@@ -309,7 +309,7 @@ export default function GuidePage({ params }: Props) {
         {/* Category chip */}
         <p
           className="inline-block text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-full mb-3"
-          style={{ background: "rgba(20,184,166,0.12)", color: "#2dd4bf", border: "1px solid rgba(20,184,166,0.25)" }}
+          style={{ background: "rgba(10, 100, 188,0.30)", color: "#60a5fa", border: "1px solid rgba(10, 100, 188,0.30)" }}
         >
           {category.label}
         </p>
@@ -391,7 +391,7 @@ export default function GuidePage({ params }: Props) {
                   className="block p-4 rounded-xl transition hover:scale-[1.01]"
                   style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
                 >
-                  <p className="text-[10px] font-extrabold uppercase tracking-widest mb-1" style={{ color: "rgba(45,212,191,0.9)" }}>
+                  <p className="text-[10px] font-extrabold uppercase tracking-widest mb-1" style={{ color: "rgba(10, 100, 188,0.9)" }}>
                     {GUIDE_CATEGORIES[r.category].label}
                   </p>
                   <p className="font-bold text-base" style={{ color: "var(--flip-text-head)" }}>

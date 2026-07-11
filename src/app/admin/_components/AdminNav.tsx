@@ -10,7 +10,11 @@ const TABS = [
   { href: "/admin/auto-reply", label: "Auto Reply" },
   { href: "/admin/weekly-thumbnail", label: "Weekly Thumbnail" },
   { href: "/admin/drills", label: "Drills" },
+  { href: "/admin/lessons", label: "Lessons" },
   { href: "/admin/email", label: "Email" },
+  { href: "/admin/churn", label: "Churn" },
+  { href: "/admin/acquisition", label: "Acquisition" },
+  { href: "/admin/challenges", label: "Challenges" },
 ];
 
 export function AdminNav() {

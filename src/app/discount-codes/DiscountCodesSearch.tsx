@@ -86,7 +86,7 @@ export default function DiscountCodesSearch({ deals }: Props) {
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search by paddle, brand, or code…"
             className="w-full text-sm font-semibold rounded-xl pl-9 pr-9 py-3 focus:outline-none focus:ring-2"
-            style={{ ...inputStyle, outlineColor: "#14b8a6" }}
+            style={{ ...inputStyle, outlineColor: "#60a5fa" }}
             aria-label="Search discount codes"
           />
           {query && (
@@ -118,7 +118,7 @@ export default function DiscountCodesSearch({ deals }: Props) {
           <button
             onClick={reset}
             className="inline-flex items-center justify-center gap-1 text-sm font-semibold px-4 py-3 rounded-xl"
-            style={{ color: "#2dd4bf" }}
+            style={{ color: "#60a5fa" }}
           >
             <X className="w-3.5 h-3.5" /> Reset
           </button>
@@ -134,7 +134,7 @@ export default function DiscountCodesSearch({ deals }: Props) {
       {filtered.length === 0 ? (
         <div className="text-center py-16 rounded-2xl" style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.08)" }}>
           <p className="text-base mb-4" style={{ color: "var(--text-muted)" }}>No discount codes match your search.</p>
-          <button onClick={reset} className="inline-flex items-center gap-1.5 font-bold text-sm px-5 py-2.5 rounded-xl text-white" style={{ background: "#14b8a6" }}>
+          <button onClick={reset} className="inline-flex items-center gap-1.5 font-bold text-sm px-5 py-2.5 rounded-xl text-white" style={{ background: "#0a64bc" }}>
             Clear filters
           </button>
         </div>
@@ -165,7 +165,7 @@ export default function DiscountCodesSearch({ deals }: Props) {
 
                 {/* Brand + paddle name + spec */}
                 <div className="min-w-0">
-                  <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#14b8a6" }}>
+                  <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#60a5fa" }}>
                     {d.brand}
                   </p>
                   <Link href={`/paddles/${d.paddleSlug}`} className="block">
@@ -183,9 +183,9 @@ export default function DiscountCodesSearch({ deals }: Props) {
                   onClick={() => copyCode(key, d.code)}
                   className="col-span-2 sm:col-span-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg font-mono font-extrabold text-sm tracking-widest transition-all hover:scale-[1.02]"
                   style={{
-                    background: copied ? "rgba(74,222,128,0.15)" : "rgba(20,184,166,0.12)",
-                    border: `1px solid ${copied ? "rgba(74,222,128,0.45)" : "rgba(20,184,166,0.35)"}`,
-                    color: copied ? "#4ade80" : "#2dd4bf",
+                    background: copied ? "rgba(74,222,128,0.15)" : "rgba(10, 100, 188,0.30)",
+                    border: `1px solid ${copied ? "rgba(74,222,128,0.45)" : "rgba(10, 100, 188,0.35)"}`,
+                    color: copied ? "#4ade80" : "#0a64bc",
                   }}
                   aria-label={`Copy code ${d.code}`}
                   title="Click to copy"
@@ -200,7 +200,7 @@ export default function DiscountCodesSearch({ deals }: Props) {
                   target="_blank"
                   rel="noopener noreferrer sponsored"
                   className="hidden sm:inline-flex items-center gap-1.5 font-bold text-xs px-3 py-2 rounded-lg text-white transition-all hover:scale-[1.02]"
-                  style={{ background: "#14b8a6" }}
+                  style={{ background: "#0a64bc" }}
                 >
                   Shop <ExternalLink className="w-3 h-3" />
                 </a>

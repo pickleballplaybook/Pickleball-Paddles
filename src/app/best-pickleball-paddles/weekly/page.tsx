@@ -57,11 +57,11 @@ function EmptyState() {
         <Link
           href="/best-pickleball-paddles"
           className="inline-flex items-center gap-1 text-sm font-semibold mb-4 transition-colors hover:text-brand-400"
-          style={{ color: "#2dd4bf" }}
+          style={{ color: "#60a5fa" }}
         >
           &larr; Best Paddles
         </Link>
-        <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#14b8a6" }}>
+        <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#60a5fa" }}>
           Weekly Rankings
         </p>
         <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-4" style={{ color: "var(--text-primary)" }}>
@@ -77,7 +77,7 @@ function EmptyState() {
           <Link
             href="/best-pickleball-paddles"
             className="inline-flex items-center gap-2 font-bold text-sm px-6 py-3 rounded-xl text-white transition-all hover:scale-[1.02]"
-            style={{ background: "#14b8a6" }}
+            style={{ background: "#0a64bc" }}
           >
             Browse Editor&apos;s Picks <ArrowRight className="w-4 h-4" />
           </Link>

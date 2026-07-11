@@ -92,12 +92,12 @@ export default function AffiliatesAdminPage() {
   }
 
   return (
-    <div className="min-h-screen pt-[156px] pb-32" style={{ background: "#060e1a" }}>
+    <div className="min-h-screen pb-32" style={{ background: "#060e1a", paddingTop: "calc(var(--topbar-h, 108px) + 1rem)" }}>
       <div className="max-w-5xl mx-auto px-4">
 
         {/* Header */}
         <div className="mb-8">
-          <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#14b8a6" }}>
+          <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#60a5fa" }}>
             Admin
           </p>
           <h1
@@ -107,7 +107,7 @@ export default function AffiliatesAdminPage() {
             Affiliate Programs
           </h1>
           <p className="text-base max-w-3xl" style={{ color: "rgba(255,255,255,0.55)" }}>
-            Every brand we earn through. Click <strong style={{ color: "#5eead4" }}>Open admin</strong> to jump to that brand&apos;s
+            Every brand we earn through. Click <strong style={{ color: "#60a5fa" }}>Open admin</strong> to jump to that brand&apos;s
             affiliate dashboard. Type the running revenue you see there into the input — the grand total at the
             bottom updates live and persists in your browser.
           </p>
@@ -116,9 +116,9 @@ export default function AffiliatesAdminPage() {
         {/* Multi-login tip */}
         <div
           className="rounded-2xl p-4 mb-8 flex items-start gap-3"
-          style={{ background: "rgba(20,184,166,0.06)", border: "1px solid rgba(20,184,166,0.20)" }}
+          style={{ background: "rgba(10, 100, 188,0.23)", border: "1px solid rgba(10, 100, 188,0.30)" }}
         >
-          <Info className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: "#2dd4bf" }} />
+          <Info className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: "#60a5fa" }} />
           <div className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.75)" }}>
             <strong style={{ color: "#fff" }}>Heads up:</strong> most rows live on shared platforms (Uppromote,
             Social Snowball, Shopify Collabs) that issue one session cookie per platform — so logging into one
@@ -129,7 +129,7 @@ export default function AffiliatesAdminPage() {
               target="_blank"
               rel="noopener noreferrer"
               className="font-bold underline underline-offset-2"
-              style={{ color: "#5eead4" }}
+              style={{ color: "#60a5fa" }}
             >
               Firefox Multi-Account Containers
             </a>
@@ -200,7 +200,7 @@ export default function AffiliatesAdminPage() {
         style={{
           background: "linear-gradient(180deg, rgba(6,14,26,0.85) 0%, rgba(6,14,26,0.98) 50%)",
           backdropFilter: "blur(8px)",
-          borderTop: "1px solid rgba(45,212,191,0.25)",
+          borderTop: "1px solid rgba(10, 100, 188,0.30)",
         }}
       >
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
@@ -209,7 +209,7 @@ export default function AffiliatesAdminPage() {
           </p>
           <p
             className="text-3xl md:text-4xl font-extrabold font-mono tabular-nums"
-            style={{ color: "#5eead4" }}
+            style={{ color: "#60a5fa" }}
           >
             {formatUSD(total)}
           </p>
@@ -243,7 +243,7 @@ function BrandRow({ brand, value, onChange }: {
           {brand.platform && (
             <span
               className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full"
-              style={{ background: "rgba(45,212,191,0.10)", color: "#5eead4", border: "1px solid rgba(45,212,191,0.20)" }}
+              style={{ background: "rgba(10, 100, 188,0.30)", color: "#60a5fa", border: "1px solid rgba(10, 100, 188,0.30)" }}
             >
               {brand.platform}
             </span>
@@ -299,7 +299,7 @@ function BrandRow({ brand, value, onChange }: {
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-lg transition-all hover:scale-[1.03]"
-            style={{ background: "rgba(20,184,166,0.18)", border: "1px solid rgba(45,212,191,0.40)", color: "#5eead4" }}
+            style={{ background: "rgba(10, 100, 188,0.30)", border: "1px solid rgba(10, 100, 188,0.40)", color: "#60a5fa" }}
           >
             Open admin
             <ExternalLink className="w-3.5 h-3.5" />

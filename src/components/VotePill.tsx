@@ -41,8 +41,8 @@ export default function VotePill({ paddleId, upCount, downCount, size = "sm" }: 
     <div
       className={`inline-flex items-stretch rounded-full overflow-hidden ${fontSize} font-bold tabular-nums`}
       style={{
-        border: "1px solid rgba(45,212,191,0.30)",
-        background: "rgba(45,212,191,0.04)",
+        border: "1px solid rgba(10, 100, 188,0.30)",
+        background: "rgba(10, 100, 188,0.19)",
       }}
     >
       {/* ── Thumbs up ── */}
@@ -52,8 +52,8 @@ export default function VotePill({ paddleId, upCount, downCount, size = "sm" }: 
         aria-pressed={isUp}
         className={`inline-flex items-center ${gapBetween} ${pad} transition-colors`}
         style={{
-          color: isUp ? "#2dd4bf" : "var(--text-muted)",
-          background: isUp ? "rgba(45,212,191,0.14)" : "transparent",
+          color: isUp ? "#0a64bc" : "var(--text-muted)",
+          background: isUp ? "rgba(10, 100, 188,0.30)" : "transparent",
         }}
       >
         <ThumbsUp
@@ -65,7 +65,7 @@ export default function VotePill({ paddleId, upCount, downCount, size = "sm" }: 
       </button>
 
       {/* Divider — same hairline as the outer border so it reads as one shape */}
-      <span aria-hidden style={{ width: 1, background: "rgba(45,212,191,0.30)" }} />
+      <span aria-hidden style={{ width: 1, background: "rgba(10, 100, 188,0.30)" }} />
 
       {/* ── Thumbs down ── */}
       <button

@@ -23,15 +23,41 @@ export async function middleware(request: NextRequest) {
   // Email automation — trial signup CSV export, drip log, FAQ auto-reply.
   const isEmailApi  = pathname.startsWith("/api/admin/email");
   const isEmailPage = pathname.startsWith("/admin/email");
+  // Churn reasons — Firestore-backed cancellation reason capture from the
+  // Pickleball Drills Flutter app's cancel flow.
+  const isChurnApi  = pathname.startsWith("/api/admin/churn");
+  const isChurnPage = pathname.startsWith("/admin/churn");
+  // Acquisition attribution — Firestore-backed "How did you hear about us?"
+  // capture from the Pickleball Drills onboarding flow.
+  const isAcquisitionApi  = pathname.startsWith("/api/admin/acquisition");
+  const isAcquisitionPage = pathname.startsWith("/admin/acquisition");
+  // Community challenges — Firestore-backed weekly/rolling challenges surfaced
+  // in the Pickleball Drills Flutter app.
+  const isChallengesApi  = pathname.startsWith("/api/admin/challenges");
+  const isChallengesPage = pathname.startsWith("/admin/challenges");
   // Scheduled posts viewer — the page reads from /api/admin/publish/scheduled*
   // (already gated as part of isPublishApi). Just the page itself needs gating.
   const isScheduledPage = pathname.startsWith("/admin/scheduled");
-  const isApiGated = isShortsApi || isPublishApi || isNewsletterApi || isDrillsApi || isEmailApi;
+  // Stripe backfill + mirror diagnostics + one-shot maintenance endpoints.
+  // Bucketing them under a single `/api/admin/*` catch-all so future admin
+  // routes don't leak by default.
+  const isAdminMaintenanceApi =
+    pathname.startsWith("/api/admin/stripe-backfill") ||
+    pathname.startsWith("/api/admin/mirror-diagnostic") ||
+    pathname.startsWith("/api/admin/hide-test-accounts") ||
+    pathname.startsWith("/api/admin/winback-diagnostic") ||
+    pathname.startsWith("/api/admin/send-test-comeback-email") ||
+    pathname.startsWith("/api/admin/sync-substack");
+  const isApiGated = isShortsApi || isPublishApi || isNewsletterApi || isDrillsApi || isEmailApi || isChurnApi || isAcquisitionApi || isChallengesApi || isAdminMaintenanceApi;
   const isGated =
     isShortsPage || isShortsApi || isPublishPage || isPublishApi || isPublishOAuth ||
     isNewsletterApi || isNewsletterPage || isDrillsApi || isDrillsPage ||
     isEmailApi || isEmailPage ||
-    isScheduledPage;
+    isChurnApi || isChurnPage ||
+    isAcquisitionApi || isAcquisitionPage ||
+    isChallengesApi || isChallengesPage ||
+    isScheduledPage ||
+    isAdminMaintenanceApi;
 
   if (isGated) {
     const isLoginPage = pathname === "/admin/shorts/login";

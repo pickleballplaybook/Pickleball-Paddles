@@ -73,14 +73,14 @@ export default function PaddleDetailTabs() {
             onClick={() => scrollTo(tab.id)}
             className="relative px-5 py-4 text-sm font-semibold whitespace-nowrap transition-colors"
             style={{
-              color: active === tab.id ? "#14b8a6" : "var(--flip-text-muted)",
+              color: active === tab.id ? "#0a64bc" : "var(--flip-text-muted)",
             }}
           >
             {tab.label}
             {active === tab.id && (
               <span
                 className="absolute bottom-0 left-0 right-0 h-[2px]"
-                style={{ background: "#14b8a6" }}
+                style={{ background: "#0a64bc" }}
               />
             )}
           </button>

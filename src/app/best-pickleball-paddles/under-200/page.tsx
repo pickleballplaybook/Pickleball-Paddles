@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import RelatedGuidesBlock from "@/components/RelatedGuidesBlock";
+import RelatedDrillsBlock from "@/components/RelatedDrillsBlock";
 import { ArrowRight, ExternalLink, CheckCircle2, Wallet } from "lucide-react";
 import { paddles, getPaddleBySlug } from "@/data/paddles";
 import { siteConfig } from "@/config/site";
@@ -11,7 +12,7 @@ import InlineNewsletterCTA from "@/components/InlineNewsletterCTA";
 import { currentYear } from "@/lib/year";
 
 const PAGE_URL = `${siteConfig.siteUrl}/best-pickleball-paddles/under-200`;
-const ACCENT = "#60a5fa";
+const ACCENT = "#0a64bc";
 const MAX_PRICE = 200;
 
 // ── Discount code helper ──────────────────────────────────────────────────────
@@ -350,9 +351,9 @@ export default function BestPaddlesUnder200Page() {
               <p>
                 Match the shape to your game: elongated for reach and power, hybrid for an all-around feel, widebody for
                 the biggest sweet spot. On a tighter budget? See our <Link href="/best-pickleball-paddles/under-125" className="font-semibold" style={{ color: "#4ade80" }}>best pickleball paddles under $125</Link>.
-                Otherwise, compare specs side by side with our <Link href="/compare" className="font-semibold" style={{ color: "#2dd4bf" }}>comparison tool</Link>, browse the
-                full <Link href="/paddles" className="font-semibold" style={{ color: "#2dd4bf" }}>paddle database</Link>, or see our
-                overall <Link href="/best-pickleball-paddles" className="font-semibold" style={{ color: "#2dd4bf" }}>best pickleball paddles</Link> picks across every price range.
+                Otherwise, compare specs side by side with our <Link href="/compare" className="font-semibold" style={{ color: "#60a5fa" }}>comparison tool</Link>, browse the
+                full <Link href="/paddles" className="font-semibold" style={{ color: "#60a5fa" }}>paddle database</Link>, or see our
+                overall <Link href="/best-pickleball-paddles" className="font-semibold" style={{ color: "#60a5fa" }}>best pickleball paddles</Link> picks across every price range.
               </p>
             </div>
           </div>
@@ -379,13 +380,21 @@ export default function BestPaddlesUnder200Page() {
             eyebrow="Go Deeper"
             title="Smart Buys Under $200"
           />
+          <RelatedDrillsBlock
+            slugs={[
+              "best-pickleball-drills",
+              "pickleball-training-plan",
+              "pickleball-third-shot-drop",
+              "best-pickleball-training-tools",
+            ]}
+          />
 
 
 
           {/* ── CTA ─────────────────────────────────────────────────────── */}
           <div className="mt-20 flex flex-col items-center text-center gap-5">
             <p className="text-base" style={{ color: "var(--text-muted)" }}>Looking for picks at every price point?</p>
-            <Link href="/best-pickleball-paddles" className="inline-flex items-center gap-2 font-bold text-base px-10 py-4 rounded-2xl text-white transition-all duration-200 hover:scale-[1.02]" style={{ background: "linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)", boxShadow: "0 0 40px rgba(20,184,166,0.4)" }}>
+            <Link href="/best-pickleball-paddles" className="inline-flex items-center gap-2 font-bold text-base px-10 py-4 rounded-2xl text-white transition-all duration-200 hover:scale-[1.02]" style={{ background: "#0a64bc", boxShadow: "0 0 40px rgba(10, 100, 188,0.4)" }}>
               See All Best Pickleball Paddles <ArrowRight className="w-5 h-5" />
             </Link>
           </div>

@@ -218,9 +218,9 @@ export default function BalancePointSpec({ paddle }: Props) {
               style={{
                 bottom: `calc(${centerLineFromBottomPct}% - 11px)`,
                 right: "-46%",
-                background: "rgba(0,0,0,0.55)",
-                color: "rgba(255,255,255,0.85)",
-                border: "1px solid rgba(255,255,255,0.10)",
+                background: "var(--flip-bg-card)",
+                color: "var(--flip-text-head)",
+                border: "1px solid var(--flip-card-border)",
                 whiteSpace: "nowrap",
               }}
             >
@@ -235,7 +235,7 @@ export default function BalancePointSpec({ paddle }: Props) {
             className="relative h-2 rounded-full"
             style={{
               // Indigo → teal → orange — mirrors the three categories.
-              background: "linear-gradient(90deg, rgba(129,140,248,0.32) 0%, rgba(45,212,191,0.18) 50%, rgba(251,146,60,0.32) 100%)",
+              background: "linear-gradient(90deg, rgba(129,140,248,0.32) 0%, rgba(10, 100, 188,0.30) 50%, rgba(251,146,60,0.32) 100%)",
               boxShadow: "inset 0 1px 2px rgba(0,0,0,0.5)",
             }}
           >
@@ -257,24 +257,24 @@ export default function BalancePointSpec({ paddle }: Props) {
           {/* Endpoint labels */}
           <div className="flex justify-between mt-4">
             <div>
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.20em]" style={{ color: "rgba(255,255,255,0.85)" }}>
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.20em]" style={{ color: "var(--flip-text-head)" }}>
                 Head-Light
               </p>
-              <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.55)" }}>
+              <p className="text-xs mt-0.5" style={{ color: "var(--flip-text-body)" }}>
                 {headLightRef.toFixed(1)} cm
               </p>
-              <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.35)" }}>
+              <p className="text-[10px]" style={{ color: "var(--flip-text-muted)" }}>
                 (typical range)
               </p>
             </div>
             <div className="text-right">
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.20em]" style={{ color: "rgba(255,255,255,0.85)" }}>
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.20em]" style={{ color: "var(--flip-text-head)" }}>
                 Head-Heavy
               </p>
-              <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.55)" }}>
+              <p className="text-xs mt-0.5" style={{ color: "var(--flip-text-body)" }}>
                 {headHeavyRef.toFixed(1)} cm
               </p>
-              <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.35)" }}>
+              <p className="text-[10px]" style={{ color: "var(--flip-text-muted)" }}>
                 (typical range)
               </p>
             </div>
@@ -282,23 +282,23 @@ export default function BalancePointSpec({ paddle }: Props) {
         </div>
 
         {/* Verdict row */}
-        <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-4 mt-8 pt-6" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+        <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-4 mt-8 pt-6" style={{ borderTop: "1px solid var(--flip-divider)" }}>
           <div className="min-w-0">
             <p className="text-xl md:text-2xl font-extrabold tracking-tight" style={{ color: accent }}>
               {cat.label}
             </p>
-            <p className="text-sm mt-1" style={{ color: "rgba(255,255,255,0.65)" }}>
+            <p className="text-sm mt-1" style={{ color: "var(--flip-text-body)" }}>
               {cat.tagline}
             </p>
           </div>
           <div className="text-left md:text-right flex-shrink-0">
-            <p className="font-extrabold tabular-nums" style={{ color: "#fff" }}>
+            <p className="font-extrabold tabular-nums" style={{ color: "var(--flip-text-head)" }}>
               <span className="text-3xl md:text-4xl">{bp.toFixed(1)} cm</span>
-              <span className="text-sm ml-2" style={{ color: "rgba(255,255,255,0.50)" }}>
+              <span className="text-sm ml-2" style={{ color: "var(--flip-text-muted)" }}>
                 ({offsetLabel})
               </span>
             </p>
-            <p className="text-[10px] font-bold uppercase tracking-[0.20em] mt-1" style={{ color: "rgba(255,255,255,0.50)" }}>
+            <p className="text-[10px] font-bold uppercase tracking-[0.20em] mt-1" style={{ color: "var(--flip-text-muted)" }}>
               {cat.label}
             </p>
           </div>

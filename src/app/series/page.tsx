@@ -51,7 +51,7 @@ export default function SeriesIndexPage() {
       <div className="container-xl">
 
         <div className="mb-10">
-          <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#14b8a6" }}>
+          <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#60a5fa" }}>
             Compare Shapes
           </p>
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight" style={{ color: "var(--flip-text-head)" }}>
@@ -93,7 +93,7 @@ export default function SeriesIndexPage() {
                 </div>
 
                 <div className="p-5">
-                  <p className="text-[11px] font-bold uppercase tracking-widest mb-1" style={{ color: "#14b8a6" }}>
+                  <p className="text-[11px] font-bold uppercase tracking-widest mb-1" style={{ color: "#60a5fa" }}>
                     {series.brand} &middot; {series.paddles.length} shapes
                   </p>
                   <h2 className="text-lg font-extrabold group-hover:text-teal-500 transition-colors mb-2" style={{ color: "var(--flip-text-head)" }}>
@@ -104,13 +104,13 @@ export default function SeriesIndexPage() {
                       <span
                         key={shape}
                         className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full"
-                        style={{ background: "rgba(20,184,166,0.12)", color: "#2dd4bf" }}
+                        style={{ background: "rgba(10, 100, 188,0.30)", color: "#60a5fa" }}
                       >
                         {shape}
                       </span>
                     ))}
                   </div>
-                  <span className="inline-flex items-center gap-1 text-sm font-semibold group-hover:text-teal-400 transition-colors" style={{ color: "#2dd4bf" }}>
+                  <span className="inline-flex items-center gap-1 text-sm font-semibold group-hover:text-teal-400 transition-colors" style={{ color: "#60a5fa" }}>
                     Compare Shapes <ArrowRight className="w-3.5 h-3.5" />
                   </span>
                 </div>

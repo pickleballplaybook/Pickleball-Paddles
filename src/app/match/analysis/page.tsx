@@ -62,7 +62,7 @@ const COACHES = [
     id: "mentor" as const,
     label: "Constructive mentor",
     description: "Balanced — explain the why",
-    accent: "#14b8a6",
+    accent: "#0a64bc",
   },
 ];
 
@@ -354,7 +354,7 @@ export default function MatchAnalysisPage() {
         {/* Header */}
         <div className="flex items-start justify-between gap-4 mb-10">
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#14b8a6" }}>
+            <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#60a5fa" }}>
               Match Analysis
             </p>
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2" style={{ color: "var(--text-primary)" }}>
@@ -454,7 +454,7 @@ export default function MatchAnalysisPage() {
           className="rounded-2xl p-5 md:p-6 mb-8"
           style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}
         >
-          <p className="text-[10px] font-bold uppercase tracking-widest mb-4" style={{ color: "#14b8a6" }}>
+          <p className="text-[10px] font-bold uppercase tracking-widest mb-4" style={{ color: "#60a5fa" }}>
             Summary
           </p>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -462,7 +462,7 @@ export default function MatchAnalysisPage() {
             <SummaryStat label="Forced"       value={feTotal}      accent="#f59e0b" />
             <SummaryStat label="Total Errors" value={totalErrors} />
             <SummaryStat label="Winners"      value={winnersTotal} accent="#22c55e" />
-            <SummaryStat label="W : E Ratio"  value={ratio}        accent="#14b8a6" />
+            <SummaryStat label="W : E Ratio"  value={ratio}        accent="#0a64bc" />
           </div>
         </div>
 

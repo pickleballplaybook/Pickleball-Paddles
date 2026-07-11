@@ -17,9 +17,9 @@ export default function DrillsBar() {
           <div className="flex items-center gap-4">
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{ background: "rgba(20,184,166,0.2)" }}
+              style={{ background: "rgba(10, 100, 188,0.30)" }}
             >
-              <Smartphone className="w-5 h-5" style={{ color: "#14b8a6" }} strokeWidth={2} />
+              <Smartphone className="w-5 h-5" style={{ color: "#60a5fa" }} strokeWidth={2} />
             </div>
             <div>
               <p className="font-extrabold text-white text-sm md:text-base leading-tight tracking-tight">
@@ -36,9 +36,9 @@ export default function DrillsBar() {
             href="#"
             className="flex-shrink-0 inline-flex items-center gap-2 font-bold text-sm px-5 py-2.5 rounded-xl transition-all duration-200 active:scale-[0.98] whitespace-nowrap"
             style={{
-              background: "linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)",
+              background: "#0a64bc",
               color: "#fff",
-              boxShadow: "0 0 20px rgba(20,184,166,0.25)",
+              boxShadow: "0 0 20px rgba(10, 100, 188,0.30)",
             }}
           >
             Try It Free
