@@ -77,7 +77,7 @@ async function migrate() {
   let created = 0;
   let skipped = 0;
 
-  for (const [name, group] of byName.entries()) {
+  for (const [name, group] of Array.from(byName.entries())) {
     // Primary source for metadata: prefer Advanced > Intermediate > Beginner
     const primary = group.Advanced ?? group.Intermediate ?? group.Beginner!;
 

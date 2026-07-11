@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
     let created = 0;
     let skipped = 0;
 
-    for (const [name, group] of byName.entries()) {
+    for (const [name, group] of Array.from(byName.entries())) {
       if (alreadyMigrated.has(name)) {
         skipped++;
         continue;
