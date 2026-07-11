@@ -71,9 +71,12 @@ function toEmbedUrl(input: string): string | null {
     /(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([\w-]+)/
   );
   if (yt) return `https://www.youtube.com/embed/${yt[1]}`;
-  // Vimeo: vimeo.com/ID, vimeo.com/video/ID, player.vimeo.com/video/ID
-  const vm = url.match(/vimeo\.com\/(?:video\/|channels\/[^/]+\/|groups\/[^/]+\/videos\/)?(\d+)/);
-  if (vm) return `https://player.vimeo.com/video/${vm[1]}`;
+  // Vimeo: vimeo.com/ID, vimeo.com/ID/HASH (unlisted), vimeo.com/video/ID, player.vimeo.com/video/ID
+  const vm = url.match(/vimeo\.com\/(?:video\/|channels\/[^/]+\/|groups\/[^/]+\/videos\/)?(\d+)(?:\/([a-zA-Z0-9]+))?/);
+  if (vm) {
+    const base = `https://player.vimeo.com/video/${vm[1]}`;
+    return vm[2] ? `${base}?h=${vm[2]}` : base;
+  }
   return null;
 }
 

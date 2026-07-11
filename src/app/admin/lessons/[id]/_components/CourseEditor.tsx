@@ -60,6 +60,7 @@ export function CourseEditor({
   const [showMenu, setShowMenu] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [savedFlash, setSavedFlash] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const selectedNode = nodes.find((n) => n.id === selectedId) ?? null;
@@ -167,6 +168,8 @@ export function CourseEditor({
             : n
         )
       );
+      setSavedFlash(true);
+      setTimeout(() => setSavedFlash(false), 2000);
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : "Save failed.");
     } finally {
@@ -307,25 +310,11 @@ export function CourseEditor({
             <div className="border-t border-gray-800 px-8 py-3 flex items-center justify-between bg-gray-950/80 flex-shrink-0">
               <button
                 type="button"
-                onClick={() =>
-                  setEditState({
-                    title: selectedNode.title,
-                    content: selectedNode.content,
-                    published: selectedNode.published,
-                  })
-                }
+                onClick={() => setEditState((s) => s ? { ...s, published: !s.published } : s)}
                 className="flex items-center gap-2 cursor-pointer"
               >
-                <div
-                  className={`w-9 h-5 rounded-full relative transition-colors ${editState.published ? "bg-green-500" : "bg-gray-600"}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setEditState({ ...editState, published: !editState.published });
-                  }}
-                >
-                  <div
-                    className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${editState.published ? "translate-x-4" : ""}`}
-                  />
+                <div className={`w-9 h-5 rounded-full relative transition-colors ${editState.published ? "bg-green-500" : "bg-gray-600"}`}>
+                  <div className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${editState.published ? "translate-x-4" : ""}`} />
                 </div>
                 <span className={`text-xs font-medium ${editState.published ? "text-green-400" : "text-gray-400"}`}>
                   {editState.published ? "Published" : "Draft"}
@@ -333,7 +322,14 @@ export function CourseEditor({
               </button>
 
               <div className="flex items-center gap-3">
+                {savedFlash && (
+                  <span className="text-xs text-green-400 font-medium">Saved ✓</span>
+                )}
+                {saveError && (
+                  <span className="text-xs text-red-400 font-medium" title={saveError}>Save failed</span>
+                )}
                 <button
+                  type="button"
                   onClick={() => {
                     setEditState({
                       title: selectedNode.title,
@@ -347,6 +343,7 @@ export function CourseEditor({
                   Cancel
                 </button>
                 <button
+                  type="button"
                   onClick={savePage}
                   disabled={saving}
                   className="px-6 py-1.5 bg-accent-500 hover:bg-accent-400 text-black text-sm font-bold rounded-lg disabled:opacity-50 transition"
