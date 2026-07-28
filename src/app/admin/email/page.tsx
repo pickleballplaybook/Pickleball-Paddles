@@ -207,7 +207,7 @@ type AcquisitionRow = {
   playFrequency: string | null;
   onboardingLevel: string | null;
   onboardingWeaknesses: string[] | null;
-  onboardingTrainingSetup: string | null;
+  onboardingTrainingSetup: string[] | null;
   onboardingDays: string[] | null;
 };
 
@@ -266,7 +266,7 @@ async function loadAcquisitionData(windowDays: number | null): Promise<Acquisiti
         playFrequency: (data.playFrequency as string | null) ?? null,
         onboardingLevel: (data.onboardingLevel as string | null) ?? (data.skillLevel as string | null) ?? null,
         onboardingWeaknesses: Array.isArray(data.onboardingWeaknesses) ? (data.onboardingWeaknesses as string[]) : null,
-        onboardingTrainingSetup: (data.onboardingTrainingSetup as string | null) ?? null,
+        onboardingTrainingSetup: Array.isArray(data.onboardingTrainingSetup) ? (data.onboardingTrainingSetup as string[]) : null,
         onboardingDays: Array.isArray(data.onboardingDays) ? (data.onboardingDays as string[]) : null,
       };
     });
@@ -284,14 +284,14 @@ async function loadAcquisitionData(windowDays: number | null): Promise<Acquisiti
     for (const r of rows) bySourceMap.set(r.source, (bySourceMap.get(r.source) ?? 0) + 1);
     const bySource = Array.from(bySourceMap.entries()).sort((a, b) => b[1] - a[1]);
 
-    // Flatten array fields (weaknesses, days) into individual items
+    // Flatten multi-select array fields into individual items for counting
     const allWeaknesses: Array<string | null> = [];
-    const allDays: Array<string | null> = [];
+    const allTrainingSetup: Array<string | null> = [];
     for (const r of rows) {
       if (r.onboardingWeaknesses?.length) allWeaknesses.push(...r.onboardingWeaknesses);
       else allWeaknesses.push(null);
-      if (r.onboardingDays?.length) allDays.push(...r.onboardingDays);
-      else allDays.push(null);
+      if (r.onboardingTrainingSetup?.length) allTrainingSetup.push(...r.onboardingTrainingSetup);
+      else allTrainingSetup.push(null);
     }
 
     return {
@@ -303,7 +303,7 @@ async function loadAcquisitionData(windowDays: number | null): Promise<Acquisiti
       byLevel: tally(rows.map((r) => r.onboardingLevel)),
       byFrequency: tally(rows.map((r) => r.playFrequency)),
       byWeaknesses: tally(allWeaknesses),
-      byTrainingSetup: tally(rows.map((r) => r.onboardingTrainingSetup)),
+      byTrainingSetup: tally(allTrainingSetup),
       loadError: null,
     };
   } catch (e) {
