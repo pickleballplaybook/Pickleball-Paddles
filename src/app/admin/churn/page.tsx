@@ -308,14 +308,6 @@ export default async function ChurnAdminPage({
           >
             Why people leave.
           </h1>
-          <p className="text-base max-w-2xl" style={{ color: "var(--text-muted)" }}>
-            Captured from the Pickleball Drills cancel flow. We split{" "}
-            <span style={{ color: "#f59e0b", fontWeight: 600 }}>Canceled</span> (quit
-            during the free trial) from{" "}
-            <span style={{ color: "#ef4444", fontWeight: 600 }}>Churned</span> (paid
-            at least once then left) — they're very different problems with very
-            different fixes.
-          </p>
         </div>
 
         {/* Time window */}

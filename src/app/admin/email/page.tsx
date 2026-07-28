@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Download, UserCheck, UserX, AlertTriangle, Mail } from "lucide-react";
+import { Download, UserCheck, UserX, AlertTriangle, Mail, TrendingDown, Clock, Megaphone, Smartphone, BarChart3, Target } from "lucide-react";
 import { AdminNav } from "../_components/AdminNav";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { getFirebaseFirestore } from "@/lib/firebase-admin";
@@ -191,623 +191,250 @@ function relevantDateFor(row: CategorizedRow): string | null {
   }
 }
 
-type ViewKey = "funnel" | "winbacks" | "landing";
+type ViewKey = "funnel" | "acquisition" | "churn";
 
 // ============================================================================
-// Landing-page attribution (currently only /pbdrills)
+// Acquisition attribution
 // ============================================================================
 
-type LandingFunnel = {
-  windowLabel: string;
-  views: number;
-  arrivals: number;
-  emailsCaptured: number;
-  trialStarters: number;
-  paidCustomers: number;
-  canceledDuringTrial: number;
-  churnedAfterPaid: number;
-  // Recent emails captured (newest first). Includes their current status.
-  recent: {
-    email: string;
-    capturedAt: string;
-    status: "captured" | "trial" | "active" | "canceled" | "churned";
-  }[];
+type AcquisitionRow = {
+  email: string | null;
+  source: string;
+  detail: string | null;
+  capturedAt: string | null;
+  goal: string | null;
+  signupPlatform: string | null;
+  playFrequency: string | null;
+  onboardingLevel: string | null;
+  onboardingWeaknesses: string[] | null;
+  onboardingTrainingSetup: string | null;
+  onboardingDays: string[] | null;
 };
 
-/**
- * Attribution funnel for the /pbdrills landing page.
- *
- * Views + arrivals come from Firestore `landing_events` (written by
- * /api/landing-event — page beacon on mount + Flutter app on cold boot
- * when it sees ?ref=pbdrills-landing).
- *
- * Emails captured come from Supabase `trial_signups` filtered by
- * source='pbdrills-landing' — the Flutter app stamps this after reading
- * the ref from SharedPreferences.
- *
- * Trial/paid buckets are derived by joining those emails against
- * `subscription_mirror` — the same source of truth the winbacks view
- * uses. That way "active" here matches "active" everywhere else.
- *
- * Window filter applies to:
- *   - views/arrivals: their event timestamp
- *   - emailsCaptured: trial_signups.created_at
- *   - subscription statuses: NOT windowed — we want to know how the
- *     captured cohort has performed, even if their trial ended outside
- *     the window.
- */
-async function loadLandingPageData(
-  windowDays: number | null,
-  windowLabel: string,
-): Promise<LandingFunnel> {
-  const db = getFirebaseFirestore();
-  const supabase = getSupabaseAdmin();
-  const cutoffIso =
-    windowDays !== null
-      ? new Date(Date.now() - windowDays * 86_400_000).toISOString()
-      : null;
+type AcquisitionData = {
+  rows: AcquisitionRow[];
+  total: number;
+  bySource: Array<[string, number]>;
+  byGoal: Array<[string, number]>;
+  byPlatform: Array<[string, number]>;
+  byLevel: Array<[string, number]>;
+  byFrequency: Array<[string, number]>;
+  byWeaknesses: Array<[string, number]>;
+  byTrainingSetup: Array<[string, number]>;
+  loadError: string | null;
+};
 
-  // 1. Views + arrivals from landing_events. Single-field query on
-  //    `page` (no composite index required — Firestore auto-indexes
-  //    single fields) with the ts window filter applied in memory.
-  //    Volume ceiling here is landing-page traffic × 2 — small; a
-  //    full scan of one landing page's events at current scale is
-  //    cheaper than maintaining a composite index we'll never need
-  //    to sort by.
-  let views = 0;
-  let arrivals = 0;
+async function loadAcquisitionData(windowDays: number | null): Promise<AcquisitionData> {
+  const empty: AcquisitionData = {
+    rows: [],
+    total: 0,
+    bySource: [],
+    byGoal: [],
+    byPlatform: [],
+    byLevel: [],
+    byFrequency: [],
+    byWeaknesses: [],
+    byTrainingSetup: [],
+    loadError: null,
+  };
   try {
-    const snap = await db
-      .collection("landing_events")
-      .where("page", "==", "pbdrills")
-      .get();
-    snap.docs.forEach((d) => {
-      const data = d.data() as { type?: string; ts?: { toDate?: () => Date } | Date };
-      if (cutoffIso) {
-        const ts =
-          data.ts && typeof (data.ts as { toDate?: () => Date }).toDate === "function"
-            ? (data.ts as { toDate: () => Date }).toDate()
-            : (data.ts as Date | undefined);
-        if (!ts || ts.toISOString() < cutoffIso) return;
-      }
-      if (data.type === "view") views++;
-      else if (data.type === "arrival") arrivals++;
+    const db = getFirebaseFirestore();
+    const snap = await (windowDays !== null
+      ? db
+          .collection("users")
+          .where("acquisitionCapturedAt", ">=", new Date(Date.now() - windowDays * 86_400_000))
+          .orderBy("acquisitionCapturedAt", "desc")
+          .limit(1000)
+          .get()
+      : db
+          .collection("users")
+          .where("acquisitionSource", "!=", null)
+          .orderBy("acquisitionSource")
+          .orderBy("acquisitionCapturedAt", "desc")
+          .limit(1000)
+          .get());
+    const rows: AcquisitionRow[] = snap.docs.map((d) => {
+      const data = d.data();
+      const captured = (data.acquisitionCapturedAt as { toDate?: () => Date } | undefined)?.toDate?.();
+      return {
+        email: (data.email as string | null) ?? null,
+        source: (data.acquisitionSource as string) ?? "(unknown)",
+        detail: (data.acquisitionDetail as string | null) ?? null,
+        capturedAt: captured ? captured.toISOString() : null,
+        goal: (data.goal as string | null) ?? null,
+        signupPlatform: (data.signupPlatform as string | null) ?? null,
+        playFrequency: (data.playFrequency as string | null) ?? null,
+        onboardingLevel: (data.onboardingLevel as string | null) ?? (data.skillLevel as string | null) ?? null,
+        onboardingWeaknesses: Array.isArray(data.onboardingWeaknesses) ? (data.onboardingWeaknesses as string[]) : null,
+        onboardingTrainingSetup: (data.onboardingTrainingSetup as string | null) ?? null,
+        onboardingDays: Array.isArray(data.onboardingDays) ? (data.onboardingDays as string[]) : null,
+      };
     });
-  } catch (err) {
-    console.error("[landing] failed to read landing_events", err);
-  }
 
-  // 2. Emails captured — trial_signups filtered by source, in window.
-  type CapturedRow = { email: string; created_at: string };
-  const captured: CapturedRow[] = [];
-  try {
-    const PAGE = 1000;
-    let offset = 0;
-    while (offset < 50_000) {
-      let q = supabase
-        .from("trial_signups")
-        .select("email, created_at")
-        .eq("source", "pbdrills-landing")
-        .order("created_at", { ascending: false })
-        .range(offset, offset + PAGE - 1);
-      if (cutoffIso) q = q.gte("created_at", cutoffIso);
-      const { data, error } = await q;
-      if (error || !data || data.length === 0) break;
-      captured.push(...(data as CapturedRow[]));
-      if (data.length < PAGE) break;
-      offset += PAGE;
-    }
-  } catch (err) {
-    console.error("[landing] failed to read trial_signups", err);
-  }
-
-  const emailsCaptured = captured.length;
-  const capturedEmails = new Set(
-    captured.map((r) => r.email.toLowerCase().trim()).filter(Boolean),
-  );
-
-  // 3. Bucket captured emails by their current subscription_mirror status.
-  //    Not windowed on purpose — we want to know cohort performance even
-  //    if their trial ended outside the window.
-  type MirrorRow = {
-    email: string;
-    status: string;
-    subscription_created_at: string;
-    canceled_at: string | null;
-    trial_end: string | null;
-  };
-  const mirrorByEmail = new Map<string, MirrorRow[]>();
-  if (capturedEmails.size > 0) {
-    try {
-      const emailList = Array.from(capturedEmails);
-      // Chunk to keep the IN clause under Supabase's limit.
-      const CHUNK = 200;
-      for (let i = 0; i < emailList.length; i += CHUNK) {
-        const slice = emailList.slice(i, i + CHUNK);
-        const { data, error } = await supabase
-          .from("subscription_mirror")
-          .select("email, status, subscription_created_at, canceled_at, trial_end")
-          .in("email", slice);
-        if (error || !data) continue;
-        for (const r of data as MirrorRow[]) {
-          const e = (r.email || "").toLowerCase().trim();
-          if (!e) continue;
-          const list = mirrorByEmail.get(e) ?? [];
-          list.push(r);
-          mirrorByEmail.set(e, list);
-        }
+    const tally = (items: Array<string | null>): Array<[string, number]> => {
+      const m = new Map<string, number>();
+      for (const v of items) {
+        const k = v ?? "(not answered)";
+        m.set(k, (m.get(k) ?? 0) + 1);
       }
-    } catch (err) {
-      console.error("[landing] failed to read subscription_mirror", err);
-    }
-  }
-
-  // Reduce each email's mirror rows to a single status. Same logic as the
-  // rest of the admin page uses: prefer the newest row, then classify
-  // canceled_at < trial_end as canceled-during-trial (not churn).
-  let trialStarters = 0;
-  let paidCustomers = 0;
-  let canceledDuringTrial = 0;
-  let churnedAfterPaid = 0;
-  const emailStatus = new Map<string, LandingFunnel["recent"][number]["status"]>();
-
-  mirrorByEmail.forEach((rows, email) => {
-    rows.sort(
-      (a, b) =>
-        new Date(b.subscription_created_at).getTime() -
-        new Date(a.subscription_created_at).getTime(),
-    );
-    const latest = rows[0];
-    let bucket: LandingFunnel["recent"][number]["status"];
-    if (latest.status === "active") {
-      bucket = "active";
-      trialStarters++;
-      paidCustomers++;
-    } else if (latest.status === "trialing") {
-      bucket = "trial";
-      trialStarters++;
-    } else if (latest.status === "canceled") {
-      trialStarters++;
-      const canceledAt = latest.canceled_at ? new Date(latest.canceled_at) : null;
-      const trialEnd = latest.trial_end ? new Date(latest.trial_end) : null;
-      if (canceledAt && trialEnd && canceledAt < trialEnd) {
-        bucket = "canceled";
-        canceledDuringTrial++;
-      } else {
-        bucket = "churned";
-        churnedAfterPaid++;
-      }
-    } else {
-      bucket = "captured";
-    }
-    emailStatus.set(email, bucket);
-  });
-
-  const recent = captured.slice(0, 25).map((r) => {
-    const e = r.email.toLowerCase().trim();
-    return {
-      email: r.email,
-      capturedAt: r.created_at,
-      status: emailStatus.get(e) ?? "captured",
+      return Array.from(m.entries()).sort((a, b) => b[1] - a[1]);
     };
-  });
 
-  return {
-    windowLabel,
-    views,
-    arrivals,
-    emailsCaptured,
-    trialStarters,
-    paidCustomers,
-    canceledDuringTrial,
-    churnedAfterPaid,
-    recent,
-  };
+    const bySourceMap = new Map<string, number>();
+    for (const r of rows) bySourceMap.set(r.source, (bySourceMap.get(r.source) ?? 0) + 1);
+    const bySource = Array.from(bySourceMap.entries()).sort((a, b) => b[1] - a[1]);
+
+    // Flatten array fields (weaknesses, days) into individual items
+    const allWeaknesses: Array<string | null> = [];
+    const allDays: Array<string | null> = [];
+    for (const r of rows) {
+      if (r.onboardingWeaknesses?.length) allWeaknesses.push(...r.onboardingWeaknesses);
+      else allWeaknesses.push(null);
+      if (r.onboardingDays?.length) allDays.push(...r.onboardingDays);
+      else allDays.push(null);
+    }
+
+    return {
+      rows,
+      total: rows.length,
+      bySource,
+      byGoal: tally(rows.map((r) => r.goal)),
+      byPlatform: tally(rows.map((r) => r.signupPlatform)),
+      byLevel: tally(rows.map((r) => r.onboardingLevel)),
+      byFrequency: tally(rows.map((r) => r.playFrequency)),
+      byWeaknesses: tally(allWeaknesses),
+      byTrainingSetup: tally(rows.map((r) => r.onboardingTrainingSetup)),
+      loadError: null,
+    };
+  } catch (e) {
+    return {
+      ...empty,
+      loadError: e instanceof Error ? e.message : "Failed to load acquisition data.",
+    };
+  }
 }
 
+
 // ============================================================================
-// Win-back analytics
+// Churn view data (mirrors /admin/churn data)
 // ============================================================================
 
-type WinbackKind = "abandoned" | "canceled" | "churned";
-
-type WinbackEntry = {
-  email: string;
-  kind: WinbackKind;
-  // "left" event date, semantics depend on kind:
-  //   abandoned → email capture date (never paid before)
-  //   canceled  → canceled-during-trial date
-  //   churned   → canceled-after-paying date
-  leftAt: string;           // ISO
-  wonBackAt: string;        // ISO
-  daysToWinBack: number;
-  // Attribution against the matching Firestore email-log:
-  //   abandoned → abandoned_email_log
-  //   canceled  → trial_cancel_email_log
-  //   churned   → churn_email_log
-  attributedStep: number | null;
-  attributedTag: string | null;
-  attributedSentAt: string | null;
+type ChurnViewRow = {
+  email: string | null;
+  reason: string;
+  comment: string | null;
+  plan: string | null;
+  createdAt: string | null;
+  kind: "canceled" | "churned";
 };
 
-type ChurnStepStat = {
-  step: number;
-  label: string;
-  // # of unique recipients who got this step's email (sent: true).
-  recipients: number;
-  // # of those recipients who came back and had this step as their LAST
-  // received email before resubscribing → credit to this step.
-  attributedWinbacks: number;
+type ChurnViewData = {
+  rows: ChurnViewRow[];
+  canceled: ChurnViewRow[];
+  churned: ChurnViewRow[];
+  countByKind: { canceled: number; churned: number };
+  sortedReasons: Array<[string, number]>;
+  loadError: string | null;
 };
 
-type ChurnWinbackData = {
-  winbacks: WinbackEntry[];
-  perStep: ChurnStepStat[];
-  totalWinbacks: number;
-  organicWinbacks: number;     // came back without any drip email attribution
-  totalRecipients: number;     // unique emails who got at least one churn email
-  // Per-kind headline counts so the tab reads at a glance "you got 3 back
-  // from abandoned, 1 from canceled, 5 from churned."
-  countByKind: Record<WinbackKind, number>;
-};
-
-const CHURN_STEP_LABELS: Record<number, string> = {
-  1: "Step 1 · Quick question (1hr)",
-  2: "Step 2 · 50% off (14d)",
-  3: "Step 3 · Last chance (45d)",
-};
-
-/**
- * Detects winback patterns directly from subscription_mirror — the
- * authoritative source. A "winback" = an email that has BOTH a canceled
- * row AND a later active/trialing row created after the cancel.
- *
- * Why query the mirror instead of Firestore churn_signups: churn_signups
- * only contains users the churn-drip sync caught (Stripe events API,
- * 30-day retention). Users who churned before the drip existed — or
- * before the 30-day events window — wouldn't appear there, so we'd
- * miss real winbacks. Reading subscription_mirror catches everyone with
- * full Stripe history.
- *
- * Window filter is applied to wonBackAt — the date they came back. So
- * "last 30 days" = "members who came back in the last 30 days," not
- * "members who cancelled in the last 30 days."
- *
- * Per-step performance: for the same window,
- *   recipients = unique emails who received that step in the window
- *   attributedWinbacks = of those recipients, how many came back AFTER
- *   the email and where this step was the last email they got pre-comeback
- */
-async function loadChurnWinbackData(
-  windowDays: number | null,
-): Promise<ChurnWinbackData> {
-  const db = getFirebaseFirestore();
-  const supabase = getSupabaseAdmin();
-  const windowStartIso =
-    windowDays !== null
-      ? new Date(Date.now() - windowDays * 86_400_000).toISOString()
-      : null;
-
-  // 1. Pull ALL subscription_mirror rows. Paginates past the 1000-row default.
-  type MirrorRow = {
-    email: string;
-    status: string;
-    subscription_created_at: string;
-    canceled_at: string | null;
-    trial_end: string | null;
-  };
-  const allRows: MirrorRow[] = [];
-  try {
-    const PAGE = 1000;
-    let offset = 0;
-    while (offset < 100_000) {
-      const { data, error } = await supabase
-        .from("subscription_mirror")
-        .select("email, status, subscription_created_at, canceled_at, trial_end")
-        .order("subscription_created_at", { ascending: true })
-        .range(offset, offset + PAGE - 1);
-      if (error || !data || data.length === 0) break;
-      allRows.push(...(data as MirrorRow[]));
-      if (data.length < PAGE) break;
-      offset += PAGE;
-    }
-  } catch {
-    // Empty mirror — page still renders with zeros.
-  }
-
-  // Group rows by email.
-  const byEmail = new Map<string, MirrorRow[]>();
-  for (const r of allRows) {
-    const e = (r.email || "").toLowerCase().trim();
-    if (!e) continue;
-    const list = byEmail.get(e) ?? [];
-    list.push(r);
-    byEmail.set(e, list);
-  }
-
-  // 2. Find winback patterns per email. Three flavors:
-  //   - churned  → last event was a paid cancel (canceled_at > trial_end
-  //     OR trial_end was null and they'd paid at least one cycle)
-  //   - canceled → last event was a trial cancel (canceled_at ≤ trial_end)
-  //   - abandoned → no prior mirror row at all; only appears here later
-  //     via the abandoned-signup path (detected separately below)
-  //
-  // For churned/canceled, walk the mirror rows chronologically and pair
-  // each "left" event with the next new-sub created after it.
-  type Winback = {
-    email: string;
-    kind: WinbackKind;
-    leftAt: Date;
-    wonBackAt: Date;
-  };
-  const winbacks: Winback[] = [];
-  byEmail.forEach((list, email) => {
-    // Sort by subscription_created_at ascending.
-    list.sort((a, b) =>
-      new Date(a.subscription_created_at).getTime() -
-      new Date(b.subscription_created_at).getTime(),
-    );
-    let lastLeft: { at: Date; kind: WinbackKind } | null = null;
-    for (const row of list) {
-      if (row.status === "canceled" && row.canceled_at) {
-        const cd = new Date(row.canceled_at);
-        if (isNaN(cd.getTime())) continue;
-        // Trial cancel vs paid churn: canceled_at ≤ trial_end = quit
-        // during trial (never paid). Otherwise paid then churned.
-        const trialEnd = row.trial_end ? new Date(row.trial_end) : null;
-        const kind: WinbackKind =
-          trialEnd && !isNaN(trialEnd.getTime()) && cd <= trialEnd
-            ? "canceled"
-            : "churned";
-        if (!lastLeft || cd > lastLeft.at) lastLeft = { at: cd, kind };
-      }
-      if (row.status === "active" || row.status === "trialing") {
-        const created = new Date(row.subscription_created_at);
-        if (lastLeft && !isNaN(created.getTime()) && created > lastLeft.at) {
-          winbacks.push({
-            email,
-            kind: lastLeft.kind,
-            leftAt: lastLeft.at,
-            wonBackAt: created,
-          });
-          // Reset so we don't double-count churn→back→churn→back cycles.
-          lastLeft = null;
-        }
-      }
-    }
-  });
-
-  // 3. Abandoned winbacks: users who captured an email (Supabase
-  //    trial_signups or Firestore abandoned_signups) but never had a
-  //    Stripe sub — then later showed up in the mirror as active/trialing.
-  //    Attribution via abandoned_email_log below. Only counts when the
-  //    capture is >6h before their first mirror sub (otherwise it's just
-  //    a normal same-session signup, not an abandonment recovery).
-  const capturedByEmail = new Map<string, Date>();
-  try {
-    // Supabase trial_signups first — bigger source of captures.
-    let offset = 0;
-    while (offset < 100_000) {
-      const { data, error } = await supabase
-        .from("trial_signups")
-        .select("email, created_at")
-        .order("created_at", { ascending: true })
-        .range(offset, offset + 999);
-      if (error || !data || data.length === 0) break;
-      for (const r of data as Array<{ email: string | null; created_at: string }>) {
-        const key = (r.email ?? "").toLowerCase().trim();
-        if (!key) continue;
-        const dt = new Date(r.created_at);
-        if (isNaN(dt.getTime())) continue;
-        const existing = capturedByEmail.get(key);
-        if (!existing || dt < existing) capturedByEmail.set(key, dt);
-      }
-      if (data.length < 1000) break;
-      offset += 1000;
-    }
-    // Merge Firestore abandoned_signups (paywall-abandoners, not in Supabase).
-    const abandonedSnap = await db.collection("abandoned_signups").get();
-    abandonedSnap.docs.forEach((d) => {
-      const data = d.data() as { email?: string; capturedAt?: { toDate?: () => Date } | Date };
-      const key = (data.email ?? d.id).toLowerCase().trim();
-      if (!key) return;
-      const raw = data.capturedAt;
-      const dt =
-        raw && typeof (raw as { toDate?: () => Date }).toDate === "function"
-          ? (raw as { toDate: () => Date }).toDate()
-          : (raw as Date | undefined);
-      if (!dt || isNaN(dt.getTime())) return;
-      const existing = capturedByEmail.get(key);
-      if (!existing || dt < existing) capturedByEmail.set(key, dt);
-    });
-  } catch {
-    // Non-fatal — abandoned winbacks just won't be detected this tick.
-  }
-
-  // Abandoned winback detection — use `abandoned_email_log` as source
-  // of truth. Anyone who received an abandoned drip email (sent=true)
-  // AND has an active/trialing sub in the mirror created AFTER that
-  // email = attributed abandoned winback. The prior heuristic (6h gap
-  // between capture and first sub) missed Almeo 2026-07-02 who captured,
-  // trialed, got the email misfired, then paid via 80%-off — her first
-  // sub was minutes after capture so the 6h rule excluded her.
-  const abandonedLogEmails = new Map<string, Date>();
-  try {
-    const snap = await db
-      .collection("abandoned_email_log")
-      .where("sent", "==", true)
-      .get();
-    snap.docs.forEach((d) => {
-      const data = d.data() as { email?: string; sentAt?: { toDate?: () => Date } };
-      const email = data.email?.toLowerCase().trim();
-      const sentAt = data.sentAt?.toDate?.();
-      if (!email || !sentAt || isNaN(sentAt.getTime())) return;
-      const existing = abandonedLogEmails.get(email);
-      // Keep earliest sent date (attribution belongs to the first email
-      // in the sequence that could have driven the eventual comeback).
-      if (!existing || sentAt < existing) abandonedLogEmails.set(email, sentAt);
-    });
-  } catch {
-    // Collection may not exist yet — non-fatal.
-  }
-
-  abandonedLogEmails.forEach((firstEmailSentAt, email) => {
-    // Skip if already caught by churn/canceled loop (higher priority —
-    // a paid customer who churned is a churn winback, not abandoned).
-    if (winbacks.some((w) => w.email === email)) return;
-    const list = byEmail.get(email);
-    if (!list) return;
-    // Exclude Almeo-style false positives: if the user's earliest mirror
-    // row (of ANY status) was created BEFORE the abandoned email fired,
-    // they weren't actually abandoned when we emailed them — they had
-    // already subscribed. Any post-email sub is a duplicate caused by
-    // the drip misfire race condition, not a genuine comeback.
-    const earliestSub = list[0]; // sorted ascending above
-    if (
-      earliestSub &&
-      new Date(earliestSub.subscription_created_at) <= firstEmailSentAt
-    ) {
-      return;
-    }
-    // Find first active/trialing sub CREATED AFTER the email was sent.
-    // If nothing after, they haven't converted yet.
-    const converted = list.find(
-      (r) =>
-        (r.status === "active" || r.status === "trialing") &&
-        new Date(r.subscription_created_at) > firstEmailSentAt,
-    );
-    if (!converted) return;
-    // leftAt: the capture date if we have it, else the first email date
-    // (Supabase / abandoned_signups may not have the row anymore).
-    const leftAt = capturedByEmail.get(email) ?? firstEmailSentAt;
-    winbacks.push({
-      email,
-      kind: "abandoned",
-      leftAt,
-      wonBackAt: new Date(converted.subscription_created_at),
-    });
-  });
-
-  // Window filter on wonBackAt — "members who came back in this window."
-  // Applied after all three detection passes (churn/canceled + abandoned).
-  const winbacksInWindow = windowStartIso
-    ? winbacks.filter((w) => w.wonBackAt.toISOString() >= windowStartIso)
-    : winbacks;
-
-  // 4. Pull attribution logs — three parallel Firestore collections, one
-  //    per drip type. Each row's kind decides which log to attribute against.
-  type LogEntry = { email: string; step: number; sentAt: Date; tag: string };
-  const logsByKind: Record<WinbackKind, LogEntry[]> = {
-    abandoned: [],
+async function loadChurnViewData(windowDays: number | null): Promise<ChurnViewData> {
+  const empty: ChurnViewData = {
+    rows: [],
     canceled: [],
     churned: [],
+    countByKind: { canceled: 0, churned: 0 },
+    sortedReasons: [],
+    loadError: null,
   };
-  const LOG_COLLECTION_FOR_KIND: Record<WinbackKind, string> = {
-    abandoned: "abandoned_email_log",
-    canceled: "trial_cancel_email_log",
-    churned: "churn_email_log",
-  };
-  await Promise.all(
-    (Object.keys(logsByKind) as WinbackKind[]).map(async (kind) => {
-      try {
-        const snap = await db
-          .collection(LOG_COLLECTION_FOR_KIND[kind])
-          .where("sent", "==", true)
-          .get();
-        snap.docs.forEach((d) => {
-          const data = d.data() as {
-            email?: string;
-            step?: number;
-            sentAt?: { toDate?: () => Date };
-            tag?: string;
-          };
-          const email = data.email?.toLowerCase().trim();
-          const sentAt = data.sentAt?.toDate?.();
-          if (!email || !sentAt || typeof data.step !== "number") return;
-          logsByKind[kind].push({ email, step: data.step, sentAt, tag: data.tag ?? "" });
-        });
-      } catch {
-        // Collection might not exist yet — leave empty.
-      }
-    }),
-  );
-
-  // 5. Build display entries with attribution. Each winback attributes
-  //    against ONLY its matching drip log (a churn winback should not
-  //    get credit for the abandoned-drip email they got months earlier).
-  const winbackEntries: WinbackEntry[] = winbacksInWindow.map((wb) => {
-    const logs = logsByKind[wb.kind];
-    const prior = logs
-      .filter((l) => l.email === wb.email && l.sentAt <= wb.wonBackAt)
-      .sort((a, b) => b.sentAt.getTime() - a.sentAt.getTime());
-    const last = prior[0];
-    const daysToWinBack = Math.max(
-      0,
-      Math.floor((wb.wonBackAt.getTime() - wb.leftAt.getTime()) / 86_400_000),
-    );
-    return {
-      email: wb.email,
-      kind: wb.kind,
-      leftAt: wb.leftAt.toISOString(),
-      wonBackAt: wb.wonBackAt.toISOString(),
-      daysToWinBack,
-      attributedStep: last?.step ?? null,
-      attributedTag: last?.tag ?? null,
-      attributedSentAt: last?.sentAt.toISOString() ?? null,
+  try {
+    const supabase = getSupabaseAdmin();
+    const cutoffIso =
+      windowDays !== null
+        ? new Date(Date.now() - windowDays * 86_400_000).toISOString()
+        : null;
+    type MirrorSub = {
+      email: string;
+      canceled_at: string | null;
+      trial_end: string | null;
+      subscription_created_at: string;
+      plan_label: string | null;
     };
-  });
+    let cancelQuery = supabase
+      .from("subscription_mirror")
+      .select("email, canceled_at, trial_end, subscription_created_at, plan_label")
+      .eq("status", "canceled")
+      .order("canceled_at", { ascending: false })
+      .limit(10_000);
+    if (cutoffIso) cancelQuery = cancelQuery.gte("canceled_at", cutoffIso);
+    const { data: cancels, error } = await cancelQuery;
+    if (error) throw new Error(error.message);
 
-  // 6. Per-step performance — scoped to the CHURN drip logs only (this
-  //    is the chart most useful for tuning the paid-cancel win-back
-  //    playbook, which is your highest-value comeback bucket). The
-  //    Abandoned/Canceled drips have their own emails but the per-step
-  //    chart historically referred to churn steps — we keep that scope
-  //    to avoid confusing step-1 abandoned with step-1 churned.
-  const churnLogs = logsByKind.churned;
-  const windowChurnLogs = windowStartIso
-    ? churnLogs.filter((l) => l.sentAt.toISOString() >= windowStartIso)
-    : churnLogs;
-
-  const perStepMap: Record<number, { recipients: Set<string>; winbacks: number }> = {
-    1: { recipients: new Set(), winbacks: 0 },
-    2: { recipients: new Set(), winbacks: 0 },
-    3: { recipients: new Set(), winbacks: 0 },
-  };
-  for (const log of windowChurnLogs) {
-    if (perStepMap[log.step]) perStepMap[log.step].recipients.add(log.email);
-  }
-  for (const wb of winbackEntries) {
-    if (wb.kind !== "churned") continue;
-    if (wb.attributedStep && perStepMap[wb.attributedStep]) {
-      if (perStepMap[wb.attributedStep].recipients.has(wb.email)) {
-        perStepMap[wb.attributedStep].winbacks++;
-      }
+    const db = getFirebaseFirestore();
+    let reasonsQ = db
+      .collection("cancellation_reasons")
+      .orderBy("createdAt", "desc")
+      .limit(2000);
+    if (windowDays !== null) {
+      const cutoff = new Date(Date.now() - windowDays * 86_400_000);
+      reasonsQ = db
+        .collection("cancellation_reasons")
+        .where("createdAt", ">=", cutoff)
+        .orderBy("createdAt", "desc")
+        .limit(2000);
     }
+    const reasonsSnap = await reasonsQ.get();
+    const reasonByEmail = new Map<string, { reason: string; comment: string | null; plan: string | null }>();
+    for (const d of reasonsSnap.docs) {
+      const data = d.data();
+      const email = (data.email as string | null)?.toLowerCase()?.trim();
+      if (!email || reasonByEmail.has(email)) continue;
+      reasonByEmail.set(email, {
+        reason: (data.reason as string) ?? "(no reason given)",
+        comment: (data.comment as string | null) ?? null,
+        plan: (data.plan as string | null) ?? null,
+      });
+    }
+
+    const rows: ChurnViewRow[] = (cancels as MirrorSub[] || []).map((sub) => {
+      const email = (sub.email || "").toLowerCase().trim();
+      const reason = reasonByEmail.get(email);
+      const kind: "canceled" | "churned" = (() => {
+        if (!sub.trial_end) return "churned";
+        if (!sub.canceled_at) return "churned";
+        return new Date(sub.canceled_at) <= new Date(sub.trial_end) ? "canceled" : "churned";
+      })();
+      return {
+        email: sub.email,
+        reason: reason?.reason ?? "(no reason given)",
+        comment: reason?.comment ?? null,
+        plan: reason?.plan ?? sub.plan_label ?? null,
+        createdAt: sub.canceled_at,
+        kind,
+      };
+    });
+
+    const canceled = rows.filter((r) => r.kind === "canceled");
+    const churned = rows.filter((r) => r.kind === "churned");
+    const byReasonMap = new Map<string, number>();
+    for (const r of rows) {
+      if (r.reason === "(no reason given)") continue;
+      byReasonMap.set(r.reason, (byReasonMap.get(r.reason) ?? 0) + 1);
+    }
+    const sortedReasons = Array.from(byReasonMap.entries()).sort((a, b) => b[1] - a[1]);
+    return {
+      rows,
+      canceled,
+      churned,
+      countByKind: { canceled: canceled.length, churned: churned.length },
+      sortedReasons,
+      loadError: null,
+    };
+  } catch (e) {
+    return {
+      ...empty,
+      loadError: e instanceof Error ? e.message : "Failed to load churn data.",
+    };
   }
-  const perStep: ChurnStepStat[] = [1, 2, 3].map((step) => ({
-    step,
-    label: CHURN_STEP_LABELS[step],
-    recipients: perStepMap[step].recipients.size,
-    attributedWinbacks: perStepMap[step].winbacks,
-  }));
-
-  const totalRecipients = new Set(windowChurnLogs.map((l) => l.email)).size;
-  const organicWinbacks = winbackEntries.filter((w) => w.attributedStep === null).length;
-
-  const countByKind: Record<WinbackKind, number> = { abandoned: 0, canceled: 0, churned: 0 };
-  for (const w of winbackEntries) countByKind[w.kind]++;
-
-  // Newest comeback first.
-  winbackEntries.sort((a, b) => b.wonBackAt.localeCompare(a.wonBackAt));
-
-  return {
-    winbacks: winbackEntries,
-    perStep,
-    totalWinbacks: winbackEntries.length,
-    organicWinbacks,
-    totalRecipients,
-    countByKind,
-  };
 }
 
 export default async function EmailAdminPage({
@@ -822,11 +449,9 @@ export default async function EmailAdminPage({
   // /admin/email?view=live URL is silently redirected to Signups, which
   // now shows the same all-time state at the top of the page.
   const view: ViewKey =
-    sp.view === "winbacks"
-      ? "winbacks"
-      : sp.view === "landing"
-      ? "landing"
-      : "funnel";
+    sp.view === "acquisition" ? "acquisition"
+    : sp.view === "churn" ? "churn"
+    : "funnel";
 
   let rows: Row[] = [];
   let loadError: string | null = null;
@@ -893,15 +518,13 @@ export default async function EmailAdminPage({
 
   const stripe = await fetchStripeStatusByEmail();
   const hiddenEmails = await loadHiddenEmails();
-  // Window-aware winback metrics: "members who came back in this window"
-  // and "step performance for emails sent in this window."
-  const winbackData = await loadChurnWinbackData(win.days);
-  // Landing-page attribution data — only computed when actually rendering
-  // the landing view so we don't pay for the Firestore/Supabase reads on
-  // every admin page load.
-  const landingData =
-    view === "landing"
-      ? await loadLandingPageData(win.days, win.label)
+  const acquisitionData =
+    view === "acquisition"
+      ? await loadAcquisitionData(win.days)
+      : null;
+  const churnViewData =
+    view === "churn"
+      ? await loadChurnViewData(win.days)
       : null;
 
   // Past-exports history — only load for the funnel view since that's the
@@ -1025,13 +648,13 @@ export default async function EmailAdminPage({
   // is what powers the "Total Emails Collected · LAST 30 DAYS" header.
   // The 4 event cards below show what happened in the window, not a
   // breakdown of this number — the two are different views by design.
-  let signupsInWindow = unifiedRows.length;
-  if (win.days !== null) {
-    const cohortCutoffIso = new Date(Date.now() - win.days * 86_400_000).toISOString();
-    signupsInWindow = unifiedRows.filter(
-      (r) => r.display_date != null && r.display_date >= cohortCutoffIso,
-    ).length;
-  }
+  const _cohortCutoff =
+    win.days !== null ? new Date(Date.now() - win.days * 86_400_000).toISOString() : null;
+  const cohortRows = _cohortCutoff
+    ? unifiedRows.filter((r) => r.display_date != null && r.display_date >= _cohortCutoff)
+    : unifiedRows;
+  const signupsInWindow = cohortRows.length;
+  const cohortTrialStartersInWindow = cohortRows.filter((r) => r.status !== "captured").length;
 
   // Paid-at-start-of-window count, used for Stripe-style churn. Must come
   // from `unifiedRows` (the pre-time-filter set), not `categorized` —
@@ -1111,9 +734,9 @@ export default async function EmailAdminPage({
           }}
         >
           {([
-            { key: "funnel",   label: "Signups" },
-            { key: "winbacks", label: "Win-backs" },
-            { key: "landing",  label: "Landing" },
+            { key: "funnel",      label: "Signups" },
+            { key: "acquisition", label: "Acquisition" },
+            { key: "churn",       label: "Churn" },
           ] as const).map((v) => {
             const isActive = view === v.key;
             const href =
@@ -1140,14 +763,11 @@ export default async function EmailAdminPage({
             are entirely window-scoped. On Signups it's rendered inline below,
             right above the "This period" section, so it's clear that the
             "Right now" block above is unaffected by the window choice. */}
-        {(view === "winbacks" || view === "landing") && (
+        {view !== "funnel" && (
           <div className="flex items-center gap-2 mb-4 flex-wrap">
             {Object.entries(WINDOWS).map(([key, w]) => {
               const active = key === winKey;
-              const href =
-                view === "winbacks"
-                  ? `/admin/email?view=winbacks&window=${key}`
-                  : `/admin/email?view=landing&window=${key}`;
+              const href = `/admin/email?view=${view}&window=${key}`;
               return (
                 <Link
                   key={key}
@@ -1179,10 +799,10 @@ export default async function EmailAdminPage({
           sampleSignupEmails={sampleSignupEmails}
         />
 
-        {view === "winbacks" ? (
-          <WinBacksView data={winbackData} />
-        ) : view === "landing" && landingData ? (
-          <LandingPageView data={landingData} />
+        {view === "acquisition" && acquisitionData ? (
+          <AcquisitionView data={acquisitionData} />
+        ) : view === "churn" && churnViewData ? (
+          <ChurnView data={churnViewData} />
         ) : (
           <>
             {/* ── RIGHT NOW ─────────────────────────────────────────
@@ -1232,18 +852,41 @@ export default async function EmailAdminPage({
                 was removed — currently-in-trial lives in the Right Now
                 row above. Active → "Trial → Paid" because on the funnel
                 it represents cohort conversion, not current headcount. */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
               <StatCard
                 icon={<Mail />}
                 iconColor="#60a5fa"
                 label="Captured"
                 value={signupsInWindow}
-                rateLabel={win.label.toLowerCase()}
                 hero
               />
               <StatCard icon={<UserCheck />}  iconColor="#22c55e" label="Trial → Paid" value={counts.active}   rate={rates.active}   rateLabel={rateLabels.active} />
               <StatCard icon={<UserX />}      iconColor="#f59e0b" label="Canceled"     value={`${counts.canceled} / ${trialStarters}`} rate={rates.canceled} rateLabel={rateLabels.canceled} />
               <StatCard icon={<UserX />}      iconColor="#ef4444" label="Churned"      value={counts.churned}  rate={rates.churned}  rateLabel={rateLabels.churned} />
+            </div>
+
+            {/* Trial start rate — captured → trial conversion, cohort-based */}
+            <div
+              className="rounded-2xl px-6 py-5 mb-6 flex items-center justify-between gap-4 flex-wrap"
+              style={{
+                background: "linear-gradient(90deg, rgba(96,165,250,0.10), rgba(96,165,250,0.02))",
+                border: "1px solid rgba(96,165,250,0.30)",
+              }}
+            >
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "#60a5fa" }}>
+                  Captured → Trial Start Rate
+                </p>
+                <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                  Of {signupsInWindow} people who gave their email, {cohortTrialStartersInWindow} started a trial
+                  {signupsInWindow > 0 && ` · ${signupsInWindow - cohortTrialStartersInWindow} never started`}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-4xl font-extrabold tabular-nums" style={{ color: "#60a5fa" }}>
+                  {fmtPct(cohortTrialStartersInWindow, signupsInWindow)}
+                </p>
+              </div>
             </div>
           </>
         )}
@@ -1517,418 +1160,116 @@ function LiveTotalsView({
 }
 
 // ============================================================================
-// Win-backs view
+// Acquisition view
 // ============================================================================
 
-function WinBacksView({ data }: { data: ChurnWinbackData }) {
-  // Find the best-performing step (highest conversion %). Used to highlight
-  // the winner card with a green accent.
-  const stepsWithRate = data.perStep.map((s) => ({
-    ...s,
-    conversionPct: s.recipients > 0 ? (s.attributedWinbacks / s.recipients) * 100 : 0,
-  }));
-  const bestStep = stepsWithRate.reduce(
-    (best, s) => (s.conversionPct > best.conversionPct ? s : best),
-    stepsWithRate[0] ?? { conversionPct: 0, step: 0 },
-  );
-  const hasAnyWinbacks = data.totalWinbacks > 0;
+function AcquisitionView({ data }: { data: AcquisitionData }) {
+  const perUserRows = [...data.rows]
+    .sort((a, b) => (b.capturedAt ?? "").localeCompare(a.capturedAt ?? ""))
+    .slice(0, 200);
+
+  function BreakdownBar({ title, items, color }: { title: string; items: Array<[string, number]>; color: string }) {
+    const filtered = items.filter(([k]) => k !== "(not answered)");
+    const answeredTotal = filtered.reduce((s, [, n]) => s + n, 0);
+    const barMax = filtered[0]?.[1] ?? 1;
+    return (
+      <div className="rounded-2xl p-5" style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}>
+        <div className="flex items-baseline justify-between mb-4 gap-2">
+          <h3 className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>{title}</h3>
+          <span className="text-xs tabular-nums font-bold" style={{ color: "var(--text-primary)" }}>{answeredTotal} of {data.total}</span>
+        </div>
+        {filtered.length === 0 ? (
+          <p className="text-sm py-3 text-center" style={{ color: "var(--text-muted)" }}>No data yet</p>
+        ) : (
+          <div className="space-y-2.5">
+            {filtered.map(([label, count]) => {
+              const pct = data.total > 0 ? Math.round((count / data.total) * 100) : 0;
+              const bar = Math.round((count / barMax) * 100);
+              return (
+                <div key={label}>
+                  <div className="flex items-baseline justify-between mb-1 gap-2">
+                    <span className="text-xs font-medium truncate capitalize" style={{ color: "var(--text-primary)" }} title={label}>{label}</span>
+                    <span className="text-[10px] tabular-nums flex-shrink-0" style={{ color: "var(--text-muted)" }}>{count} · {pct}%</span>
+                  </div>
+                  <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.05)" }}>
+                    <div className="h-full rounded-full" style={{ width: `${bar}%`, background: `linear-gradient(90deg, ${color}, ${color}88)`, boxShadow: `0 0 8px ${color}40` }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-5">
-      {/* Hero stats — total winbacks + organic */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <HeroStat
-          label="Members won back"
-          value={data.totalWinbacks}
-          accent="#22c55e"
-          tagline={`${data.totalRecipients.toLocaleString()} unique recipients received a churn email · winner = ${bestStep.conversionPct > 0 ? `Step ${bestStep.step}` : "—"}`}
-        />
-        <HeroStat
-          label="Organic comebacks"
-          value={data.organicWinbacks}
-          accent="#60a5fa"
-          tagline="Came back without any drip email attribution (cancelled then resubscribed on their own)"
-        />
-      </div>
-
-      {/* Per-kind breakdown — which funnel each comeback originated from.
-          Abandoned = never paid before, Canceled = quit during trial,
-          Churned = paid then left. Each has its own drip playbook. */}
-      <div className="grid grid-cols-3 gap-4">
-        <MiniStat
-          label="Abandoned → back"
-          value={data.countByKind.abandoned}
-          sub="captured email, never paid, later subscribed"
-        />
-        <MiniStat
-          label="Canceled → back"
-          value={data.countByKind.canceled}
-          sub="quit during trial, later returned"
-        />
-        <MiniStat
-          label="Churned → back"
-          value={data.countByKind.churned}
-          sub="paid, canceled, then re-subscribed"
-        />
-      </div>
-
-      {/* Per-step performance — the meat. Best step gets a green border. */}
-      <div className="rounded-2xl p-6" style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}>
-        <div className="flex items-center justify-between mb-5 flex-wrap gap-2">
-          <h2 className="text-sm font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
-            Churn drip · per-step performance
-          </h2>
-          <span className="text-[10px] uppercase tracking-widest font-bold" style={{ color: "#22c55e" }}>
-            Attribution = last email received before resubscribe
-          </span>
+    <div className="space-y-6">
+      {data.loadError && (
+        <div className="rounded-2xl px-5 py-4 text-sm flex items-start gap-3" style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.35)", color: "#ef4444" }}>
+          <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+          <div>{data.loadError}</div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {stepsWithRate.map((s) => {
-            const isWinner = hasAnyWinbacks && s.step === bestStep.step && s.attributedWinbacks > 0;
-            const accent = isWinner ? "#22c55e" : "rgba(255,255,255,0.1)";
-            return (
-              <div
-                key={s.step}
-                className="rounded-xl p-5 relative"
-                style={{
-                  background: "var(--flip-bg-card)",
-                  border: `2px solid ${accent}`,
-                }}
-              >
-                {isWinner && (
-                  <span
-                    className="absolute -top-2 right-3 px-2 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-wider"
-                    style={{ background: "#22c55e", color: "#000" }}
-                  >
-                    Winner
-                  </span>
-                )}
-                <p className="text-[10px] font-bold uppercase tracking-widest mb-3" style={{ color: "var(--text-muted)" }}>
-                  {s.label}
-                </p>
-                <p className="text-4xl font-extrabold tabular-nums mb-1" style={{ color: "var(--text-primary)" }}>
-                  {s.conversionPct >= 1 ? s.conversionPct.toFixed(1) : s.conversionPct.toFixed(2)}%
-                </p>
-                <p className="text-[11px] mb-3" style={{ color: "var(--text-muted)" }}>
-                  conversion rate
-                </p>
-                <div className="flex items-center justify-between text-xs" style={{ color: "var(--text-muted)" }}>
-                  <span>
-                    <strong style={{ color: "var(--text-primary)" }}>{s.attributedWinbacks}</strong>
-                    {" "}won back
-                  </span>
-                  <span>
-                    of <strong style={{ color: "var(--text-primary)" }}>{s.recipients}</strong> sent
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+      )}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <BreakdownBar title="Channel (how they found us)" items={data.bySource} color="#60a5fa" />
+        <BreakdownBar title="Goal (what they want to improve)" items={data.byGoal} color="#3cacae" />
+        <BreakdownBar title="Platform" items={data.byPlatform} color="#a78bfa" />
+        <BreakdownBar title="Skill level" items={data.byLevel} color="#f59e0b" />
+        <BreakdownBar title="Play frequency" items={data.byFrequency} color="#22c55e" />
+        <BreakdownBar title="Training setup" items={data.byTrainingSetup} color="#f472b6" />
       </div>
-
-      {/* Recent winbacks table */}
+      <BreakdownBar title="Areas to improve (weaknesses)" items={data.byWeaknesses} color="#ef4444" />
       <div className="rounded-2xl overflow-hidden" style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}>
         <div className="flex items-center justify-between gap-4 px-5 py-4" style={{ borderBottom: "1px solid var(--flip-card-border)" }}>
-          <h2 className="text-base font-extrabold" style={{ color: "var(--text-primary)" }}>
-            Won-back members ({data.winbacks.length})
-          </h2>
-          <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>
-            Newest first
-          </span>
+          <h2 className="text-base font-extrabold" style={{ color: "var(--text-primary)" }}>Recent signups ({perUserRows.length})</h2>
+          <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>Newest first</span>
         </div>
-        {data.winbacks.length === 0 ? (
-          <p className="px-5 py-6 text-sm" style={{ color: "var(--text-muted)" }}>
-            No win-backs yet. Once a churned member resubscribes, they show up here.
-          </p>
+        {perUserRows.length === 0 ? (
+          <p className="px-5 py-6 text-sm" style={{ color: "var(--text-muted)" }}>No signups with onboarding data in this window.</p>
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr style={{ borderBottom: "1px solid var(--flip-card-border)" }}>
-                <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Email</th>
-                <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Status</th>
-                <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Left</th>
-                <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Won back</th>
-                <th className="text-right px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Days</th>
-                <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Attributed to</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.winbacks.map((w) => {
-                const kindMeta = {
-                  abandoned: { bg: "rgba(96,165,250,0.15)", color: "#60a5fa", label: "ABANDONED" },
-                  canceled:  { bg: "rgba(245,158,11,0.15)", color: "#f59e0b", label: "CANCELED"  },
-                  churned:   { bg: "rgba(239,68,68,0.15)",  color: "#ef4444", label: "CHURNED"   },
-                }[w.kind];
-                return (
-                <tr key={w.email + w.wonBackAt} style={{ borderTop: "1px solid var(--flip-card-border)" }}>
-                  <td className="px-4 py-3 font-mono text-xs" style={{ color: "var(--text-primary)" }}>{w.email}</td>
-                  <td className="px-4 py-3 text-xs">
-                    <span
-                      className="inline-block px-2 py-0.5 rounded font-bold"
-                      style={{ background: kindMeta.bg, color: kindMeta.color, fontSize: 10, letterSpacing: 0.5 }}
-                    >
-                      {kindMeta.label}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-xs tabular-nums" style={{ color: "var(--text-muted)" }}>
-                    <LocalDateTime iso={w.leftAt} />
-                  </td>
-                  <td className="px-4 py-3 text-xs tabular-nums" style={{ color: "var(--text-muted)" }}>
-                    <LocalDateTime iso={w.wonBackAt} />
-                  </td>
-                  <td className="px-4 py-3 text-xs tabular-nums text-right" style={{ color: "var(--text-primary)" }}>
-                    {w.daysToWinBack}
-                  </td>
-                  <td className="px-4 py-3 text-xs">
-                    {w.attributedStep ? (
-                      <span
-                        className="inline-block px-2 py-0.5 rounded font-bold"
-                        style={{
-                          background: w.attributedStep === bestStep.step ? "rgba(34,197,94,0.15)" : "rgba(96,165,250,0.15)",
-                          color: w.attributedStep === bestStep.step ? "#22c55e" : "#60a5fa",
-                          fontSize: 10,
-                          letterSpacing: 0.5,
-                        }}
-                      >
-                        STEP {w.attributedStep}
-                      </span>
-                    ) : (
-                      <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>
-                        ORGANIC · no email
-                      </span>
-                    )}
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr style={{ borderBottom: "1px solid var(--flip-card-border)" }}>
+                  <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Email</th>
+                  <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Platform</th>
+                  <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Channel</th>
+                  <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Goal</th>
+                  <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Level</th>
+                  <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Frequency</th>
+                  <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Date</th>
                 </tr>
-                );
-              })}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {perUserRows.map((r, i) => {
+                  const pk = r.signupPlatform ?? "unknown";
+                  const pc = PLATFORM_COLORS[pk] ?? "#94a3b8";
+                  const pl = PLATFORM_LABELS[pk] ?? pk;
+                  return (
+                    <tr key={i} style={{ borderTop: "1px solid var(--flip-card-border)" }}>
+                      <td className="px-4 py-3 font-mono text-xs" style={{ color: "var(--text-primary)" }}>{r.email ?? "—"}</td>
+                      <td className="px-4 py-3 text-xs">
+                        <span className="inline-block px-2 py-0.5 rounded font-bold" style={{ background: `${pc}20`, color: pc, fontSize: 10, letterSpacing: 0.5 }}>{pl}</span>
+                      </td>
+                      <td className="px-4 py-3 text-xs capitalize" style={{ color: "var(--text-primary)" }}>
+                        {r.source}{r.detail && <span className="ml-1" style={{ color: "var(--text-muted)" }}>· {r.detail}</span>}
+                      </td>
+                      <td className="px-4 py-3 text-xs" style={{ color: "var(--text-muted)" }}>{r.goal ?? "—"}</td>
+                      <td className="px-4 py-3 text-xs" style={{ color: "var(--text-muted)" }}>{r.onboardingLevel ?? "—"}</td>
+                      <td className="px-4 py-3 text-xs" style={{ color: "var(--text-muted)" }}>{r.playFrequency ?? "—"}</td>
+                      <td className="px-4 py-3 text-xs tabular-nums" style={{ color: "var(--text-muted)" }}>{r.capturedAt ? new Date(r.capturedAt).toLocaleDateString() : "—"}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>
   );
 }
-
-// ============================================================================
-// Landing-page attribution view (currently /pbdrills only)
-// ============================================================================
-
-function LandingPageView({ data }: { data: LandingFunnel }) {
-  // Conversion rates between adjacent funnel steps. "—" when the
-  // denominator is zero so we don't display 0% and imply a fail.
-  const rate = (num: number, den: number): string => {
-    if (den === 0) return "—";
-    const v = (num / den) * 100;
-    if (v >= 10) return `${Math.round(v)}%`;
-    if (v >= 1) return `${v.toFixed(1)}%`;
-    return `${v.toFixed(2)}%`;
-  };
-
-  const clickThroughRate = rate(data.arrivals, data.views);
-  const captureRate = rate(data.emailsCaptured, data.arrivals);
-  const trialRate = rate(data.trialStarters, data.emailsCaptured);
-  const paidRate = rate(data.paidCustomers, data.trialStarters);
-
-  return (
-    <div className="space-y-5">
-      {/* Header banner — page URL + window */}
-      <div
-        className="rounded-2xl p-5 flex items-baseline justify-between flex-wrap gap-3"
-        style={{
-          background: "linear-gradient(180deg, rgba(222,250,50,0.10), rgba(222,250,50,0.02))",
-          border: "1px solid rgba(222,250,50,0.30)",
-        }}
-      >
-        <div>
-          <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "#defa32" }}>
-            Landing page · playbookpaddles.com/pbdrills · {data.windowLabel.toLowerCase()}
-          </p>
-          <p className="text-4xl md:text-5xl font-extrabold tabular-nums" style={{ color: "var(--text-primary)" }}>
-            {data.views.toLocaleString()}
-            <span className="text-lg md:text-xl ml-2 font-semibold" style={{ color: "var(--text-muted)" }}>
-              views
-            </span>
-          </p>
-        </div>
-        <div className="text-right">
-          <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "var(--text-muted)" }}>
-            Overall conversion
-          </p>
-          <p className="text-2xl md:text-3xl font-extrabold tabular-nums" style={{ color: "#22c55e" }}>
-            {rate(data.paidCustomers, data.views)}
-          </p>
-          <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>
-            views → paid
-          </p>
-        </div>
-      </div>
-
-      {/* 5-step funnel — one card per stage, with the conversion rate
-          into the NEXT stage shown as a tagline. */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        <FunnelStepCard
-          label="Views"
-          value={data.views}
-          accent="#60a5fa"
-          nextLabel={`${clickThroughRate} clicked through`}
-        />
-        <FunnelStepCard
-          label="Arrivals"
-          value={data.arrivals}
-          accent="#3cacae"
-          nextLabel={`${captureRate} gave email`}
-        />
-        <FunnelStepCard
-          label="Emails captured"
-          value={data.emailsCaptured}
-          accent="#a78bfa"
-          nextLabel={`${trialRate} started trial`}
-        />
-        <FunnelStepCard
-          label="Trials started"
-          value={data.trialStarters}
-          accent="#defa32"
-          nextLabel={`${paidRate} converted to paid`}
-        />
-        <FunnelStepCard
-          label="Paid customers"
-          value={data.paidCustomers}
-          accent="#22c55e"
-          nextLabel={data.paidCustomers > 0 ? "🎉" : ""}
-        />
-      </div>
-
-      {/* Secondary trial-outcome breakdown, for the emails that DID make it
-          past onboarding. Useful for spotting whether landing-page traffic
-          converts worse than organic (a UX/onboarding signal). */}
-      <div
-        className="rounded-2xl p-5"
-        style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}
-      >
-        <p className="text-[10px] font-bold uppercase tracking-widest mb-4" style={{ color: "var(--text-muted)" }}>
-          Trial outcomes · this cohort
-        </p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-          <LandingMiniStat label="Active"                value={data.paidCustomers}       color="#22c55e" />
-          <LandingMiniStat label="Still trialing"        value={data.trialStarters - data.paidCustomers - data.canceledDuringTrial - data.churnedAfterPaid} color="#defa32" />
-          <LandingMiniStat label="Canceled in trial"     value={data.canceledDuringTrial} color="#f59e0b" />
-          <LandingMiniStat label="Churned after paying"  value={data.churnedAfterPaid}    color="#ef4444" />
-        </div>
-      </div>
-
-      {/* Recent captured emails table (last 25) */}
-      <div
-        className="rounded-2xl overflow-hidden"
-        style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}
-      >
-        <div
-          className="flex items-center justify-between gap-4 px-5 py-4"
-          style={{ borderBottom: "1px solid var(--flip-card-border)" }}
-        >
-          <h2 className="text-base font-extrabold" style={{ color: "var(--text-primary)" }}>
-            Recent captures ({Math.min(data.recent.length, 25)})
-          </h2>
-          <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>
-            Newest first · status current
-          </span>
-        </div>
-        {data.recent.length === 0 ? (
-          <p className="px-5 py-6 text-sm" style={{ color: "var(--text-muted)" }}>
-            No landing-page captures in this window yet. Once someone hits
-            /pbdrills, arrives in the app, and gives their email, they show up here.
-          </p>
-        ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr style={{ borderBottom: "1px solid var(--flip-card-border)" }}>
-                <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Email</th>
-                <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Captured</th>
-                <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.recent.map((r) => {
-                const meta = STATUS_META[r.status];
-                return (
-                  <tr key={r.email} style={{ borderTop: "1px solid var(--flip-card-border)" }}>
-                    <td className="px-4 py-3 font-mono text-xs" style={{ color: "var(--text-primary)" }}>
-                      {r.email}
-                    </td>
-                    <td className="px-4 py-3 text-xs tabular-nums" style={{ color: "var(--text-muted)" }}>
-                      <LocalDateTime iso={r.capturedAt} />
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className="inline-block px-2 py-0.5 rounded font-bold uppercase tracking-wider"
-                        style={{
-                          background: meta.bg,
-                          color: meta.color,
-                          fontSize: 10,
-                          letterSpacing: 0.5,
-                        }}
-                      >
-                        {meta.label}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function FunnelStepCard({
-  label,
-  value,
-  accent,
-  nextLabel,
-}: {
-  label: string;
-  value: number;
-  accent: string;
-  nextLabel: string;
-}) {
-  return (
-    <div
-      className="rounded-xl p-4"
-      style={{
-        background: "var(--flip-bg-card)",
-        border: `1px solid ${accent}40`,
-      }}
-    >
-      <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: accent }}>
-        {label}
-      </p>
-      <p className="text-3xl font-extrabold tabular-nums mb-2" style={{ color: "var(--text-primary)" }}>
-        {value.toLocaleString()}
-      </p>
-      {nextLabel && (
-        <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
-          {nextLabel}
-        </p>
-      )}
-    </div>
-  );
-}
-
-function LandingMiniStat({ label, value, color }: { label: string; value: number; color: string }) {
-  return (
-    <div>
-      <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "var(--text-muted)" }}>
-        {label}
-      </p>
-      <p className="text-2xl font-extrabold tabular-nums" style={{ color }}>
-        {Math.max(0, value).toLocaleString()}
-      </p>
-    </div>
-  );
-}
-
 function HeroStat({
   label, value, accent, tagline,
 }: {
@@ -2055,6 +1396,288 @@ function StatCard({
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+const PLATFORM_LABELS: Record<string, string> = {
+  web: "Web",
+  ios: "iOS",
+  android: "Android",
+  macos: "macOS",
+  unknown: "Unknown",
+};
+
+const PLATFORM_COLORS: Record<string, string> = {
+  web: "#60a5fa",
+  ios: "#a78bfa",
+  android: "#34d399",
+  macos: "#f59e0b",
+  unknown: "#94a3b8",
+};
+
+// ============================================================================
+// Churn view
+// ============================================================================
+
+function ChurnReasonsBar({
+  title,
+  subtitle,
+  color,
+  rows,
+  emptyMessage,
+  highlight,
+}: {
+  title: string;
+  subtitle: string;
+  color: string;
+  rows: ChurnViewRow[];
+  emptyMessage: string;
+  highlight?: boolean;
+}) {
+  const withReason = rows.filter((r) => r.reason !== "(no reason given)");
+  const total = withReason.length;
+  const byReason = new Map<string, number>();
+  for (const r of withReason) byReason.set(r.reason, (byReason.get(r.reason) ?? 0) + 1);
+  const sorted = Array.from(byReason.entries()).sort((a, b) => b[1] - a[1]);
+  const max = sorted[0]?.[1] ?? 1;
+
+  return (
+    <div
+      className="rounded-2xl p-6 h-full"
+      style={{
+        background: highlight
+          ? `linear-gradient(180deg, ${color}10, ${color}03)`
+          : "linear-gradient(180deg, var(--flip-bg-card), rgba(0,0,0,0.05))",
+        border: `1px solid ${highlight ? `${color}40` : "var(--flip-card-border)"}`,
+        boxShadow: highlight ? `0 8px 24px -8px ${color}25` : "0 4px 16px -4px rgba(0,0,0,0.15)",
+      }}
+    >
+      <div className="flex items-baseline justify-between mb-1 flex-wrap gap-2">
+        <h3 className="text-base font-extrabold" style={{ color: "var(--text-primary)" }}>{title}</h3>
+        <span className="text-xs tabular-nums font-bold" style={{ color }}>{total}</span>
+      </div>
+      <p className="text-[11px] mb-5" style={{ color: "var(--text-muted)" }}>{subtitle}</p>
+      {sorted.length === 0 ? (
+        <p className="text-sm py-8 text-center" style={{ color: "var(--text-muted)" }}>{emptyMessage}</p>
+      ) : (
+        <div className="space-y-3">
+          {sorted.map(([reason, count]) => {
+            const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+            const bar = Math.round((count / max) * 100);
+            return (
+              <div key={reason}>
+                <div className="flex items-baseline justify-between mb-1.5 gap-2">
+                  <span className="text-sm font-semibold truncate" style={{ color: "var(--text-primary)" }} title={reason}>
+                    {reason}
+                  </span>
+                  <span className="text-xs tabular-nums font-medium flex-shrink-0" style={{ color: "var(--text-muted)" }}>
+                    {count} · {pct}%
+                  </span>
+                </div>
+                <div className="h-2 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.05)" }}>
+                  <div
+                    className="h-full rounded-full"
+                    style={{
+                      width: `${bar}%`,
+                      background: `linear-gradient(90deg, ${color}, ${color}aa)`,
+                      boxShadow: `0 0 10px ${color}40`,
+                    }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ChurnView({ data }: { data: ChurnViewData }) {
+  const commented = data.rows.filter((r) => r.comment && r.comment.trim().length > 0);
+  const topReason = data.sortedReasons[0];
+
+  return (
+    <div className="space-y-6">
+      {data.loadError && (
+        <div
+          className="rounded-2xl px-5 py-4 text-sm flex items-start gap-3"
+          style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.35)", color: "#ef4444" }}
+        >
+          <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+          <div>{data.loadError}</div>
+        </div>
+      )}
+
+      {/* Hero stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div
+          className="rounded-2xl p-6"
+          style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}
+        >
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center [&>svg]:w-4 [&>svg]:h-4 mb-3"
+               style={{ background: "rgba(148,163,184,0.15)", color: "#94a3b8" }}>
+            <TrendingDown />
+          </div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] mb-2" style={{ color: "var(--text-muted)" }}>
+            Total cancellations
+          </p>
+          <p className="text-4xl font-extrabold tabular-nums leading-none mb-2" style={{ color: "var(--text-primary)" }}>
+            {data.rows.length}
+          </p>
+          <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+            {commented.length} included a comment
+          </p>
+        </div>
+        <div
+          className="rounded-2xl p-6"
+          style={{
+            background: "linear-gradient(160deg, rgba(245,158,11,0.15), rgba(245,158,11,0.05))",
+            border: "1px solid rgba(245,158,11,0.35)",
+          }}
+        >
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center [&>svg]:w-4 [&>svg]:h-4 mb-3"
+               style={{ background: "rgba(245,158,11,0.15)", color: "#f59e0b" }}>
+            <Clock />
+          </div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] mb-2" style={{ color: "var(--text-muted)" }}>
+            Canceled during trial
+          </p>
+          <p className="text-4xl font-extrabold tabular-nums leading-none mb-2" style={{ color: "#f59e0b" }}>
+            {data.countByKind.canceled}
+          </p>
+          <p className="text-xs" style={{ color: "var(--text-muted)" }}>Never paid — pre-paywall objections</p>
+        </div>
+        <div
+          className="rounded-2xl p-6"
+          style={{
+            background: "linear-gradient(160deg, rgba(239,68,68,0.15), rgba(239,68,68,0.05))",
+            border: "1px solid rgba(239,68,68,0.35)",
+          }}
+        >
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center [&>svg]:w-4 [&>svg]:h-4 mb-3"
+               style={{ background: "rgba(239,68,68,0.15)", color: "#ef4444" }}>
+            <TrendingDown />
+          </div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] mb-2" style={{ color: "var(--text-muted)" }}>
+            Churned (paid then left)
+          </p>
+          <p className="text-4xl font-extrabold tabular-nums leading-none mb-2" style={{ color: "#ef4444" }}>
+            {data.countByKind.churned}
+          </p>
+          <p className="text-xs" style={{ color: "var(--text-muted)" }}>Lost MRR — retention problem</p>
+        </div>
+      </div>
+
+      {topReason && (
+        <div
+          className="inline-flex items-center gap-2 text-sm px-4 py-2 rounded-xl"
+          style={{
+            background: "rgba(255,255,255,0.03)",
+            border: "1px solid var(--flip-card-border)",
+            color: "var(--text-muted)",
+          }}
+        >
+          Top reason:{" "}
+          <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>{topReason[0]}</span>
+          <span className="opacity-60">· {topReason[1]} of {data.rows.filter(r => r.reason !== "(no reason given)").length}</span>
+        </div>
+      )}
+
+      {/* Reasons charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <ChurnReasonsBar
+          title="Why they canceled (trial)"
+          subtitle="Pre-paywall objections · never paid"
+          color="#f59e0b"
+          rows={data.canceled}
+          emptyMessage="No trial cancellations in this window."
+        />
+        <ChurnReasonsBar
+          title="Why they churned (paid)"
+          subtitle="Lost MRR · most actionable for pricing & product"
+          color="#ef4444"
+          rows={data.churned}
+          emptyMessage="No churned subscribers in this window."
+          highlight
+        />
+      </div>
+
+      {/* Recent cancellations list */}
+      <div
+        className="rounded-2xl overflow-hidden"
+        style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}
+      >
+        <div
+          className="flex items-center justify-between gap-4 px-5 py-4"
+          style={{ borderBottom: "1px solid var(--flip-card-border)" }}
+        >
+          <h2 className="text-base font-extrabold" style={{ color: "var(--text-primary)" }}>
+            Recent cancellations ({data.rows.length})
+          </h2>
+          <a
+            href={`/api/admin/churn/export`}
+            className="inline-flex items-center gap-1.5 text-xs font-bold py-2 px-3 rounded-lg"
+            style={{ background: "var(--btn-buy-bg)", color: "var(--btn-buy-text)" }}
+          >
+            <Download className="w-3.5 h-3.5" />
+            Export CSV
+          </a>
+        </div>
+        {data.rows.length === 0 ? (
+          <p className="px-5 py-6 text-sm" style={{ color: "var(--text-muted)" }}>
+            No cancellations in this window.
+          </p>
+        ) : (
+          <table className="w-full text-sm">
+            <thead>
+              <tr style={{ borderBottom: "1px solid var(--flip-card-border)" }}>
+                <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Email</th>
+                <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Kind</th>
+                <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Reason</th>
+                <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Comment</th>
+                <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.rows.slice(0, 200).map((r, i) => {
+                const kindMeta =
+                  r.kind === "canceled"
+                    ? { color: "#f59e0b", bg: "rgba(245,158,11,0.15)", label: "CANCELED" }
+                    : { color: "#ef4444", bg: "rgba(239,68,68,0.15)", label: "CHURNED" };
+                return (
+                  <tr key={i} style={{ borderTop: "1px solid var(--flip-card-border)" }}>
+                    <td className="px-4 py-3 font-mono text-xs" style={{ color: "var(--text-primary)" }}>
+                      {r.email ?? "—"}
+                    </td>
+                    <td className="px-4 py-3 text-xs">
+                      <span
+                        className="inline-block px-2 py-0.5 rounded font-bold"
+                        style={{ background: kindMeta.bg, color: kindMeta.color, fontSize: 10, letterSpacing: 0.5 }}
+                      >
+                        {kindMeta.label}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-xs" style={{ color: "var(--text-primary)" }}>
+                      {r.reason !== "(no reason given)" ? r.reason : (
+                        <span style={{ color: "var(--text-muted)" }}>—</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-xs max-w-xs truncate" style={{ color: "var(--text-muted)" }}
+                        title={r.comment ?? undefined}>
+                      {r.comment ?? "—"}
+                    </td>
+                    <td className="px-4 py-3 text-xs tabular-nums" style={{ color: "var(--text-muted)" }}>
+                      {r.createdAt ? new Date(r.createdAt).toLocaleDateString() : "—"}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </div>
     </div>
   );
 }

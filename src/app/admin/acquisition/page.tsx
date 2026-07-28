@@ -4,13 +4,10 @@ import {
   Megaphone,
   MessageSquare,
   Target,
-  ShieldAlert,
   Calendar,
-  Timer,
   Dumbbell,
   BarChart3,
   Zap,
-  Users,
   Smartphone,
 } from "lucide-react";
 import { AdminNav } from "../_components/AdminNav";
@@ -42,12 +39,9 @@ type Row = {
   // answered during onboarding is surfaced here so we can see what
   // the audience actually wants without hunting through Firestore.
   goal: string | null;
-  blocker: string | null;
   playFrequency: string | null;
-  triedOtherApps: string | null;
   weaknesses: string[];
   days: string[];
-  sessionLength: string | null;
   trainingSetup: string[];
   level: string | null;
   signupPlatform: string | null;
@@ -115,16 +109,13 @@ export default async function AcquisitionAdminPage({
         detail: (data.acquisitionDetail as string | null) ?? null,
         capturedAt: captured ? captured.toISOString() : null,
         goal: (data.goal as string | null) ?? null,
-        blocker: (data.blocker as string | null) ?? null,
         playFrequency: (data.playFrequency as string | null) ?? null,
-        triedOtherApps: (data.triedOtherApps as string | null) ?? null,
         weaknesses: Array.isArray(data.onboardingWeaknesses)
           ? (data.onboardingWeaknesses as string[])
           : [],
         days: Array.isArray(data.onboardingDays)
           ? (data.onboardingDays as string[])
           : [],
-        sessionLength: (data.onboardingSessionLength as string | null) ?? null,
         trainingSetup: Array.isArray(data.onboardingTrainingSetup)
           ? (data.onboardingTrainingSetup as string[])
           : [],
@@ -184,12 +175,6 @@ export default async function AcquisitionAdminPage({
   const goalTotal = sortedGoals.reduce((sum, [, n]) => sum + n, 0);
   const goalMax = sortedGoals[0]?.[1] ?? 1;
 
-  const byBlocker = new Map<string, number>();
-  for (const r of rows) if (r.blocker) byBlocker.set(r.blocker, (byBlocker.get(r.blocker) ?? 0) + 1);
-  const sortedBlockers = Array.from(byBlocker.entries()).sort((a, b) => b[1] - a[1]);
-  const blockerTotal = sortedBlockers.reduce((sum, [, n]) => sum + n, 0);
-  const blockerMax = sortedBlockers[0]?.[1] ?? 1;
-
   // Single-select summariser — same shape as goal/blocker aggregation
   // so we can reuse one render helper.
   function tally(rowValues: (string | null)[]) {
@@ -235,12 +220,15 @@ export default async function AcquisitionAdminPage({
     rows.map((r) => (r.signupPlatform ? platformLabels[r.signupPlatform] ?? r.signupPlatform : null)),
   );
   const playFreq = tally(rows.map((r) => r.playFrequency));
-  const triedApps = tally(rows.map((r) => r.triedOtherApps));
-  const sessionLen = tally(rows.map((r) => r.sessionLength));
   const skillLevel = tally(rows.map((r) => r.level));
   const weaknesses = tallyMulti(rows.map((r) => r.weaknesses));
   const trainingDays = tallyMulti(rows.map((r) => r.days));
   const trainingSetup = tallyMulti(rows.map((r) => r.trainingSetup));
+
+  // Per-user table: rows sorted newest-first, dedupe by email
+  const perUserRows = [...rows]
+    .sort((a, b) => (b.capturedAt ?? "").localeCompare(a.capturedAt ?? ""))
+    .slice(0, 200);
 
   return (
     <div className="min-h-screen pb-20" style={{ background: "var(--bg-page)", paddingTop: "calc(var(--topbar-h, 108px) + 1rem)" }}>
@@ -253,10 +241,6 @@ export default async function AcquisitionAdminPage({
         <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2" style={{ color: "var(--text-primary)" }}>
           How players find Pickleball Drills
         </h1>
-        <p className="text-sm md:text-base mb-8" style={{ color: "var(--text-muted)" }}>
-          Captured on the onboarding "How'd you find us?" screen. Skippable, so this is a
-          sample of trial signups — not 100% — but useful for channel attribution.
-        </p>
 
         <div className="flex items-center gap-2 mb-6 flex-wrap">
           {Object.entries(WINDOWS).map(([key, w]) => {
@@ -353,82 +337,42 @@ export default async function AcquisitionAdminPage({
               )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              <div className="rounded-2xl p-5" style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}>
-                <div className="flex items-center gap-2 mb-4">
-                  <Target className="w-4 h-4" style={{ color: "#22c55e" }} />
-                  <h2 className="text-sm font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
-                    Goals
-                  </h2>
-                  <span className="text-xs ml-auto" style={{ color: "var(--text-muted)" }}>
-                    {goalTotal} answered
-                  </span>
-                </div>
-                {sortedGoals.length === 0 ? (
-                  <p className="text-sm" style={{ color: "var(--text-muted)" }}>No goal data yet.</p>
-                ) : (
-                  <div className="space-y-3">
-                    {sortedGoals.map(([goal, count]) => {
-                      const pct = goalTotal ? Math.round((count / goalTotal) * 100) : 0;
-                      const bar = Math.round((count / goalMax) * 100);
-                      return (
-                        <div key={goal}>
-                          <div className="flex items-baseline justify-between mb-1">
-                            <span className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{goal}</span>
-                            <span className="text-xs tabular-nums" style={{ color: "var(--text-muted)" }}>
-                              {count} · {pct}%
-                            </span>
-                          </div>
-                          <div className="h-2 rounded-full" style={{ background: "rgba(255,255,255,0.06)" }}>
-                            <div
-                              className="h-2 rounded-full"
-                              style={{ width: `${bar}%`, background: "#22c55e" }}
-                            />
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
+            <div className="rounded-2xl p-5 mb-6" style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}>
+              <div className="flex items-center gap-2 mb-4">
+                <Target className="w-4 h-4" style={{ color: "#22c55e" }} />
+                <h2 className="text-sm font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+                  Goals
+                </h2>
+                <span className="text-xs ml-auto" style={{ color: "var(--text-muted)" }}>
+                  {goalTotal} answered
+                </span>
               </div>
-
-              <div className="rounded-2xl p-5" style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}>
-                <div className="flex items-center gap-2 mb-4">
-                  <ShieldAlert className="w-4 h-4" style={{ color: "#f59e0b" }} />
-                  <h2 className="text-sm font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
-                    What&apos;s holding them back
-                  </h2>
-                  <span className="text-xs ml-auto" style={{ color: "var(--text-muted)" }}>
-                    {blockerTotal} answered
-                  </span>
-                </div>
-                {sortedBlockers.length === 0 ? (
-                  <p className="text-sm" style={{ color: "var(--text-muted)" }}>No blocker data yet.</p>
-                ) : (
-                  <div className="space-y-3">
-                    {sortedBlockers.map(([blocker, count]) => {
-                      const pct = blockerTotal ? Math.round((count / blockerTotal) * 100) : 0;
-                      const bar = Math.round((count / blockerMax) * 100);
-                      return (
-                        <div key={blocker}>
-                          <div className="flex items-baseline justify-between mb-1">
-                            <span className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{blocker}</span>
-                            <span className="text-xs tabular-nums" style={{ color: "var(--text-muted)" }}>
-                              {count} · {pct}%
-                            </span>
-                          </div>
-                          <div className="h-2 rounded-full" style={{ background: "rgba(255,255,255,0.06)" }}>
-                            <div
-                              className="h-2 rounded-full"
-                              style={{ width: `${bar}%`, background: "#f59e0b" }}
-                            />
-                          </div>
+              {sortedGoals.length === 0 ? (
+                <p className="text-sm" style={{ color: "var(--text-muted)" }}>No goal data yet.</p>
+              ) : (
+                <div className="space-y-3">
+                  {sortedGoals.map(([goal, count]) => {
+                    const pct = goalTotal ? Math.round((count / goalTotal) * 100) : 0;
+                    const bar = Math.round((count / goalMax) * 100);
+                    return (
+                      <div key={goal}>
+                        <div className="flex items-baseline justify-between mb-1">
+                          <span className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{goal}</span>
+                          <span className="text-xs tabular-nums" style={{ color: "var(--text-muted)" }}>
+                            {count} · {pct}%
+                          </span>
                         </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
+                        <div className="h-2 rounded-full" style={{ background: "rgba(255,255,255,0.06)" }}>
+                          <div
+                            className="h-2 rounded-full"
+                            style={{ width: `${bar}%`, background: "#22c55e" }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             {/* Full quiz answer breakdown — every question surfaces its
@@ -477,14 +421,6 @@ export default async function AcquisitionAdminPage({
                 max={trainingDays.max}
               />
               <BreakdownCard
-                title="Session length"
-                icon={<Timer className="w-4 h-4" style={{ color: "#fbbf24" }} />}
-                color="#fbbf24"
-                total={sessionLen.total}
-                sorted={sessionLen.sorted}
-                max={sessionLen.max}
-              />
-              <BreakdownCard
                 title="Training setup (multi)"
                 icon={<Dumbbell className="w-4 h-4" style={{ color: "#f472b6" }} />}
                 color="#f472b6"
@@ -492,35 +428,73 @@ export default async function AcquisitionAdminPage({
                 sorted={trainingSetup.sorted}
                 max={trainingSetup.max}
               />
-              <BreakdownCard
-                title="Tried other apps"
-                icon={<Users className="w-4 h-4" style={{ color: "#c084fc" }} />}
-                color="#c084fc"
-                total={triedApps.total}
-                sorted={triedApps.sorted}
-                max={triedApps.max}
-              />
             </div>
 
-            <div className="rounded-2xl p-5" style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}>
-              <h2 className="text-sm font-bold uppercase tracking-widest mb-4" style={{ color: "var(--text-muted)" }}>
-                Recent details
-              </h2>
-              {withDetail.length === 0 ? (
-                <p className="text-sm" style={{ color: "var(--text-muted)" }}>No free-text details yet.</p>
+            {/* Per-user table — email + signup platform + goal + channel */}
+            <div className="rounded-2xl overflow-hidden" style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}>
+              <div className="px-5 py-4" style={{ borderBottom: "1px solid var(--flip-card-border)" }}>
+                <h2 className="text-sm font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+                  Per-user breakdown
+                </h2>
+                <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
+                  {perUserRows.length} most-recent signups with acquisition data
+                </p>
+              </div>
+              {perUserRows.length === 0 ? (
+                <p className="px-5 py-6 text-sm" style={{ color: "var(--text-muted)" }}>No data yet.</p>
               ) : (
-                <ul className="space-y-4">
-                  {withDetail.slice(0, 50).map((r) => (
-                    <li key={r.id} style={{ borderTop: "1px solid var(--flip-card-border)", paddingTop: 12 }}>
-                      <p className="text-sm" style={{ color: "var(--text-primary)" }}>&ldquo;{r.detail}&rdquo;</p>
-                      <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
-                        {r.source}
-                        {r.email ? ` · ${r.email}` : ""}
-                        {r.capturedAt ? ` · ${new Date(r.capturedAt).toLocaleDateString()}` : ""}
-                      </p>
-                    </li>
-                  ))}
-                </ul>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr style={{ borderBottom: "1px solid var(--flip-card-border)" }}>
+                        <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Email</th>
+                        <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Platform</th>
+                        <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Channel</th>
+                        <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Goal</th>
+                        <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {perUserRows.map((r) => (
+                        <tr key={r.id} style={{ borderTop: "1px solid var(--flip-card-border)" }}>
+                          <td className="px-4 py-3 font-mono" style={{ color: "var(--text-primary)" }}>
+                            {r.email ?? <span style={{ color: "var(--text-muted)" }}>(no email)</span>}
+                          </td>
+                          <td className="px-4 py-3">
+                            {r.signupPlatform ? (
+                              <span
+                                className="inline-block px-2 py-0.5 rounded font-bold uppercase tracking-wide"
+                                style={{
+                                  background: "rgba(96,165,250,0.12)",
+                                  color: "#60a5fa",
+                                  fontSize: 10,
+                                }}
+                              >
+                                {platformLabels[r.signupPlatform] ?? r.signupPlatform}
+                              </span>
+                            ) : (
+                              <span style={{ color: "var(--text-muted)" }}>—</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3" style={{ color: "var(--text-primary)" }}>
+                            <span>{r.source}</span>
+                            {r.detail && (
+                              <span className="block mt-0.5" style={{ color: "var(--text-muted)", fontStyle: "italic" }}>
+                                &ldquo;{r.detail}&rdquo;
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3" style={{ color: r.goal ? "var(--text-primary)" : "var(--text-muted)" }}>
+                            {r.goal ?? "—"}
+                          </td>
+                          <td className="px-4 py-3 tabular-nums" style={{ color: "var(--text-muted)" }}>
+                            {r.capturedAt ? new Date(r.capturedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </div>
 

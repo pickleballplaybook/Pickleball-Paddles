@@ -11,9 +11,7 @@ const TABS = [
   { href: "/admin/weekly-thumbnail", label: "Weekly Thumbnail" },
   { href: "/admin/drills", label: "Drills" },
   { href: "/admin/lessons", label: "Lessons" },
-  { href: "/admin/email", label: "Email" },
-  { href: "/admin/churn", label: "Churn" },
-  { href: "/admin/acquisition", label: "Acquisition" },
+  { href: "/admin/email", label: "Acquisition" },
   { href: "/admin/challenges", label: "Challenges" },
 ];
 
