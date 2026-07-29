@@ -919,7 +919,7 @@ export default function PublishPage() {
             connectLabel="+ Connect TikTok account"
             onConnect={() => openConnectPopup("tiktok")}
           >
-            {connections?.tiktok.map((c) => (
+            {connections?.tiktok?.map((c) => (
               <ConnectionRow
                 key={c.id}
                 label={`@${c.username}`}
