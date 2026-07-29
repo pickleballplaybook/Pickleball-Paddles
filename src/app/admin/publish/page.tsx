@@ -1054,7 +1054,7 @@ export default function PublishPage() {
           ) : connections.youtube.length === 0 &&
             connections.facebook.length === 0 &&
             connections.instagram.length === 0 &&
-            connections.tiktok.length === 0 ? (
+            (connections.tiktok?.length ?? 0) === 0 ? (
             <p className="text-sm text-gray-500 mb-4">
               Connect at least one account above first.
             </p>
@@ -1135,7 +1135,7 @@ export default function PublishPage() {
                   ),
                 });
               }
-              for (const c of connections.tiktok) {
+              for (const c of (connections.tiktok ?? [])) {
                 const key = `tiktok:${c.id}`;
                 const checked = selectedTargets.some((t) => t.platform === "tiktok" && t.id === c.id);
                 rows.push({
