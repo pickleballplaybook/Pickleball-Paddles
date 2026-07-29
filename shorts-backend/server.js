@@ -17,9 +17,11 @@ import {
   uploadToInstagram, uploadToFacebook, uploadToFacebookReel,
   listMetaCatalogProducts,
   listFacebookGroups, shareToFacebookGroup,
-  getFacebookVideoMeta, getFacebookPostMeta, listFacebookPagePosts
+  getFacebookVideoMeta, getFacebookPostMeta, listFacebookPagePosts,
+  getTikTokPkce, getTikTokAuthUrl, exchangeTikTokCode, getTikTokUserInfo, publishToTikTok,
 } from './social.js';
 import OpenAI from 'openai';
+import Groq from 'groq-sdk';
 import archiver from 'archiver';
 import multer from 'multer';
 import crypto from 'crypto';
@@ -154,6 +156,7 @@ async function callClaudeWithRetry(opts, { retries = 3, baseDelayMs = 1000 } = {
   throw lastErr;
 }
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 // Job status store (in-memory mirror; canonical state lives in output/<jobId>/meta.json)
 const jobs = {};
@@ -796,27 +799,26 @@ async function processVideo(jobId, jobDir, youtubeUrl, overlayOpts) {
     { label: 'tv,web_safari HD',   args: `--extractor-args "youtube:player_client=tv,web_safari" ${HD}` },
     { label: 'web HD',             args: `--extractor-args "youtube:player_client=web" ${HD}` },
     { label: 'mweb HD',            args: `--extractor-args "youtube:player_client=mweb" ${HD}` },
-    { label: 'android HD',         args: `--extractor-args "youtube:player_client=android" ${HD}` },
-    { label: 'ios HD',             args: `--extractor-args "youtube:player_client=ios" ${HD}` },
+    { label: 'tv HD',              args: `--extractor-args "youtube:player_client=tv" ${HD}` },
+    { label: 'tv_embedded HD (2)', args: `--extractor-args "youtube:player_client=tv_embedded" ${HD}` },
     // Last-resort muxed fallbacks — the MUXED format prefers 22 (720p) before
     // 18 (360p). MIN_HEIGHT (720) now applies to these too so we never silently
     // ship blurry 360p clips. If all 10 attempts come back below 720p, the
     // job errors out — better than publishing low-res output to social.
-    { label: 'ios muxed',          args: `--extractor-args "youtube:player_client=ios" ${MUXED}` },
-    { label: 'android muxed',      args: `--extractor-args "youtube:player_client=android" ${MUXED}` },
+    { label: 'mweb muxed',         args: `--extractor-args "youtube:player_client=mweb" ${MUXED}` },
+    { label: 'tv muxed',           args: `--extractor-args "youtube:player_client=tv" ${MUXED}` },
     { label: 'web muxed',          args: `--extractor-args "youtube:player_client=web" ${MUXED}` },
     // Final fallbacks: drop the MP4 codec constraint entirely. Accept webm/AV1
     // and let ffmpeg remux. `acceptLow` lets the smart_crop pipeline run on
     // sub-720p source rather than failing the whole job — visibly softer, but
     // the alternative here is "no clip at all."
     { label: 'tv_embedded any',    args: `--extractor-args "youtube:player_client=tv_embedded" ${ANY}` },
-    { label: 'android any',        args: `--extractor-args "youtube:player_client=android" ${ANY}` },
-    // Absolute last resort: android client (most reliable for SABR-affected
-    // videos that only expose 360p) with NO height or codec filter. If even
-    // this fails, the video is genuinely unreachable (age-gated, private,
-    // region-locked, etc.) and no format gymnastics will help.
-    { label: 'android anything (low ok)', args: `--extractor-args "youtube:player_client=android" ${ANYTHING}`, acceptLow: true },
-    { label: 'web anything (low ok)',     args: `--extractor-args "youtube:player_client=web" ${ANYTHING}`, acceptLow: true },
+    { label: 'tv any',             args: `--extractor-args "youtube:player_client=tv" ${ANY}` },
+    // Absolute last resort: no client restriction, no height or codec filter.
+    // If even this fails, the video is genuinely unreachable (age-gated,
+    // private, region-locked, etc.) and no format gymnastics will help.
+    { label: 'tv anything (low ok)',  args: `--extractor-args "youtube:player_client=tv" ${ANYTHING}`, acceptLow: true },
+    { label: 'web anything (low ok)', args: `--extractor-args "youtube:player_client=web" ${ANYTHING}`, acceptLow: true },
   ];
   const attemptErrors = [];
   let lastErr;
@@ -899,9 +901,9 @@ async function analyzeAndCutVideo(jobId, jobDir, videoPath, overlayOpts = { topT
   const transcriptPath = path.join(jobDir, 'transcript.json');
 
   const audioReadStream = fs.createReadStream(audioPath);
-  const transcription = await openai.audio.transcriptions.create({
+  const transcription = await groq.audio.transcriptions.create({
     file: audioReadStream,
-    model: 'whisper-1',
+    model: 'whisper-large-v3-turbo',
     response_format: 'verbose_json',
     timestamp_granularities: ['segment'],
   });
@@ -928,10 +930,16 @@ Analyze this transcript and identify the best moments to turn into YouTube Short
 
 Rules:
 - Pick up to 10 clips, but only if they're genuinely good. Quality over quantity.
-- Each clip must be self-contained — a tip, story, insight, or entertaining moment that makes sense on its own.
+- Each clip must be self-contained — a tip, story, insight, or entertaining moment that makes sense on its own WITHOUT any prior context from the video.
 - Prefer moments with clear actionable advice, surprising facts, or high energy.
 - Clips should be 15–60 seconds long.
 - Do not overlap clips.
+
+CLEAN CUTS — this is critical:
+- Start timestamps must land at the very beginning of a complete sentence. Never mid-word, never mid-sentence. Scan back to the nearest sentence start if needed.
+- End timestamps must land at the end of a complete sentence or thought. Never cut off the speaker mid-sentence.
+- A clip must cover ONE continuous topic. If the speaker finishes a point and moves on to a different subject, end the clip before that transition — do not combine two separate topics into one clip. Two topics stitched together will feel like two different videos and confuse the viewer.
+- Ask yourself: if a stranger watches only this segment with zero context, does it make complete sense from start to finish? If not, adjust the timestamps or skip it.
 
 TITLES MUST BE CLICKBAIT, NOT DESCRIPTIONS.
 
@@ -1138,6 +1146,7 @@ const connections = {
   youtube: [],   // { id (channelId), name, tokens }
   facebook: [],  // { id (pageId), name, accessToken }
   instagram: [], // { id (igAccountId), username, accessToken, facebookPageId, facebookPageName }
+  tiktok: [],   // { id (open_id), username (display_name), access_token, refresh_token }
 };
 
 function loadConnections() {
@@ -1147,7 +1156,8 @@ function loadConnections() {
     connections.youtube = data.youtube || [];
     connections.facebook = data.facebook || [];
     connections.instagram = data.instagram || [];
-    console.log(`Loaded connections: yt=${connections.youtube.length} fb=${connections.facebook.length} ig=${connections.instagram.length}`);
+    connections.tiktok = data.tiktok || [];
+    console.log(`Loaded connections: yt=${connections.youtube.length} fb=${connections.facebook.length} ig=${connections.instagram.length} tt=${connections.tiktok.length}`);
   } catch (err) {
     console.error('Failed to load connections.json:', err.message);
   }
@@ -1233,6 +1243,42 @@ app.get('/auth/meta/callback', async (req, res) => {
   }
 });
 
+// ─── TIKTOK AUTH ──────────────────────────────────────────────────────────────
+// Single-admin tool — store the PKCE verifier in memory for the duration of
+// the OAuth flow. Reset on each new auth start so stale values can't be reused.
+let _tiktokPkceVerifier = null;
+
+app.get('/auth/tiktok', (req, res) => {
+  const { verifier, challenge } = getTikTokPkce();
+  _tiktokPkceVerifier = verifier;
+  res.redirect(getTikTokAuthUrl(challenge));
+});
+
+app.get('/auth/tiktok/callback', async (req, res) => {
+  try {
+    const { code, error, error_description } = req.query;
+    if (error) throw new Error(error_description || error);
+    if (!code) throw new Error('No code returned from TikTok');
+    if (!_tiktokPkceVerifier) throw new Error('PKCE verifier missing — restart the auth flow');
+    const tokenData = await exchangeTikTokCode(code, _tiktokPkceVerifier);
+    _tiktokPkceVerifier = null;
+    const userInfo = await getTikTokUserInfo(tokenData.access_token);
+    const openId = tokenData.open_id || userInfo.open_id;
+    const displayName = userInfo.display_name || userInfo.username || openId;
+    upsertConnection('tiktok', {
+      id: openId,
+      username: displayName,
+      access_token: tokenData.access_token,
+      refresh_token: tokenData.refresh_token,
+      expires_at: Date.now() + (tokenData.expires_in || 86400) * 1000,
+    });
+    res.send(`<script>window.close();</script>TikTok connected: ${displayName}. You can close this window.`);
+  } catch (e) {
+    console.error('[tiktok auth]', e.message);
+    res.status(500).send('TikTok auth failed: ' + e.message);
+  }
+});
+
 // ─── CONNECTIONS ──────────────────────────────────────────────────────────────
 // Returns a sanitized view (no tokens) for the UI.
 app.get('/auth/connections', (_req, res) => {
@@ -1244,6 +1290,7 @@ app.get('/auth/connections', (_req, res) => {
       username: c.username,
       facebookPageName: c.facebookPageName,
     })),
+    tiktok: connections.tiktok.map(c => ({ id: c.id, username: c.username })),
   });
 });
 
@@ -1300,7 +1347,7 @@ app.get('/api/youtube/:channelId/playlists', async (req, res) => {
 
 app.delete('/auth/connections/:type/:id', (req, res) => {
   const { type, id } = req.params;
-  if (!['youtube', 'facebook', 'instagram'].includes(type)) {
+  if (!['youtube', 'facebook', 'instagram', 'tiktok'].includes(type)) {
     return res.status(400).json({ error: 'Invalid connection type' });
   }
   const removed = removeConnection(type, id);
@@ -1568,9 +1615,7 @@ app.get('/api/clips', (_req, res) => {
         filename: clip.filename,
         path: diskPath,
         title: clip.title,
-        // `reason` = the AI-generated rationale for why this segment makes a
-        // good short. Surfaced to /admin/publish so it can auto-fill the
-        // description field via buildReelDescription() when the clip is picked.
+        description: clip.description || '',
         reason: clip.reason,
         duration: clip.duration,
         createdAt: job.createdAt,
@@ -2046,6 +2091,22 @@ app.post('/api/publish', upload.single('video'), async (req, res) => {
           platform, id, accountName: conn.username,
           url: data.id ? `https://instagram.com/p/${data.id}` : undefined,
           raw: data,
+        });
+      } else if (platform === 'tiktok') {
+        const data = await publishToTikTok({
+          conn,
+          videoPath,
+          title,
+          description,
+          opts: {
+            privacyLevel: typeof opts.privacyLevel === 'string' ? opts.privacyLevel : 'PUBLIC_TO_EVERYONE',
+          },
+        });
+        results.push({
+          platform, id, accountName: conn.username,
+          url: data.url,
+          raw: data,
+          scheduled: false,
         });
       } else {
         results.push({ platform, id, error: 'Unknown platform' });

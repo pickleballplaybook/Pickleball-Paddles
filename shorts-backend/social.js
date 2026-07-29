@@ -576,3 +576,152 @@ export async function uploadToFacebook({
   );
   return res.data;
 }
+
+// ─── TIKTOK ──────────────────────────────────────────────────────────────────
+import { createHash, randomBytes } from 'crypto';
+
+export function getTikTokPkce() {
+  const verifier = randomBytes(32).toString('base64url');
+  const challenge = createHash('sha256').update(verifier).digest('base64url');
+  return { verifier, challenge };
+}
+
+export function getTikTokAuthUrl(codeChallenge) {
+  const params = new URLSearchParams({
+    client_key: process.env.TIKTOK_CLIENT_KEY,
+    scope: 'video.publish,video.upload,user.info.basic',
+    response_type: 'code',
+    redirect_uri: process.env.TIKTOK_REDIRECT_URI,
+    state: randomBytes(8).toString('hex'),
+    code_challenge: codeChallenge,
+    code_challenge_method: 'S256',
+  });
+  return `https://www.tiktok.com/v2/auth/authorize/?${params}`;
+}
+
+export async function exchangeTikTokCode(code, codeVerifier) {
+  const params = new URLSearchParams({
+    client_key: process.env.TIKTOK_CLIENT_KEY,
+    client_secret: process.env.TIKTOK_CLIENT_SECRET,
+    code,
+    grant_type: 'authorization_code',
+    redirect_uri: process.env.TIKTOK_REDIRECT_URI,
+    code_verifier: codeVerifier,
+  });
+  const res = await axios.post(
+    'https://open.tiktokapis.com/v2/oauth/token/',
+    params.toString(),
+    { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+  );
+  if (res.data.error?.code && res.data.error.code !== 'ok') {
+    throw new Error(`TikTok token exchange failed: ${res.data.error.message}`);
+  }
+  return res.data;
+}
+
+export async function getTikTokUserInfo(accessToken) {
+  const res = await axios.get('https://open.tiktokapis.com/v2/user/info/', {
+    params: { fields: 'open_id,display_name,username,avatar_url' },
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  return res.data.data?.user || {};
+}
+
+export async function publishToTikTok({ conn, videoPath, title, description, opts = {} }) {
+  const accessToken = conn.access_token;
+  const privacyLevel = opts.privacyLevel || 'PUBLIC_TO_EVERYONE';
+  const captionText = (title || description || '').replace(/#\w+/g, '').trim().slice(0, 2200);
+
+  const fileSize = fs.statSync(videoPath).size;
+  const CHUNK_SIZE = 10 * 1024 * 1024; // 10 MB
+  const totalChunks = Math.ceil(fileSize / CHUNK_SIZE);
+
+  // 1. Init upload
+  const initRes = await axios.post(
+    'https://open.tiktokapis.com/v2/post/publish/video/init/',
+    {
+      post_info: {
+        title: captionText,
+        privacy_level: privacyLevel,
+        disable_duet: false,
+        disable_comment: false,
+        disable_stitch: false,
+      },
+      source_info: {
+        source: 'FILE_UPLOAD',
+        video_size: fileSize,
+        chunk_size: CHUNK_SIZE,
+        total_chunk_count: totalChunks,
+      },
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+    }
+  );
+
+  if (initRes.data.error?.code && initRes.data.error.code !== 'ok') {
+    throw new Error(`TikTok init failed: ${initRes.data.error.message || JSON.stringify(initRes.data)}`);
+  }
+
+  const { publish_id, upload_url } = initRes.data.data;
+  console.log(`[tiktok] publish_id=${publish_id} chunks=${totalChunks} size=${fileSize}`);
+
+  // 2. Upload chunks
+  const fd = fs.openSync(videoPath, 'r');
+  try {
+    for (let i = 0; i < totalChunks; i++) {
+      const start = i * CHUNK_SIZE;
+      const end = Math.min(start + CHUNK_SIZE, fileSize) - 1;
+      const chunkLen = end - start + 1;
+      const buf = Buffer.allocUnsafe(chunkLen);
+      fs.readSync(fd, buf, 0, chunkLen, start);
+      await axios.put(upload_url, buf, {
+        headers: {
+          'Content-Type': 'video/mp4',
+          'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+          'Content-Length': String(chunkLen),
+        },
+        maxContentLength: Infinity,
+        maxBodyLength: Infinity,
+      });
+      console.log(`[tiktok] chunk ${i + 1}/${totalChunks} uploaded`);
+    }
+  } finally {
+    fs.closeSync(fd);
+  }
+
+  // 3. Poll status (up to 90 s)
+  for (let attempt = 0; attempt < 30; attempt++) {
+    await new Promise(r => setTimeout(r, 3000));
+    const statusRes = await axios.post(
+      'https://open.tiktokapis.com/v2/post/publish/status/fetch/',
+      { publish_id },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+      }
+    );
+    const d = statusRes.data.data || {};
+    console.log(`[tiktok] attempt=${attempt + 1} status=${d.status}`);
+    if (d.status === 'PUBLISH_COMPLETE') {
+      const postId = d.publicaly_available_post_id?.[0];
+      return {
+        publish_id,
+        postId,
+        url: postId ? `https://www.tiktok.com/@${conn.username}/video/${postId}` : undefined,
+      };
+    }
+    if (d.status === 'FAILED') {
+      throw new Error(`TikTok publish failed: ${d.fail_reason || 'unknown'}`);
+    }
+  }
+
+  // Timed out — video may still publish; return publish_id
+  console.warn(`[tiktok] status poll timed out publish_id=${publish_id}`);
+  return { publish_id, timedOut: true };
+}

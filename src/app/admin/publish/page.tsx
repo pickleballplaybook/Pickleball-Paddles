@@ -8,10 +8,13 @@ type YouTubeAccount = { id: string; name: string };
 type FacebookAccount = { id: string; name: string };
 type InstagramAccount = { id: string; username: string; facebookPageName?: string };
 
+type TikTokAccount = { id: string; username: string };
+
 type Connections = {
   youtube: YouTubeAccount[];
   facebook: FacebookAccount[];
   instagram: InstagramAccount[];
+  tiktok: TikTokAccount[];
 };
 
 type Clip = {
@@ -31,8 +34,12 @@ type Clip = {
   sourceUrl?: string;
 };
 
+type TikTokOptions = {
+  privacyLevel?: "PUBLIC_TO_EVERYONE" | "MUTUAL_FOLLOW_FRIENDS" | "SELF_ONLY";
+};
+
 type Target = {
-  platform: "youtube" | "facebook" | "instagram";
+  platform: "youtube" | "facebook" | "instagram" | "tiktok";
   id: string;
 };
 
@@ -111,7 +118,7 @@ type CatalogProduct = {
   price?: string;
 };
 
-type AnyOptions = YouTubeOptions & FacebookOptions & InstagramOptions;
+type AnyOptions = YouTubeOptions & FacebookOptions & InstagramOptions & TikTokOptions;
 type TargetOptionsMap = Record<string, AnyOptions>; // key = targetKey
 
 type YouTubePlaylist = { id: string; title: string };
@@ -461,7 +468,7 @@ export default function PublishPage() {
     window.location.href = "/admin/shorts/login?next=/admin/publish";
   }
 
-  function openConnectPopup(provider: "youtube" | "meta") {
+  function openConnectPopup(provider: "youtube" | "meta" | "tiktok") {
     const w = 600;
     const h = 700;
     const left = window.screenX + (window.outerWidth - w) / 2;
@@ -729,6 +736,8 @@ export default function PublishPage() {
           if (collabs.length > 0) options.collaboratorUsernames = collabs;
           if (raw.locationId) options.locationId = raw.locationId;
           if (raw.productIds && raw.productIds.length > 0) options.productIds = raw.productIds;
+        } else if (t.platform === "tiktok") {
+          if (raw.privacyLevel) options.privacyLevel = raw.privacyLevel;
         }
         return Object.keys(options).length > 0 ? { ...t, options } : t;
       });
@@ -904,6 +913,21 @@ export default function PublishPage() {
             ))}
           </ConnectionGroup>
 
+          <ConnectionGroup
+            heading="TikTok"
+            empty="No TikTok accounts connected."
+            connectLabel="+ Connect TikTok account"
+            onConnect={() => openConnectPopup("tiktok")}
+          >
+            {connections?.tiktok.map((c) => (
+              <ConnectionRow
+                key={c.id}
+                label={`@${c.username}`}
+                onRemove={() => disconnect("tiktok", c.id)}
+              />
+            ))}
+          </ConnectionGroup>
+
           {connectionsError && (
             <p className="text-red-400 text-sm">{connectionsError}</p>
           )}
@@ -1029,7 +1053,8 @@ export default function PublishPage() {
             <p className="text-sm text-gray-500 mb-4">Loading…</p>
           ) : connections.youtube.length === 0 &&
             connections.facebook.length === 0 &&
-            connections.instagram.length === 0 ? (
+            connections.instagram.length === 0 &&
+            connections.tiktok.length === 0 ? (
             <p className="text-sm text-gray-500 mb-4">
               Connect at least one account above first.
             </p>
@@ -1104,6 +1129,27 @@ export default function PublishPage() {
                           onChange={(patch) => setOptions(key, patch)}
                           otherAccounts={connections.instagram.filter((a) => a.id !== c.id)}
                           connectionId={c.id}
+                        />
+                      }
+                    />
+                  ),
+                });
+              }
+              for (const c of connections.tiktok) {
+                const key = `tiktok:${c.id}`;
+                const checked = selectedTargets.some((t) => t.platform === "tiktok" && t.id === c.id);
+                rows.push({
+                  brand: brandFor(c.username),
+                  node: (
+                    <DestinationRow
+                      key={`tt-${c.id}`}
+                      label={`TikTok · @${c.username}`}
+                      checked={checked}
+                      onChange={() => toggleTarget({ platform: "tiktok", id: c.id })}
+                      options={
+                        <TikTokOptionsExpander
+                          opts={targetOptions[key] || {}}
+                          onChange={(patch) => setOptions(key, patch)}
                         />
                       }
                     />
@@ -1818,6 +1864,33 @@ function InstagramOptionsExpander({
           onChange={(next) => onChange({ productIds: next })}
         />
       </div>
+    </div>
+  );
+}
+
+function TikTokOptionsExpander({
+  opts,
+  onChange,
+}: {
+  opts: TikTokOptions;
+  onChange: (patch: Partial<TikTokOptions>) => void;
+}) {
+  return (
+    <div className="pt-4 space-y-3 text-sm">
+      <label className="flex flex-col gap-1">
+        <span className="text-xs uppercase tracking-wide text-gray-500">Privacy</span>
+        <select
+          value={opts.privacyLevel || "PUBLIC_TO_EVERYONE"}
+          onChange={(e) =>
+            onChange({ privacyLevel: e.target.value as TikTokOptions["privacyLevel"] })
+          }
+          className="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white"
+        >
+          <option value="PUBLIC_TO_EVERYONE">Public</option>
+          <option value="MUTUAL_FOLLOW_FRIENDS">Friends</option>
+          <option value="SELF_ONLY">Private</option>
+        </select>
+      </label>
     </div>
   );
 }
