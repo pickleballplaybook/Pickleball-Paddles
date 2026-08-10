@@ -663,37 +663,62 @@ export default function ShortsPage() {
         uploadId: string; token: string; exp: number; uploadBaseUrl: string;
       };
 
-      // 2. Upload directly from the browser to Railway — bypasses the Vercel
-      //    proxy hop so throughput is limited only by the user's uplink.
-      //    Railway's CORS config already allows https://playbookpaddles.com.
-      //    10 MB chunks (up from 4 MB) reduce per-request overhead significantly.
+      // 2. Upload all chunks directly to Railway in parallel (4 simultaneous
+      //    streams). Each chunk is saved independently — no ordering dependency —
+      //    then finalized server-side once all are received.
       const CHUNK_SIZE = 10 * 1024 * 1024;
+      const CONCURRENCY = 4;
       const totalChunks = Math.ceil(selectedFile.size / CHUNK_SIZE);
-      let finalPath = "";
+      let uploadedCount = 0;
 
-      for (let i = 0; i < totalChunks; i++) {
+      const uploadChunk = async (i: number): Promise<void> => {
         const chunk = selectedFile.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
         const qs = new URLSearchParams({
           token,
           exp: String(exp),
           index: String(i),
           total: String(totalChunks),
-          chunkSize: String(CHUNK_SIZE),
           filename: selectedFile.name,
         });
-        const chunkRes = await fetch(
+        const r = await fetch(
           `${uploadBaseUrl}/api/file-upload/${uploadId}/chunk?${qs}`,
           { method: "POST", body: chunk }
         );
-        const chunkData = await chunkRes.json();
-        if (!chunkRes.ok) throw new Error(chunkData.error || `Chunk ${i} upload failed`);
-        setUploadProgress(Math.round(((i + 1) / totalChunks) * 50));
-        if (chunkData.done) finalPath = chunkData.path as string;
-      }
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error || `Chunk ${i} upload failed`);
+        uploadedCount++;
+        setUploadProgress(Math.round((uploadedCount / totalChunks) * 48));
+      };
+
+      // Worker pool — CONCURRENCY workers each pull from the queue until empty.
+      const queue = Array.from({ length: totalChunks }, (_, i) => i);
+      await Promise.all(
+        Array.from({ length: Math.min(CONCURRENCY, totalChunks) }, async () => {
+          while (queue.length > 0) {
+            const i = queue.shift()!;
+            await uploadChunk(i);
+          }
+        })
+      );
+
+      setUploadProgress(49);
+
+      // 3. Assemble chunks into the final file on Railway.
+      const finalizeRes = await fetch(
+        `${uploadBaseUrl}/api/file-upload/${uploadId}/finalize`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token, exp, total: totalChunks, filename: selectedFile.name }),
+        }
+      );
+      const finalizeData = await finalizeRes.json();
+      if (!finalizeRes.ok) throw new Error(finalizeData.error || "Finalize failed");
+      const finalPath = finalizeData.path as string;
 
       if (!finalPath) throw new Error("Upload did not complete — no path returned");
 
-      // 3. Kick off processing (skips yt-dlp entirely)
+      // 4. Kick off processing (skips yt-dlp entirely)
       const processRes = await fetch("/api/admin/shorts/process-local", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

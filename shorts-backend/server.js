@@ -1516,28 +1516,20 @@ const uploadMulter = multer({
 // mid-upload (and may have partially written) can be retried without
 // duplicating bytes — the partial leftovers are discarded and the retried
 // chunk's bytes land in the same final position.
+// Chunk upload — saves each chunk as an independent file so the client can
+// upload multiple chunks in parallel without ordering constraints.
 app.post('/api/file-upload/:uploadId/chunk', (req, res) => {
   const { uploadId } = req.params;
   const token = String(req.query.token || '');
   const exp = Number(req.query.exp || 0);
   const index = Number(req.query.index);
   const total = Number(req.query.total);
-  // Client-declared chunk size; defaults to 5 MB to match older clients that
-  // didn't send this param. Required for safe retries because we use it to
-  // compute the expected file size before each append.
-  const chunkSize = Number(req.query.chunkSize || 5 * 1024 * 1024);
-  const filename = String(req.query.filename || 'upload.bin')
-    .replace(/[^a-zA-Z0-9._-]/g, '_')
-    .slice(0, 200) || 'upload.bin';
 
   if (!token || !exp || !Number.isFinite(index) || !Number.isFinite(total)) {
     return res.status(400).json({ error: 'Missing or invalid chunk params' });
   }
   if (total < 1 || index < 0 || index >= total) {
     return res.status(400).json({ error: 'Bad index/total' });
-  }
-  if (!Number.isFinite(chunkSize) || chunkSize < 1) {
-    return res.status(400).json({ error: 'Bad chunkSize' });
   }
   if (exp < Date.now()) return res.status(401).json({ error: 'Token expired' });
   if (usedUploadTokens.has(uploadId)) {
@@ -1553,37 +1545,9 @@ app.post('/api/file-upload/:uploadId/chunk', (req, res) => {
 
   const dir = path.join(UPLOADS_DIR, uploadId);
   fs.mkdirSync(dir, { recursive: true });
-  const finalPath = path.join(dir, filename);
+  const chunkPath = path.join(dir, `chunk_${String(index).padStart(8, '0')}`);
 
-  // Normalize the file to its expected pre-chunk size so the upcoming append
-  // lands at the right offset whether this is a first attempt or a retry of
-  // a chunk that partially uploaded.
-  const expectedSize = index * chunkSize;
-  try {
-    if (index === 0) {
-      // First chunk: start fresh. Truncate any leftover bytes from a previous
-      // upload attempt with the same uploadId (rare, but cheap to handle).
-      fs.writeFileSync(finalPath, '');
-    } else {
-      let currentSize = 0;
-      try { currentSize = fs.statSync(finalPath).size; } catch { currentSize = 0; }
-      if (currentSize < expectedSize) {
-        return res.status(409).json({
-          error: `Out-of-order chunk: have ${currentSize} bytes, expected ≥${expectedSize}`,
-        });
-      }
-      if (currentSize > expectedSize) {
-        // Partial bytes from a failed prior attempt at this same chunk —
-        // discard them so the retry starts cleanly.
-        fs.truncateSync(finalPath, expectedSize);
-      }
-    }
-  } catch (err) {
-    return res.status(500).json({ error: 'Failed to prepare file: ' + err.message });
-  }
-
-  // Append the chunk bytes to the (now correctly sized) file.
-  const writeStream = fs.createWriteStream(finalPath, { flags: 'a' });
+  const writeStream = fs.createWriteStream(chunkPath);
   let aborted = false;
   req.on('aborted', () => { aborted = true; writeStream.destroy(); });
   writeStream.on('error', err => {
@@ -1591,14 +1555,64 @@ app.post('/api/file-upload/:uploadId/chunk', (req, res) => {
   });
   writeStream.on('finish', () => {
     if (aborted) return;
-    if (index === total - 1) {
-      usedUploadTokens.add(uploadId);
-      res.json({ done: true, path: finalPath });
-    } else {
-      res.json({ done: false, index });
-    }
+    res.json({ ok: true, index });
   });
   req.pipe(writeStream);
+});
+
+// Finalize — called after all chunks have been uploaded. Assembles them in
+// order into the final file. Token re-verified to prevent unauthorized assembly.
+app.post('/api/file-upload/:uploadId/finalize', express.json(), async (req, res) => {
+  const { uploadId } = req.params;
+  const { token, exp, total, filename } = req.body || {};
+  const numExp = Number(exp);
+  const numTotal = Number(total);
+
+  if (!token || !numExp || !numTotal) {
+    return res.status(400).json({ error: 'Missing finalize params' });
+  }
+  if (numExp < Date.now()) return res.status(401).json({ error: 'Token expired' });
+  if (usedUploadTokens.has(uploadId)) {
+    return res.status(409).json({ error: 'Upload already finalized' });
+  }
+  const expected = signUploadToken(uploadId, numExp);
+  if (
+    expected.length !== token.length ||
+    !crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(token))
+  ) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+
+  const dir = path.join(UPLOADS_DIR, uploadId);
+  const safeFilename = String(filename || 'upload.bin')
+    .replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 200) || 'upload.bin';
+  const finalPath = path.join(dir, safeFilename);
+
+  const chunkPaths = Array.from({ length: numTotal }, (_, i) =>
+    path.join(dir, `chunk_${String(i).padStart(8, '0')}`)
+  );
+  const missing = chunkPaths.filter(p => { try { return !fs.statSync(p).size; } catch { return true; } });
+  if (missing.length > 0) {
+    return res.status(409).json({ error: `${missing.length} chunk(s) missing — retry upload` });
+  }
+
+  try {
+    const out = fs.createWriteStream(finalPath);
+    for (const cp of chunkPaths) {
+      await new Promise((resolve, reject) => {
+        const inp = fs.createReadStream(cp);
+        inp.on('error', reject);
+        inp.on('end', resolve);
+        inp.pipe(out, { end: false });
+      });
+      try { fs.unlinkSync(cp); } catch {}
+    }
+    await new Promise((resolve, reject) => { out.end(); out.on('finish', resolve); out.on('error', reject); });
+    usedUploadTokens.add(uploadId);
+    res.json({ done: true, path: finalPath });
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
+  }
 });
 
 // Lists every clip across every job — used by the publish picker.
