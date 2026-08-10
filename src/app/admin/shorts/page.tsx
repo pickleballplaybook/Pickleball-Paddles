@@ -507,7 +507,12 @@ function ClipEditor({
 export default function ShortsPage() {
   const [tab, setTab] = useState<Tab>("new");
 
+  const [inputMode, setInputMode] = useState<"upload" | "url">("upload");
   const [url, setUrl] = useState("");
+  const [videoUrl, setVideoUrl] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
   const [topTitle, setTopTitle] = useState(false);
   const [job, setJob] = useState<Job | null>(null);
   const [jobId, setJobId] = useState<string | null>(null);
@@ -578,6 +583,12 @@ export default function ShortsPage() {
     }
   }, [tab, history, loadHistory]);
 
+  // Pre-fill videoUrl from job metadata when a job is loaded/viewed
+  useEffect(() => {
+    if (job?.youtubeUrl && !videoUrl) setVideoUrl(job.youtubeUrl);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [job?.youtubeUrl]);
+
   async function logout() {
     try {
       await fetch("/api/admin/shorts/logout", { method: "POST" });
@@ -636,12 +647,104 @@ export default function ShortsPage() {
     }
   }
 
+  async function handleUpload() {
+    if (!selectedFile) return;
+    setLoading(true);
+    setError("");
+    setUploadProgress(0);
+    setJob({ status: "queued", message: "Uploading…", progress: 0 });
+
+    try {
+      // 1. Reserve an upload slot on Railway (server-to-server with Bearer auth).
+      const reserveRes = await fetch("/api/admin/shorts/upload-reserve", { method: "POST" });
+      const reserveData = await reserveRes.json();
+      if (!reserveRes.ok) throw new Error(reserveData.error || "Reserve failed");
+      const { uploadId, token, exp, uploadBaseUrl } = reserveData as {
+        uploadId: string; token: string; exp: number; uploadBaseUrl: string;
+      };
+
+      // 2. Upload directly from the browser to Railway — bypasses the Vercel
+      //    proxy hop so throughput is limited only by the user's uplink.
+      //    Railway's CORS config already allows https://playbookpaddles.com.
+      //    10 MB chunks (up from 4 MB) reduce per-request overhead significantly.
+      const CHUNK_SIZE = 10 * 1024 * 1024;
+      const totalChunks = Math.ceil(selectedFile.size / CHUNK_SIZE);
+      let finalPath = "";
+
+      for (let i = 0; i < totalChunks; i++) {
+        const chunk = selectedFile.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
+        const qs = new URLSearchParams({
+          token,
+          exp: String(exp),
+          index: String(i),
+          total: String(totalChunks),
+          chunkSize: String(CHUNK_SIZE),
+          filename: selectedFile.name,
+        });
+        const chunkRes = await fetch(
+          `${uploadBaseUrl}/api/file-upload/${uploadId}/chunk?${qs}`,
+          { method: "POST", body: chunk }
+        );
+        const chunkData = await chunkRes.json();
+        if (!chunkRes.ok) throw new Error(chunkData.error || `Chunk ${i} upload failed`);
+        setUploadProgress(Math.round(((i + 1) / totalChunks) * 50));
+        if (chunkData.done) finalPath = chunkData.path as string;
+      }
+
+      if (!finalPath) throw new Error("Upload did not complete — no path returned");
+
+      // 3. Kick off processing (skips yt-dlp entirely)
+      const processRes = await fetch("/api/admin/shorts/process-local", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ videoPath: finalPath, sourceUrl: videoUrl || undefined, topTitle }),
+      });
+      const processData = await processRes.json();
+      if (!processRes.ok || processData.error) throw new Error(processData.error || "Processing failed");
+
+      const newJobId: string = processData.jobId;
+      setJobId(newJobId);
+      setJob({ status: "queued", message: "Starting…", progress: 50 });
+
+      // 4. Poll for status
+      if (pollRef.current) clearInterval(pollRef.current);
+      pollRef.current = setInterval(async () => {
+        try {
+          const r = await fetch(`/api/admin/shorts/jobs/${newJobId}/status`);
+          const d: Job = await r.json();
+          // Map backend progress (0-100) to the 50-100 range since 0-50 was upload
+          if (d.progress !== undefined) d.progress = 50 + Math.round((d.progress / 100) * 50);
+          setJob(d);
+          if (d.status === "done" || d.status === "error") {
+            if (pollRef.current) clearInterval(pollRef.current);
+            pollRef.current = null;
+            setLoading(false);
+            if (d.status === "error") setError(d.error || d.message || "Processing failed");
+            setHistory(null);
+          }
+        } catch (pollErr) {
+          if (pollRef.current) clearInterval(pollRef.current);
+          pollRef.current = null;
+          setLoading(false);
+          setError(pollErr instanceof Error ? pollErr.message : "Polling failed");
+        }
+      }, 1500);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Upload failed");
+      setJob(null);
+      setLoading(false);
+    }
+  }
+
   function reset() {
     if (pollRef.current) clearInterval(pollRef.current);
     pollRef.current = null;
     setJob(null);
     setJobId(null);
     setUrl("");
+    setVideoUrl("");
+    setSelectedFile(null);
+    setUploadProgress(0);
     setError("");
     setLoading(false);
   }
@@ -681,7 +784,7 @@ export default function ShortsPage() {
         <AdminNav />
         <h1 className="text-4xl font-bold mb-2">Shorts Generator</h1>
         <p className="text-gray-400 mb-6">
-          Paste a YouTube URL and AI will cut the best clips
+          Upload a video or paste a YouTube URL — AI cuts the best clips
         </p>
 
         <div className="flex items-center justify-between mb-8">
@@ -710,24 +813,101 @@ export default function ShortsPage() {
           <>
             {!job && (
               <div className="mb-8 space-y-4">
-                <div className="flex gap-3">
-                  <input
-                    className="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white outline-none"
-                    placeholder="https://youtube.com/watch?v=..."
-                    value={url}
-                    onChange={(e) => setUrl(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-                  />
-                  <button
-                    onClick={handleSubmit}
-                    disabled={loading || !url.trim()}
-                    className="bg-accent-500 hover:bg-accent-400 disabled:bg-gray-700 text-black font-bold px-6 rounded-xl"
-                  >
-                    Cut It
-                  </button>
+                {/* Input mode toggle */}
+                <div className="inline-flex bg-gray-900 border border-gray-800 rounded-xl p-1 mb-1">
+                  {(["upload", "url"] as const).map((m) => (
+                    <button
+                      key={m}
+                      onClick={() => setInputMode(m)}
+                      className={`px-4 py-1.5 rounded-lg text-sm font-medium transition ${
+                        inputMode === m ? "bg-accent-500 text-black" : "text-gray-400 hover:text-white"
+                      }`}
+                    >
+                      {m === "upload" ? "Upload video" : "YouTube URL"}
+                    </button>
+                  ))}
                 </div>
 
-                <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4">
+                {inputMode === "upload" ? (
+                  <div className="flex gap-3 items-center">
+                    <label
+                      className="flex-1 cursor-pointer"
+                      onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                      onDragEnter={(e) => { e.preventDefault(); setIsDragging(true); }}
+                      onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        setIsDragging(false);
+                        const file = e.dataTransfer.files[0];
+                        if (file && file.type.startsWith("video/")) setSelectedFile(file);
+                      }}
+                    >
+                      <div className={`border-2 border-dashed rounded-xl px-4 py-6 text-center transition-colors ${
+                        isDragging
+                          ? "bg-accent-500/10 border-accent-500"
+                          : selectedFile
+                          ? "bg-gray-900 border-accent-500/50"
+                          : "bg-gray-900 border-gray-700 hover:border-accent-500"
+                      }`}>
+                        {selectedFile ? (
+                          <div>
+                            <p className="text-white text-sm font-medium">{selectedFile.name}</p>
+                            <p className="text-gray-400 text-xs mt-0.5">{(selectedFile.size / 1024 / 1024).toFixed(1)} MB · Click or drag to replace</p>
+                          </div>
+                        ) : (
+                          <div>
+                            <p className="text-gray-300 text-sm font-medium">Drop video here or click to browse</p>
+                            <p className="text-gray-500 text-xs mt-0.5">MP4, MOV, or any video format</p>
+                          </div>
+                        )}
+                      </div>
+                      <input
+                        type="file"
+                        accept="video/*"
+                        className="hidden"
+                        onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)}
+                      />
+                    </label>
+                    <button
+                      onClick={handleUpload}
+                      disabled={loading || !selectedFile}
+                      className="bg-accent-500 hover:bg-accent-400 disabled:bg-gray-700 text-black font-bold px-6 py-6 rounded-xl self-stretch"
+                    >
+                      Cut It
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-3">
+                    <input
+                      className="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white outline-none"
+                      placeholder="https://youtube.com/watch?v=..."
+                      value={url}
+                      onChange={(e) => setUrl(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+                    />
+                    <button
+                      onClick={handleSubmit}
+                      disabled={loading || !url.trim()}
+                      className="bg-accent-500 hover:bg-accent-400 disabled:bg-gray-700 text-black font-bold px-6 rounded-xl"
+                    >
+                      Cut It
+                    </button>
+                  </div>
+                )}
+
+                <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 mt-1">
+                  <label className="block text-xs uppercase tracking-wide text-gray-500 mb-2">
+                    YouTube URL (added to every description)
+                  </label>
+                  <input
+                    className="w-full bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-sm text-white outline-none placeholder-gray-600"
+                    placeholder="https://youtu.be/..."
+                    value={videoUrl}
+                    onChange={(e) => setVideoUrl(e.target.value)}
+                  />
+                </div>
+
+                <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 mt-1">
                   <label className="block text-xs uppercase tracking-wide text-gray-500 mb-2">
                     Title at top (whole clip)
                   </label>
@@ -771,7 +951,11 @@ export default function ShortsPage() {
             {inProgress && (
               <div className="bg-gray-900 rounded-2xl p-6 mb-8">
                 <div className="flex justify-between mb-2">
-                  <span className="text-accent-400">{job?.message || "Working..."}</span>
+                  <span className="text-accent-400">
+                    {job?.message === "Uploading…" && uploadProgress < 100
+                      ? `Uploading… ${uploadProgress}%`
+                      : job?.message || "Working..."}
+                  </span>
                   <span className="text-accent-400 font-bold">{job?.progress || 0}%</span>
                 </div>
                 <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
@@ -785,7 +969,7 @@ export default function ShortsPage() {
 
             {job && job.status === "done" && job.clips && (
               <div>
-                <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                   <h2 className="text-2xl font-bold">{job.clips.length} Clips Ready</h2>
                   {jobId && (
                     <a
@@ -795,6 +979,15 @@ export default function ShortsPage() {
                       Download all (.zip)
                     </a>
                   )}
+                </div>
+                <div className="flex items-center gap-3 bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 mb-6">
+                  <span className="text-xs text-gray-500 uppercase tracking-wide whitespace-nowrap">YouTube URL</span>
+                  <input
+                    className="flex-1 bg-transparent text-sm text-white outline-none placeholder-gray-600"
+                    placeholder="https://youtu.be/... (updates all descriptions)"
+                    value={videoUrl}
+                    onChange={(e) => setVideoUrl(e.target.value)}
+                  />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
                   {job.clips.map((clip, i) => (
@@ -859,7 +1052,7 @@ export default function ShortsPage() {
                             readOnly
                             value={buildReelDescription(
                               clip,
-                              job.youtubeUrl,
+                              videoUrl || job.youtubeUrl,
                               REEL_TAG_OPTIONS.filter((t) =>
                                 isTagEnabled(i, t.handle)
                               ).map((t) => t.handle)
@@ -873,7 +1066,7 @@ export default function ShortsPage() {
                                 i,
                                 buildReelDescription(
                                   clip,
-                                  job.youtubeUrl,
+                                  videoUrl || job.youtubeUrl,
                                   REEL_TAG_OPTIONS.filter((t) =>
                                     isTagEnabled(i, t.handle)
                                   ).map((t) => t.handle)
