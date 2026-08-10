@@ -1477,7 +1477,7 @@ const upload = multer({
 // Returns a short-lived signed token the browser can use to PUT a file directly.
 app.post('/api/upload-reserve', (_req, res) => {
   const uploadId = uuidv4();
-  const exp = Date.now() + 30 * 60 * 1000; // 30 min
+  const exp = Date.now() + 6 * 60 * 60 * 1000; // 6 hours — large files (6 GB+) can take >30 min over typical home uplinks
   const token = signUploadToken(uploadId, exp);
   res.json({ uploadId, token, exp });
 });
