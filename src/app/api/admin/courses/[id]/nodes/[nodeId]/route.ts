@@ -25,6 +25,38 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
     if (typeof body.content === "string") update.content = body.content;
     if (typeof body.sortOrder === "number") update.sortOrder = body.sortOrder;
     if ("parentId" in body) update.parentId = typeof body.parentId === "string" ? body.parentId : null;
+    if ("subtitle" in body) update.subtitle = typeof body.subtitle === "string" && body.subtitle.trim() ? body.subtitle.trim() : null;
+    if ("thumbnailUrl" in body) update.thumbnailUrl = typeof body.thumbnailUrl === "string" && body.thumbnailUrl.trim() ? body.thumbnailUrl.trim() : null;
+    if ("pdfAttachments" in body) {
+      update.pdfAttachments = Array.isArray(body.pdfAttachments)
+        ? (body.pdfAttachments as { name: string; url: string }[]).filter(
+            (a) => typeof a?.name === "string" && typeof a?.url === "string"
+          )
+        : [];
+    }
+    if ("minLevel" in body) {
+      update.minLevel = typeof body.minLevel === "number" && body.minLevel >= 1
+        ? Math.floor(body.minLevel)
+        : null;
+    }
+    if ("minTier" in body) {
+      update.minTier = body.minTier === "pro" || body.minTier === "basic" ? body.minTier : null;
+    }
+    if ("drillIds" in body) {
+      update.drillIds = Array.isArray(body.drillIds)
+        ? (body.drillIds as unknown[]).filter((id) => typeof id === "string")
+        : [];
+    }
+    if ("videoStorageUrl" in body) {
+      update.videoStorageUrl = typeof body.videoStorageUrl === "string" && body.videoStorageUrl.trim()
+        ? body.videoStorageUrl.trim()
+        : null;
+    }
+    if ("videoThumbnailUrl" in body) {
+      update.videoThumbnailUrl = typeof body.videoThumbnailUrl === "string" && body.videoThumbnailUrl.trim()
+        ? body.videoThumbnailUrl.trim()
+        : null;
+    }
     await ref.set(update, { merge: true });
     return NextResponse.json({ ok: true });
   } catch (err) {

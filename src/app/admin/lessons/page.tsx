@@ -19,6 +19,11 @@ async function loadData(): Promise<{ courses: Course[] }> {
       coverImageUrl: (r.coverImageUrl as string | null) ?? null,
       published: r.published === true,
       sortOrder: (r.sortOrder as number) ?? 0,
+      minLevel: (r.minLevel as number | null) ?? null,
+      orMemberTierEnabled: (r.orMemberTierEnabled as boolean) ?? false,
+      memberTier: (r.memberTier as "basic" | "pro" | null) ?? null,
+      proTier: (r.proTier as "basic" | "pro" | null) ?? null,
+      category: (r.category as "technique" | "strategy" | "mindset" | null) ?? null,
     };
   });
 

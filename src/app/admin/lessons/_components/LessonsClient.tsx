@@ -265,7 +265,7 @@ export function LessonsClient({ initial }: { initial: LessonCategory[] }) {
                   onChange={(e) => setForm({ ...form, requiresPro: e.target.checked })}
                   className="w-4 h-4 accent-accent-500"
                 />
-                <span>Requires Pro</span>
+                <span>Paid only</span>
               </label>
               <label className="flex items-center gap-2 text-sm cursor-pointer">
                 <input
@@ -332,7 +332,7 @@ export function LessonsClient({ initial }: { initial: LessonCategory[] }) {
                   <th className="text-left px-4 py-3">Title</th>
                   <th className="text-left px-4 py-3">Description</th>
                   <th className="text-center px-4 py-3">Level</th>
-                  <th className="text-center px-4 py-3">Pro</th>
+                  <th className="text-center px-4 py-3">Paid</th>
                   <th className="text-center px-4 py-3">Order</th>
                   <th className="text-center px-4 py-3">Active</th>
                   <th className="px-4 py-3" />

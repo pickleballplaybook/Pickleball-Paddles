@@ -51,6 +51,10 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
     if (body.coverImageUrl !== undefined) update.coverImageUrl = body.coverImageUrl || null;
     if (typeof body.published === "boolean") update.published = body.published;
     if (typeof body.sortOrder === "number") update.sortOrder = body.sortOrder;
+    if (body.minLevel !== undefined) update.minLevel = body.minLevel ?? null;
+    if (typeof body.orMemberTierEnabled === "boolean") update.orMemberTierEnabled = body.orMemberTierEnabled;
+    if (typeof body.memberTier === "string" || body.memberTier === null) update.memberTier = body.memberTier;
+    if (typeof body.proTier === "string" || body.proTier === null) update.proTier = body.proTier;
     await ref.set(update, { merge: true });
     return NextResponse.json({ ok: true, id });
   } catch (err) {

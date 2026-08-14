@@ -36,16 +36,27 @@ export default async function LessonEditorPage({ params }: PageProps) {
     return {
       id: d.id,
       title: (nr.title as string) ?? "Untitled",
+      subtitle: (nr.subtitle as string | null) ?? null,
       type: (nr.type as string) === "folder" ? "folder" : "page",
       parentId: (nr.parentId as string | null) ?? null,
       sortOrder: (nr.sortOrder as number) ?? 0,
       published: nr.published !== false,
       content: (nr.content as string) ?? "",
+      thumbnailUrl: (nr.thumbnailUrl as string | null) ?? null,
+      pdfAttachments: Array.isArray(nr.pdfAttachments)
+        ? (nr.pdfAttachments as { name: string; url: string }[])
+        : [],
+      minLevel: typeof nr.minLevel === "number" ? nr.minLevel : null,
+      minTier: nr.minTier === "pro" || nr.minTier === "basic" ? nr.minTier : null,
+      drillIds: Array.isArray(nr.drillIds) ? (nr.drillIds as string[]).filter((x) => typeof x === "string") : [],
+      videoStorageUrl: typeof nr.videoStorageUrl === "string" && nr.videoStorageUrl ? nr.videoStorageUrl : null,
+      videoThumbnailUrl: typeof nr.videoThumbnailUrl === "string" && nr.videoThumbnailUrl ? nr.videoThumbnailUrl : null,
+      category: nr.category === "technique" || nr.category === "strategy" || nr.category === "mindset" ? nr.category : null,
     };
   });
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white flex flex-col">
+    <div className="h-screen bg-gray-950 text-white flex flex-col overflow-hidden">
       {/* Top bar */}
       <div className="px-6 py-4 border-b border-gray-800 flex-shrink-0">
         <AdminNav />
