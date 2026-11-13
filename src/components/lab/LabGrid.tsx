@@ -12,11 +12,11 @@ export default function LabGrid() {
         <defs>
           {/* Fine grid: every 40px */}
           <pattern id="lab-grid-fine" width="40" height="40" patternUnits="userSpaceOnUse">
-            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(163,230,53,0.035)" strokeWidth="0.5" />
+            <path d="M 40 0 L 0 0 0 40" fill="none" style={{ stroke: "rgba(var(--lab-green-rgb),0.035)" }} strokeWidth="0.5" />
           </pattern>
           {/* Major grid: every 200px */}
           <pattern id="lab-grid-major" width="200" height="200" patternUnits="userSpaceOnUse">
-            <path d="M 200 0 L 0 0 0 200" fill="none" stroke="rgba(163,230,53,0.07)" strokeWidth="0.75" />
+            <path d="M 200 0 L 0 0 0 200" fill="none" style={{ stroke: "rgba(var(--lab-green-rgb),0.07)" }} strokeWidth="0.75" />
           </pattern>
         </defs>
         <rect width="100%" height="100%" fill="url(#lab-grid-fine)" />
@@ -26,19 +26,19 @@ export default function LabGrid() {
       {/* Corner calibration marks — 20px L-shaped brackets */}
       {/* Top-left */}
       <svg style={{ position: "absolute", top: 20, left: 20 }} width="20" height="20" viewBox="0 0 20 20">
-        <path d="M0 20 L0 0 L20 0" fill="none" stroke="rgba(163,230,53,0.35)" strokeWidth="1" />
+        <path d="M0 20 L0 0 L20 0" fill="none" style={{ stroke: "rgba(var(--lab-green-rgb),0.35)" }} strokeWidth="1" />
       </svg>
       {/* Top-right */}
       <svg style={{ position: "absolute", top: 20, right: 20 }} width="20" height="20" viewBox="0 0 20 20">
-        <path d="M20 20 L20 0 L0 0" fill="none" stroke="rgba(163,230,53,0.35)" strokeWidth="1" />
+        <path d="M20 20 L20 0 L0 0" fill="none" style={{ stroke: "rgba(var(--lab-green-rgb),0.35)" }} strokeWidth="1" />
       </svg>
       {/* Bottom-left */}
       <svg style={{ position: "absolute", bottom: 20, left: 20 }} width="20" height="20" viewBox="0 0 20 20">
-        <path d="M0 0 L0 20 L20 20" fill="none" stroke="rgba(163,230,53,0.35)" strokeWidth="1" />
+        <path d="M0 0 L0 20 L20 20" fill="none" style={{ stroke: "rgba(var(--lab-green-rgb),0.35)" }} strokeWidth="1" />
       </svg>
       {/* Bottom-right */}
       <svg style={{ position: "absolute", bottom: 20, right: 20 }} width="20" height="20" viewBox="0 0 20 20">
-        <path d="M20 0 L20 20 L0 20" fill="none" stroke="rgba(163,230,53,0.35)" strokeWidth="1" />
+        <path d="M20 0 L20 20 L0 20" fill="none" style={{ stroke: "rgba(var(--lab-green-rgb),0.35)" }} strokeWidth="1" />
       </svg>
 
       {/* Horizontal tick strip — top edge */}
@@ -49,7 +49,7 @@ export default function LabGrid() {
           left: 0,
           right: 0,
           height: 4,
-          background: "linear-gradient(90deg, transparent, rgba(163,230,53,0.08) 20%, rgba(163,230,53,0.08) 80%, transparent)",
+          background: "linear-gradient(90deg, transparent, rgba(var(--lab-green-rgb),0.08) 20%, rgba(var(--lab-green-rgb),0.08) 80%, transparent)",
         }}
       />
       {/* Vertical tick strip — left edge */}
@@ -60,7 +60,7 @@ export default function LabGrid() {
           left: 0,
           bottom: 0,
           width: 4,
-          background: "linear-gradient(180deg, transparent, rgba(163,230,53,0.06) 20%, rgba(163,230,53,0.06) 80%, transparent)",
+          background: "linear-gradient(180deg, transparent, rgba(var(--lab-green-rgb),0.06) 20%, rgba(var(--lab-green-rgb),0.06) 80%, transparent)",
         }}
       />
 
@@ -75,7 +75,7 @@ export default function LabGrid() {
           maxWidth: 700,
           maxHeight: 700,
           borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(163,230,53,0.05) 0%, transparent 70%)",
+          background: "radial-gradient(circle, rgba(var(--lab-green-rgb),0.05) 0%, transparent 70%)",
           pointerEvents: "none",
         }}
       />

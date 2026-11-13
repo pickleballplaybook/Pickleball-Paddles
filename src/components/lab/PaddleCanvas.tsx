@@ -237,7 +237,7 @@ export default function PaddleCanvas({ featuredPaddle: _ignored }: { featuredPad
             style={{
               position: "absolute",
               inset: 0,
-              background: "radial-gradient(ellipse at 50% 60%, rgba(163,230,53,0.1) 0%, transparent 68%)",
+              background: "radial-gradient(ellipse at 50% 60%, var(--lab-green-dim) 0%, transparent 68%)",
               pointerEvents: "none",
             }}
             aria-hidden
@@ -252,7 +252,7 @@ export default function PaddleCanvas({ featuredPaddle: _ignored }: { featuredPad
               width: "100%",
               height: "100%",
               animation: "lab-paddle-enter 0.4s ease-out both",
-              filter: "drop-shadow(0 24px 48px rgba(0,0,0,0.55)) drop-shadow(0 4px 16px rgba(163,230,53,0.1))",
+              filter: "drop-shadow(0 24px 48px rgba(0,0,0,0.55)) drop-shadow(0 4px 16px rgba(var(--lab-green-rgb),0.1))",
             }}
             tabIndex={-1}
             aria-label={`${paddle.brand} ${paddle.name}`}
@@ -295,9 +295,9 @@ export default function PaddleCanvas({ featuredPaddle: _ignored }: { featuredPad
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          border: "1px solid rgba(163,230,53,0.08)",
+          border: "1px solid rgba(var(--lab-green-rgb),0.08)",
           borderRadius: 24,
-          boxShadow: "inset 0 0 60px rgba(163,230,53,0.03)",
+          boxShadow: "inset 0 0 60px rgba(var(--lab-green-rgb),0.03)",
         }}
         aria-hidden
       />

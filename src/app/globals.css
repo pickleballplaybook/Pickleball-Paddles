@@ -295,51 +295,83 @@ html.dark .brand-photo {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   CARBON LAB DESIGN TOKENS
-   Accent: #a3e635 (lime-400 — shifted toward the brand ball's chartreuse)
-   Secondary: #fb923c (orange-400 — gauges, power readings, rank arrows)
-   Base: #060a08 (near-black with faint green undertone)
+   CARBON LAB DESIGN TOKENS — blue accent, light + dark modes
+   Light: white/blue-tinted bg, dark text, #0a64bc accent
+   Dark:  near-black navy bg, light text, #5a9df9 accent
    ═══════════════════════════════════════════════════════════════════════════ */
 :root {
   /* Fonts */
   --font-space-grotesk:   "Space Grotesk",   var(--font-inter), system-ui, sans-serif;
   --font-jetbrains-mono:  "JetBrains Mono",  "SF Mono", "Fira Code", monospace;
 
-  /* Lab backgrounds */
-  --lab-bg:          #060a08;
-  --lab-surface:     #0c1410;
-  --lab-elevated:    #121e17;
+  /* Lab backgrounds — light mode */
+  --lab-bg:          #f0f6ff;
+  --lab-surface:     #e6f0fb;
+  --lab-elevated:    #dceaf9;
 
-  /* Lab accent: lime → matches brand logo ball colour family */
-  --lab-green:       #a3e635;          /* grids, large surfaces, backgrounds */
-  --lab-green-cta:   #c8f135;          /* CTAs, butt cap, small accents — brighter */
-  --lab-green-dim:   rgba(163,230,53,0.12);
-  --lab-green-glow:  rgba(163,230,53,0.28);
-  --lab-green-rgb:   163,230,53;
+  /* Lab accent: blue */
+  --lab-green:       #0a64bc;
+  --lab-green-cta:   #0a64bc;
+  --lab-green-dim:   rgba(10,100,188,0.10);
+  --lab-green-glow:  rgba(10,100,188,0.20);
+  --lab-green-rgb:   10,100,188;
 
-  /* Lab secondary: orange → gauge needles, rank movement, power readings */
+  /* Lab secondary: orange */
   --lab-orange:      #fb923c;
   --lab-orange-dim:  rgba(251,146,60,0.12);
   --lab-orange-rgb:  251,146,60;
 
-  /* Lab text */
-  --lab-text-primary:  #f0faf2;
-  --lab-text-body:     #86a88e;
-  --lab-text-muted:    #6b8a73;  /* WCAG AA ~5.4:1 on --lab-bg */
-  --lab-text-mono:     #86efac;  /* data readouts — lighter green */
+  /* Lab text — light mode */
+  --lab-text-primary:  #0f172a;
+  --lab-text-body:     #334155;
+  --lab-text-muted:    #64748b;
+  --lab-text-mono:     #0a64bc;
 
-  /* Lab borders */
-  --lab-border:        rgba(255,255,255,0.05);
-  --lab-border-accent: rgba(163,230,53,0.20);
+  /* Lab borders — light mode */
+  --lab-border:        rgba(15,23,42,0.08);
+  --lab-border-accent: rgba(10,100,188,0.22);
 
   /* Lab grid/calibration marks */
-  --lab-grid:  rgba(163,230,53,0.04);
-  --lab-tick:  rgba(163,230,53,0.12);
+  --lab-grid:  rgba(10,100,188,0.04);
+  --lab-tick:  rgba(10,100,188,0.12);
 
   /* Lab semantic */
+  --lab-up:    #16a34a;
+  --lab-down:  #dc2626;
+  --lab-new:   #0a64bc;
+
+  /* CTA button text — white on dark-blue in light mode */
+  --lab-cta-text: #ffffff;
+}
+
+/* Dark mode lab overrides */
+html.dark {
+  --lab-bg:          #060a12;
+  --lab-surface:     #0c1420;
+  --lab-elevated:    #121e30;
+
+  --lab-green:       #5a9df9;
+  --lab-green-cta:   #60a5fa;
+  --lab-green-dim:   rgba(90,157,249,0.12);
+  --lab-green-glow:  rgba(90,157,249,0.28);
+  --lab-green-rgb:   90,157,249;
+
+  --lab-text-primary:  #f0f6ff;
+  --lab-text-body:     #86a0c8;
+  --lab-text-muted:    #6b7fa3;
+  --lab-text-mono:     #60a5fa;
+
+  --lab-border:        rgba(255,255,255,0.05);
+  --lab-border-accent: rgba(90,157,249,0.20);
+
+  --lab-grid:  rgba(90,157,249,0.04);
+  --lab-tick:  rgba(90,157,249,0.12);
+
   --lab-up:    #4ade80;
   --lab-down:  #f87171;
-  --lab-new:   #a3e635;
+  --lab-new:   #5a9df9;
+
+  --lab-cta-text: #060a0c;
 }
 
 /* Lab-scoped component classes */
@@ -375,15 +407,18 @@ html.dark .brand-photo {
   color: var(--lab-text-primary);
 }
 
-/* HUD readout chip */
+/* HUD readout chip — light bg in light mode, dark in dark mode */
 .lab-hud-chip {
   font-family: var(--font-jetbrains-mono);
-  background: rgba(6,10,8,0.88);
+  background: rgba(255,255,255,0.90);
   border: 1px solid var(--lab-border-accent);
   border-radius: 8px;
   padding: 8px 12px;
   backdrop-filter: blur(12px);
   min-width: 72px;
+}
+html.dark .lab-hud-chip {
+  background: rgba(6,10,18,0.88);
 }
 
 /* Lab keyframes */

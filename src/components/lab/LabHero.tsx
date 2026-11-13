@@ -211,10 +211,10 @@ export default function LabHero({
               className="inline-flex items-center justify-center gap-2 font-bold rounded-xl px-8 py-4 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
               style={{
                 background: "var(--lab-green-cta)",
-                color: "#060a08",
+                color: "var(--lab-cta-text)",
                 fontSize: "0.9375rem",
                 letterSpacing: "0.02em",
-                boxShadow: "0 0 32px rgba(200,241,53,0.3), 0 4px 16px rgba(0,0,0,0.4)",
+                boxShadow: "0 0 32px var(--lab-green-glow), 0 4px 16px rgba(0,0,0,0.3)",
                 // focus ring color
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 ["--tw-ring-color" as any]: "var(--lab-green)",
@@ -229,9 +229,9 @@ export default function LabHero({
               href="/best-pickleball-paddles/weekly"
               className="inline-flex items-center justify-center gap-2 font-semibold rounded-xl px-8 py-4 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
               style={{
-                background: "rgba(163,230,53,0.08)",
+                background: "var(--lab-green-dim)",
                 color: "var(--lab-text-primary)",
-                border: "1px solid rgba(163,230,53,0.22)",
+                border: "1px solid var(--lab-border-accent)",
                 fontSize: "0.9375rem",
                 backdropFilter: "blur(8px)",
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -273,7 +273,7 @@ export default function LabHero({
       <div
         className="absolute bottom-0 inset-x-0 h-px pointer-events-none"
         style={{
-          background: "linear-gradient(90deg, transparent, rgba(163,230,53,0.2) 30%, rgba(163,230,53,0.2) 70%, transparent)",
+          background: "linear-gradient(90deg, transparent, var(--lab-border-accent) 30%, var(--lab-border-accent) 70%, transparent)",
           zIndex: 3,
         }}
         aria-hidden
