@@ -183,59 +183,51 @@ export default function LatestPaddles({ paddles }: { paddles: Paddle[] }) {
     if (!el) return;
     const firstCard = el.firstElementChild as HTMLElement | null;
     if (!firstCard) return;
-    const amount = firstCard.offsetWidth + 20; // card width + gap
+    const amount = firstCard.offsetWidth + 20;
     el.scrollBy({ left: dir === "left" ? -amount : amount, behavior: "smooth" });
   }
 
   return (
     <section style={{ background: "var(--bg-section)", borderTop: "1px solid var(--border-subtle)" }}>
-      <div className="container-xl py-14">
+      <div className="container-xl py-7">
 
         {/* Header row */}
-        <div className="flex items-end justify-between mb-8 gap-4">
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.28em] mb-2" style={{ color: "#60a5fa" }}>
-              New Arrivals
-            </p>
-            <h2
-              className="font-extrabold tracking-tight leading-none"
-              style={{ color: "var(--text-primary)", fontSize: "clamp(1.6rem, 2.8vw, 2.25rem)" }}
-            >
-              Latest Paddles
-            </h2>
-            <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
-              The newest paddles added to our database.
-            </p>
-          </div>
-          <div className="flex items-center gap-3 flex-shrink-0">
-            <Link
-              href="/paddles"
-              className="text-sm font-semibold transition-colors hover:opacity-80"
-              style={{ color: "#60a5fa" }}
-            >
-              View All
-            </Link>
-            <ArrowBtn dir="left" onClick={() => scroll("left")} />
-            <ArrowBtn dir="right" onClick={() => scroll("right")} />
-          </div>
+        <div className="flex items-center justify-between mb-5">
+          <h2
+            className="font-extrabold tracking-tight leading-none"
+            style={{ color: "var(--text-primary)", fontSize: "clamp(1.4rem, 2.4vw, 2rem)" }}
+          >
+            Latest Paddles
+          </h2>
+          <Link
+            href="/paddles"
+            className="text-sm font-semibold transition-opacity hover:opacity-70"
+            style={{ color: "#60a5fa" }}
+          >
+            View All
+          </Link>
         </div>
 
-        {/* Scroll track */}
-        <div
-          ref={scrollRef}
-          className="flex gap-5 overflow-x-auto pb-4"
-          style={{
-            scrollbarWidth: "none",
-            msOverflowStyle: "none",
-          } as React.CSSProperties}
-        >
-          {paddles.map((p) => (
-            <PaddleCard
-              key={p.id}
-              paddle={p}
-              className="w-[calc(50%-10px)] sm:w-[calc(25%-15px)]"
-            />
-          ))}
+        {/* Carousel with side arrows */}
+        <div className="flex items-center gap-3">
+          <ArrowBtn dir="left" onClick={() => scroll("left")} />
+          <div
+            ref={scrollRef}
+            className="flex-1 flex gap-5 overflow-x-auto pb-2"
+            style={{
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
+            } as React.CSSProperties}
+          >
+            {paddles.map((p) => (
+              <PaddleCard
+                key={p.id}
+                paddle={p}
+                className="w-[calc(50%-10px)] sm:w-[calc(25%-15px)]"
+              />
+            ))}
+          </div>
+          <ArrowBtn dir="right" onClick={() => scroll("right")} />
         </div>
 
       </div>
