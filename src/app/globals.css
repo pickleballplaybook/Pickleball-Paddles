@@ -393,8 +393,15 @@ html.dark .brand-photo {
 }
 
 @keyframes lab-paddle-float {
-  0%, 100% { transform: translateY(0px); }
-  50%       { transform: translateY(-10px); }
+  0%, 100% { transform: translateY(0px) rotate(-0.4deg); }
+  25%       { transform: translateY(-6px) rotate(0deg); }
+  50%       { transform: translateY(-11px) rotate(0.4deg); }
+  75%       { transform: translateY(-6px) rotate(0deg); }
+}
+
+@keyframes lab-paddle-enter {
+  from { opacity: 0; transform: scale(0.91); }
+  to   { opacity: 1; transform: scale(1); }
 }
 
 @keyframes lab-pulse-ring {
