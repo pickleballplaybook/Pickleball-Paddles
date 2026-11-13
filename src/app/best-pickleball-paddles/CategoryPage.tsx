@@ -97,7 +97,7 @@ export default function CategoryPage({ category, accent, headline, intro, picks,
                   >
                     #{i + 1} Pick
                   </span>
-                  <div className="h-px flex-1" style={{ background: "rgba(255,255,255,0.07)" }} />
+                  <div className="h-px flex-1" style={{ background: "var(--border)" }} />
                 </div>
 
                 {/* Card */}
@@ -105,7 +105,7 @@ export default function CategoryPage({ category, accent, headline, intro, picks,
                   className="rounded-3xl overflow-hidden"
                   style={{
                     background: "var(--bg-card)",
-                    border: "1px solid rgba(255,255,255,0.08)",
+                    border: "1px solid var(--border)",
                     boxShadow: i === 0 ? "0 16px 48px rgba(0,0,0,0.3)" : undefined,
                   }}
                 >
@@ -141,7 +141,7 @@ export default function CategoryPage({ category, accent, headline, intro, picks,
                                       style={{ maxHeight: "160px", filter: "drop-shadow(0 6px 16px rgba(0,0,0,0.4))" }}
                                     />
                                   )}
-                                  <p className="text-[10px] font-bold text-center mt-1 truncate w-full" style={{ color: "rgba(255,255,255,0.6)" }}>
+                                  <p className="text-[10px] font-bold text-center mt-1 truncate w-full" style={{ color: "var(--text-muted)" }}>
                                     {sp.shape}
                                   </p>
                                 </div>
@@ -162,13 +162,13 @@ export default function CategoryPage({ category, accent, headline, intro, picks,
 
                     {/* Content */}
                     <div className="flex-1 p-8 md:p-10 flex flex-col justify-center">
-                      <p className="text-[11px] font-bold uppercase tracking-[0.22em] mb-1" style={{ color: "rgba(255,255,255,0.35)" }}>
+                      <p className="text-[11px] font-bold uppercase tracking-[0.22em] mb-1" style={{ color: "var(--text-muted)" }}>
                         {paddle.brand}
                       </p>
                       <h2 className="text-2xl font-extrabold mb-1" style={{ color: "var(--text-primary)" }}>
                         {seriesPaddles ? `${paddle.brand} ${paddle.name.split(" ").slice(0, -1).join(" ") || paddle.name}` : paddle.name}
                       </h2>
-                      <p className="text-sm mb-4" style={{ color: "rgba(255,255,255,0.38)" }}>
+                      <p className="text-sm mb-4" style={{ color: "var(--text-muted)" }}>
                         {seriesPaddles
                           ? `${seriesPaddles.map((sp) => sp.shape).join(", ")} · ${paddle.thickness}`
                           : `${paddle.shape} · ${paddle.thickness}`}
@@ -193,9 +193,9 @@ export default function CategoryPage({ category, accent, headline, intro, picks,
                             key={s}
                             className="text-xs font-bold px-3 py-1.5 rounded-full font-mono"
                             style={{
-                              background: "rgba(255,255,255,0.05)",
-                              border: "1px solid rgba(255,255,255,0.1)",
-                              color: "rgba(255,255,255,0.55)",
+                              background: "var(--bg-section)",
+                              border: "1px solid var(--border)",
+                              color: "var(--text-muted)",
                             }}
                           >
                             {s}

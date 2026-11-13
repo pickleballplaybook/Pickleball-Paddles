@@ -13,6 +13,29 @@ import SyncFromStripeButton from "./SyncFromStripeButton";
 let hiddenCache: { set: Set<string>; cachedAt: number } | null = null;
 const HIDDEN_CACHE_TTL_MS = 60_000;
 
+type ExclusionRange = { label: string; startInclusive: string; endInclusive: string };
+let exclusionCache: { ranges: ExclusionRange[]; cachedAt: number } | null = null;
+
+async function loadStatExclusionRanges(): Promise<ExclusionRange[]> {
+  if (exclusionCache && Date.now() - exclusionCache.cachedAt < HIDDEN_CACHE_TTL_MS) {
+    return exclusionCache.ranges;
+  }
+  try {
+    const db = getFirebaseFirestore();
+    const doc = await db.collection("admin_settings").doc("stat_exclusion_ranges").get();
+    const ranges = ((doc.data() as { ranges?: ExclusionRange[] } | undefined)?.ranges ?? []);
+    exclusionCache = { ranges, cachedAt: Date.now() };
+    return ranges;
+  } catch {
+    return [];
+  }
+}
+
+function isStatExcluded(date: string | null, ranges: ExclusionRange[]): boolean {
+  if (!date) return false;
+  return ranges.some((r) => date >= r.startInclusive && date <= r.endInclusive);
+}
+
 async function loadHiddenEmails(): Promise<Set<string>> {
   if (hiddenCache && Date.now() - hiddenCache.cachedAt < HIDDEN_CACHE_TTL_MS) {
     return hiddenCache.set;
@@ -75,6 +98,7 @@ type CategorizedRow = {
   stripe_sub_created_at: string | null;
   canceled_at: string | null;
   plan: string | null;
+  platform: string | null;
   // Source of the row — useful for the diagnostic banner. "stripe" means
   // we picked them up from a Stripe subscription; "supabase" means they
   // were captured at onboarding but never reached Stripe checkout.
@@ -108,6 +132,27 @@ function stripeToStatus(s: StripeSubInfo["status"]): Status {
   }
 }
 
+async function loadPlatformByEmail(): Promise<Map<string, string>> {
+  const map = new Map<string, string>();
+  try {
+    const db = getFirebaseFirestore();
+    const snap = await db
+      .collection("users")
+      .where("signupPlatform", "!=", null)
+      .limit(50_000)
+      .get();
+    for (const doc of snap.docs) {
+      const data = doc.data();
+      const email = (data.email as string | null)?.toLowerCase().trim();
+      const platform = data.signupPlatform as string | null;
+      if (email && platform) map.set(email, platform);
+    }
+  } catch (e) {
+    console.error("[admin/email] failed to load platform data", e);
+  }
+  return map;
+}
+
 // Build the unified row set by UNIONing Stripe (source of truth for paid
 // state) with Supabase signups (source of truth for paywall abandoners).
 // Every email from either side becomes one row. If it exists on both,
@@ -115,6 +160,7 @@ function stripeToStatus(s: StripeSubInfo["status"]): Status {
 function buildUnifiedRows(
   supabaseRows: Row[],
   stripeByEmail: Map<string, StripeSubInfo>,
+  platformByEmail: Map<string, string>,
 ): CategorizedRow[] {
   const supabaseByEmail = new Map<string, Row>();
   for (const r of supabaseRows) {
@@ -148,6 +194,7 @@ function buildUnifiedRows(
         stripe_sub_created_at: stripe.subscriptionCreatedAt,
         canceled_at: stripe.canceledAt,
         plan: stripe.plan,
+        platform: platformByEmail.get(email) ?? null,
         source: "stripe",
       });
     } else if (supa) {
@@ -159,6 +206,7 @@ function buildUnifiedRows(
         stripe_sub_created_at: null,
         canceled_at: null,
         plan: null,
+        platform: platformByEmail.get(email) ?? null,
         source: "supabase",
       });
     }
@@ -395,23 +443,26 @@ async function loadChurnViewData(windowDays: number | null): Promise<ChurnViewDa
       });
     }
 
-    const rows: ChurnViewRow[] = (cancels as MirrorSub[] || []).map((sub) => {
-      const email = (sub.email || "").toLowerCase().trim();
-      const reason = reasonByEmail.get(email);
-      const kind: "canceled" | "churned" = (() => {
-        if (!sub.trial_end) return "churned";
-        if (!sub.canceled_at) return "churned";
-        return new Date(sub.canceled_at) <= new Date(sub.trial_end) ? "canceled" : "churned";
-      })();
-      return {
-        email: sub.email,
-        reason: reason?.reason ?? "(no reason given)",
-        comment: reason?.comment ?? null,
-        plan: reason?.plan ?? sub.plan_label ?? null,
-        createdAt: sub.canceled_at,
-        kind,
-      };
-    });
+    const hiddenEmails = await loadHiddenEmails();
+    const rows: ChurnViewRow[] = (cancels as MirrorSub[] || [])
+      .filter((sub) => !hiddenEmails.has((sub.email || "").toLowerCase().trim()))
+      .map((sub) => {
+        const email = (sub.email || "").toLowerCase().trim();
+        const reason = reasonByEmail.get(email);
+        const kind: "canceled" | "churned" = (() => {
+          if (!sub.trial_end) return "churned";
+          if (!sub.canceled_at) return "churned";
+          return new Date(sub.canceled_at) <= new Date(sub.trial_end) ? "canceled" : "churned";
+        })();
+        return {
+          email: sub.email,
+          reason: reason?.reason ?? "(no reason given)",
+          comment: reason?.comment ?? null,
+          plan: reason?.plan ?? sub.plan_label ?? null,
+          createdAt: sub.canceled_at,
+          kind,
+        };
+      });
 
     const canceled = rows.filter((r) => r.kind === "canceled");
     const churned = rows.filter((r) => r.kind === "churned");
@@ -516,8 +567,12 @@ export default async function EmailAdminPage({
     console.error("[admin/email] failed to read abandoned_signups", err);
   }
 
-  const stripe = await fetchStripeStatusByEmail();
-  const hiddenEmails = await loadHiddenEmails();
+  const [stripe, hiddenEmails, platformByEmail, statExclusionRanges] = await Promise.all([
+    fetchStripeStatusByEmail(),
+    loadHiddenEmails(),
+    loadPlatformByEmail(),
+    loadStatExclusionRanges(),
+  ]);
   const acquisitionData =
     view === "acquisition"
       ? await loadAcquisitionData(win.days)
@@ -578,7 +633,7 @@ export default async function EmailAdminPage({
   // Unfiltered set — used to compute "paid at start of window" for the
   // Stripe-style churn rate (which needs the denominator from BEFORE the
   // window, not just rows whose events landed in the window).
-  const unifiedRows = buildUnifiedRows(rows, stripe.byEmail).filter(
+  const unifiedRows = buildUnifiedRows(rows, stripe.byEmail, platformByEmail).filter(
     (r) => !hiddenEmails.has(r.email.toLowerCase().trim()),
   );
   let categorized = unifiedRows;
@@ -650,9 +705,14 @@ export default async function EmailAdminPage({
   // breakdown of this number — the two are different views by design.
   const _cohortCutoff =
     win.days !== null ? new Date(Date.now() - win.days * 86_400_000).toISOString() : null;
-  const cohortRows = _cohortCutoff
-    ? unifiedRows.filter((r) => r.display_date != null && r.display_date >= _cohortCutoff)
-    : unifiedRows;
+  const cohortRows = (
+    _cohortCutoff
+      ? unifiedRows.filter((r) => r.display_date != null && r.display_date >= _cohortCutoff)
+      : unifiedRows
+  // Exclude payment-downtime rows from conversion stats only — they still
+  // appear in the table so emails can be sent, but skewing captured→trial
+  // rate with signups from when the app wasn't accepting payments is misleading.
+  ).filter((r) => !isStatExcluded(r.display_date, statExclusionRanges));
   const signupsInWindow = cohortRows.length;
   const cohortTrialStartersInWindow = cohortRows.filter((r) => r.status !== "captured").length;
 
@@ -929,6 +989,7 @@ export default async function EmailAdminPage({
                 <tr style={{ borderBottom: "1px solid var(--flip-card-border)" }}>
                   <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Email</th>
                   <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Signed up</th>
+                  <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Device</th>
                   <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Status</th>
                   <th className="px-4 py-3" aria-label="Actions" />
                 </tr>
@@ -936,11 +997,26 @@ export default async function EmailAdminPage({
               <tbody>
                 {categorized.map((r) => {
                   const meta = STATUS_META[r.status];
+                  const pk = r.platform ?? "unknown";
+                  const pc = PLATFORM_COLORS[pk] ?? "#94a3b8";
+                  const pl = PLATFORM_LABELS[pk] ?? pk;
                   return (
                     <tr key={r.email} style={{ borderTop: "1px solid var(--flip-card-border)" }}>
                       <td className="px-4 py-3 font-mono text-xs" style={{ color: "var(--text-primary)" }}>{r.email}</td>
                       <td className="px-4 py-3 text-xs tabular-nums" style={{ color: "var(--text-muted)" }}>
                         <LocalDateTime iso={r.display_date} />
+                      </td>
+                      <td className="px-4 py-3 text-xs">
+                        {r.platform ? (
+                          <span
+                            className="inline-block px-2 py-0.5 rounded font-bold"
+                            style={{ background: `${pc}20`, color: pc, fontSize: 10, letterSpacing: 0.5 }}
+                          >
+                            {pl}
+                          </span>
+                        ) : (
+                          <span style={{ color: "var(--text-muted)" }}>—</span>
+                        )}
                       </td>
                       <td className="px-4 py-3 text-xs">
                         <span
@@ -1664,8 +1740,7 @@ function ChurnView({ data }: { data: ChurnViewData }) {
                         <span style={{ color: "var(--text-muted)" }}>—</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-xs max-w-xs truncate" style={{ color: "var(--text-muted)" }}
-                        title={r.comment ?? undefined}>
+                    <td className="px-4 py-3 text-xs max-w-xs break-words whitespace-normal" style={{ color: "var(--text-muted)" }}>
                       {r.comment ?? "—"}
                     </td>
                     <td className="px-4 py-3 text-xs tabular-nums" style={{ color: "var(--text-muted)" }}>

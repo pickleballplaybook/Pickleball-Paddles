@@ -55,6 +55,8 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
     if (typeof body.orMemberTierEnabled === "boolean") update.orMemberTierEnabled = body.orMemberTierEnabled;
     if (typeof body.memberTier === "string" || body.memberTier === null) update.memberTier = body.memberTier;
     if (typeof body.proTier === "string" || body.proTier === null) update.proTier = body.proTier;
+    if ("category" in body) update.category = body.category === "technique" || body.category === "strategy" || body.category === "mindset" || body.category === "gold" ? body.category : null;
+    if ("shotType" in body) update.shotType = typeof body.shotType === "string" && body.shotType.trim() ? body.shotType.trim() : null;
     await ref.set(update, { merge: true });
     return NextResponse.json({ ok: true, id });
   } catch (err) {

@@ -2,13 +2,12 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowRight, TrendingUp, Star, Bookmark, Eye, ExternalLink } from "lucide-react";
+import { ArrowRight, TrendingUp, Bookmark, Eye } from "lucide-react";
 import { Paddle } from "@/types";
 import { getTrendingPaddles, getRisingBrands, engagementScore, isTrendingExcluded, takeTopBySeriesDedup, HeartRecord, MIN_TRENDING_ENGAGEMENT } from "@/lib/trending";
 import { siteConfig } from "@/config/site";
 import { supabase } from "@/lib/supabaseClient";
 import { getBrandByName } from "@/data/brands";
-import { getReviewSource } from "@/lib/externalReviews";
 
 // ── Subcomponent ──────────────────────────────────────────────────────────────
 
@@ -23,7 +22,7 @@ function ColumnCard({ icon, title, subtitle, children }: {
       <div className="flex items-start gap-3">
         <div
           className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{ background: "rgba(10, 100, 188,0.30)", border: "1px solid rgba(10, 100, 188,0.30)" }}
+          style={{ background: "rgba(90,157,249,0.15)", border: "1px solid rgba(90,157,249,0.25)" }}
         >
           {icon}
         </div>
@@ -55,15 +54,18 @@ function getCode(brand: string, discountLink?: string): string {
 // the trending surfaces forever.
 function useWeightedViews(days: number) {
   const [views, setViews] = useState<Record<string, number>>({});
+  const [loaded, setLoaded] = useState(false);
   useEffect(() => {
+    setLoaded(false);
     fetch(`/api/views/weighted?days=${days}`, { cache: "no-store" })
       .then((r) => r.json())
       .then((data) => {
         if (data && typeof data === "object" && !("error" in data)) setViews(data);
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setLoaded(true));
   }, [days]);
-  return views;
+  return { views, loaded };
 }
 
 // ── Main export (client component) ────────────────────────────────────────────
@@ -138,7 +140,7 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
   // used to seed candidates is gone; it was anchoring cold paddles in the
   // pool indefinitely.
   const windowDays = timeRange === "7d" ? 7 : 30;
-  const viewCounts = useWeightedViews(windowDays);
+  const { views: viewCounts, loaded: viewsLoaded } = useWeightedViews(windowDays);
 
   // Candidates for the (more expensive) per-paddle ratings fetch: anything
   // hearted in window + anything getting non-trivial recent views.
@@ -157,9 +159,8 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
   const hasRatings = Object.values(ratingCounts).some((r) => r.count > 0);
   const hasViews = Object.values(viewCounts).some((v) => v > 0);
 
-  // Sort by combined engagement. Use weightedScore (recency-decayed hearts)
-  // as the heart signal, not raw totalHearts — otherwise older hearts in the
-  // window outrank today's activity.
+  // Primary sort: recency-weighted views this window (already decayed by age
+  // in /api/views/weighted so recent views count more). Hearts break ties.
   const trendingScored = allTrending
     .map((t) => ({
       ...t,
@@ -171,16 +172,13 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
         viewCounts[t.paddle.slug] ?? 0,
       ),
     }))
-    .sort((a, b) => b.engagement - a.engagement || (b.lastHeart ?? 0) - (a.lastHeart ?? 0))
+    .sort((a, b) => b.views - a.views || b.engagement - a.engagement)
     .filter((t) => !isTrendingExcluded(t.paddle.slug));
-  // Qualified = meets engagement floor (filters one-stale-heart noise). If
-  // we have 6+ qualified, only show those. If we have fewer (common in the
-  // 7-day window when site-wide activity is low), backfill with the next-
-  // highest-engagement paddles so the homepage always shows a full set of 6.
-  // This is what fixes the "7 Days shows only 2 paddles" bug.
+  // Qualify on views (primary signal) OR engagement (keeps list full when
+  // views haven't loaded yet or the window is very short).
   const hasSignal = hasHearts || hasRatings || hasViews;
   const qualifiedTrending = hasSignal
-    ? trendingScored.filter((t) => t.engagement >= MIN_TRENDING_ENGAGEMENT)
+    ? trendingScored.filter((t) => t.views > 0 || t.engagement >= MIN_TRENDING_ENGAGEMENT)
     : trendingScored;
   const trendingPre = qualifiedTrending.length >= 6 ? qualifiedTrending : trendingScored;
   // Dedupe by series so a single series can't fill multiple slots.
@@ -208,59 +206,6 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
     : brandsScored;
   const brandsSorted = (qualifiedBrands.length >= 6 ? qualifiedBrands : brandsScored).slice(0, 6);
 
-  // Fetch external reviews from Supabase cache
-  const [extReviews, setExtReviews] = useState<Record<string, { rating: number; count: number; sourceName: string }>>({});
-  useEffect(() => {
-    const slugsWithSources = paddles.filter((p) => getReviewSource(p.slug)).map((p) => p.slug);
-    if (slugsWithSources.length === 0) return;
-    Promise.all(
-      slugsWithSources.map((slug) =>
-        fetch(`/api/external-reviews?slug=${slug}`)
-          .then((r) => r.json())
-          .then((d) => d.found ? { slug, rating: d.rating, count: d.count, sourceName: d.sourceName } : null)
-          .catch(() => null)
-      )
-    ).then((results) => {
-      const map: Record<string, { rating: number; count: number; sourceName: string }> = {};
-      for (const r of results) if (r) map[r.slug] = { rating: r.rating, count: r.count, sourceName: r.sourceName };
-      setExtReviews(map);
-    });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Build "Highest Rated" list — Bayesian weighted, deduplicated by review source
-  // Build "Highest Rated" — score = rating × log10(reviews + 1)
-  // This heavily rewards review volume: 4.8 with 2300 reviews beats 5.0 with 15.
-  const allRated = paddles
-    .map((paddle) => {
-      const ext = extReviews[paddle.slug];
-      const onSite = ratingCounts[paddle.id];
-      const ratingAvg = ext?.rating ?? onSite?.average ?? 0;
-      const ratingCount = ext?.count ?? onSite?.count ?? 0;
-      const sourceName = ext?.sourceName ?? undefined;
-      const source = getReviewSource(paddle.slug);
-      const dedup = source?.productUrl ?? paddle.id;
-      const t = allTrending.find((tr) => tr.paddle.id === paddle.id);
-      return { paddle, totalHearts: t?.totalHearts ?? 0, weightedScore: t?.weightedScore ?? 0, ratingCount, ratingAvg, sourceName, dedup };
-    })
-    .filter((t) => t.ratingCount >= 1);
-
-  // Deduplicate: keep the highest-trending paddle per review source
-  const dedupMap = new Map<string, typeof allRated[number]>();
-  for (const t of allRated) {
-    const existing = dedupMap.get(t.dedup);
-    if (!existing || t.totalHearts > existing.totalHearts) {
-      dedupMap.set(t.dedup, t);
-    }
-  }
-
-  const highestRated = Array.from(dedupMap.values())
-    .map((t) => ({
-      ...t,
-      score: t.ratingAvg * Math.log10(t.ratingCount + 1),
-    }))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 6);
-
   return (
     <section id="trending" className="section-y" style={{ background: "var(--flip-bg)" }}>
       <div className="container-xl">
@@ -287,7 +232,7 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
                     className="text-xs font-bold px-3.5 py-1.5 rounded-[10px] transition-all"
                     style={
                       timeRange === r
-                        ? { background: "#0a64bc", color: "#fff" }
+                        ? { background: "#5a9df9", color: "#fff" }
                         : { color: "var(--flip-text-muted)" }
                     }
                   >
@@ -299,147 +244,92 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
           {/* ── Trending Paddles ─────────────────────────────────────────── */}
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <TrendingUp className="w-4 h-4" style={{ color: "#60a5fa" }} strokeWidth={2} />
+              <TrendingUp className="w-4 h-4" style={{ color: "#5a9df9" }} strokeWidth={2} />
               <p className="font-extrabold text-base" style={{ color: "var(--flip-text-head)" }}>Trending Paddles</p>
             </div>
-            <div className="flex flex-col gap-1">
-              {trendingSorted.length === 0 ? (
+            <div className="flex flex-col gap-2">
+              {!viewsLoaded ? (
+                Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="flex items-center gap-4 rounded-xl p-3 animate-pulse" style={{ border: "1px solid var(--flip-card-border)" }}>
+                    <div className="w-6 h-4 rounded" style={{ background: "var(--flip-divider)" }} />
+                    <div className="w-24 h-24 rounded-xl flex-shrink-0" style={{ background: "var(--flip-divider)" }} />
+                    <div className="flex-1 flex flex-col gap-2">
+                      <div className="h-4 w-3/4 rounded" style={{ background: "var(--flip-divider)" }} />
+                      <div className="h-3 w-1/3 rounded" style={{ background: "var(--flip-divider)" }} />
+                    </div>
+                  </div>
+                ))
+              ) : trendingSorted.length === 0 ? (
                 <p className="text-sm" style={{ color: "var(--flip-text-muted)" }}>
                   Heart paddles you like to see them appear here.
                 </p>
               ) : (
-                trendingSorted.slice(0, 6).map(({ paddle, totalHearts }, i) => {
+                trendingSorted.slice(0, 6).map(({ paddle }, i) => {
                   const hasLink = !!paddle.discountLink?.trim();
                   const code = getCode(paddle.brand, paddle.discountLink);
                   const views = viewCounts[paddle.slug] ?? 0;
                   return (
                     <div
                       key={paddle.id}
-                      className="flex items-center gap-3 rounded-xl p-2.5 transition-colors hover:bg-[var(--flip-divider)]"
+                      className="flex items-center gap-4 rounded-xl p-3 transition-colors hover:bg-[var(--flip-divider)]"
                       style={{ border: "1px solid var(--flip-card-border)" }}
                     >
-                      <span className="text-sm font-extrabold w-5 text-center flex-shrink-0" style={{ color: "var(--flip-text-muted)" }}>
+                      <span className="text-base font-extrabold w-6 text-center flex-shrink-0" style={{ color: "var(--flip-text-muted)" }}>
                         {i + 1}
                       </span>
                       <Link
                         href={`/paddles/${paddle.slug}`}
-                        className="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center overflow-hidden"
+                        className="w-24 h-24 rounded-xl flex-shrink-0 flex items-center justify-center overflow-hidden"
                         style={{ background: "var(--flip-divider)" }}
                       >
                         {paddle.image ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={paddle.image} alt={paddle.name} className="w-full h-full object-contain p-1" />
+                          <img src={paddle.image} alt={paddle.name} className="w-full h-full object-contain p-1.5" />
                         ) : (
-                          <div className="w-6 h-6 rounded-full bg-teal-500/20" />
+                          <div className="w-8 h-8 rounded-full bg-[#5a9df9]/20" />
                         )}
                       </Link>
                       <Link href={`/paddles/${paddle.slug}`} className="flex-1 min-w-0 group">
-                        <p className="text-sm font-bold truncate group-hover:text-teal-500 transition-colors" style={{ color: "var(--flip-text-head)" }}>
+                        <p className="text-base font-bold truncate group-hover:text-[#5a9df9] transition-colors" style={{ color: "var(--flip-text-head)" }}>
                           {paddle.name} {paddle.thickness}
                         </p>
-                        <p className="text-[11px] truncate" style={{ color: "var(--flip-text-muted)" }}>
+                        <p className="text-xs truncate mt-0.5" style={{ color: "var(--flip-text-muted)" }}>
                           {paddle.brand}
                         </p>
-                      </Link>
-                      <div className="flex items-center gap-1.5 flex-shrink-0">
-                        <span className="inline-flex items-center gap-1 text-[11px]" style={{ color: "var(--flip-text-muted)" }}>
-                          <Eye className="w-3 h-3" />
-                          {/* `views` is the time-decayed weighted score the
-                              ranking uses internally; we round it for the
-                              display because nobody hovers a paddle for 0.5
-                              of a view. The exact decimal still drives the
-                              ranking sort above. */}
+                        <span className="inline-flex items-center gap-1 text-xs mt-1" style={{ color: "var(--flip-text-muted)" }}>
+                          <Eye className="w-3.5 h-3.5" />
                           {(() => {
                             const v = Math.round(views);
                             return v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v;
                           })()}
                         </span>
-                        {hasLink && (
-                          <div className="hidden sm:flex flex-col items-end gap-0.5">
-                            <span
-                              className="text-[9px] font-bold uppercase tracking-widest leading-none"
-                              style={{ color: "var(--flip-text-muted)" }}
-                            >
-                              Code: <span style={{ color: "#60a5fa" }}>{code}</span>
-                            </span>
-                            <a
-                              href={paddle.discountLink}
-                              target="_blank"
-                              rel="noopener noreferrer sponsored"
-                              className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-lg text-white transition-all hover:scale-105"
-                              style={{ background: "#0a64bc" }}
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              Buy <ArrowRight className="w-3 h-3" />
-                            </a>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </div>
-
-          {/* ── Highest Rated ────────────────────────────────────────────── */}
-          <div>
-            <div className="flex items-center gap-2 mb-4">
-              <Star className="w-4 h-4" style={{ color: "#60a5fa" }} strokeWidth={2} />
-              <p className="font-extrabold text-base" style={{ color: "var(--flip-text-head)" }}>Highest Rated</p>
-            </div>
-            <div className="flex flex-col gap-1">
-              {highestRated.length === 0 ? (
-                <p className="text-sm" style={{ color: "var(--flip-text-muted)" }}>
-                  Rate paddles to see top-rated ones here.
-                </p>
-              ) : (
-                highestRated.map(({ paddle, ratingCount, ratingAvg, sourceName, dedup }, i) => {
-                  // If multiple paddles share the same review source, show the series/brand name
-                  const source = getReviewSource(paddle.slug);
-                  const sharedCount = source ? source.paddleSlugs.length : 0;
-                  const displayName = sharedCount > 1
-                    ? `${paddle.brand} ${paddle.name.split(" ").slice(0, -1).join(" ") || paddle.name}`
-                    : `${paddle.name} ${paddle.thickness}`;
-                  return (
-                  <Link
-                    key={paddle.id}
-                    href={`/paddles/${paddle.slug}`}
-                    className="flex items-center gap-3 rounded-xl p-2.5 transition-colors hover:bg-[var(--flip-divider)] group"
-                    style={{ border: "1px solid var(--flip-card-border)" }}
-                  >
-                    <span className="text-sm font-extrabold w-5 text-center flex-shrink-0" style={{ color: "var(--flip-text-muted)" }}>
-                      {i + 1}
-                    </span>
-                    <div
-                      className="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center overflow-hidden"
-                      style={{ background: "var(--flip-divider)" }}
-                    >
-                      {paddle.image ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={paddle.image} alt={paddle.name} className="w-full h-full object-contain p-1" />
-                      ) : (
-                        <div className="w-6 h-6 rounded-full bg-teal-500/20" />
+                      </Link>
+                      {hasLink && (
+                        <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                          <span
+                            className="text-[11px] font-bold uppercase tracking-widest leading-none"
+                            style={{ color: "var(--flip-text-muted)" }}
+                          >
+                            Code: <span style={{ color: "#5a9df9" }}>{code}</span>
+                          </span>
+                          <a
+                            href={paddle.discountLink}
+                            target="_blank"
+                            rel="noopener noreferrer sponsored"
+                            className="inline-flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-lg text-white transition-all hover:scale-105"
+                            style={{ background: "#5a9df9" }}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            Buy <ArrowRight className="w-3 h-3" />
+                          </a>
+                        </div>
                       )}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold truncate group-hover:text-teal-500 transition-colors" style={{ color: "var(--flip-text-head)" }}>
-                        {displayName}
-                      </p>
-                      <p className="text-[11px] truncate" style={{ color: "var(--flip-text-muted)" }}>
-                        {sourceName ? `via ${sourceName}` : paddle.brand}
-                      </p>
-                    </div>
-                    <span className="inline-flex items-center gap-1 text-[11px] font-bold flex-shrink-0" style={{ color: "#facc15" }}>
-                      <Star className="w-3 h-3" fill="currentColor" strokeWidth={0} />
-                      {ratingAvg.toFixed(1)} ({ratingCount})
-                    </span>
-                  </Link>
                   );
                 })
               )}
@@ -449,16 +339,16 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
           {/* ── Rising Brands ────────────────────────────────────────────── */}
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <Bookmark className="w-4 h-4" style={{ color: "#60a5fa" }} strokeWidth={2} />
+              <Bookmark className="w-4 h-4" style={{ color: "#5a9df9" }} strokeWidth={2} />
               <p className="font-extrabold text-base" style={{ color: "var(--flip-text-head)" }}>Rising Brands</p>
             </div>
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-2">
               {brandsSorted.length === 0 ? (
                 <p className="text-sm" style={{ color: "var(--flip-text-muted)" }}>
                   Save paddles you like to see top brands here.
                 </p>
               ) : (
-                brandsSorted.map(({ brand, totalHearts, paddleCount, topSlug }, i) => {
+                brandsSorted.map(({ brand, paddleCount, topSlug }, i) => {
                   const brandData = getBrandByName(brand);
                   const brandViews = paddles
                     .filter((p) => p.brand === brand)
@@ -468,33 +358,33 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
                     <Link
                       key={brand}
                       href={href}
-                      className="flex items-center gap-3 rounded-xl p-2.5 transition-colors hover:bg-[var(--flip-divider)] group"
+                      className="flex items-center gap-4 rounded-xl p-3 transition-colors hover:bg-[var(--flip-divider)] group"
                       style={{ border: "1px solid var(--flip-card-border)" }}
                     >
-                      <span className="text-sm font-extrabold w-5 text-center flex-shrink-0" style={{ color: "var(--flip-text-muted)" }}>
+                      <span className="text-base font-extrabold w-6 text-center flex-shrink-0" style={{ color: "var(--flip-text-muted)" }}>
                         {i + 1}
                       </span>
                       <div
-                        className="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center overflow-hidden"
+                        className="w-24 h-24 rounded-xl flex-shrink-0 flex items-center justify-center overflow-hidden"
                         style={{ background: "var(--flip-divider)" }}
                       >
                         {brandData?.logo ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={brandData.logo} alt={brand} className="w-full h-full object-contain p-1.5" />
+                          <img src={brandData.logo} alt={brand} className="w-full h-full object-contain p-2" />
                         ) : (
-                          <div className="w-6 h-6 rounded-full bg-teal-500/20" />
+                          <div className="w-8 h-8 rounded-full bg-[#5a9df9]/20" />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold truncate group-hover:text-teal-500 transition-colors" style={{ color: "var(--flip-text-head)" }}>
+                        <p className="text-base font-bold truncate group-hover:text-[#5a9df9] transition-colors" style={{ color: "var(--flip-text-head)" }}>
                           {brand}
                         </p>
-                        <p className="text-[11px] truncate" style={{ color: "var(--flip-text-muted)" }}>
+                        <p className="text-xs truncate mt-0.5" style={{ color: "var(--flip-text-muted)" }}>
                           {paddleCount} paddle{paddleCount !== 1 ? "s" : ""}
                         </p>
                       </div>
-                      <span className="inline-flex items-center gap-1 text-[11px] flex-shrink-0" style={{ color: "var(--flip-text-muted)" }}>
-                        <Eye className="w-3 h-3" />
+                      <span className="inline-flex items-center gap-1.5 text-sm flex-shrink-0" style={{ color: "var(--flip-text-muted)" }}>
+                        <Eye className="w-3.5 h-3.5" />
                         {(() => {
                           const v = Math.round(brandViews);
                           return v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v;
@@ -514,7 +404,7 @@ export default function TrendingSection({ paddles }: { paddles: Paddle[] }) {
           <Link
             href="/trending"
             className="inline-flex items-center gap-2 font-bold text-sm px-8 py-3 rounded-xl text-white transition-all hover:scale-[1.02]"
-            style={{ background: "#0a64bc" }}
+            style={{ background: "#5a9df9" }}
           >
             View All Trending Paddles <ArrowRight className="w-4 h-4" />
           </Link>

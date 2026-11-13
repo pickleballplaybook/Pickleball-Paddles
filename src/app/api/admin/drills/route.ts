@@ -65,11 +65,13 @@ export async function POST(req: NextRequest) {
 
   const name = (formData.get("name") ?? "").toString().trim();
   const summary = (formData.get("summary") ?? "").toString().trim();
+  const description_mode = (formData.get("description_mode") ?? "leveled").toString();
+  const description_single = (formData.get("description_single") ?? "").toString();
   const description_beginner = (formData.get("description_beginner") ?? "").toString();
   const description_intermediate = (formData.get("description_intermediate") ?? "").toString();
   const description_advanced = (formData.get("description_advanced") ?? "").toString();
+  const description = description_mode === "single" ? description_single : "";
   const category = (formData.get("category") ?? "").toString().trim();
-  const week_number_raw = (formData.get("week_number") ?? "").toString().trim();
   const video_url = (formData.get("video_url") ?? "").toString().trim();
   const is_published = formData.get("is_published") === "true";
   const scheduled_publish_at_raw = (formData.get("scheduled_publish_at") ?? "")
@@ -77,9 +79,6 @@ export async function POST(req: NextRequest) {
     .trim();
   const imageField = formData.get("image");
 
-  // Optional schedule field. Client converts the datetime-local input to an
-  // ISO string before submitting; we re-parse here to validate and to store
-  // a canonical ISO-8601 UTC instant.
   let scheduled_publish_at: string | null = null;
   if (scheduled_publish_at_raw) {
     const parsed = new Date(scheduled_publish_at_raw);
@@ -96,13 +95,6 @@ export async function POST(req: NextRequest) {
   if (!name) missing.push("name");
   if (!category) missing.push("category");
   if (!video_url) missing.push("video_url");
-  // Per-level descriptions are optional: some drills have a description,
-  // others don't. The mobile app already falls back through the levels.
-
-  const week_number = Number(week_number_raw);
-  if (!Number.isFinite(week_number) || !Number.isInteger(week_number)) {
-    missing.push("week_number");
-  }
 
   if (missing.length > 0) {
     return NextResponse.json(
@@ -119,6 +111,22 @@ export async function POST(req: NextRequest) {
   }
 
   const db = getFirebaseFirestore();
+
+  // Auto-assign sort order: new drills go to the top of their category.
+  // We use week_number as the backing sort field (ascending = top first).
+  // New drill gets min(existing in category) - 1, or 0 if category is empty.
+  const catSnap = await db.collection(COLLECTION)
+    .where("multi_level", "==", true)
+    .where("category", "==", category)
+    .get();
+  let minWeek: number | null = null;
+  for (const doc of catSnap.docs) {
+    const w = doc.data().week_number;
+    if (typeof w === "number") {
+      minWeek = minWeek === null ? w : Math.min(minWeek, w);
+    }
+  }
+  const week_number = minWeek === null ? 0 : minWeek - 1;
   const docRef = db.collection(COLLECTION).doc();
 
   let imageUrl: string | null = null;
@@ -159,6 +167,7 @@ export async function POST(req: NextRequest) {
     name,
     summary,
     video_url,
+    description,
     description_beginner,
     description_intermediate,
     description_advanced,

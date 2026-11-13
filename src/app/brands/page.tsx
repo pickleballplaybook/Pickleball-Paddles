@@ -55,7 +55,7 @@ export default function BrandsPage() {
                     <img src={brand.logo} alt={`${brand.name} logo`} className="w-full h-full object-contain p-2" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold group-hover:text-teal-400 transition-colors" style={{ color: "var(--text-primary)" }}>
+                    <p className="text-sm font-bold group-hover:text-[#5a9df9] transition-colors" style={{ color: "var(--text-primary)" }}>
                       {brand.name}
                     </p>
                     <p className="text-xs" style={{ color: "var(--text-muted)" }}>

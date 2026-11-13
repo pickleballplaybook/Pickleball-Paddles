@@ -21,11 +21,8 @@ function calcDiscountedPrice(price: string, amountOff: string): string | null {
   return `$${discounted.toFixed(2)}`;
 }
 
-// All three Crystal Blue paddles for the hero
 const HERO_PADDLES = [
-  "honolulu-j2cr-crystal-blue-hybrid",
-  "honolulu-j3cr-crystal-blue-widebody",
-  "honolulu-j6cr-crystal-blue-elongated",
+  "honolulu-j6cr-m105-crystal-blue-elongated",
 ];
 
 export default function HottestPaddle() {
@@ -191,12 +188,13 @@ export default function HottestPaddle() {
                     }}
                   >
                     <div
-                      className="relative rounded-2xl overflow-hidden p-4"
+                      className="relative rounded-3xl overflow-hidden p-6"
                       style={{
                         background: "rgba(255,255,255,0.04)",
                         border: "1px solid rgba(255,255,255,0.08)",
                         backdropFilter: "blur(12px)",
-                        width: "200px",
+                        width: heroPaddles.length === 1 ? "420px" : "200px",
+                        maxWidth: "90vw",
                       }}
                     >
                       {p.image && (
@@ -206,12 +204,13 @@ export default function HottestPaddle() {
                           alt={`${p.brand} ${p.name}`}
                           className="w-full h-auto object-contain"
                           style={{
-                            filter: "drop-shadow(0 8px 24px rgba(0,0,0,0.4))",
+                            filter: "drop-shadow(0 12px 40px rgba(0,0,0,0.5))",
+                            minHeight: heroPaddles.length === 1 ? "360px" : undefined,
                           }}
                         />
                       )}
-                      <p className="text-center text-xs font-bold mt-3 text-white truncate">{p.name.split(" ").slice(0, 2).join(" ")}</p>
-                      <p className="text-center text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>{p.shape}</p>
+                      <p className="text-center text-sm font-bold mt-4 text-white truncate">{p.name.split(" ").slice(0, 3).join(" ")}</p>
+                      <p className="text-center text-xs mt-1" style={{ color: "rgba(255,255,255,0.5)" }}>{p.shape}</p>
                     </div>
                   </Link>
                 );

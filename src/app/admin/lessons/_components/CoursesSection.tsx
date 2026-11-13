@@ -15,7 +15,8 @@ export type Course = {
   orMemberTierEnabled: boolean;
   memberTier: "basic" | "pro" | null;
   proTier: "basic" | "pro" | null;
-  category: "technique" | "strategy" | "mindset" | null;
+  category: "technique" | "strategy" | "mindset" | "gold" | null;
+  shotType: string | null;
 };
 
 const ACCESS_TYPES = [
@@ -41,7 +42,8 @@ type FormState = {
   proMinLevel: number | null; // null = no level gate on Pro only
   published: boolean;
   coverImageUrl: string | null;
-  category: "technique" | "strategy" | "mindset" | null;
+  category: "technique" | "strategy" | "mindset" | "gold" | null;
+  shotType: string;
 };
 
 const EMPTY: FormState = {
@@ -56,13 +58,15 @@ const EMPTY: FormState = {
   published: true,
   coverImageUrl: null,
   category: null,
+  shotType: "",
 };
 
 const COURSE_CATEGORIES = [
-  { value: null, label: "None" },
+  { value: null, label: "All" },
   { value: "technique", label: "Technique" },
   { value: "strategy", label: "Strategy" },
   { value: "mindset", label: "Mindset" },
+  { value: "gold", label: "Gold" },
 ] as const;
 
 function courseToForm(course: Course): FormState {
@@ -78,6 +82,7 @@ function courseToForm(course: Course): FormState {
     published: course.published,
     coverImageUrl: course.coverImageUrl,
     category: course.category ?? null,
+    shotType: course.shotType ?? "",
   };
 }
 
@@ -143,6 +148,7 @@ export function CoursesSection({ initial }: { initial: Course[] }) {
   const buildPayload = (f: FormState) => ({
     ...f,
     category: f.category ?? null,
+    shotType: f.shotType.trim() || null,
     ...(f.accessType === "level"
       ? { minLevel: f.minLevel, orMemberTierEnabled: f.orMemberTierEnabled, memberTier: f.memberTier }
       : { orMemberTierEnabled: false, memberTier: null }),
@@ -442,6 +448,21 @@ export function CoursesSection({ initial }: { initial: Course[] }) {
                       </button>
                     ))}
                   </div>
+                </div>
+
+                {/* Sub-category / Shot type */}
+                <div>
+                  <p className="text-xs text-gray-400 mb-2 font-medium">
+                    Sub-category <span className="text-gray-600 font-normal">(optional label shown as a group heading within the tab, e.g. "In-Match")</span>
+                  </p>
+                  <input
+                    type="text"
+                    value={form.shotType}
+                    onChange={(e) => setForm({ ...form, shotType: e.target.value.slice(0, 40) })}
+                    placeholder="Leave blank for no sub-category grouping"
+                    maxLength={40}
+                    className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-accent-500"
+                  />
                 </div>
 
                 {/* Access type */}

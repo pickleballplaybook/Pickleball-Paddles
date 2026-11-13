@@ -2,14 +2,18 @@ import { Star, ArrowRight } from "lucide-react";
 import { Metadata } from "next";
 import Link from "next/link";
 import { gearProducts, GearProduct } from "@/data/products";
+import GearTabs from "./GearTabs";
 
 export const metadata: Metadata = {
   title: "Gear",
   description: "Top pickleball gear, clothing, accessories, and equipment — handpicked for serious players.",
 };
 
-const featured = gearProducts.find((p) => p.id === "titan")!;
-const rest = gearProducts.filter((p) => p.id !== "titan");
+// titan-b is a rotation-frequency duplicate — hide it from the catalog UI
+const displayProducts = gearProducts.filter((p) => p.id !== "titan-b");
+
+const featured = displayProducts.find((p) => p.id === "titan")!;
+const rest = displayProducts.filter((p) => p.id !== "titan");
 
 // ── Editor's Pick hero card ────────────────────────────────────────────────────
 function EditorPickCard({ p }: { p: GearProduct }) {
@@ -23,9 +27,6 @@ function EditorPickCard({ p }: { p: GearProduct }) {
       }}
     >
       <div className="flex flex-col md:flex-row">
-
-        {/* Image — sits on the card's own dark background so PNGs with a
-            transparent background blend in instead of getting a white frame. */}
         <div className="relative md:w-[42%] flex-shrink-0">
           <div
             className="absolute top-4 left-4 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-white"
@@ -48,17 +49,16 @@ function EditorPickCard({ p }: { p: GearProduct }) {
           </div>
         </div>
 
-        {/* Content */}
         <div className="flex-1 p-8 md:p-12 flex flex-col justify-center">
           <p
             className="text-[11px] font-bold uppercase tracking-[0.25em] mb-2"
-            style={{ color: "rgba(255,255,255,0.38)" }}
+            style={{ color: "var(--text-muted)" }}
           >
             {p.brand}
           </p>
           <h2
             className="text-2xl md:text-3xl font-extrabold mb-4 leading-tight"
-            style={{ color: "#60a5fa" }}
+            style={{ color: "#5a9df9" }}
           >
             {p.name}
           </h2>
@@ -76,8 +76,8 @@ function EditorPickCard({ p }: { p: GearProduct }) {
               <div className="flex flex-wrap items-center gap-3 mb-6">
                 {salePrice ? (
                   <>
-                    <span className="text-2xl font-extrabold" style={{ color: "#60a5fa" }}>{salePrice}</span>
-                    <span className="text-xl font-semibold line-through" style={{ color: "rgba(255,255,255,0.45)" }}>{p.price}</span>
+                    <span className="text-2xl font-extrabold" style={{ color: "#5a9df9" }}>{salePrice}</span>
+                    <span className="text-xl font-semibold line-through" style={{ color: "var(--text-muted)" }}>{p.price}</span>
                   </>
                 ) : (
                   <span className="text-2xl font-extrabold" style={{ color: "var(--text-primary)" }}>{p.price}</span>
@@ -102,8 +102,8 @@ function EditorPickCard({ p }: { p: GearProduct }) {
               href={`/gear/${p.id}`}
               className="inline-flex items-center gap-2 font-bold text-sm px-6 py-3 rounded-xl text-white transition-all duration-200 hover:scale-[1.02]"
               style={{
-                background: "linear-gradient(135deg, #11295f, #0a64bc)",
-                boxShadow: "0 0 24px rgba(10, 100, 188,0.35)",
+                background: "linear-gradient(135deg, #3a8bf0, #2066d0)",
+                boxShadow: "0 0 24px rgba(90,157,249,0.35)",
               }}
             >
               Read Full Review
@@ -114,96 +114,17 @@ function EditorPickCard({ p }: { p: GearProduct }) {
               rel="noopener noreferrer sponsored"
               className="inline-flex items-center gap-2 font-bold text-sm px-6 py-3 rounded-xl transition-all duration-200 hover:scale-[1.02]"
               style={{
-                border: "1.5px solid rgba(10, 100, 188,0.45)",
-                color: "#60a5fa",
+                border: "1.5px solid rgba(90,157,249,0.45)",
+                color: "#5a9df9",
               }}
             >
-              Buy Now
+              Buy at {p.brand}
               <ArrowRight className="w-4 h-4" />
             </a>
           </div>
         </div>
       </div>
     </div>
-  );
-}
-
-// ── Grid card ──────────────────────────────────────────────────────────────────
-function GridCard({ p }: { p: GearProduct }) {
-  return (
-    <Link href={`/gear/${p.id}`} className="block group">
-      <div
-        className="rounded-2xl overflow-hidden h-full flex flex-col transition-all duration-200 group-hover:scale-[1.01]"
-        style={{
-          background: "var(--bg-card)",
-          border: "1px solid rgba(255,255,255,0.07)",
-          boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
-        }}
-      >
-        {/* Image area — uses the card's own dark background so transparent
-            PNGs blend in instead of getting a white frame. */}
-        <div
-          className="w-full flex items-center justify-center p-6"
-          style={{ aspectRatio: "4/3" }}
-        >
-          {p.imageAspect !== "none" && p.image ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={p.image}
-              alt={`${p.brand} ${p.name}`}
-              className="w-full h-full object-contain"
-              style={{ maxHeight: "170px" }}
-            />
-          ) : (
-            <div
-              className="w-14 h-14 rounded-full flex items-center justify-center"
-              style={{ background: "rgba(10, 100, 188,0.30)" }}
-            >
-              <span className="text-2xl">🎾</span>
-            </div>
-          )}
-        </div>
-
-        {/* Card body */}
-        <div className="p-5 flex flex-col flex-1">
-          {p.brand && (
-            <p
-              className="text-[10px] font-bold uppercase tracking-widest mb-1"
-              style={{ color: "rgba(255,255,255,0.32)" }}
-            >
-              {p.brand}
-            </p>
-          )}
-          <h3
-            className="text-sm font-extrabold leading-snug mb-3"
-            style={{ color: "var(--text-primary)" }}
-          >
-            {p.name}
-          </h3>
-
-          <div className="mt-auto flex items-center justify-between gap-2">
-            <span
-              className="text-base font-bold"
-              style={{ color: p.price === "Free" ? "#0a64bc" : "var(--text-primary)" }}
-            >
-              {p.price || ""}
-            </span>
-            {p.badge && (
-              <span
-                className="text-[10px] font-bold px-2.5 py-1 rounded-full whitespace-nowrap"
-                style={{
-                  background: "rgba(34,197,94,0.14)",
-                  color: "#4ade80",
-                  border: "1px solid rgba(34,197,94,0.28)",
-                }}
-              >
-                {p.badge}
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
-    </Link>
   );
 }
 
@@ -215,7 +136,7 @@ export default function GearPage() {
 
         {/* Header */}
         <div className="mb-10">
-          <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "#60a5fa" }}>
+          <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "#5a9df9" }}>
             Equipment & Accessories
           </p>
           <h1
@@ -232,10 +153,8 @@ export default function GearPage() {
         {/* Editor's Pick featured card */}
         <EditorPickCard p={featured} />
 
-        {/* Product grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-          {rest.map((p) => <GridCard key={p.id} p={p} />)}
-        </div>
+        {/* Tabbed product grid */}
+        <GearTabs products={rest} />
 
       </div>
     </div>

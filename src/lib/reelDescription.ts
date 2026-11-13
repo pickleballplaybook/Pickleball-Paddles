@@ -52,7 +52,7 @@ const PICKLEBALL_HASHTAGS: Array<{ tag: string; keywords?: string[] }> = [
 
 export function buildHashtagLine(clip: ClipForDescription): string {
   const MAX = 5;
-  const text = ((clip.title || "") + " " + (clip.reason || "")).toLowerCase();
+  const text = ((clip.title || "") + " " + (clip.description || "") + " " + (clip.reason || "")).toLowerCase();
   // #pickleball is always first.
   const tags: string[] = ["pickleball"];
 
@@ -77,7 +77,7 @@ export function buildHashtagLine(clip: ClipForDescription): string {
 
 export function buildReelDescription(
   clip: ClipForDescription,
-  youtubeUrl: string | undefined,
+  youtubeUrl?: string,
   enabledHandles: string[] = [],
 ): string {
   const lines: string[] = [];
@@ -87,7 +87,7 @@ export function buildReelDescription(
   // description still produce a non-empty post.
   const body = (clip.description && clip.description.trim()) || (clip.reason && clip.reason.trim());
   if (body) lines.push("", body);
-  lines.push("", "Full video on YouTube: " + (youtubeUrl || "(unknown)"));
+  if (youtubeUrl) lines.push("", "Full video on YouTube: " + youtubeUrl);
   if (enabledHandles.length > 0) {
     lines.push("", enabledHandles.map((h) => "@" + h).join(" "));
   }

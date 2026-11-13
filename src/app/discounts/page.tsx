@@ -269,11 +269,11 @@ export default function DiscountsPage() {
                     Shop {deal.name.split(" ").slice(0, 2).join(" ")} <ArrowRight className="w-4 h-4" />
                   </a>
                   <Link
-                    href={deal.type === "paddle" ? `/brands/${deal.slug}` : `/gear/${deal.slug}`}
+                    href={deal.type === "paddle" ? `/discounts/${deal.slug}` : `/gear/${deal.slug}`}
                     className="inline-flex items-center justify-center px-3 py-3 rounded-xl text-sm font-semibold transition-all hover:scale-[1.02]"
                     style={{ border: "1px solid rgba(255,255,255,0.15)", color: "var(--text-muted)" }}
                   >
-                    {deal.type === "paddle" ? "Reviews" : "Details"}
+                    {deal.type === "paddle" ? "Details" : "Details"}
                   </Link>
                 </div>
               </div>

@@ -8,7 +8,7 @@ import { effectivePrice } from "@/lib/price";
 import type { Paddle } from "@/types";
 import InlineNewsletterCTA from "@/components/InlineNewsletterCTA";
 import YouTubeEmbed from "@/components/YouTubeEmbed";
-import { parseMatchup, canonicalMatchup, buildStaticMatchups } from "./helpers";
+import { parseMatchup, canonicalMatchup, buildStaticMatchups, shouldComparePaddles } from "./helpers";
 
 export const revalidate = 86400;     // daily ISR
 export const dynamicParams = true;   // allow any valid matchup beyond the prebuilt set
@@ -55,6 +55,99 @@ function winnerByLower(label: string, aVal: number, bVal: number, unit = ""): Wi
   if (aVal === bVal) return { which: "tie", reason: `Equal ${label} (${aVal}${unit})` };
   const which = aVal < bVal ? "a" : "b";
   return { which, reason: `Lower ${label} (${aVal}${unit} vs ${bVal}${unit})` };
+}
+
+// ── Content generation ────────────────────────────────────────────────────────
+
+function generateIntro(a: Paddle, b: Paddle, aEff: number, bEff: number): string {
+  const sentences: string[] = [];
+  const swDiff = Math.abs(a.swingWeight - b.swingWeight);
+  const [highSW, lowSW] = a.swingWeight >= b.swingWeight ? [a, b] : [b, a];
+
+  if (swDiff >= 3) {
+    sentences.push(
+      `The ${highSW.brand} ${highSW.name} carries a clear SW advantage — ${highSW.swingWeight} versus ${lowSW.swingWeight} on the ${lowSW.brand} ${lowSW.name} — a ${swDiff.toFixed(2)}-point gap that means noticeably heavier drives and more power from the ${highSW.name}.`
+    );
+  } else if (swDiff >= 0.5) {
+    sentences.push(
+      `The ${a.brand} ${a.name} (SW ${a.swingWeight}) and ${b.brand} ${b.name} (SW ${b.swingWeight}) sit ${swDiff.toFixed(2)} swing-weight points apart — close enough that shape, feel, and price become the real differentiators.`
+    );
+  } else {
+    sentences.push(
+      `The ${a.brand} ${a.name} and ${b.brand} ${b.name} are nearly identical in swing weight (${a.swingWeight} vs ${b.swingWeight}), making build quality, surface feel, and brand preference the deciding factors.`
+    );
+  }
+
+  if (a.twistWeight && b.twistWeight) {
+    const twDiff = Math.abs(a.twistWeight - b.twistWeight);
+    if (twDiff >= 0.3) {
+      const [highTW, lowTW] = a.twistWeight >= b.twistWeight ? [a, b] : [b, a];
+      sentences.push(
+        `The ${highTW.brand} ${highTW.name} also has the wider sweet spot — TW ${highTW.twistWeight} versus ${lowTW.twistWeight} — meaning more forgiveness on off-center hits.`
+      );
+    }
+  }
+
+  if (a.shape !== b.shape) {
+    sentences.push(
+      `Shape adds another dimension: the ${a.name} is ${a.shape.toLowerCase()}, the ${b.name} is ${b.shape.toLowerCase()}, which changes reach, kitchen feel, and sweet-spot position.`
+    );
+  }
+
+  if (aEff !== Infinity && bEff !== Infinity && Math.abs(aEff - bEff) > 10) {
+    const cheap = aEff <= bEff ? a : b;
+    const diff = Math.abs(aEff - bEff).toFixed(0);
+    sentences.push(
+      `On price, the ${cheap.brand} ${cheap.name} is $${diff} less expensive after the PLAYBOOK discount.`
+    );
+  }
+
+  return sentences.join(" ");
+}
+
+interface FAQ { q: string; a: string }
+
+function generateFAQs(a: Paddle, b: Paddle, aEff: number, bEff: number): FAQ[] {
+  const faqs: FAQ[] = [];
+  const [powerWin, powerLose] = a.swingWeight >= b.swingWeight ? [a, b] : [b, a];
+  const swDiff = Math.abs(a.swingWeight - b.swingWeight).toFixed(2);
+
+  faqs.push({
+    q: `Is the ${a.brand} ${a.name} or the ${b.brand} ${b.name} better for power?`,
+    a: `The ${powerWin.brand} ${powerWin.name} generates more power — SW ${powerWin.swingWeight} vs ${powerLose.swingWeight} on the ${powerLose.brand} ${powerLose.name}, a ${swDiff}-point gap that adds mass and momentum at contact. If you prioritize hand speed and maneuverability over raw power, the ${powerLose.name}'s lower swing weight is the advantage.`,
+  });
+
+  if (a.twistWeight && b.twistWeight) {
+    const [twWin, twLose] = a.twistWeight >= b.twistWeight ? [a, b] : [b, a];
+    faqs.push({
+      q: `Which paddle is more forgiving — the ${a.brand} ${a.name} or the ${b.brand} ${b.name}?`,
+      a: `The ${twWin.brand} ${twWin.name} is more forgiving with a twist weight of ${twWin.twistWeight} vs ${twLose.twistWeight} on the ${twLose.brand} ${twLose.name}. Higher twist weight reduces energy loss on off-center hits, which matters most for kitchen-heavy players who take a lot of dinks and resets.`,
+    });
+  }
+
+  if (aEff !== Infinity && bEff !== Infinity) {
+    const cheap = aEff <= bEff ? a : b;
+    const diff = Math.abs(aEff - bEff).toFixed(2);
+    faqs.push({
+      q: `What is the price difference between the ${a.brand} ${a.name} and the ${b.brand} ${b.name}?`,
+      a: `With the PLAYBOOK discount code, the ${a.brand} ${a.name} is $${aEff.toFixed(2)} and the ${b.brand} ${b.name} is $${bEff.toFixed(2)}. The ${cheap.brand} ${cheap.name} is $${diff} cheaper. Apply PLAYBOOK at checkout on either brand's site to get the discount.`,
+    });
+  }
+
+  if (a.shape !== b.shape) {
+    const shapeNote = (p: Paddle) =>
+      p.shape === "Elongated"
+        ? "extra reach and a higher sweet spot — better for drives, resets, and transition-zone play"
+        : p.shape === "Hybrid"
+        ? "a balance of reach and maneuverability — versatile for both the kitchen and the baseline"
+        : "a wider face and maximum forgiveness — tuned for kitchen play and the soft game";
+    faqs.push({
+      q: `How does the shape difference affect how the ${a.brand} ${a.name} and ${b.brand} ${b.name} play?`,
+      a: `The ${a.brand} ${a.name}'s ${a.shape.toLowerCase()} shape delivers ${shapeNote(a)}. The ${b.brand} ${b.name}'s ${b.shape.toLowerCase()} gives ${shapeNote(b)}. For players who live at the kitchen line, that shape distinction often matters more than a 1–2 point SW difference.`,
+    });
+  }
+
+  return faqs;
 }
 
 // ── Metadata ─────────────────────────────────────────────────────────────────
@@ -104,6 +197,7 @@ export default function CompareMatchupPage({ params }: Props) {
   const a = getPaddleBySlug(parsed[0]);
   const b = getPaddleBySlug(parsed[1]);
   if (!a || !b || a.slug === b.slug) notFound();
+  if (!shouldComparePaddles(a, b)) notFound();
 
   const aPrice = a.price ? parseFloat(a.price.replace(/[^0-9.]/g, "")) : null;
   const bPrice = b.price ? parseFloat(b.price.replace(/[^0-9.]/g, "")) : null;
@@ -130,6 +224,21 @@ export default function CompareMatchupPage({ params }: Props) {
 
   const canonical = `${siteConfig.siteUrl}/compare/${canonicalMatchup(parsed[0], parsed[1])}`;
 
+  // ── FAQ content ───────────────────────────────────────────────────────────
+  const faqs = generateFAQs(a, b, aEff, bEff);
+
+  // ── Related comparisons ───────────────────────────────────────────────────
+  const relatedMatchups = buildStaticMatchups()
+    .filter((m) => {
+      if (m === canonicalMatchup(a.slug, b.slug)) return false;
+      return (
+        m.startsWith(a.slug + "-vs-") || m.endsWith("-vs-" + a.slug) ||
+        m.startsWith(b.slug + "-vs-") || m.endsWith("-vs-" + b.slug)
+      );
+    })
+    .slice(0, 6);
+
+  // ── Structured data ───────────────────────────────────────────────────────
   const breadcrumbSchema = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -155,11 +264,21 @@ export default function CompareMatchupPage({ params }: Props) {
     "mainEntityOfPage": { "@type": "WebPage", "@id": canonical },
     "image": [a.image, b.image].filter(Boolean).map((src) => `${siteConfig.siteUrl}${src}`),
   };
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqs.map(({ q, a: ans }) => ({
+      "@type": "Question",
+      "name": q,
+      "acceptedAnswer": { "@type": "Answer", "text": ans },
+    })),
+  };
 
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
 
       <div className="min-h-screen pt-[156px] pb-20" style={{ background: "var(--bg-page)" }}>
         <div className="container-xl py-12">
@@ -177,13 +296,12 @@ export default function CompareMatchupPage({ params }: Props) {
 
           {/* Hero */}
           <div className="mb-10 max-w-4xl">
-            <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "#60a5fa" }}>Paddle Comparison</p>
+            <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "#5a9df9" }}>Paddle Comparison</p>
             <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-4" style={{ color: "var(--text-primary)" }}>
               {a.brand} {a.name} vs {b.brand} {b.name}
             </h1>
             <p className="text-lg leading-relaxed" style={{ color: "var(--text-muted)" }}>
-              A side-by-side spec, value, and use-case comparison of two of the most-searched pickleball paddles. Below: the
-              attributes each paddle wins, a full spec table, and a clear recommendation for who should buy which.
+              {generateIntro(a, b, aEff, bEff)}
             </p>
           </div>
 
@@ -193,7 +311,7 @@ export default function CompareMatchupPage({ params }: Props) {
             <div className="flex items-center justify-center">
               <span
                 className="text-xl font-extrabold uppercase tracking-[0.3em] px-4 py-2 rounded-full"
-                style={{ color: "rgba(255,255,255,0.5)", border: "1px solid rgba(255,255,255,0.10)", background: "rgba(255,255,255,0.03)" }}
+                style={{ color: "var(--text-muted)", border: "1px solid var(--border)", background: "var(--bg-section)" }}
               >
                 vs
               </span>
@@ -216,7 +334,7 @@ export default function CompareMatchupPage({ params }: Props) {
                       className="rounded-2xl p-5"
                       style={{
                         background: "var(--bg-card)",
-                        border: `1px solid ${result.which === "tie" ? "rgba(255,255,255,0.08)" : "rgba(10, 100, 188,0.30)"}`,
+                        border: `1px solid ${result.which === "tie" ? "var(--border)" : "rgba(90,157,249,0.3)"}`,
                       }}
                     >
                       <p className="text-[11px] font-bold uppercase tracking-widest mb-2" style={{ color: "var(--text-muted)" }}>
@@ -249,7 +367,7 @@ export default function CompareMatchupPage({ params }: Props) {
             </h2>
             <div
               className="rounded-2xl overflow-hidden"
-              style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.08)" }}
+              style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}
             >
               {[
                 { label: "Brand", aVal: a.brand, bVal: b.brand },
@@ -273,7 +391,7 @@ export default function CompareMatchupPage({ params }: Props) {
                 <div
                   key={row.label}
                   className="grid grid-cols-[1fr_1.2fr_1.2fr] items-center px-5 py-3"
-                  style={{ borderTop: i === 0 ? "none" : "1px solid rgba(255,255,255,0.05)" }}
+                  style={{ borderTop: i === 0 ? "none" : "1px solid var(--border)" }}
                 >
                   <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>{row.label}</p>
                   <SpecCell value={row.aVal} winner={row.winA} />
@@ -289,10 +407,7 @@ export default function CompareMatchupPage({ params }: Props) {
             <BuyBlock paddle={b} />
           </div>
 
-          {/* Head-to-head review video — only rendered when a comparison
-              entry exists for this matchup in comparisonVideos. Uses a
-              custom thumbnail (set in the data file) so the still frame
-              matches the brand instead of the YouTube auto-thumb. */}
+          {/* Head-to-head review video */}
           {(() => {
             const match = comparisonVideos[canonicalMatchup(a.slug, b.slug)];
             if (!match) return null;
@@ -327,6 +442,57 @@ export default function CompareMatchupPage({ params }: Props) {
             </div>
           </div>
 
+          {/* FAQ section */}
+          {faqs.length > 0 && (
+            <div className="mb-14 max-w-3xl">
+              <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight mb-6" style={{ color: "var(--text-primary)" }}>
+                Frequently asked questions
+              </h2>
+              <div className="flex flex-col gap-4">
+                {faqs.map(({ q, a: ans }) => (
+                  <div
+                    key={q}
+                    className="rounded-2xl p-6"
+                    style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}
+                  >
+                    <p className="text-base font-extrabold mb-2" style={{ color: "var(--text-primary)" }}>{q}</p>
+                    <p className="text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>{ans}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Related comparisons */}
+          {relatedMatchups.length > 0 && (
+            <div className="mb-14">
+              <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight mb-6" style={{ color: "var(--text-primary)" }}>
+                Related comparisons
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {relatedMatchups.map((m) => {
+                  const rel = parseMatchup(m);
+                  if (!rel) return null;
+                  const pa = getPaddleBySlug(rel[0]);
+                  const pb = getPaddleBySlug(rel[1]);
+                  if (!pa || !pb) return null;
+                  return (
+                    <Link
+                      key={m}
+                      href={`/compare/${m}`}
+                      className="rounded-xl px-4 py-3 text-sm font-semibold transition-all hover:scale-[1.02]"
+                      style={{ background: "var(--bg-card)", border: "1px solid var(--border)", color: "var(--text-primary)" }}
+                    >
+                      <span>{pa.brand} {pa.name}</span>
+                      <span className="mx-1.5 font-normal" style={{ color: "var(--text-muted)" }}>vs</span>
+                      <span>{pb.brand} {pb.name}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* CTA back to compare hub + paddle pages */}
           <div className="mt-16 flex flex-col items-center text-center gap-5">
             <p className="text-base" style={{ color: "var(--text-muted)" }}>Compare other paddles in our database</p>
@@ -334,14 +500,14 @@ export default function CompareMatchupPage({ params }: Props) {
               <Link
                 href="/compare"
                 className="inline-flex items-center gap-2 font-bold text-sm px-6 py-3 rounded-xl text-white transition-all hover:scale-[1.02]"
-                style={{ background: "#0a64bc" }}
+                style={{ background: "#5a9df9" }}
               >
                 Open the comparison tool <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
                 href="/paddles"
                 className="inline-flex items-center gap-2 font-bold text-sm px-6 py-3 rounded-xl transition-all hover:scale-[1.02]"
-                style={{ border: "1px solid rgba(255,255,255,0.15)", color: "var(--text-primary)" }}
+                style={{ border: "1px solid var(--border)", color: "var(--text-primary)" }}
               >
                 Browse all paddles
               </Link>
@@ -363,13 +529,13 @@ function PaddleHeroCard({ paddle, side }: { paddle: Paddle; side: "left" | "righ
       className="block rounded-2xl p-6 transition-transform hover:scale-[1.01]"
       style={{
         background: "var(--bg-card)",
-        border: "1px solid rgba(255,255,255,0.08)",
+        border: "1px solid var(--border)",
         boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
       }}
     >
       <div
         className="w-full rounded-xl flex items-center justify-center mb-4"
-        style={{ background: "var(--bg-alt)", aspectRatio: "1/1" }}
+        style={{ background: "var(--bg-alt)", aspectRatio: "4/5" }}
       >
         {paddle.image && (
           // eslint-disable-next-line @next/next/no-img-element
@@ -381,7 +547,7 @@ function PaddleHeroCard({ paddle, side }: { paddle: Paddle; side: "left" | "righ
           />
         )}
       </div>
-      <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "#60a5fa" }}>{paddle.brand}</p>
+      <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "#5a9df9" }}>{paddle.brand}</p>
       <p className="text-lg font-extrabold leading-tight" style={{ color: "var(--text-primary)" }}>{paddle.name}</p>
       <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
         {paddle.shape} · {paddle.thickness} {paddle.price ? `· ${paddle.price}` : ""}
@@ -411,7 +577,7 @@ function BuyBlock({ paddle }: { paddle: Paddle }) {
   return (
     <div
       className="rounded-2xl p-5"
-      style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.08)" }}
+      style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}
     >
       <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "var(--text-muted)" }}>
         {paddle.brand}
@@ -420,7 +586,7 @@ function BuyBlock({ paddle }: { paddle: Paddle }) {
         {paddle.name}
       </p>
       {price && (
-        <p className="text-sm font-bold mb-3" style={{ color: "#60a5fa" }}>{price}</p>
+        <p className="text-sm font-bold mb-3" style={{ color: "#5a9df9" }}>{price}</p>
       )}
       <div className="flex flex-wrap items-center gap-2">
         {paddle.discountLink && (
@@ -429,12 +595,12 @@ function BuyBlock({ paddle }: { paddle: Paddle }) {
             target="_blank"
             rel="noopener noreferrer sponsored"
             className="inline-flex items-center gap-1.5 font-bold text-sm px-4 py-2 rounded-xl text-white"
-            style={{ background: "#0a64bc" }}
+            style={{ background: "#5a9df9" }}
           >
             {hasDiscount ? `Get ${paddle.amountOff} off` : "Buy"} <ExternalLink className="w-3.5 h-3.5" />
           </a>
         )}
-        <span className="text-xs font-mono font-bold px-2 py-1 rounded-md" style={{ background: "rgba(10, 100, 188,0.30)", color: "#60a5fa" }}>
+        <span className="text-xs font-mono font-bold px-2 py-1 rounded-md" style={{ background: "rgba(90,157,249,0.15)", color: "#5a9df9" }}>
           {code}
         </span>
         <Link
@@ -465,15 +631,15 @@ function WhoCard({ paddle, other }: { paddle: Paddle; other: Paddle }) {
   return (
     <div
       className="rounded-2xl p-5 h-full"
-      style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.08)" }}
+      style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}
     >
-      <p className="text-[11px] font-bold uppercase tracking-widest mb-2" style={{ color: "#60a5fa" }}>
+      <p className="text-[11px] font-bold uppercase tracking-widest mb-2" style={{ color: "#5a9df9" }}>
         Pick the {paddle.brand} {paddle.name} if…
       </p>
       <ul className="flex flex-col gap-2">
         {points.map((pt, i) => (
           <li key={i} className="flex items-start gap-2 text-sm leading-snug" style={{ color: "var(--text-muted)" }}>
-            <Check className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: "#60a5fa" }} strokeWidth={2.5} />
+            <Check className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: "#5a9df9" }} strokeWidth={2.5} />
             <span>{pt}</span>
           </li>
         ))}

@@ -122,7 +122,7 @@ export default function InlineNewsletterCTA({
                 disabled={state === "loading"}
                 placeholder="your@email.com"
                 aria-label="Email address"
-                className="flex-1 h-11 px-4 text-sm font-medium rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:opacity-60"
+                className="flex-1 h-11 px-4 text-sm font-medium rounded-xl focus:outline-none focus:ring-2 focus:ring-[#5a9df9] disabled:opacity-60"
                 style={{
                   background: "rgba(255,255,255,0.06)",
                   border: "1px solid rgba(255,255,255,0.12)",

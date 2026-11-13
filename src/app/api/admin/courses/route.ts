@@ -60,6 +60,8 @@ export async function POST(req: NextRequest) {
       memberTier: accessType === "level" && typeof body.memberTier === "string" ? body.memberTier : null,
       // pro only tier
       proTier: accessType === "pro" && typeof body.proTier === "string" ? body.proTier : null,
+      category: body.category === "technique" || body.category === "strategy" || body.category === "mindset" ? body.category : null,
+      shotType: typeof body.shotType === "string" && body.shotType.trim() ? body.shotType.trim() : null,
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
     });

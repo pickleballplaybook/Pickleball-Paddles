@@ -38,11 +38,11 @@ export default function CopyableCode({ code }: { code: string }) {
       className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-lg text-base font-mono font-bold tracking-wider transition-colors"
       style={{
         background: "transparent",
-        border: "1.5px dashed rgba(10, 100, 188,0.55)",
-        color: "#60a5fa",
+        border: "1.5px dashed rgba(90,157,249,0.45)",
+        color: "#5a9df9",
       }}
     >
-      <span className="font-sans font-semibold tracking-normal text-base" style={{ color: "rgba(10, 100, 188,0.70)" }}>
+      <span className="font-sans font-semibold tracking-normal text-base" style={{ color: "rgba(90,157,249,0.70)" }}>
         Code:
       </span>
       <span>{code}</span>

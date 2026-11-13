@@ -21,6 +21,8 @@ type Course = {
   coverImageUrl: string | null;
   published: boolean;
   sortOrder: number;
+  category: "technique" | "strategy" | "mindset" | "gold" | null;
+  shotType: string | null;
 };
 
 type PdfAttachment = { name: string; url: string };
@@ -43,7 +45,7 @@ type CourseNode = {
   drillIds: string[];
   videoStorageUrl: string | null;
   videoThumbnailUrl: string | null;
-  category: "technique" | "strategy" | "mindset" | null;
+  category: "technique" | "strategy" | "mindset" | "gold" | null;
 };
 
 type EditState = {
@@ -54,7 +56,7 @@ type EditState = {
   drillIds: string[];
   videoStorageUrl: string | null;
   videoThumbnailUrl: string | null;
-  category: "technique" | "strategy" | "mindset" | null;
+  category: "technique" | "strategy" | "mindset" | "gold" | null;
 };
 
 const PAGE_CATEGORIES = [
@@ -109,6 +111,9 @@ export function CourseEditor({
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [savedFlash, setSavedFlash] = useState(false);
+  const [courseFolder, setCourseFolder] = useState(course.shotType ?? "");
+  const [courseFolderSaving, setCourseFolderSaving] = useState(false);
+  const [courseFolderSaved, setCourseFolderSaved] = useState(false);
   const [folderEditState, setFolderEditState] = useState<FolderEditState | null>(null);
   const [folderSaving, setFolderSaving] = useState(false);
   const [folderSavedFlash, setFolderSavedFlash] = useState(false);
@@ -382,6 +387,25 @@ export function CourseEditor({
     } finally {
       setVideoUploading(false);
       setVideoUploadProgress(0);
+    }
+  };
+
+  const saveCourseFolder = async () => {
+    setCourseFolderSaving(true);
+    try {
+      const res = await fetch(`/api/admin/courses/${course.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ shotType: courseFolder.trim() || null }),
+      });
+      const json = (await res.json().catch(() => ({}))) as { ok?: boolean };
+      if (!res.ok || !json.ok) throw new Error("Save failed.");
+      setCourseFolderSaved(true);
+      setTimeout(() => setCourseFolderSaved(false), 2000);
+    } catch {
+      // ignore
+    } finally {
+      setCourseFolderSaving(false);
     }
   };
 
@@ -774,6 +798,33 @@ export function CourseEditor({
           </div>
         </div>
 
+        {/* Course folder (shotType) */}
+        <div className="px-4 py-3 border-b border-gray-800">
+          <p className="text-xs text-gray-500 font-medium mb-1.5">Folder</p>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={courseFolder}
+              onChange={(e) => setCourseFolder(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && saveCourseFolder()}
+              placeholder="e.g. Plays, Patterns…"
+              className="flex-1 min-w-0 bg-gray-800 border border-gray-700 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-gray-500"
+            />
+            <button
+              onClick={saveCourseFolder}
+              disabled={courseFolderSaving}
+              className="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-gray-700 hover:bg-gray-600 disabled:opacity-50 transition whitespace-nowrap"
+            >
+              {courseFolderSaved ? "Saved ✓" : courseFolderSaving ? "…" : "Save"}
+            </button>
+          </div>
+          {course.category && (
+            <p className="text-xs text-gray-600 mt-1.5">
+              Category: <span className="text-gray-400 capitalize">{course.category}</span>
+            </p>
+          )}
+        </div>
+
         {/* Node tree */}
         <div
           className="flex-1 overflow-y-auto py-2 px-1"
@@ -789,21 +840,22 @@ export function CourseEditor({
                 <FolderItem
                   key={node.id}
                   folder={node}
-                  children={childrenOf(node.id)}
-                  collapsed={collapsedFolders.has(node.id)}
+                  createNode={createNode}
+                  moveNode={moveNode}
+                  childrenOf={childrenOf}
+                  isCollapsed={(id) => collapsedFolders.has(id)}
+                  onToggleFolder={toggleFolder}
                   selectedId={selectedId}
-                  onToggle={() => toggleFolder(node.id)}
                   onSelectPage={selectPage}
                   onSelectFolder={selectFolder}
-                  onAddPage={() => createNode("page", node.id)}
                   onDelete={deleteNode}
                   onRename={renameNode}
                   isFirst={i === 0}
                   isLast={i === topLevel.length - 1}
                   onMoveUp={() => moveNode(node.id, topLevel, -1)}
                   onMoveDown={() => moveNode(node.id, topLevel, 1)}
-                  onMoveChild={(childId, dir) => moveNode(childId, childrenOf(node.id), dir)}
                   dnd={dnd}
+                  depth={0}
                 />
               ) : (
                 <PageItem
@@ -1322,30 +1374,34 @@ export function CourseEditor({
 // ── Folder sidebar item ──────────────────────────────────────────────────────
 
 function FolderItem({
-  folder, children, collapsed, selectedId,
-  onToggle, onSelectPage, onSelectFolder, onAddPage, onDelete, onRename,
-  isFirst, isLast, onMoveUp, onMoveDown, onMoveChild, dnd,
+  folder, createNode, moveNode, childrenOf, isCollapsed, onToggleFolder,
+  selectedId, onSelectPage, onSelectFolder, onDelete, onRename,
+  isFirst, isLast, onMoveUp, onMoveDown, dnd, depth = 0,
 }: {
   folder: CourseNode;
-  children: CourseNode[];
-  collapsed: boolean;
+  createNode: (type: "page" | "folder", parentId: string) => void;
+  moveNode: (nodeId: string, siblings: CourseNode[], direction: -1 | 1) => void;
+  childrenOf: (parentId: string) => CourseNode[];
+  isCollapsed: (id: string) => boolean;
+  onToggleFolder: (id: string) => void;
   selectedId: string | null;
-  onToggle: () => void;
   onSelectPage: (n: CourseNode) => void;
   onSelectFolder: (n: CourseNode) => void;
-  onAddPage: () => void;
   onDelete: (id: string) => void;
   onRename: (id: string, title: string) => void;
   isFirst: boolean;
   isLast: boolean;
   onMoveUp: () => void;
   onMoveDown: () => void;
-  onMoveChild?: (nodeId: string, direction: -1 | 1) => void;
   dnd: DndCtx;
+  depth?: number;
 }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(folder.title);
   const [showOpts, setShowOpts] = useState(false);
+
+  const collapsed = isCollapsed(folder.id);
+  const children = childrenOf(folder.id);
 
   const commit = () => {
     setEditing(false);
@@ -1383,7 +1439,7 @@ function FolderItem({
       >
         {/* Drag handle */}
         <span className="text-gray-700 group-hover:text-gray-500 text-xs flex-shrink-0 select-none" title="Drag to reorder">⠿</span>
-        <button onClick={onToggle} className="w-4 text-gray-500 text-xs flex-shrink-0 hover:text-gray-300">
+        <button onClick={() => onToggleFolder(folder.id)} className="w-4 text-gray-500 text-xs flex-shrink-0 hover:text-gray-300">
           {collapsed ? "▶" : "▾"}
         </button>
         <span className="text-gray-500 text-sm flex-shrink-0">📁</span>
@@ -1423,9 +1479,14 @@ function FolderItem({
               <>
                 <div className="fixed inset-0 z-10" onClick={() => setShowOpts(false)} />
                 <div className="absolute right-0 top-full mt-1 bg-gray-800 border border-gray-700 rounded-xl shadow-xl w-36 overflow-hidden z-20">
-                  <button onClick={() => { setShowOpts(false); onAddPage(); }} className="w-full text-left px-3 py-2 text-xs hover:bg-gray-700 transition">
+                  <button onClick={() => { setShowOpts(false); createNode("page", folder.id); }} className="w-full text-left px-3 py-2 text-xs hover:bg-gray-700 transition">
                     Add page
                   </button>
+                  {depth === 0 && (
+                    <button onClick={() => { setShowOpts(false); createNode("folder", folder.id); }} className="w-full text-left px-3 py-2 text-xs hover:bg-gray-700 transition">
+                      Add folder
+                    </button>
+                  )}
                   <button onClick={() => { setShowOpts(false); setDraft(folder.title); setEditing(true); }} className="w-full text-left px-3 py-2 text-xs hover:bg-gray-700 transition">
                     Rename
                   </button>
@@ -1447,24 +1508,47 @@ function FolderItem({
       {/* Children */}
       {!collapsed && (
         <div className="ml-5 border-l border-gray-800 pl-1">
-          {children.map((child, i) => (
-            <PageItem
-              key={child.id}
-              node={child}
-              selected={selectedId === child.id}
-              indent
-              onSelect={() => onSelectPage(child)}
-              onDelete={() => onDelete(child.id)}
-              onRename={onRename}
-              isFirst={i === 0}
-              isLast={i === children.length - 1}
-              onMoveUp={() => onMoveChild?.(child.id, -1)}
-              onMoveDown={() => onMoveChild?.(child.id, 1)}
-              dnd={dnd}
-            />
-          ))}
+          {children.map((child, i) =>
+            child.type === "folder" ? (
+              <FolderItem
+                key={child.id}
+                folder={child}
+                createNode={createNode}
+                moveNode={moveNode}
+                childrenOf={childrenOf}
+                isCollapsed={isCollapsed}
+                onToggleFolder={onToggleFolder}
+                selectedId={selectedId}
+                onSelectPage={onSelectPage}
+                onSelectFolder={onSelectFolder}
+                onDelete={onDelete}
+                onRename={onRename}
+                isFirst={i === 0}
+                isLast={i === children.length - 1}
+                onMoveUp={() => moveNode(child.id, children, -1)}
+                onMoveDown={() => moveNode(child.id, children, 1)}
+                dnd={dnd}
+                depth={depth + 1}
+              />
+            ) : (
+              <PageItem
+                key={child.id}
+                node={child}
+                selected={selectedId === child.id}
+                indent
+                onSelect={() => onSelectPage(child)}
+                onDelete={() => onDelete(child.id)}
+                onRename={onRename}
+                isFirst={i === 0}
+                isLast={i === children.length - 1}
+                onMoveUp={() => moveNode(child.id, children, -1)}
+                onMoveDown={() => moveNode(child.id, children, 1)}
+                dnd={dnd}
+              />
+            )
+          )}
           <button
-            onClick={onAddPage}
+            onClick={() => createNode("page", folder.id)}
             className="w-full text-left px-3 py-1.5 text-xs text-gray-600 hover:text-gray-400 transition"
           >
             + Add page

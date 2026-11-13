@@ -19,11 +19,11 @@ export type DrillFormInitial = {
   id?: string;
   name?: string;
   summary?: string;
+  description?: string;
   description_beginner?: string;
   description_intermediate?: string;
   description_advanced?: string;
   category?: string;
-  week_number?: number | string;
   video_url?: string;
   image?: string | null;
   scheduled_publish_at?: string | null;
@@ -53,6 +53,19 @@ export default function DrillForm(props: Props) {
 
   const [name, setName] = useState(initial.name ?? "");
   const [summary, setSummary] = useState(initial.summary ?? "");
+
+  // Detect initial description mode from stored data.
+  // Leveled: any of the three level fields has content.
+  // Single: no level content but a plain description exists (or creating new).
+  const hasLeveledContent = [
+    initial.description_beginner,
+    initial.description_intermediate,
+    initial.description_advanced,
+  ].some((d) => !!d?.trim());
+  const [descMode, setDescMode] = useState<"leveled" | "single">(
+    !hasLeveledContent && !!initial.description?.trim() ? "single" : "leveled"
+  );
+  const [descSingle, setDescSingle] = useState(initial.description ?? "");
   const [descBeginner, setDescBeginner] = useState(
     initial.description_beginner ?? ""
   );
@@ -63,9 +76,6 @@ export default function DrillForm(props: Props) {
     initial.description_advanced ?? ""
   );
   const [category, setCategory] = useState(initial.category ?? "");
-  const [weekNumber, setWeekNumber] = useState(
-    initial.week_number != null ? String(initial.week_number) : ""
-  );
   const [videoUrl, setVideoUrl] = useState(initial.video_url ?? "");
   const [image, setImage] = useState<File | null>(null);
   const [existingImageUrl, setExistingImageUrl] = useState<string | null>(
@@ -91,11 +101,19 @@ export default function DrillForm(props: Props) {
       const fd = new FormData();
       fd.append("name", name);
       fd.append("summary", summary);
-      fd.append("description_beginner", descBeginner);
-      fd.append("description_intermediate", descIntermediate);
-      fd.append("description_advanced", descAdvanced);
+      fd.append("description_mode", descMode);
+      if (descMode === "single") {
+        fd.append("description_single", descSingle);
+        fd.append("description_beginner", "");
+        fd.append("description_intermediate", "");
+        fd.append("description_advanced", "");
+      } else {
+        fd.append("description_single", "");
+        fd.append("description_beginner", descBeginner);
+        fd.append("description_intermediate", descIntermediate);
+        fd.append("description_advanced", descAdvanced);
+      }
       fd.append("category", category);
-      fd.append("week_number", weekNumber);
       fd.append("video_url", videoUrl);
       if (scheduledPublishAt) {
         fd.append(
@@ -196,29 +214,66 @@ export default function DrillForm(props: Props) {
         />
       </FieldLabel>
 
-      <FieldLabel label="Description — Beginner">
-        <RichTextBlock
-          value={descBeginner}
-          onChange={setDescBeginner}
-          placeholder="What a beginner should focus on…"
-        />
-      </FieldLabel>
+      {/* Description mode toggle */}
+      <div className="block">
+        <div className="text-sm text-gray-300 mb-2">Description</div>
+        <div className="inline-flex rounded-lg border border-gray-700 overflow-hidden mb-4">
+          <button
+            type="button"
+            onClick={() => setDescMode("leveled")}
+            className={`px-4 py-2 text-sm font-medium transition-colors ${
+              descMode === "leveled"
+                ? "bg-accent-500 text-black"
+                : "bg-gray-900 text-gray-400 hover:text-white"
+            }`}
+          >
+            Easy / Medium / Hard
+          </button>
+          <button
+            type="button"
+            onClick={() => setDescMode("single")}
+            className={`px-4 py-2 text-sm font-medium transition-colors ${
+              descMode === "single"
+                ? "bg-accent-500 text-black"
+                : "bg-gray-900 text-gray-400 hover:text-white"
+            }`}
+          >
+            Single (unlabeled)
+          </button>
+        </div>
 
-      <FieldLabel label="Description — Intermediate">
-        <RichTextBlock
-          value={descIntermediate}
-          onChange={setDescIntermediate}
-          placeholder="What an intermediate player should focus on…"
-        />
-      </FieldLabel>
-
-      <FieldLabel label="Description — Advanced">
-        <RichTextBlock
-          value={descAdvanced}
-          onChange={setDescAdvanced}
-          placeholder="What an advanced player should focus on…"
-        />
-      </FieldLabel>
+        {descMode === "single" ? (
+          <RichTextBlock
+            value={descSingle}
+            onChange={setDescSingle}
+            placeholder="Describe what the player should focus on…"
+          />
+        ) : (
+          <div className="space-y-4">
+            <FieldLabel label="Beginner">
+              <RichTextBlock
+                value={descBeginner}
+                onChange={setDescBeginner}
+                placeholder="What a beginner should focus on…"
+              />
+            </FieldLabel>
+            <FieldLabel label="Intermediate">
+              <RichTextBlock
+                value={descIntermediate}
+                onChange={setDescIntermediate}
+                placeholder="What an intermediate player should focus on…"
+              />
+            </FieldLabel>
+            <FieldLabel label="Advanced">
+              <RichTextBlock
+                value={descAdvanced}
+                onChange={setDescAdvanced}
+                placeholder="What an advanced player should focus on…"
+              />
+            </FieldLabel>
+          </div>
+        )}
+      </div>
 
       <FieldLabel label="Category">
         <select
@@ -238,29 +293,16 @@ export default function DrillForm(props: Props) {
         </select>
       </FieldLabel>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FieldLabel label="Week Number">
-          <input
-            type="number"
-            required
-            min={1}
-            step={1}
-            value={weekNumber}
-            onChange={(e) => setWeekNumber(e.target.value)}
-            className="w-full bg-gray-900 border border-gray-800 rounded px-3 py-2 text-sm focus:outline-none focus:border-accent-500"
-          />
-        </FieldLabel>
-        <FieldLabel label="Video URL">
-          <input
-            type="url"
-            required
-            placeholder="https://vimeo.com/…"
-            value={videoUrl}
-            onChange={(e) => setVideoUrl(e.target.value)}
-            className="w-full bg-gray-900 border border-gray-800 rounded px-3 py-2 text-sm focus:outline-none focus:border-accent-500"
-          />
-        </FieldLabel>
-      </div>
+      <FieldLabel label="Video URL">
+        <input
+          type="url"
+          required
+          placeholder="https://vimeo.com/…"
+          value={videoUrl}
+          onChange={(e) => setVideoUrl(e.target.value)}
+          className="w-full bg-gray-900 border border-gray-800 rounded px-3 py-2 text-sm focus:outline-none focus:border-accent-500"
+        />
+      </FieldLabel>
 
       <FieldLabel label="Image (optional)">
         {existingImageUrl && !image && (

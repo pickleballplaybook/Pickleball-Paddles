@@ -51,7 +51,11 @@ process.on('unhandledRejection', (reason) => {
 
 const app = express();
 const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN;
-app.use(cors(ALLOWED_ORIGIN ? { origin: ALLOWED_ORIGIN.split(',').map(s => s.trim()) } : {}));
+app.use(cors(ALLOWED_ORIGIN ? {
+  origin: ALLOWED_ORIGIN.split(',').map(s => s.trim()),
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  maxAge: 86400, // browser caches preflight for 24h — eliminates OPTIONS round-trip per chunk
+} : {}));
 app.use(express.json()); app.use(express.urlencoded({ extended: true }));
 
 const SHORTS_BACKEND_TOKEN = process.env.SHORTS_BACKEND_TOKEN;
@@ -66,6 +70,10 @@ if (SHORTS_BACKEND_TOKEN) {
     if (req.path.startsWith('/uploads/')) return next();
     // Same for scheduled-IG media — Meta fetches the video URL at fire time.
     if (req.path.startsWith('/scheduled/')) return next();
+    // OAuth callbacks arrive as browser redirects from Google/Meta/TikTok —
+    // no way to include a Bearer token in a redirect, so bypass auth here.
+    if (req.path.startsWith('/api/auth/')) return next();
+    if (req.path.startsWith('/auth/')) return next();
     const header = req.headers.authorization || '';
     const provided = header.startsWith('Bearer ') ? header.slice(7) : '';
     if (provided !== SHORTS_BACKEND_TOKEN) {
@@ -921,25 +929,33 @@ async function analyzeAndCutVideo(jobId, jobDir, videoPath, overlayOpts = { topT
 
   const claudeResponse = await callClaudeWithRetry({
     model: 'claude-sonnet-4-5',
-    max_tokens: 2000,
+    max_tokens: 3000,
     messages: [{
       role: 'user',
-      content: `You are a short-form video expert for a pickleball YouTube channel called Pickleball Playbook. 
-      
-Analyze this transcript and identify the best moments to turn into YouTube Shorts (15–60 seconds each).
+      content: `You are a short-form video expert for a pickleball YouTube channel called Pickleball Playbook.
+
+Analyze this transcript and identify the best moments to turn into YouTube Shorts or Reels.
 
 Rules:
 - Pick up to 10 clips, but only if they're genuinely good. Quality over quantity.
 - Each clip must be self-contained — a tip, story, insight, or entertaining moment that makes sense on its own WITHOUT any prior context from the video.
 - Prefer moments with clear actionable advice, surprising facts, or high energy.
-- Clips should be 15–60 seconds long.
+- Clips must be between 30 seconds and 3 minutes (180 seconds). 3 minutes is a HARD MAXIMUM — YouTube Shorts are rejected above 180s. A single quick tip might be 30–45s. A full principle with setup, explanation, and payoff might be 90–180s. If a complete thought would run longer than 180s, find the most natural stopping point within 180s and end there.
 - Do not overlap clips.
 
-CLEAN CUTS — this is critical:
-- Start timestamps must land at the very beginning of a complete sentence. Never mid-word, never mid-sentence. Scan back to the nearest sentence start if needed.
-- End timestamps must land at the end of a complete sentence or thought. Never cut off the speaker mid-sentence.
-- A clip must cover ONE continuous topic. If the speaker finishes a point and moves on to a different subject, end the clip before that transition — do not combine two separate topics into one clip. Two topics stitched together will feel like two different videos and confuse the viewer.
-- Ask yourself: if a stranger watches only this segment with zero context, does it make complete sense from start to finish? If not, adjust the timestamps or skip it.
+CLEAN CUT STARTS — getting the start right is critical:
+- The clip must begin at the very first word of a NEW thought or topic. Not mid-explanation.
+- GOOD start signals: the speaker introduces a concept for the first time ("The biggest mistake is...", "Here's what most people don't know...", "Let me show you...", "One thing I always tell players..."), transitions with a topic pivot ("Now let's talk about...", "Speaking of which...", "Another thing is..."), or begins a story/demonstration from scratch.
+- BAD start signals: the speaker is referencing something they already set up ("which is why...", "so that means...", "and THAT's where...", "like I said...", "going back to what I mentioned..."), using pronouns without antecedents ("it", "this", "that", "they", "those" with no clear referent in the clip), or mid-explanation ("...and then you want to make sure that...").
+- If the best content starts mid-topic, scan BACKWARD in the transcript to find where that topic was first introduced, and use that earlier point as the start.
+
+CLEAN CUT ENDS — getting the end right is equally critical:
+- The clip must end at the natural conclusion of the thought — after the speaker has made their full point and the idea feels complete.
+- GOOD end signals: the speaker delivers the payoff or punchline, wraps with a summary statement ("So that's the key...", "That's all there is to it.", "Try that next time you're out there."), pauses before pivoting to a new topic, or the instruction/story reaches a natural resolution.
+- BAD end signals: the speaker is mid-explanation, still building toward the point, saying "and so...", "which means...", "the reason for that is...", "what that tells us is...", or setting up the next idea. If the sentence you want to end on is building toward something, EXTEND the clip until the payoff lands.
+- Never end on an open loop. If the speaker says "here's the secret..." the clip must include the secret and the explanation, not just the setup.
+
+ONE TOPIC PER CLIP: A clip must cover ONE continuous thought arc — setup → explanation → payoff. If the speaker finishes one point and pivots to a different subject, end the clip before the pivot. Do not combine two unrelated topics.
 
 TITLES MUST BE CLICKBAIT, NOT DESCRIPTIONS.
 
@@ -1055,6 +1071,8 @@ Respond ONLY with valid JSON — no preamble, no markdown fences. Format:
 
   for (let i = 0; i < clipMoments.length; i++) {
     const clip = clipMoments[i];
+    // Hard cap at 179s — YouTube Shorts max is 180s and ffmpeg rounding can push it over.
+    if (clip.end - clip.start > 179) clip.end = clip.start + 179;
     const duration = clip.end - clip.start;
     const filename = `clip_${String(i + 1).padStart(2, '0')}.mp4`;
     const outPath = path.join(clipOutputDir, filename);
@@ -1500,30 +1518,28 @@ const uploadMulter = multer({
   limits: { fileSize: 5 * 1024 * 1024 * 1024 }, // 5 GB
 });
 
-// Chunked upload — each chunk is its own short HTTP request so we never hit
-// Railway's 5-minute per-request timeout, even for files larger than the
-// network can push in 5 minutes.
+// Chunked upload — sequential append. Each chunk request appends to the
+// final file in order. The last chunk responds with { done: true, path }.
 //
-// Sequence (browser sends in order, awaits each):
-//   POST /api/file-upload/<id>/chunk?token=…&exp=…&index=0&total=N&chunkSize=…&filename=x
-//     body: raw bytes of chunk 0 (first chunk → file is truncated/created)
-//   POST … &index=1&total=N&chunkSize=… body: raw bytes of chunk 1
+// Sequence:
+//   POST /api/file-upload/<id>/chunk?token=…&exp=…&index=0&total=N&chunkSize=C&filename=x
+//     body: raw bytes of chunk 0 (creates/clears the file)
+//   POST … &index=1  body: raw bytes of chunk 1
 //   …
-//   POST … &index=N-1&total=N&chunkSize=… body: raw bytes of last chunk → response: { done: true, path }
+//   POST … &index=N-1  body: last chunk → response: { done: true, path }
 //
-// Retry safety: before writing each chunk we truncate the file back to the
-// expected pre-chunk size (index * chunkSize). That way a chunk that failed
-// mid-upload (and may have partially written) can be retried without
-// duplicating bytes — the partial leftovers are discarded and the retried
-// chunk's bytes land in the same final position.
-// Chunk upload — saves each chunk as an independent file so the client can
-// upload multiple chunks in parallel without ordering constraints.
+// Retry safety: before appending we verify the file is exactly index*chunkSize
+// bytes. If it's larger (partial chunk from a failed attempt), we truncate back
+// so the retried bytes land in the correct position without duplication.
 app.post('/api/file-upload/:uploadId/chunk', (req, res) => {
   const { uploadId } = req.params;
   const token = String(req.query.token || '');
   const exp = Number(req.query.exp || 0);
   const index = Number(req.query.index);
   const total = Number(req.query.total);
+  const chunkSize = Number(req.query.chunkSize || 0);
+  const filename = String(req.query.filename || 'upload.bin')
+    .replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 200) || 'upload.bin';
 
   if (!token || !exp || !Number.isFinite(index) || !Number.isFinite(total)) {
     return res.status(400).json({ error: 'Missing or invalid chunk params' });
@@ -1545,9 +1561,27 @@ app.post('/api/file-upload/:uploadId/chunk', (req, res) => {
 
   const dir = path.join(UPLOADS_DIR, uploadId);
   fs.mkdirSync(dir, { recursive: true });
-  const chunkPath = path.join(dir, `chunk_${String(index).padStart(8, '0')}`);
+  const finalPath = path.join(dir, filename);
+  const expectedSize = index * chunkSize;
 
-  const writeStream = fs.createWriteStream(chunkPath);
+  if (index === 0) {
+    try { fs.writeFileSync(finalPath, ''); } catch (err) {
+      return res.status(500).json({ error: err.message });
+    }
+  } else {
+    let currentSize = 0;
+    try { currentSize = fs.statSync(finalPath).size; } catch {}
+    if (currentSize < expectedSize) {
+      return res.status(409).json({ error: `Out of order: expected ${expectedSize} bytes before chunk ${index}, got ${currentSize}` });
+    }
+    if (currentSize > expectedSize) {
+      try { fs.truncateSync(finalPath, expectedSize); } catch (err) {
+        return res.status(500).json({ error: err.message });
+      }
+    }
+  }
+
+  const writeStream = fs.createWriteStream(finalPath, { flags: 'a' });
   let aborted = false;
   req.on('aborted', () => { aborted = true; writeStream.destroy(); });
   writeStream.on('error', err => {
@@ -1555,64 +1589,13 @@ app.post('/api/file-upload/:uploadId/chunk', (req, res) => {
   });
   writeStream.on('finish', () => {
     if (aborted) return;
+    if (index === total - 1) {
+      usedUploadTokens.add(uploadId);
+      return res.json({ done: true, path: finalPath });
+    }
     res.json({ ok: true, index });
   });
   req.pipe(writeStream);
-});
-
-// Finalize — called after all chunks have been uploaded. Assembles them in
-// order into the final file. Token re-verified to prevent unauthorized assembly.
-app.post('/api/file-upload/:uploadId/finalize', express.json(), async (req, res) => {
-  const { uploadId } = req.params;
-  const { token, exp, total, filename } = req.body || {};
-  const numExp = Number(exp);
-  const numTotal = Number(total);
-
-  if (!token || !numExp || !numTotal) {
-    return res.status(400).json({ error: 'Missing finalize params' });
-  }
-  if (numExp < Date.now()) return res.status(401).json({ error: 'Token expired' });
-  if (usedUploadTokens.has(uploadId)) {
-    return res.status(409).json({ error: 'Upload already finalized' });
-  }
-  const expected = signUploadToken(uploadId, numExp);
-  if (
-    expected.length !== token.length ||
-    !crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(token))
-  ) {
-    return res.status(401).json({ error: 'Invalid token' });
-  }
-
-  const dir = path.join(UPLOADS_DIR, uploadId);
-  const safeFilename = String(filename || 'upload.bin')
-    .replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 200) || 'upload.bin';
-  const finalPath = path.join(dir, safeFilename);
-
-  const chunkPaths = Array.from({ length: numTotal }, (_, i) =>
-    path.join(dir, `chunk_${String(i).padStart(8, '0')}`)
-  );
-  const missing = chunkPaths.filter(p => { try { return !fs.statSync(p).size; } catch { return true; } });
-  if (missing.length > 0) {
-    return res.status(409).json({ error: `${missing.length} chunk(s) missing — retry upload` });
-  }
-
-  try {
-    const out = fs.createWriteStream(finalPath);
-    for (const cp of chunkPaths) {
-      await new Promise((resolve, reject) => {
-        const inp = fs.createReadStream(cp);
-        inp.on('error', reject);
-        inp.on('end', resolve);
-        inp.pipe(out, { end: false });
-      });
-      try { fs.unlinkSync(cp); } catch {}
-    }
-    await new Promise((resolve, reject) => { out.end(); out.on('finish', resolve); out.on('error', reject); });
-    usedUploadTokens.add(uploadId);
-    res.json({ done: true, path: finalPath });
-  } catch (err) {
-    res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
-  }
 });
 
 // Lists every clip across every job — used by the publish picker.

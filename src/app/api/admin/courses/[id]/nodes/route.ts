@@ -26,6 +26,7 @@ export async function GET(_req: NextRequest, { params }: Ctx) {
         sortOrder: (r.sortOrder as number) ?? 0,
         published: r.published !== false,
         content: (r.content as string) ?? "",
+        thumbnailUrl: (r.thumbnailUrl as string | null) ?? null,
       };
     });
     return NextResponse.json({ nodes });

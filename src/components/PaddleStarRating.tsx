@@ -156,7 +156,7 @@ export default function PaddleStarRating({ paddleId }: Props) {
               {reviewCount > 0 && (
                 <a
                   href="#discussion"
-                  className="text-xs font-semibold ml-1 transition-colors hover:text-teal-400"
+                  className="text-xs font-semibold ml-1 transition-colors hover:text-[#5a9df9]"
                   style={{ color: "#60a5fa" }}
                 >
                   Read reviews &darr;
@@ -179,7 +179,7 @@ export default function PaddleStarRating({ paddleId }: Props) {
               placeholder="Leave a written review (optional)"
               maxLength={500}
               rows={3}
-              className="w-full rounded-xl px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="w-full rounded-xl px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#5a9df9]"
               style={{ background: "var(--flip-bg)", color: "var(--flip-text-head)", border: "1px solid var(--flip-card-border)" }}
             />
             <div className="flex items-center gap-2">

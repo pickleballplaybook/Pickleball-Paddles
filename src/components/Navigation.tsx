@@ -141,7 +141,7 @@ function GlobalSearch({ onClose }: { onClose: () => void }) {
       >
         {/* Input row */}
         <div className="flex items-center gap-3 px-4 py-3.5 flex-shrink-0" style={{ borderBottom: "1px solid var(--border)" }}>
-          <Search className="w-4 h-4 flex-shrink-0" style={{ color: "rgba(255,255,255,0.5)" }} />
+          <Search className="w-4 h-4 flex-shrink-0" style={{ color: "var(--text-muted)" }} />
           <input
             ref={inputRef}
             type="text"
@@ -154,7 +154,7 @@ function GlobalSearch({ onClose }: { onClose: () => void }) {
           <button
             onClick={onClose}
             className="w-7 h-7 flex items-center justify-center rounded-lg transition-colors hover:text-red-400 flex-shrink-0"
-            style={{ color: "rgba(255,255,255,0.5)" }}
+            style={{ color: "var(--text-muted)" }}
             aria-label="Close search"
           >
             <X className="w-4 h-4" />
@@ -165,13 +165,13 @@ function GlobalSearch({ onClose }: { onClose: () => void }) {
         <div className="overflow-y-auto">
           {results === null ? (
             <div className="px-4 py-6 text-center">
-              <p className="text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>
+              <p className="text-sm" style={{ color: "var(--text-muted)" }}>
                 Try a brand and a name together — like &ldquo;selkirk omni&rdquo; or &ldquo;honolulu j6cr&rdquo;.
               </p>
             </div>
           ) : results.totalCount === 0 ? (
             <div className="px-4 py-6 text-center">
-              <p className="text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>No results for &ldquo;{query}&rdquo;</p>
+              <p className="text-sm" style={{ color: "var(--text-muted)" }}>No results for &ldquo;{query}&rdquo;</p>
             </div>
           ) : (
             <>
@@ -193,10 +193,10 @@ function GlobalSearch({ onClose }: { onClose: () => void }) {
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#60a5fa" }}>{p.brand}</p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#5a9df9" }}>{p.brand}</p>
                         <p className="text-sm font-bold truncate">{p.name}</p>
                       </div>
-                      <p className="text-xs flex-shrink-0" style={{ color: "rgba(255,255,255,0.5)" }}>
+                      <p className="text-xs flex-shrink-0" style={{ color: "var(--text-muted)" }}>
                         {p.shape} · {p.thickness}
                       </p>
                     </button>
@@ -217,12 +217,12 @@ function GlobalSearch({ onClose }: { onClose: () => void }) {
                     >
                       <div
                         className="w-9 h-9 flex-shrink-0 rounded-lg flex items-center justify-center"
-                        style={{ background: "rgba(10, 100, 188,0.30)" }}
+                        style={{ background: "rgba(90,157,249,0.15)" }}
                       >
-                        <FileText className="w-4 h-4" style={{ color: "#60a5fa" }} />
+                        <FileText className="w-4 h-4" style={{ color: "#5a9df9" }} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#60a5fa" }}>
+                        <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#5a9df9" }}>
                           {b.brand} Review
                         </p>
                         <p className="text-sm font-bold truncate">{b.title.replace(/ Review:.*$/, "")}</p>
@@ -245,12 +245,12 @@ function GlobalSearch({ onClose }: { onClose: () => void }) {
                     >
                       <div
                         className="w-9 h-9 flex-shrink-0 rounded-lg flex items-center justify-center"
-                        style={{ background: "rgba(10, 100, 188,0.30)" }}
+                        style={{ background: "rgba(90,157,249,0.15)" }}
                       >
-                        <BookOpen className="w-4 h-4" style={{ color: "#60a5fa" }} />
+                        <BookOpen className="w-4 h-4" style={{ color: "#5a9df9" }} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#60a5fa" }}>
+                        <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#5a9df9" }}>
                           {GUIDE_CATEGORIES[g.category].label}
                         </p>
                         <p className="text-sm font-bold truncate">{g.title}</p>
@@ -273,12 +273,12 @@ function GlobalSearch({ onClose }: { onClose: () => void }) {
                     >
                       <div
                         className="w-9 h-9 flex-shrink-0 rounded-lg flex items-center justify-center"
-                        style={{ background: "rgba(10, 100, 188,0.30)" }}
+                        style={{ background: "rgba(90,157,249,0.15)" }}
                       >
-                        <Tag className="w-4 h-4" style={{ color: "#60a5fa" }} />
+                        <Tag className="w-4 h-4" style={{ color: "#5a9df9" }} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#60a5fa" }}>Brand</p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#5a9df9" }}>Brand</p>
                         <p className="text-sm font-bold truncate">{b.name}</p>
                       </div>
                     </button>
@@ -331,20 +331,20 @@ export default function Navigation() {
       <header
         className="relative transition-all duration-300"
         style={{
-          background: isScrolled ? "rgba(0,0,0,0.96)" : "#000000",
-          borderBottom: `1px solid ${isScrolled ? "rgba(255,255,255,0.08)" : "transparent"}`,
-          boxShadow: isScrolled ? "0 1px 3px rgba(0,0,0,0.5)" : "none",
+          background: isScrolled ? "var(--nav-bg-blur)" : "var(--nav-bg)",
+          borderBottom: isScrolled ? "1px solid var(--nav-border)" : "1px solid transparent",
+          boxShadow: isScrolled ? "var(--nav-shadow)" : "none",
           backdropFilter: isScrolled ? "blur(12px)" : "none",
           WebkitBackdropFilter: isScrolled ? "blur(12px)" : "none",
         }}
       >
         <div className="container-xl">
             {/* ── Mobile header: hamburger | centered logo | search ──────── */}
-          <div className="flex md:hidden items-center h-16 relative">
+          <div className="flex lg:hidden items-center h-16 relative">
             {/* Left: hamburger */}
             <button
               className="p-2 rounded-lg transition-colors flex-shrink-0"
-              style={{ color: "rgba(255,255,255,0.5)" }}
+              style={{ color: "var(--text-muted)" }}
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               aria-label="Toggle menu"
             >
@@ -357,7 +357,7 @@ export default function Navigation() {
               className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2 flex-shrink-0"
               onClick={() => setIsMenuOpen(false)}
             >
-              <div className="flex-shrink-0">
+              <div className="flex-shrink-0 rounded-lg p-1" style={{ lineHeight: 0 }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={siteConfig.logoPath}
@@ -367,10 +367,10 @@ export default function Navigation() {
                 />
               </div>
               <div className="flex flex-col leading-none">
-                <span className="font-extrabold text-[14px] tracking-tight leading-tight" style={{ color: "#e2e8f0" }}>
+                <span className="font-extrabold text-[14px] tracking-tight leading-tight" style={{ color: "var(--nav-text)" }}>
                   Pickleball
                 </span>
-                <span className="font-extrabold text-[14px] tracking-tight leading-tight" style={{ color: "#60a5fa" }}>
+                <span className="font-extrabold text-[14px] tracking-tight leading-tight" style={{ color: "#5a9df9" }}>
                   Playbook
                 </span>
               </div>
@@ -380,15 +380,15 @@ export default function Navigation() {
             <button
               onClick={() => setSearchOpen(true)}
               className="ml-auto p-2 rounded-lg transition-colors flex-shrink-0"
-              style={{ color: "rgba(255,255,255,0.5)" }}
+              style={{ color: "var(--text-muted)" }}
               aria-label="Search"
             >
               <Search className="w-5 h-5" />
             </button>
           </div>
 
-          {/* ── Desktop header ───────────────────────────────────────────── */}
-          <div className="hidden md:flex items-center justify-between h-16">
+          {/* ── Desktop header (lg+) ─────────────────────────────────────── */}
+          <div className="hidden lg:flex items-center justify-between h-16 gap-6">
 
             {/* Logo */}
             <Link
@@ -396,7 +396,7 @@ export default function Navigation() {
               className="flex items-center gap-2.5 group flex-shrink-0"
               onClick={() => setIsMenuOpen(false)}
             >
-              <div className="flex-shrink-0 transition-transform duration-200 group-hover:scale-105">
+              <div className="flex-shrink-0 transition-transform duration-200 group-hover:scale-105 rounded-lg p-1" style={{ lineHeight: 0 }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={siteConfig.logoPath}
@@ -406,74 +406,75 @@ export default function Navigation() {
                 />
               </div>
               <div className="flex flex-col leading-none">
-                <span className="font-extrabold text-[14px] tracking-tight leading-tight" style={{ color: "#e2e8f0" }}>
+                <span className="font-extrabold text-[14px] tracking-tight leading-tight" style={{ color: "var(--nav-text)" }}>
                   Pickleball
                 </span>
-                <span className="font-extrabold text-[14px] tracking-tight leading-tight" style={{ color: "#60a5fa" }}>
+                <span className="font-extrabold text-[14px] tracking-tight leading-tight" style={{ color: "#5a9df9" }}>
                   Playbook
                 </span>
               </div>
             </Link>
 
-            {/* Nav links */}
-            <nav className="flex items-center gap-0.5">
+            {/* Inline nav links */}
+            <nav className="flex items-center gap-0.5 flex-1">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="text-sm font-medium px-3.5 py-2 rounded-lg transition-all duration-150 hover:text-brand-500"
-                  style={{ color: "#e2e8f0" }}
+                  className="text-sm font-medium px-3 py-2 rounded-lg transition-colors hover:text-[#5a9df9]"
+                  style={{ color: "var(--nav-text)" }}
                 >
                   {link.label}
                 </Link>
               ))}
             </nav>
 
-            {/* Right actions */}
-            <div className="flex items-center gap-2">
+            {/* Right actions: search + theme + quiz CTA */}
+            <div className="flex items-center gap-1 flex-shrink-0">
               <button
                 onClick={() => setSearchOpen(true)}
                 aria-label="Search paddles"
-                className="w-9 h-9 flex items-center justify-center rounded-lg transition-all hover:text-brand-500"
-                style={{ color: "rgba(255,255,255,0.5)" }}
+                className="w-9 h-9 flex items-center justify-center rounded-lg transition-all hover:text-[#5a9df9]"
+                style={{ color: "var(--text-muted)" }}
               >
                 <Search className="w-4 h-4" strokeWidth={2} />
               </button>
               <button
                 onClick={toggle}
                 aria-label="Toggle theme"
-                className="w-9 h-9 flex items-center justify-center rounded-lg transition-all hover:text-brand-500"
-                style={{ color: "rgba(255,255,255,0.5)" }}
+                className="w-9 h-9 flex items-center justify-center rounded-lg transition-all hover:text-[#5a9df9]"
+                style={{ color: "var(--text-muted)" }}
               >
                 {theme === "dark"
                   ? <Sun className="w-4 h-4" strokeWidth={2} />
                   : <Moon className="w-4 h-4" strokeWidth={2} />}
               </button>
               <button
-                onClick={() => setQuizOpen(true)}
-                className="inline-flex items-center gap-2 font-semibold text-sm py-2 px-5 rounded-xl transition-all duration-200 active:scale-[0.98]"
-                style={{ background: "#ffffff", color: "#0a64bc" }}
+                onClick={() => { setIsMenuOpen(false); setQuizOpen(true); }}
+                className="ml-2 inline-flex items-center gap-1.5 font-semibold text-sm px-4 py-2 rounded-xl transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+                style={{ background: "#5a9df9", color: "#ffffff" }}
               >
-                Find My Paddle Quiz
+                Find My Paddle
               </button>
             </div>
           </div>
         </div>
 
-        {/* ── Mobile drawer ────────────────────────────────────────────────── */}
+        {/* ── Menu drawer — mobile + desktop ──────────────────────────────── */}
         <div
-          className={`md:hidden transition-all duration-300 overflow-hidden ${
-            isMenuOpen ? "max-h-[400px] opacity-100" : "max-h-0 opacity-0"
+          className={`lg:hidden transition-all duration-300 overflow-hidden ${
+            isMenuOpen ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"
           }`}
-          style={{ borderTop: "1px solid rgba(255,255,255,0.08)", background: "#000000" }}
+          style={{ borderTop: "1px solid var(--nav-border)", background: "var(--nav-bg)" }}
         >
+          {/* Mobile: vertical stack */}
           <div className="container-xl py-4 flex flex-col gap-1">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 className="text-sm font-medium px-4 py-3 rounded-xl transition-all hover:text-brand-500"
-                style={{ color: "#e2e8f0" }}
+                style={{ color: "var(--nav-text)" }}
                 onClick={() => setIsMenuOpen(false)}
               >
                 {link.label}
@@ -483,21 +484,22 @@ export default function Navigation() {
               <button
                 onClick={toggle}
                 className="flex items-center gap-2 text-sm font-medium px-4 py-3 rounded-xl transition-all hover:text-brand-500"
-                style={{ color: "#e2e8f0" }}
+                style={{ color: "var(--nav-text)" }}
               >
                 {theme === "dark"
                   ? <><Sun className="w-4 h-4" strokeWidth={2} /> Light Mode</>
                   : <><Moon className="w-4 h-4" strokeWidth={2} /> Dark Mode</>}
               </button>
-              <Link
-                href="/paddles"
-                className="btn-primary justify-center w-full"
-                onClick={() => setIsMenuOpen(false)}
+              <button
+                onClick={() => { setIsMenuOpen(false); setQuizOpen(true); }}
+                className="inline-flex items-center justify-center gap-2 font-semibold text-sm py-3 px-5 rounded-xl transition-all duration-200"
+                style={{ background: "#5a9df9", color: "#ffffff" }}
               >
-                Browse All Paddles
-              </Link>
+                Find My Paddle Quiz
+              </button>
             </div>
           </div>
+
         </div>
       </header>
 

@@ -33,6 +33,9 @@ export interface AudienceConfig {
   picks: PillarPick[];
   buyingGuide: { heading: string; paragraphs: React.ReactNode[] };
   faq: PillarFaq[];
+  // When true, ranks are displayed descending (picks.length → 1) instead of ascending.
+  // Use for countdown-style pages where #1 is the best and appears at the bottom.
+  countdownMode?: boolean;
   // Optional list of /guides slugs to surface at the bottom of the page.
   // Internal links from these high-authority category pages into the new
   // informational guides are the biggest SEO juice we can hand to the guide
@@ -75,9 +78,10 @@ export default function AudiencePillarView({ config }: { config: AudienceConfig 
     "numberOfItems": config.picks.length,
     "itemListElement": config.picks.map((pick, i) => {
       const p = getPaddleBySlug(pick.slug);
+      const pos = config.countdownMode ? config.picks.length - i : i + 1;
       return {
         "@type": "ListItem",
-        "position": i + 1,
+        "position": pos,
         "name": p ? `${p.brand} ${p.name}` : pick.slug,
         "url": `${siteConfig.siteUrl}/paddles/${pick.slug}`,
         ...(p?.image ? { "image": `${siteConfig.siteUrl}${p.image}` } : {}),
@@ -143,6 +147,7 @@ export default function AudiencePillarView({ config }: { config: AudienceConfig 
             {config.picks.map((pick, i) => {
               const paddle = getPaddleBySlug(pick.slug);
               if (!paddle) return null;
+              const rankNum = config.countdownMode ? config.picks.length - i : i + 1;
               const seriesPaddles = pick.seriesSlugs
                 ? (pick.seriesSlugs.map(getPaddleBySlug).filter(Boolean) as Paddle[])
                 : null;
@@ -155,12 +160,12 @@ export default function AudiencePillarView({ config }: { config: AudienceConfig 
                 <div key={pick.slug}>
                   <div className="flex items-center gap-3 mb-5">
                     <span className="text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-full" style={{ background: `${ACCENT}20`, color: ACCENT, border: `1px solid ${ACCENT}50` }}>
-                      #{i + 1} · {pick.label}
+                      #{rankNum} · {pick.label}
                     </span>
-                    <div className="h-px flex-1" style={{ background: "rgba(255,255,255,0.07)" }} />
+                    <div className="h-px flex-1" style={{ background: "var(--border)" }} />
                   </div>
 
-                  <div className="rounded-3xl overflow-hidden" style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.08)", boxShadow: i === 0 ? "0 16px 48px rgba(0,0,0,0.3)" : undefined }}>
+                  <div className="rounded-3xl overflow-hidden" style={{ background: "var(--bg-card)", border: "1px solid var(--border)", boxShadow: i === 0 ? "0 16px 48px rgba(0,0,0,0.3)" : undefined }}>
                     <div className="flex flex-col md:flex-row">
                       {/* Image */}
                       <div className="md:w-[38%] flex-shrink-0 flex items-center justify-center p-10" style={{ background: "var(--bg-alt)", minHeight: "260px" }}>
@@ -176,7 +181,7 @@ export default function AudiencePillarView({ config }: { config: AudienceConfig 
                                       // eslint-disable-next-line @next/next/no-img-element
                                       <img src={sp.image} alt={`${sp.brand} ${sp.name} ${sp.shape}`} className="w-full h-auto object-contain" style={{ maxHeight: "160px", filter: "drop-shadow(0 6px 16px rgba(0,0,0,0.4))" }} />
                                     )}
-                                    <p className="text-[10px] font-bold text-center mt-1 truncate w-full" style={{ color: "rgba(255,255,255,0.6)" }}>{sp.shape}</p>
+                                    <p className="text-[10px] font-bold text-center mt-1 truncate w-full" style={{ color: "var(--text-muted)" }}>{sp.shape}</p>
                                   </div>
                                 </Link>
                               );
@@ -190,11 +195,11 @@ export default function AudiencePillarView({ config }: { config: AudienceConfig 
 
                       {/* Content */}
                       <div className="flex-1 p-8 md:p-10 flex flex-col justify-center">
-                        <p className="text-[11px] font-bold uppercase tracking-[0.22em] mb-1" style={{ color: "rgba(255,255,255,0.35)" }}>{paddle.brand}</p>
+                        <p className="text-[11px] font-bold uppercase tracking-[0.22em] mb-1" style={{ color: "var(--text-muted)" }}>{paddle.brand}</p>
                         <h3 className="text-2xl font-extrabold mb-1" style={{ color: "var(--text-primary)" }}>
                           {isSeries ? `${pick.seriesName ?? `${paddle.brand} ${paddle.name}`} Series` : `${paddle.brand} ${paddle.name}`}
                         </h3>
-                        <p className="text-sm mb-4" style={{ color: "rgba(255,255,255,0.38)" }}>
+                        <p className="text-sm mb-4" style={{ color: "var(--text-muted)" }}>
                           {isSeries ? `${seriesPaddles!.map((sp) => sp.shape).join(", ")} · ${paddle.thickness}` : `${paddle.shape} · ${paddle.thickness}`}
                           {priceNum ? ` · $${priceNum.toFixed(2)}` : ""}
                           {!noDiscount ? ` (${paddle.amountOff} off)` : ""}
@@ -203,7 +208,7 @@ export default function AudiencePillarView({ config }: { config: AudienceConfig 
 
                         <div className="flex flex-wrap gap-2 mb-6">
                           {[paddle.swingWeight ? `SW ${paddle.swingWeight}` : null, paddle.twistWeight ? `TW ${paddle.twistWeight}` : null, paddle.weight || null].filter(Boolean).map((s) => (
-                            <span key={s as string} className="text-xs font-bold px-3 py-1.5 rounded-full font-mono" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.55)" }}>{s}</span>
+                            <span key={s as string} className="text-xs font-bold px-3 py-1.5 rounded-full font-mono" style={{ background: "var(--bg-section)", border: "1px solid var(--border)", color: "var(--text-muted)" }}>{s}</span>
                           ))}
                         </div>
 

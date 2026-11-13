@@ -45,6 +45,11 @@ type Row = {
   trainingSetup: string[];
   level: string | null;
   signupPlatform: string | null;
+  // Skill / goal data from the GoalSetup onboarding screen
+  currentRating: number | null;
+  skillGoalRating: number | null;
+  skillGoalSessionsPerWeek: number | null;
+  bio: string | null;
 };
 
 // Diagnostic row used by the "Recent signups (debug)" section so we can
@@ -121,6 +126,10 @@ export default async function AcquisitionAdminPage({
           : [],
         level: (data.onboardingLevel as string | null) ?? null,
         signupPlatform: (data.signupPlatform as string | null) ?? null,
+        currentRating: typeof data.currentRating === "number" ? data.currentRating : null,
+        skillGoalRating: typeof data.skillGoalRating === "number" ? data.skillGoalRating : null,
+        skillGoalSessionsPerWeek: typeof data.skillGoalSessionsPerWeek === "number" ? data.skillGoalSessionsPerWeek : null,
+        bio: (data.bio as string | null) ?? null,
       };
     });
   } catch (e) {
@@ -224,6 +233,29 @@ export default async function AcquisitionAdminPage({
   const weaknesses = tallyMulti(rows.map((r) => r.weaknesses));
   const trainingDays = tallyMulti(rows.map((r) => r.days));
   const trainingSetup = tallyMulti(rows.map((r) => r.trainingSetup));
+
+  function bucketRating(r: number): string {
+    if (r < 2.5) return "< 2.5";
+    if (r < 3.0) return "2.5";
+    if (r < 3.5) return "3.0";
+    if (r < 4.0) return "3.5";
+    if (r < 4.5) return "4.0";
+    if (r < 5.0) return "4.5";
+    if (r < 5.5) return "5.0";
+    return "5.5+";
+  }
+  function bucketSessions(s: number): string {
+    if (s <= 1) return "1×/wk";
+    if (s <= 2) return "2×/wk";
+    if (s <= 3) return "3×/wk";
+    if (s <= 5) return "4–5×/wk";
+    if (s <= 7) return "6–7×/wk";
+    return "8+×/wk";
+  }
+
+  const currentRatingDist = tally(rows.map((r) => r.currentRating !== null ? bucketRating(r.currentRating) : null));
+  const goalRatingDist    = tally(rows.map((r) => r.skillGoalRating !== null ? bucketRating(r.skillGoalRating) : null));
+  const sessionsDist      = tally(rows.map((r) => r.skillGoalSessionsPerWeek !== null ? bucketSessions(r.skillGoalSessionsPerWeek) : null));
 
   // Per-user table: rows sorted newest-first, dedupe by email
   const perUserRows = [...rows]
@@ -428,6 +460,30 @@ export default async function AcquisitionAdminPage({
                 sorted={trainingSetup.sorted}
                 max={trainingSetup.max}
               />
+              <BreakdownCard
+                title="Current rating"
+                icon={<BarChart3 className="w-4 h-4" style={{ color: "#fb923c" }} />}
+                color="#fb923c"
+                total={currentRatingDist.total}
+                sorted={currentRatingDist.sorted}
+                max={currentRatingDist.max}
+              />
+              <BreakdownCard
+                title="Target rating"
+                icon={<Target className="w-4 h-4" style={{ color: "#4ade80" }} />}
+                color="#4ade80"
+                total={goalRatingDist.total}
+                sorted={goalRatingDist.sorted}
+                max={goalRatingDist.max}
+              />
+              <BreakdownCard
+                title="Sessions per week goal"
+                icon={<Zap className="w-4 h-4" style={{ color: "#facc15" }} />}
+                color="#facc15"
+                total={sessionsDist.total}
+                sorted={sessionsDist.sorted}
+                max={sessionsDist.max}
+              />
             </div>
 
             {/* Per-user table — email + signup platform + goal + channel */}
@@ -447,10 +503,12 @@ export default async function AcquisitionAdminPage({
                   <table className="w-full text-xs">
                     <thead>
                       <tr style={{ borderBottom: "1px solid var(--flip-card-border)" }}>
-                        <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Email</th>
+                        <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Email / Bio</th>
                         <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Platform</th>
                         <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Channel</th>
                         <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Goal</th>
+                        <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Rating</th>
+                        <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Sess/wk</th>
                         <th className="text-left px-4 py-3 font-semibold" style={{ color: "var(--text-muted)" }}>Date</th>
                       </tr>
                     </thead>
@@ -459,6 +517,15 @@ export default async function AcquisitionAdminPage({
                         <tr key={r.id} style={{ borderTop: "1px solid var(--flip-card-border)" }}>
                           <td className="px-4 py-3 font-mono" style={{ color: "var(--text-primary)" }}>
                             {r.email ?? <span style={{ color: "var(--text-muted)" }}>(no email)</span>}
+                            {r.bio && (
+                              <span
+                                className="block mt-0.5 font-sans"
+                                style={{ color: "var(--text-muted)", fontStyle: "italic", fontSize: 10, maxWidth: 260, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                                title={r.bio}
+                              >
+                                &ldquo;{r.bio}&rdquo;
+                              </span>
+                            )}
                           </td>
                           <td className="px-4 py-3">
                             {r.signupPlatform ? (
@@ -486,6 +553,22 @@ export default async function AcquisitionAdminPage({
                           </td>
                           <td className="px-4 py-3" style={{ color: r.goal ? "var(--text-primary)" : "var(--text-muted)" }}>
                             {r.goal ?? "—"}
+                          </td>
+                          <td className="px-4 py-3 tabular-nums whitespace-nowrap" style={{ color: "var(--text-primary)" }}>
+                            {r.currentRating !== null && r.skillGoalRating !== null ? (
+                              <>
+                                <span style={{ color: "#fb923c" }}>{r.currentRating}</span>
+                                <span style={{ color: "var(--text-muted)" }}> → </span>
+                                <span style={{ color: "#4ade80" }}>{r.skillGoalRating}</span>
+                              </>
+                            ) : r.currentRating !== null ? (
+                              <span style={{ color: "#fb923c" }}>{r.currentRating}</span>
+                            ) : (
+                              <span style={{ color: "var(--text-muted)" }}>—</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 tabular-nums" style={{ color: r.skillGoalSessionsPerWeek !== null ? "var(--text-primary)" : "var(--text-muted)" }}>
+                            {r.skillGoalSessionsPerWeek !== null ? `${r.skillGoalSessionsPerWeek}×` : "—"}
                           </td>
                           <td className="px-4 py-3 tabular-nums" style={{ color: "var(--text-muted)" }}>
                             {r.capturedAt ? new Date(r.capturedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—"}

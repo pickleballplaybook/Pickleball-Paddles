@@ -223,14 +223,16 @@ export async function getReviewGroups(
   paddles: Paddle[],
   manualDates: Record<string, string>
 ): Promise<ReviewGroup[]> {
-  // Collect unique video IDs across all paddles with a review
+  // Collect unique video IDs across all paddles with a review or comparison video
   const videoIds = Array.from(
-    new Set(
-      paddles
+    new Set([
+      ...paddles
         .filter((p) => p.reviewUrl || p.manualVideoId)
-        .map((p) => (p.reviewUrl ? extractYouTubeId(p.reviewUrl) : null) ?? p.manualVideoId ?? "")
-        .filter(Boolean) as string[]
-    )
+        .map((p) => (p.reviewUrl ? extractYouTubeId(p.reviewUrl) : null) ?? p.manualVideoId ?? ""),
+      ...paddles.flatMap((p) =>
+        (p.featuredReviewUrls ?? []).map((u) => extractYouTubeId(u) ?? "")
+      ),
+    ].filter(Boolean) as string[])
   );
 
   const [apiDates, viewCounts] = await Promise.all([
@@ -248,21 +250,24 @@ export async function getReviewGroups(
   const map = new Map<string, Entry>();
 
   for (const p of paddles) {
-    if (!p.reviewUrl && !p.manualVideoId) continue;
-    const vid = (p.reviewUrl ? extractYouTubeId(p.reviewUrl) : null) ?? p.manualVideoId ?? "";
-    if (!vid) continue;
-    if (!map.has(vid)) {
-      map.set(vid, { brand: p.brand, paddleMap: new Map(), topSlug: p.slug, topScore: -1, latestAddedAt: "" });
-    }
-    const entry = map.get(vid)!;
-    entry.paddleMap.set(p.name, p.slug);
-    if (p.trendingScore > entry.topScore) {
-      entry.topScore = p.trendingScore;
-      entry.topSlug = p.slug;
-    }
-    // Track the most recent addedAt among paddles sharing this video
-    if (p.addedAt && p.addedAt > entry.latestAddedAt) {
-      entry.latestAddedAt = p.addedAt;
+    const allVids: string[] = [
+      ...((p.reviewUrl || p.manualVideoId) ? [(p.reviewUrl ? extractYouTubeId(p.reviewUrl) : null) ?? p.manualVideoId ?? ""] : []),
+      ...(p.featuredReviewUrls ?? []).map((u) => extractYouTubeId(u) ?? ""),
+    ].filter((v): v is string => Boolean(v));
+
+    for (const vid of allVids) {
+      if (!map.has(vid)) {
+        map.set(vid, { brand: p.brand, paddleMap: new Map(), topSlug: p.slug, topScore: -1, latestAddedAt: "" });
+      }
+      const entry = map.get(vid)!;
+      entry.paddleMap.set(p.name, p.slug);
+      if (p.trendingScore > entry.topScore) {
+        entry.topScore = p.trendingScore;
+        entry.topSlug = p.slug;
+      }
+      if (p.addedAt && p.addedAt > entry.latestAddedAt) {
+        entry.latestAddedAt = p.addedAt;
+      }
     }
   }
 

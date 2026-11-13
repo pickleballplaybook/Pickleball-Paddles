@@ -139,8 +139,17 @@ export async function fetchStripeStatusByEmail(): Promise<StripeFetchResult> {
       canceled_trial: 3,
     };
 
+    // Exclude incomplete / incomplete_expired — these mean the initial payment
+    // failed and the customer never paid a single cycle. They are not "canceled"
+    // subscribers; treating them as such inflates the canceled count and hides
+    // them behind a misleading amber badge. Excluding them lets the Supabase
+    // row (if any) show them as "captured" instead.
+    const eligibleRows = rows.filter(
+      (r) => r.status !== "incomplete" && r.status !== "incomplete_expired",
+    );
+
     const bestPerEmail = new Map<string, { row: typeof rows[number]; status: StripeSubStatus }>();
-    for (const row of rows) {
+    for (const row of eligibleRows) {
       const email = row.email.toLowerCase().trim();
       const status = deriveStatus(row.status, row.trial_end, row.canceled_at);
       const existing = bestPerEmail.get(email);

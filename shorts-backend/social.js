@@ -589,7 +589,7 @@ export function getTikTokPkce() {
 export function getTikTokAuthUrl(codeChallenge) {
   const params = new URLSearchParams({
     client_key: process.env.TIKTOK_CLIENT_KEY,
-    scope: 'video.publish,video.upload,user.info.basic',
+    scope: 'video.publish,video.upload,user.info.basic,user.info.profile',
     response_type: 'code',
     redirect_uri: process.env.TIKTOK_REDIRECT_URI,
     state: randomBytes(8).toString('hex'),
@@ -608,11 +608,17 @@ export async function exchangeTikTokCode(code, codeVerifier) {
     redirect_uri: process.env.TIKTOK_REDIRECT_URI,
     code_verifier: codeVerifier,
   });
-  const res = await axios.post(
-    'https://open.tiktokapis.com/v2/oauth/token/',
-    params.toString(),
-    { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
-  );
+  let res;
+  try {
+    res = await axios.post(
+      'https://open.tiktokapis.com/v2/oauth/token/',
+      params.toString(),
+      { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+    );
+  } catch (err) {
+    const body = err.response?.data;
+    throw new Error(`TikTok token exchange ${err.response?.status}: ${JSON.stringify(body)}`);
+  }
   if (res.data.error?.code && res.data.error.code !== 'ok') {
     throw new Error(`TikTok token exchange failed: ${res.data.error.message}`);
   }
@@ -621,7 +627,7 @@ export async function exchangeTikTokCode(code, codeVerifier) {
 
 export async function getTikTokUserInfo(accessToken) {
   const res = await axios.get('https://open.tiktokapis.com/v2/user/info/', {
-    params: { fields: 'open_id,display_name,username,avatar_url' },
+    params: { fields: 'open_id,display_name' },
     headers: { Authorization: `Bearer ${accessToken}` },
   });
   return res.data.data?.user || {};
@@ -636,7 +642,7 @@ export async function publishToTikTok({ conn, videoPath, title, description, opt
   const CHUNK_SIZE = 10 * 1024 * 1024; // 10 MB
   const totalChunks = Math.ceil(fileSize / CHUNK_SIZE);
 
-  // 1. Init upload
+  // 1. Init upload — direct post
   const initRes = await axios.post(
     'https://open.tiktokapis.com/v2/post/publish/video/init/',
     {

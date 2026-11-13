@@ -35,18 +35,18 @@ export const siteConfig = {
   // The paddle (or series) featured in the top hero slot.
   // Swap the slug to change the featured paddle; update the series fields below
   // when promoting a multi-variant series.
-  hottestPaddleSlug: "honolulu-j2cr-crystal-blue-hybrid",
+  hottestPaddleSlug: "honolulu-j6cr-m105-crystal-blue-elongated",
   hottestPaddleSeries: {
     // Display name shown as the headline (can be a series or single paddle name)
-    headline: "Honolulu Crystal Blue Series",
-    subheadline: "The Crystal Blue Endurance Surface lineup — three shapes, one mission: outlast and outplay.",
+    headline: "Honolulu J6CR M105",
+    subheadline: "Honolulu's most powerful paddle yet — MPP Core with Crystal Blue Endurance Surface and BlueGrit™ spin tech.",
     bullets: [
+      "MPP Core · Dynamic PowerFlex™",
       "Crystal Blue Endurance Surface",
-      "J2CR Hybrid · J3CR Widebody · J6CR Elongated",
-      "All-court performance at $195",
+      "SW 115.67 · Pre-order at $195",
     ],
     // Affiliate link for the SHOP NOW button — uses the paddle's discountLink if blank
-    seriesLink: "https://808pickle.com/discount/PLAYBOOK?redirect=/products/j2cr-crystal-blue-endurance-surface%E2%84%A2-pre-order",
+    seriesLink: "https://808pickle.com/discount/PLAYBOOK?redirect=/products/j6cr-m-105-crystal-blue%E2%84%A2-endurance-surface%E2%84%A2-pre-order",
   },
 
   // ── Homepage — Paddle of the Week ───────────────────────────────────────────
@@ -63,7 +63,7 @@ export const siteConfig = {
   trendingCount: 5,
 
   // ── Homepage — Latest Reviews ────────────────────────────────────────────────
-  latestReviewsCount: 8,
+  latestReviewsCount: 9,
 
   // ── Newsletter / Substack ────────────────────────────────────────────────────
   // Primary newsletter destination. Used by the popup and SubstackCard.

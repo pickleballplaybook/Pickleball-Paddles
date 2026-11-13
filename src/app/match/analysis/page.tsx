@@ -477,7 +477,7 @@ export default function MatchAnalysisPage() {
             onChange={(e) => setNotes(e.target.value)}
             rows={3}
             placeholder="e.g. Lost 11-7, 9-11, 8-11 to a 4.0 player. Felt slow at the kitchen all match."
-            className="w-full rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-teal-400 transition-colors resize-y"
+            className="w-full rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#5a9df9] transition-colors resize-y"
             style={{
               background: "var(--flip-bg-card)",
               border: "1px solid var(--flip-card-border)",

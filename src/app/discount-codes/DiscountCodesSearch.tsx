@@ -159,7 +159,7 @@ export default function DiscountCodesSearch({ deals }: Props) {
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={d.image} alt={`${d.brand} ${d.name}`} className="w-full h-full object-contain p-1.5" />
                   ) : (
-                    <div className="w-6 h-6 rounded-full bg-teal-500/10" />
+                    <div className="w-6 h-6 rounded-full bg-[#5a9df9]/10" />
                   )}
                 </Link>
 

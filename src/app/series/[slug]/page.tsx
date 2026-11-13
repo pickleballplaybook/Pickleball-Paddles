@@ -145,31 +145,6 @@ export default function SeriesPage({ params }: Props) {
         </p>
       </section>
 
-      {/* Video review — show if any paddle in the series has a review */}
-      {(() => {
-        const videoIds = new Set<string>();
-        for (const p of sorted) {
-          if (p.reviewUrl) {
-            const id = extractYouTubeId(p.reviewUrl);
-            if (id) videoIds.add(id);
-          }
-          if (p.manualVideoId) videoIds.add(p.manualVideoId);
-        }
-        const uniqueIds = Array.from(videoIds);
-        if (uniqueIds.length === 0) return null;
-        return (
-          <section className="container-xl pb-10">
-            <div className="max-w-3xl">
-              {uniqueIds.map((vid) => (
-                <div key={vid} className="mb-4">
-                  <YouTubeEmbed videoId={vid} title={`${series.title} Review`} />
-                </div>
-              ))}
-            </div>
-          </section>
-        );
-      })()}
-
       {/* Shape cards */}
       <section className="container-xl">
         <div className={`grid grid-cols-1 ${sorted.length === 2 ? "md:grid-cols-2" : "md:grid-cols-3"} gap-6`}>
@@ -181,14 +156,14 @@ export default function SeriesPage({ params }: Props) {
             >
               {/* Image */}
               <Link href={`/paddles/${paddle.slug}`} className="block">
-                <div className="relative aspect-square flex items-center justify-center p-6" style={{ background: "var(--flip-bg)" }}>
+                <div className="relative aspect-[4/5] flex items-center justify-center p-6" style={{ background: "var(--flip-bg)" }}>
                   {paddle.image && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={paddle.image} alt={`${paddle.brand} ${paddle.name}`} className="w-full h-full object-contain" />
                   )}
                   <span
                     className="absolute top-3 left-3 text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full"
-                    style={{ background: "rgba(10, 100, 188,0.30)", color: "#60a5fa", border: "1px solid rgba(10, 100, 188,0.3)" }}
+                    style={{ background: "rgba(90,157,249,0.15)", color: "#5a9df9", border: "1px solid rgba(90,157,249,0.3)" }}
                   >
                     {paddle.shape}
                   </span>
@@ -198,7 +173,7 @@ export default function SeriesPage({ params }: Props) {
               {/* Info */}
               <div className="p-5 flex-1 flex flex-col">
                 <Link href={`/paddles/${paddle.slug}`} className="group">
-                  <h2 className="text-lg font-extrabold group-hover:text-teal-500 transition-colors mb-1" style={{ color: "var(--flip-text-head)" }}>
+                  <h2 className="text-lg font-extrabold group-hover:text-[#5a9df9] transition-colors mb-1" style={{ color: "var(--flip-text-head)" }}>
                     {paddle.name}
                   </h2>
                   <p className="text-sm mb-4" style={{ color: "var(--flip-text-muted)" }}>
@@ -262,7 +237,7 @@ export default function SeriesPage({ params }: Props) {
                     )}
                     <Link
                       href={`/paddles/${paddle.slug}`}
-                      className="flex items-center justify-center gap-1 px-4 py-3 rounded-xl text-sm font-semibold border transition-colors hover:border-teal-400"
+                      className="flex items-center justify-center gap-1 px-4 py-3 rounded-xl text-sm font-semibold border transition-colors hover:border-[#5a9df9]"
                       style={{ borderColor: "var(--flip-card-border)", color: "var(--flip-text-head)" }}
                     >
                       Full Review <ArrowRight className="w-3.5 h-3.5" />
@@ -274,6 +249,31 @@ export default function SeriesPage({ params }: Props) {
           ))}
         </div>
       </section>
+
+      {/* Video review — show if any paddle in the series has a review */}
+      {(() => {
+        const videoIds = new Set<string>();
+        for (const p of sorted) {
+          if (p.reviewUrl) {
+            const id = extractYouTubeId(p.reviewUrl);
+            if (id) videoIds.add(id);
+          }
+          if (p.manualVideoId) videoIds.add(p.manualVideoId);
+        }
+        const uniqueIds = Array.from(videoIds);
+        if (uniqueIds.length === 0) return null;
+        return (
+          <section className="container-xl pt-10">
+            <div className="max-w-3xl">
+              {uniqueIds.map((vid) => (
+                <div key={vid} className="mb-4">
+                  <YouTubeEmbed videoId={vid} title={`${series.title} Review`} />
+                </div>
+              ))}
+            </div>
+          </section>
+        );
+      })()}
 
       {/* Comparison table */}
       <section className="container-xl py-16">

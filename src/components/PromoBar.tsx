@@ -8,6 +8,7 @@ export interface PromoBarConfig {
   ctaExternal?: boolean;
   image?: string;
   imageAlt?: string;
+  imageMode?: "cover" | "contain";
   badge?: string;
   icon?: React.ReactNode;
   bg?: string;
@@ -21,6 +22,7 @@ export default function PromoBar({
   ctaExternal = true,
   image,
   imageAlt,
+  imageMode = "cover",
   badge,
   icon,
   bg = "#163a6a",
@@ -50,7 +52,7 @@ export default function PromoBar({
             <img
               src={image}
               alt={imageAlt ?? title}
-              className="absolute inset-0 w-full h-full object-cover object-center"
+              className={`absolute inset-0 w-full h-full ${imageMode === "contain" ? "object-contain object-center p-6" : "object-cover object-center"}`}
             />
             {/* Right-edge gradient blends image into content — desktop only */}
             <div

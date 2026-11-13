@@ -22,21 +22,28 @@ export default function YouTubeEmbed({
 
   if (isPlaceholder) {
     return (
-      <div className="relative aspect-video rounded-2xl overflow-hidden bg-slate-50 border border-slate-100 flex items-center justify-center">
+      <div
+        className="relative aspect-video rounded-2xl overflow-hidden flex items-center justify-center"
+        style={{ background: "var(--flip-bg-card)", border: "1px solid var(--flip-card-border)" }}
+      >
         <div className="text-center px-8">
-          <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Play className="w-6 h-6 text-slate-300 ml-1" />
+          <div
+            className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+            style={{ background: "rgba(90,157,249,0.10)", border: "1px solid rgba(90,157,249,0.20)" }}
+          >
+            <Play className="w-6 h-6 ml-1" style={{ color: "#5a9df9" }} />
           </div>
-          <p className="text-slate-600 font-semibold text-base mb-1">
+          <p className="font-semibold text-base mb-1" style={{ color: "var(--flip-text-head)" }}>
             Review coming soon
           </p>
-          <p className="text-slate-400 text-sm max-w-xs mx-auto">
+          <p className="text-sm max-w-xs mx-auto" style={{ color: "var(--flip-text-muted)" }}>
             We&apos;re working on a full video review for this paddle. Check back soon or{" "}
             <a
               href={siteConfig.youtubeChannelUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-brand-500 hover:text-brand-600 underline underline-offset-2 transition-colors"
+              className="underline underline-offset-2 transition-colors hover:opacity-80"
+              style={{ color: "#5a9df9" }}
             >
               @playbookpaddles
             </a>

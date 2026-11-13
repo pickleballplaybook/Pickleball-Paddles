@@ -163,7 +163,7 @@ export default function NewsletterSignup() {
                     placeholder="Enter your email"
                     required
                     disabled={state === "loading"}
-                    className="flex-1 h-14 pl-5 pr-4 text-sm font-medium rounded-2xl focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:opacity-60 transition-shadow"
+                    className="flex-1 h-14 pl-5 pr-4 text-sm font-medium rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#5a9df9] disabled:opacity-60 transition-shadow"
                     style={{
                       background: "rgba(255,255,255,0.07)",
                       border: "1px solid rgba(255,255,255,0.12)",

@@ -117,7 +117,7 @@ function LoginForm() {
           <button
             type="button"
             onClick={() => setMagicSent(false)}
-            className="mt-4 text-xs font-semibold transition-colors hover:text-teal-400"
+            className="mt-4 text-xs font-semibold transition-colors hover:text-[#5a9df9]"
             style={{ color: "var(--text-muted)" }}
           >
             Use a different email
@@ -131,7 +131,7 @@ function LoginForm() {
               type="checkbox"
               checked={optIn}
               onChange={(e) => setOptIn(e.target.checked)}
-              className="mt-0.5 flex-shrink-0 w-4 h-4 accent-teal-500 cursor-pointer"
+              className="mt-0.5 flex-shrink-0 w-4 h-4 accent-[#5a9df9] cursor-pointer"
             />
             <span className="text-xs leading-snug" style={{ color: "var(--text-muted)" }}>
               <strong style={{ color: "var(--text-primary)" }}>Send me the weekly newsletter</strong> —
@@ -183,7 +183,7 @@ function LoginForm() {
               placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-teal-400 transition-colors"
+              className="rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#5a9df9] transition-colors"
               style={{
                 background: "var(--flip-bg-card)",
                 border: "1px solid var(--flip-card-border)",
@@ -247,7 +247,7 @@ export default function LoginPage() {
           <LoginForm />
         </Suspense>
         <p className="text-xs text-center mt-6" style={{ color: "var(--text-muted)" }}>
-          <Link href="/match/analysis" className="hover:text-teal-400 transition-colors">
+          <Link href="/match/analysis" className="hover:text-[#5a9df9] transition-colors">
             ← Back to the tally sheet
           </Link>
         </p>

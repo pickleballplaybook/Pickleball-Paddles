@@ -57,6 +57,8 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
         ? body.videoThumbnailUrl.trim()
         : null;
     }
+    if ("category" in body) update.category = body.category === "technique" || body.category === "strategy" || body.category === "mindset" ? body.category : null;
+    if (typeof body.courseTitle === "string") update.courseTitle = body.courseTitle;
     await ref.set(update, { merge: true });
     return NextResponse.json({ ok: true });
   } catch (err) {

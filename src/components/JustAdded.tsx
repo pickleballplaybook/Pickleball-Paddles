@@ -45,7 +45,7 @@ export default function JustAdded({ paddles }: JustAddedProps) {
               className="card group p-4 flex flex-col gap-3"
             >
               {/* Image */}
-              <div className="relative aspect-square bg-slate-50 rounded-xl overflow-hidden flex items-center justify-center">
+              <div className="relative aspect-[4/5] bg-slate-50 rounded-xl overflow-hidden flex items-center justify-center">
                 {paddle.image ? (
                   <Image
                     src={paddle.image}

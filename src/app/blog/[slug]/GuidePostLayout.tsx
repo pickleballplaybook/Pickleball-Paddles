@@ -259,7 +259,7 @@ export default function GuidePostLayout({ post }: { post: BlogPost }) {
           <div className="max-w-6xl mx-auto mb-6">
             <Link
               href="/blog"
-              className="inline-flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-teal-500"
+              className="inline-flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-[#5a9df9]"
               style={{ color: "var(--text-muted)" }}
             >
               <ArrowLeft className="w-4 h-4" /> All Articles
@@ -312,7 +312,7 @@ export default function GuidePostLayout({ post }: { post: BlogPost }) {
                       <li key={t.id}>
                         <a
                           href={`#${t.id}`}
-                          className="inline-flex items-center gap-1.5 text-base font-medium hover:text-teal-500 transition-colors"
+                          className="inline-flex items-center gap-1.5 text-base font-medium hover:text-[#5a9df9] transition-colors"
                           style={{ color: "var(--flip-text-head)" }}
                         >
                           <ChevronRight className="w-3.5 h-3.5 opacity-70" /> {t.text}

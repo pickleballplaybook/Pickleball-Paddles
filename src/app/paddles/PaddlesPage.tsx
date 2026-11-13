@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import PaddleCard        from "@/components/PaddleCard";
+import PaddleAdSidebar  from "@/components/PaddleAdSidebar";
 import FilterSystem      from "@/components/FilterSystem";
 import DiscountBanner    from "@/components/DiscountBanner";
 import PromoBar          from "@/components/PromoBar";
@@ -224,7 +225,7 @@ function PaddlesInner({ paddles, priceCache }: { paddles: Paddle[]; priceCache: 
         <div className={`${GRID} mb-8`}>
           {Array.from({ length: 8 }).map((_, i) => (
             <div key={i} className="card overflow-hidden">
-              <div className="aspect-square animate-pulse rounded-t-2xl" style={{ background: "var(--bg-section)" }} />
+              <div className="aspect-[4/5] animate-pulse rounded-t-2xl" style={{ background: "var(--bg-section)" }} />
               <div className="p-5 space-y-3">
                 <div className="h-2.5 w-14 rounded animate-pulse" style={{ background: "var(--bg-section)" }} />
                 <div className="h-4 w-3/4 rounded animate-pulse" style={{ background: "var(--bg-section)" }} />
@@ -287,6 +288,7 @@ function PaddlesInner({ paddles, priceCache }: { paddles: Paddle[]; priceCache: 
                       ctaHref={promo.link}
                       image={promo.image || undefined}
                       imageAlt={`${promo.brand} ${promo.name}`}
+                      imageMode={promo.imageMode}
                       badge={promo.badge || undefined}
                       bg={promo.bg}
                     />
@@ -328,6 +330,9 @@ export default function PaddlesPage({
   paddles:    Paddle[];
   priceCache: PriceCache;
 }) {
+  // Paddles with affiliate links + images — shown in the rotating sidebar
+  const featuredPaddles = paddles.filter(p => p.discountLink?.trim() && p.image).slice(0, 10);
+
   return (
     <div className="min-h-screen pt-[168px]" style={{ background: "var(--bg-page)" }}>
       <div className="container-xl">
@@ -349,15 +354,31 @@ export default function PaddlesPage({
           </p>
         </div>
 
-        {/* Suspense boundary required for useSearchParams */}
-        <Suspense fallback={
-          <div className="h-12 mb-8 rounded-xl animate-pulse" style={{ background: "var(--bg-section)" }} />
-        }>
-          <PaddlesInner paddles={paddles} priceCache={priceCache} />
-        </Suspense>
+        {/* Two-column layout on XL: main grid + sticky sidebar */}
+        <div className="xl:grid xl:grid-cols-[1fr_284px] xl:gap-10 xl:items-start">
 
-        <div className="mb-20">
-          <DiscountBanner variant="large" />
+          {/* Main content */}
+          <div className="min-w-0">
+            {/* Suspense boundary required for useSearchParams */}
+            <Suspense fallback={
+              <div className="h-12 mb-8 rounded-xl animate-pulse" style={{ background: "var(--bg-section)" }} />
+            }>
+              <PaddlesInner paddles={paddles} priceCache={priceCache} />
+            </Suspense>
+
+            <div className="mb-20">
+              <DiscountBanner variant="large" />
+            </div>
+          </div>
+
+          {/* Sticky sidebar — hidden below XL */}
+          {featuredPaddles.length > 0 && (
+            <aside className="hidden xl:block flex-shrink-0">
+              <div className="sticky top-[104px]">
+                <PaddleAdSidebar paddles={featuredPaddles} />
+              </div>
+            </aside>
+          )}
         </div>
       </div>
     </div>

@@ -48,7 +48,7 @@ export default function WhatsTrending({ paddles }: WhatsTrendingProps) {
             href={`/paddles/${top.slug}`}
             className="lg:col-span-2 card group p-6 flex flex-col"
           >
-            <div className="relative aspect-square bg-slate-50 rounded-2xl overflow-hidden mb-5 flex items-center justify-center">
+            <div className="relative aspect-[4/5] bg-slate-50 rounded-2xl overflow-hidden mb-5 flex items-center justify-center">
               {top.image ? (
                 <Image
                   src={top.image}

@@ -10,6 +10,9 @@ import SpecBar from "@/components/SpecBar";
 import YouTubeEmbed from "@/components/YouTubeEmbed";
 import SubstackCard from "@/components/SubstackCard";
 import PaddleCard from "@/components/PaddleCard";
+import PaddleMiniCard from "@/components/PaddleMiniCard";
+import TrendingPaddlesSection from "@/components/TrendingPaddlesSection";
+import PaddleAdSidebar from "@/components/PaddleAdSidebar";
 import PaddleDetailTabs from "@/components/PaddleDetailTabs";
 import WhoItsFor from "@/components/WhoItsFor";
 import StickyBottomBar from "@/components/StickyBottomBar";
@@ -75,8 +78,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!paddle) return {};
   const code = getDiscountCode(paddle.brand, paddle.discountLink);
   const url = `${siteConfig.siteUrl}/paddles/${paddle.slug}`;
-  const title = `${paddle.brand} ${paddle.name} ${paddle.shape} ${paddle.thickness} Review`;
-  const description = `${paddle.brand} ${paddle.name} pickleball paddle review — ${paddle.shape} shape, ${paddle.thickness} core, ${paddle.weight}, Swing Weight ${paddle.swingWeight}. Specs, who it's for, video review & discount code ${code}.`;
+  const hasDiscount = !!(paddle.amountOff && paddle.amountOff !== "$0");
+  // Title targets both "[paddle] review" and "[paddle] discount code" searches
+  const title = `${paddle.brand} ${paddle.name} Pickleball Paddle Review + Discount Code`;
+  const description = hasDiscount
+    ? `${paddle.brand} ${paddle.name} review — save ${paddle.amountOff} with code ${code} at checkout. ${paddle.shape}, ${paddle.thickness} core, ${paddle.weight}. Expert specs, performance ratings & video review.`
+    : `${paddle.brand} ${paddle.name} review — ${paddle.shape}, ${paddle.thickness} core, ${paddle.weight}. Expert specs, performance ratings, video review & discount code ${code}.`;
   const imageUrl = paddle.image ? `${siteConfig.siteUrl}${paddle.image}` : undefined;
 
   return {
@@ -84,17 +91,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description,
     alternates: { canonical: url },
     openGraph: {
-      title: `${paddle.brand} ${paddle.name} ${paddle.shape} ${paddle.thickness} Review`,
+      title,
       description,
       url,
       type: "article",
       siteName: siteConfig.name,
-      ...(imageUrl ? { images: [{ url: imageUrl, alt: `${paddle.brand} ${paddle.name} ${paddle.shape} ${paddle.thickness} pickleball paddle` }] } : {}),
+      ...(imageUrl ? { images: [{ url: imageUrl, alt: `${paddle.brand} ${paddle.name} ${paddle.shape} pickleball paddle review` }] } : {}),
     },
     twitter: {
       card: "summary_large_image",
-      title: `${paddle.brand} ${paddle.name} Review`,
-      description: `${paddle.shape} ${paddle.thickness} — ${paddle.weight}${paddle.swingWeight ? `, SW ${paddle.swingWeight}` : ""}. Use code ${code} for discount.`,
+      title,
+      description: hasDiscount
+        ? `Save ${paddle.amountOff} with code ${code} — ${paddle.shape} ${paddle.thickness}, ${paddle.weight}${paddle.swingWeight ? `, SW ${paddle.swingWeight}` : ""}.`
+        : `${paddle.shape} ${paddle.thickness} — ${paddle.weight}${paddle.swingWeight ? `, SW ${paddle.swingWeight}` : ""}. Use code ${code} for discount.`,
       ...(imageUrl ? { images: [imageUrl] } : {}),
     },
   };
@@ -262,11 +271,24 @@ export default async function PaddleDetailPage({ params }: Props) {
     })
     .sort((a, b) => b.score - a.score);
 
-  // Pick top 4, but ensure brand diversity (max 2 from same brand)
+  // Pick top 4, but ensure brand diversity (max 2 from same brand).
+  // Pinned slugs are injected first and exempt from the brand cap.
   const related: typeof paddles = [];
   const brandCount: Record<string, number> = {};
+  const pinnedSlugsArr = paddle.pinnedRelated ?? [];
+  const pinnedSlugs = new Set(pinnedSlugsArr);
+
+  // First pass: inject pinned paddles in declaration order
+  for (let pi = 0; pi < pinnedSlugsArr.length; pi++) {
+    if (related.length >= 4) break;
+    const pinned = paddles.find((p) => p.slug === pinnedSlugsArr[pi] && p.id !== paddle.id);
+    if (pinned) related.push(pinned);
+  }
+
+  // Second pass: fill remaining slots from scored list (skip already-pinned)
   for (const { paddle: p } of scored) {
     if (related.length >= 4) break;
+    if (pinnedSlugs.has(p.slug)) continue;
     const bc = brandCount[p.brand] ?? 0;
     if (bc >= 2) continue;
     related.push(p);
@@ -300,6 +322,12 @@ export default async function PaddleDetailPage({ params }: Props) {
   // lowercase-dash transform — "Bread & Butter" → "bread-and-butter", etc.).
   // Falls back to undefined if brand isn't registered; the link is omitted.
   const brandRecord = getBrandByName(paddle.brand);
+
+  // Featured paddles for the sidebar rotator — exclude current paddle,
+  // prefer paddles with affiliate links + images for revenue coverage.
+  const featuredForDetail = paddles
+    .filter(p => p.slug !== paddle.slug && p.discountLink?.trim() && p.image)
+    .slice(0, 8);
 
   // Rotate gear products per paddle so each page shows different items
   const gearPool = gearProducts.filter((g) => g.id !== "academy");
@@ -368,8 +396,8 @@ export default async function PaddleDetailPage({ params }: Props) {
   const articleSchema = {
     "@context": "https://schema.org",
     "@type": "Article",
-    "headline": `${paddle.brand} ${paddle.name} ${paddle.shape} ${paddle.thickness} Pickleball Paddle Review`,
-    "description": `In-depth review of the ${paddle.brand} ${paddle.name} — ${paddle.shape} shape, ${paddle.thickness} core. Specs, performance, and discount code.`,
+    "headline": `${paddle.brand} ${paddle.name} ${paddle.shape} Review + Discount Code`,
+    "description": `In-depth review of the ${paddle.brand} ${paddle.name} — ${paddle.shape} shape, ${paddle.thickness} core. Specs, performance, and use code ${code} for a discount.`,
     "image": paddle.image ? `${siteConfig.siteUrl}${paddle.image}` : undefined,
     "datePublished": paddle.addedAt,
     "dateModified": new Date().toISOString().split("T")[0],
@@ -639,7 +667,7 @@ export default async function PaddleDetailPage({ params }: Props) {
                 style={{ border: "2px solid rgba(10, 100, 188,0.4)" }}
               />
               <div>
-                <p className="text-sm font-semibold group-hover:text-teal-400 transition-colors" style={{ color: "var(--flip-text-head)" }}>
+                <p className="text-sm font-semibold group-hover:text-[#5a9df9] transition-colors" style={{ color: "var(--flip-text-head)" }}>
                   Tested by <span style={{ color: "#60a5fa" }}>Austin Hardy</span>
                 </p>
                 <p className="text-xs" style={{ color: "var(--flip-text-muted)" }}>
@@ -672,7 +700,7 @@ export default async function PaddleDetailPage({ params }: Props) {
               className="text-4xl md:text-5xl font-extrabold tracking-tight leading-[1.05] mb-1"
               style={{ color: "var(--flip-text-head)" }}
             >
-              {paddle.name} {paddle.shape} {paddle.thickness} Pickleball Paddle Review
+              {paddle.name} Pickleball Paddle Review + Discount Code
             </h1>
 
             {paddle.tagline && (
@@ -934,7 +962,7 @@ export default async function PaddleDetailPage({ params }: Props) {
                   })}
                   <Link
                     href={`/blog/${blogPost.slug}`}
-                    className="inline-flex items-center gap-1 text-sm font-semibold mt-4 transition-colors hover:text-teal-400"
+                    className="inline-flex items-center gap-1 text-sm font-semibold mt-4 transition-colors hover:text-[#5a9df9]"
                     style={{ color: "#60a5fa" }}
                   >
                     Read full review <ArrowRight className="w-3.5 h-3.5" />
@@ -1123,6 +1151,12 @@ export default async function PaddleDetailPage({ params }: Props) {
 
             {/* Sidebar — sticky, hidden on mobile (price already in hero) */}
             <div className="hidden lg:block space-y-6 lg:sticky lg:top-[140px] self-start">
+
+              {/* Rotating featured paddle thumbnails */}
+              {featuredForDetail.length > 0 && (
+                <PaddleAdSidebar paddles={featuredForDetail} />
+              )}
+
               {/* Featured gear panel — replaces the old duplicate price/buy card. */}
               {/* Weighted toward the Titan Ball Machine (60% of paddles); other 40% */}
               {/* rotate through remaining gear. Deterministic per paddle.id. */}
@@ -1138,7 +1172,7 @@ export default async function PaddleDetailPage({ params }: Props) {
                 </p>
                 <Link
                   href="/best-pickleball-paddles"
-                  className="text-sm font-semibold transition-colors hover:text-teal-400"
+                  className="text-sm font-semibold transition-colors hover:text-[#5a9df9]"
                   style={{ color: "#60a5fa" }}
                 >
                   Best Pickleball Paddles (2026) &rarr;
@@ -1172,7 +1206,7 @@ export default async function PaddleDetailPage({ params }: Props) {
                         />
                       )}
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-semibold truncate group-hover:text-teal-400 transition-colors" style={{ color: "var(--flip-text-head)" }}>
+                        <p className="text-sm font-semibold truncate group-hover:text-[#5a9df9] transition-colors" style={{ color: "var(--flip-text-head)" }}>
                           {gear.brand ? `${gear.brand} ` : ""}{gear.name}
                         </p>
                         <p className="text-xs" style={{ color: "var(--flip-text-muted)" }}>
@@ -1184,7 +1218,7 @@ export default async function PaddleDetailPage({ params }: Props) {
                 </div>
                 <Link
                   href="/gear"
-                  className="inline-flex items-center gap-1 text-xs font-semibold mt-4 transition-colors hover:text-teal-400"
+                  className="inline-flex items-center gap-1 text-xs font-semibold mt-4 transition-colors hover:text-[#5a9df9]"
                   style={{ color: "#60a5fa" }}
                 >
                   View all gear <ArrowRight className="w-3 h-3" />
@@ -1237,7 +1271,7 @@ export default async function PaddleDetailPage({ params }: Props) {
             </h2>
             <Link
               href="/gear"
-              className="inline-flex items-center gap-1 text-sm font-semibold transition-colors hover:text-teal-400"
+              className="inline-flex items-center gap-1 text-sm font-semibold transition-colors hover:text-[#5a9df9]"
               style={{ color: "#60a5fa" }}
             >
               All Gear <ArrowRight className="w-4 h-4" />
@@ -1278,7 +1312,7 @@ export default async function PaddleDetailPage({ params }: Props) {
                   </div>
                 )}
                 <div className="p-4">
-                  <p className="text-sm font-bold group-hover:text-teal-400 transition-colors" style={{ color: "var(--flip-text-head)" }}>
+                  <p className="text-sm font-bold group-hover:text-[#5a9df9] transition-colors" style={{ color: "var(--flip-text-head)" }}>
                     {gear.brand ? `${gear.brand} ` : ""}{gear.name}
                   </p>
                   <p className="text-xs mt-1 line-clamp-2" style={{ color: "var(--flip-text-muted)" }}>
@@ -1310,9 +1344,9 @@ export default async function PaddleDetailPage({ params }: Props) {
           <p className="text-sm mb-8" style={{ color: "var(--flip-text-muted)" }}>
             Paddles in the same category and price range.
           </p>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {related.map((p) => (
-              <PaddleCard key={p.id} paddle={p} />
+              <PaddleMiniCard key={p.id} paddle={p} />
             ))}
           </div>
         </div>
@@ -1340,7 +1374,7 @@ export default async function PaddleDetailPage({ params }: Props) {
                 <Link
                   key={p.id}
                   href={`/compare/${matchup}`}
-                  className="group flex items-center justify-between gap-3 rounded-xl px-4 py-3 transition-all hover:border-teal-400/50"
+                  className="group flex items-center justify-between gap-3 rounded-xl px-4 py-3 transition-all hover:border-[#5a9df9]/50"
                   style={{
                     background: "var(--flip-bg)",
                     border: "1px solid var(--flip-card-border)",
@@ -1350,7 +1384,7 @@ export default async function PaddleDetailPage({ params }: Props) {
                     <p className="text-[11px] uppercase tracking-wider mb-0.5" style={{ color: "var(--flip-text-muted)" }}>
                       vs.
                     </p>
-                    <p className="text-sm font-bold truncate group-hover:text-teal-400 transition-colors" style={{ color: "var(--flip-text-head)" }}>
+                    <p className="text-sm font-bold truncate group-hover:text-[#5a9df9] transition-colors" style={{ color: "var(--flip-text-head)" }}>
                       {p.brand} {p.name}
                     </p>
                     <p className="text-[11px] truncate" style={{ color: "var(--flip-text-muted)" }}>
@@ -1362,8 +1396,9 @@ export default async function PaddleDetailPage({ params }: Props) {
               );
             })}
           </div>
-          <div className="mt-6 text-sm" style={{ color: "var(--flip-text-muted)" }}>
-            See all <Link href="/compare" className="font-bold hover:text-teal-400" style={{ color: "#60a5fa" }}>head-to-head paddle comparisons →</Link>
+          <div className="mt-6 flex flex-wrap gap-4 text-sm" style={{ color: "var(--flip-text-muted)" }}>
+            <span>See all <Link href="/compare" className="font-bold hover:text-[#5a9df9]" style={{ color: "#60a5fa" }}>head-to-head paddle comparisons →</Link></span>
+            <span>Or browse <Link href={`/paddles/${paddle.slug}/alternatives`} className="font-bold hover:text-[#5a9df9]" style={{ color: "#60a5fa" }}>all alternatives to the {paddle.name} →</Link></span>
           </div>
         </div>
       </section>
@@ -1379,19 +1414,26 @@ export default async function PaddleDetailPage({ params }: Props) {
             <p className="text-sm mb-8" style={{ color: "var(--flip-text-muted)" }}>
               Other paddles in the {paddle.brand} lineup — different shapes, cores, and price points to consider.
             </p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {sameBrandPaddles.map((p) => (
-                <PaddleCard key={p.id} paddle={p} />
+                <PaddleMiniCard key={p.id} paddle={p} />
               ))}
             </div>
             {brandRecord && (
               <div className="mt-6 text-sm" style={{ color: "var(--flip-text-muted)" }}>
-                Browse the full <Link href={`/brands/${brandRecord.slug}`} className="font-bold hover:text-teal-400" style={{ color: "#60a5fa" }}>{paddle.brand} brand page →</Link>
+                Browse the full <Link href={`/brands/${brandRecord.slug}`} className="font-bold hover:text-[#5a9df9]" style={{ color: "#60a5fa" }}>{paddle.brand} brand page →</Link>
               </div>
             )}
           </div>
         </section>
       )}
+
+      {/* ── TRENDING PADDLES ─────────────────────────────────────────────── */}
+      <TrendingPaddlesSection
+        excludeSlug={paddle.slug}
+        title="Trending Paddles Right Now"
+        subtitle="The most popular paddles in the catalog — sorted by demand, exclusive deals for Playbook readers."
+      />
 
       {/* ── FEEL (tab: feel) ──────────────────────────────────────────────── */}
       <section id="feel" className="py-16" style={{ background: "var(--flip-bg-card)" }}>
@@ -1515,12 +1557,15 @@ export default async function PaddleDetailPage({ params }: Props) {
               the main review (does NOT replace it). The video ID parser
               accepts youtu.be/<id>, youtube.com/watch?v=<id>, and embed
               URLs equally — anything Selkirk Boomstik vs Omni–style. */}
-          {paddle.featuredReviewUrl && (() => {
-            const m = paddle.featuredReviewUrl.match(/(?:youtu\.be\/|v=|embed\/)([A-Za-z0-9_-]{11})/);
+          {[
+            ...(paddle.featuredReviewUrl ? [paddle.featuredReviewUrl] : []),
+            ...(paddle.featuredReviewUrls ?? []),
+          ].map((url) => {
+            const m = url.match(/(?:youtu\.be\/|v=|embed\/)([A-Za-z0-9_-]{11})/);
             const featuredId = m?.[1];
             if (!featuredId) return null;
             return (
-              <div className="mt-10">
+              <div key={featuredId} className="mt-10">
                 <div className="flex items-center gap-2 mb-4">
                   <span
                     className="text-[10px] font-extrabold uppercase tracking-widest px-2 py-1 rounded-full"
@@ -1542,12 +1587,12 @@ export default async function PaddleDetailPage({ params }: Props) {
                 >
                   <YouTubeEmbed
                     videoId={featuredId}
-                    title={`${paddle.brand} ${paddle.name} — Featured Review`}
+                    title={`${paddle.brand} ${paddle.name} — Head-to-Head Review`}
                   />
                 </div>
               </div>
             );
-          })()}
+          })}
         </div>
       </section>
 
@@ -1610,7 +1655,7 @@ export default async function PaddleDetailPage({ params }: Props) {
             <div className="mt-8 pt-6" style={{ borderTop: "1px solid var(--flip-divider)" }}>
               <Link
                 href={`/blog/${blogPost.slug}`}
-                className="inline-flex items-center gap-1.5 text-sm font-semibold transition-colors hover:text-teal-400"
+                className="inline-flex items-center gap-1.5 text-sm font-semibold transition-colors hover:text-[#5a9df9]"
                 style={{ color: "#60a5fa" }}
               >
                 Read full review post <ArrowRight className="w-4 h-4" />

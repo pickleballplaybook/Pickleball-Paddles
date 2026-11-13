@@ -65,17 +65,24 @@ export default function BrandPage({ params }: Props) {
   const hasDiscount = brandPaddles.some((p) => p.amountOff && p.amountOff !== "$0");
   const code = getCode(brand.name, brandPaddles[0]?.discountLink);
 
-  // ── Featured paddle ─────────────────────────────────────────────────────
-  // Brand entry can override the auto-pick via featuredPaddleSlug. Otherwise
-  // the highest-trending paddle wins. Skipped for tiny lineups (1 paddle)
-  // since the featured hero just duplicates the grid below.
+  // ── Featured paddle(s) ──────────────────────────────────────────────────
+  // featuredPaddleSlugs (array) renders a 2-up grid; featuredPaddleSlug
+  // (single) renders the original hero card. Otherwise auto-picks by
+  // trendingScore. Skipped for tiny lineups (1 paddle).
+  const featuredPair: typeof brandPaddles = brand.featuredPaddleSlugs
+    ? brand.featuredPaddleSlugs
+        .map((s) => brandPaddles.find((p) => p.slug === s))
+        .filter((p): p is typeof brandPaddles[number] => !!p)
+    : [];
   const override = brand.featuredPaddleSlug
     ? brandPaddles.find((p) => p.slug === brand.featuredPaddleSlug)
     : null;
-  const featured = override
-    ?? (brandPaddles.length >= 2
-      ? [...brandPaddles].sort((a, b) => (b.trendingScore ?? 0) - (a.trendingScore ?? 0))[0]
-      : null);
+  const featured = featuredPair.length === 0
+    ? (override
+        ?? (brandPaddles.length >= 2
+          ? [...brandPaddles].sort((a, b) => (b.trendingScore ?? 0) - (a.trendingScore ?? 0))[0]
+          : null))
+    : null;
 
   // ── Price stats for FAQ + meta ─────────────────────────────────────────
   const pricePoints = brandPaddles
@@ -169,7 +176,7 @@ export default function BrandPage({ params }: Props) {
           <div className="flex flex-col sm:flex-row items-start gap-6 mb-12">
             <div
               className="w-20 h-20 rounded-2xl flex items-center justify-center flex-shrink-0"
-              style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.08)" }}
+              style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={brand.logo} alt={`${brand.name} logo`} className="w-full h-full object-contain p-2" />
@@ -185,7 +192,7 @@ export default function BrandPage({ params }: Props) {
                 {brand.description}
               </p>
               <div className="flex flex-wrap gap-2 text-sm">
-                <span className="px-3 py-1.5 rounded-full font-semibold" style={{ background: "rgba(10, 100, 188,0.30)", color: "#60a5fa" }}>
+                <span className="px-3 py-1.5 rounded-full font-semibold" style={{ background: "rgba(90,157,249,0.15)", color: "#5a9df9" }}>
                   {brandPaddles.length} Paddle{brandPaddles.length !== 1 ? "s" : ""}
                 </span>
                 {/* Shape breakdown — one chip per shape with count, instead of */}
@@ -208,7 +215,7 @@ export default function BrandPage({ params }: Props) {
                   </span>
                 )}
                 {hasDiscount && (
-                  <span className="px-3 py-1.5 rounded-full font-bold font-mono" style={{ background: "rgba(10, 100, 188,0.30)", color: "#60a5fa", border: "1px solid rgba(10, 100, 188,0.30)" }}>
+                  <span className="px-3 py-1.5 rounded-full font-bold font-mono" style={{ background: "rgba(90,157,249,0.15)", color: "#5a9df9", border: "1px solid rgba(90,157,249,0.15)" }}>
                     Code: {code}
                   </span>
                 )}
@@ -216,19 +223,84 @@ export default function BrandPage({ params }: Props) {
             </div>
           </div>
 
-          {/* ── Featured paddle ─────────────────────────────────────────── */}
+          {/* ── Featured paddle(s) ──────────────────────────────────────── */}
+
+          {/* Two-paddle featured grid */}
+          {featuredPair.length >= 2 && (
+            <section className="mb-16">
+              <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: "#5a9df9" }}>
+                <Sparkles className="w-3 h-3 inline mr-1.5" strokeWidth={3} />
+                Featured Paddles
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                {featuredPair.map((fp) => (
+                  <Link
+                    key={fp.slug}
+                    href={`/paddles/${fp.slug}`}
+                    className="group block rounded-3xl overflow-hidden transition-all hover:scale-[1.005]"
+                    style={{ background: "var(--bg-card)", border: "1px solid rgba(90,157,249,0.15)" }}
+                  >
+                    {/* Image */}
+                    <div
+                      className="relative flex items-center justify-center aspect-square p-6"
+                      style={{ background: "linear-gradient(135deg, rgba(90,157,249,0.18) 0%, rgba(90,157,249,0.08) 100%)" }}
+                    >
+                      {fp.image && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={fp.image}
+                          alt={`${fp.brand} ${fp.name} ${fp.shape}`}
+                          className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
+                        />
+                      )}
+                    </div>
+                    {/* Details */}
+                    <div className="p-5 flex flex-col gap-3">
+                      <div>
+                        <h2 className="text-xl font-extrabold tracking-tight group-hover:text-[#5a9df9] transition-colors" style={{ color: "var(--text-primary)" }}>
+                          {fp.brand} {fp.name} {fp.shape}
+                        </h2>
+                        {fp.tagline && (
+                          <p className="text-sm mt-1" style={{ color: "var(--text-muted)" }}>{fp.tagline}</p>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        {[
+                          { label: "Core",     value: fp.thickness },
+                          { label: "Swing Wt", value: fp.swingWeight > 0 ? fp.swingWeight.toString() : undefined },
+                          { label: "Twist Wt", value: fp.twistWeight > 0 ? fp.twistWeight.toString() : undefined },
+                          { label: "Weight",   value: fp.weight },
+                          { label: "Price",    value: fp.price },
+                        ].filter((s): s is { label: string; value: string } => !!s.value).slice(0, 6).map((s) => (
+                          <div key={s.label}>
+                            <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>{s.label}</p>
+                            <p className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>{s.value}</p>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="inline-flex items-center gap-2 text-sm font-bold" style={{ color: "#5a9df9" }}>
+                        Read the full review <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Single featured paddle hero */}
           {featured && (
             <section className="mb-16">
               <Link
                 href={`/paddles/${featured.slug}`}
                 className="group block rounded-3xl overflow-hidden transition-all hover:scale-[1.005]"
-                style={{ background: "var(--bg-card)", border: "1px solid rgba(10, 100, 188,0.30)" }}
+                style={{ background: "var(--bg-card)", border: "1px solid rgba(90,157,249,0.15)" }}
               >
                 <div className="grid grid-cols-1 md:grid-cols-2">
                   {/* Image */}
                   <div
                     className="relative flex items-center justify-center aspect-[5/4] md:aspect-auto md:min-h-[320px] p-8"
-                    style={{ background: "linear-gradient(135deg, rgba(10, 100, 188,0.28) 0%, rgba(10, 100, 188,0.14) 100%)" }}
+                    style={{ background: "linear-gradient(135deg, rgba(90,157,249,0.18) 0%, rgba(90,157,249,0.08) 100%)" }}
                   >
                     {featured.image && (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -240,7 +312,7 @@ export default function BrandPage({ params }: Props) {
                     )}
                     <span
                       className="absolute top-5 left-5 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-widest"
-                      style={{ background: "rgba(10, 100, 188,0.95)", color: "#0a1628" }}
+                      style={{ background: "#5a9df9", color: "#ffffff" }}
                     >
                       <Sparkles className="w-3 h-3" strokeWidth={3} />
                       Featured
@@ -248,10 +320,10 @@ export default function BrandPage({ params }: Props) {
                   </div>
                   {/* Details */}
                   <div className="p-6 md:p-10 flex flex-col justify-center">
-                    <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#60a5fa" }}>
+                    <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#5a9df9" }}>
                       Most Popular {brand.name}
                     </p>
-                    <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight mb-3 group-hover:text-teal-400 transition-colors" style={{ color: "var(--text-primary)" }}>
+                    <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight mb-3 group-hover:text-[#5a9df9] transition-colors" style={{ color: "var(--text-primary)" }}>
                       {featured.brand} {featured.name}
                     </h2>
                     {featured.tagline && (
@@ -279,7 +351,7 @@ export default function BrandPage({ params }: Props) {
                         </div>
                       ))}
                     </div>
-                    <div className="inline-flex items-center gap-2 text-sm font-bold transition-colors" style={{ color: "#60a5fa" }}>
+                    <div className="inline-flex items-center gap-2 text-sm font-bold transition-colors" style={{ color: "#5a9df9" }}>
                       Read the full review
                       <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
                     </div>
@@ -308,7 +380,7 @@ export default function BrandPage({ params }: Props) {
                   <div
                     key={f.q}
                     className="rounded-2xl p-5"
-                    style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.08)" }}
+                    style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}
                   >
                     <h3 className="text-base font-bold mb-2" style={{ color: "var(--text-primary)" }}>
                       {f.q}
@@ -334,7 +406,7 @@ export default function BrandPage({ params }: Props) {
                     key={post.slug}
                     href={`/blog/${post.slug}`}
                     className="rounded-2xl overflow-hidden group transition-all hover:scale-[1.01]"
-                    style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.08)" }}
+                    style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}
                   >
                     {(post.thumbnail || post.videoId) && (
                       <div className="aspect-video relative overflow-hidden">
@@ -347,10 +419,10 @@ export default function BrandPage({ params }: Props) {
                       </div>
                     )}
                     <div className="p-4">
-                      <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "#60a5fa" }}>
+                      <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "#5a9df9" }}>
                         {post.brand}
                       </p>
-                      <h3 className="text-sm font-bold line-clamp-2 group-hover:text-teal-400 transition-colors" style={{ color: "var(--text-primary)" }}>
+                      <h3 className="text-sm font-bold line-clamp-2 group-hover:text-[#5a9df9] transition-colors" style={{ color: "var(--text-primary)" }}>
                         {post.title}
                       </h3>
                       <p className="text-xs mt-1 line-clamp-2" style={{ color: "var(--text-muted)" }}>
@@ -368,14 +440,14 @@ export default function BrandPage({ params }: Props) {
             <Link
               href="/paddles"
               className="inline-flex items-center gap-2 font-bold text-sm px-6 py-3 rounded-xl text-white transition-all hover:scale-[1.02]"
-              style={{ background: "#0a64bc" }}
+              style={{ background: "#5a9df9" }}
             >
               Browse All Paddles <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
               href="/best-pickleball-paddles"
               className="inline-flex items-center gap-2 font-bold text-sm px-6 py-3 rounded-xl transition-all hover:scale-[1.02]"
-              style={{ border: "1px solid rgba(255,255,255,0.15)", color: "var(--text-primary)" }}
+              style={{ border: "1px solid var(--border)", color: "var(--text-primary)" }}
             >
               Best Paddles
             </Link>

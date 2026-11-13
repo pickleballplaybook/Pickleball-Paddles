@@ -101,7 +101,7 @@ export default function BlogPage() {
                   {post.guideTag ?? post.brand ?? "Pickleball Guide"}
                 </p>
                 <h2
-                  className="font-bold text-sm leading-snug mb-2 group-hover:text-teal-500 transition-colors"
+                  className="font-bold text-sm leading-snug mb-2 group-hover:text-[#5a9df9] transition-colors"
                   style={{ color: "var(--text-primary)" }}
                 >
                   {post.title}

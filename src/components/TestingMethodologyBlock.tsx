@@ -82,7 +82,7 @@ export default function TestingMethodologyBlock({ brand, name }: Props) {
           <div className="flex flex-wrap gap-3 items-center">
             <Link
               href="/how-we-test"
-              className="inline-flex items-center gap-2 text-sm font-bold px-4 py-2.5 rounded-full transition-colors hover:bg-teal-400/20"
+              className="inline-flex items-center gap-2 text-sm font-bold px-4 py-2.5 rounded-full transition-colors hover:bg-[#5a9df9]/20"
               style={{ background: "rgba(10, 100, 188,0.30)", color: "#60a5fa", border: "1px solid rgba(10, 100, 188,0.3)" }}
             >
               Full Testing Protocol

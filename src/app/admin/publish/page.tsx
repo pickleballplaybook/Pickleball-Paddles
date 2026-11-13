@@ -2216,6 +2216,11 @@ function ThumbnailFromVideo({
   const [color, setColor] = useState("#ffffff");
   const [outline, setOutline] = useState(true);
   const [sizePct, setSizePct] = useState(60); // 0..100 → scales relative to video height
+  // Track whether the user has already locked in a frame. Used to auto-update
+  // the saved thumbnail when text/style changes after an initial capture.
+  const hasCapture = useRef(false);
+  const onCaptureRef = useRef(onCapture);
+  useEffect(() => { onCaptureRef.current = onCapture; }, [onCapture]);
 
   const renderFrame = useCallback(() => {
     const video = videoRef.current;
@@ -2287,11 +2292,22 @@ function ThumbnailFromVideo({
     return dataUrl;
   }, [text, pos, color, outline, sizePct]);
 
-  // Re-render on text/style changes
+  // Keep hasCapture in sync with the currentPreview prop so clearing a capture
+  // (via onClear) correctly disables the auto-update below.
+  useEffect(() => {
+    hasCapture.current = !!currentPreview;
+  }, [currentPreview]);
+
+  // Re-render on text/style changes. If a frame has already been captured,
+  // also push the updated composite back to the parent so the published
+  // thumbnail stays in sync with what the preview shows.
   useEffect(() => {
     const t = setTimeout(() => {
       const url = renderFrame();
-      if (url) setLivePreview(url);
+      if (url) {
+        setLivePreview(url);
+        if (hasCapture.current) onCaptureRef.current(url);
+      }
     }, 80);
     return () => clearTimeout(t);
   }, [renderFrame]);
@@ -2314,7 +2330,10 @@ function ThumbnailFromVideo({
 
   function useThisFrame() {
     const url = renderFrame();
-    if (url) onCapture(url);
+    if (url) {
+      hasCapture.current = true;
+      onCapture(url);
+    }
   }
 
   return (

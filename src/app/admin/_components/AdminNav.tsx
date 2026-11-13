@@ -11,8 +11,10 @@ const TABS = [
   { href: "/admin/weekly-thumbnail", label: "Weekly Thumbnail", match: "/admin/weekly-thumbnail" },
   { href: "/admin/drills", label: "Drills", match: "/admin/drills" },
   { href: "/admin/lessons", label: "Lessons", match: "/admin/lessons" },
-  { href: "/admin/email?view=acquisition", label: "Acquisition", match: "/admin/email" },
+  { href: "/admin/email?view=funnel", label: "Acquisition", match: "/admin/email" },
   { href: "/admin/challenges", label: "Challenges", match: "/admin/challenges" },
+  { href: "/admin/bundles", label: "Bundles", match: "/admin/bundles" },
+  { href: "/admin/dub", label: "Dub", match: "/admin/dub" },
 ];
 
 export function AdminNav() {

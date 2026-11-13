@@ -15,6 +15,8 @@ interface PaddleCardProps {
   heartCount?: number;
   /** Live thumbs-down count. Defaults to 0 if not passed. */
   dislikeCount?: number;
+  /** Compact mode for narrow grid contexts (4-col, 6-col). Hides bars, vote pill, discount code, tagline. */
+  compact?: boolean;
 }
 
 const BADGE_STYLES: Record<string, string> = {
@@ -63,7 +65,7 @@ function calcDiscountedPrice(price: string, amountOff: string): string | null {
   return `$${discounted.toFixed(2)}`;
 }
 
-export default function PaddleCard({ paddle, index = 0, heartCount = 0, dislikeCount = 0 }: PaddleCardProps) {
+export default function PaddleCard({ paddle, index = 0, heartCount = 0, dislikeCount = 0, compact = false }: PaddleCardProps) {
   const hasDiscount = !!paddle.discountLink?.trim();
   const reviewLink  = paddle.reviewUrl ?? (paddle.manualVideoId ? `https://youtu.be/${paddle.manualVideoId}` : null);
   const hasReview   = !!reviewLink;
@@ -80,7 +82,7 @@ export default function PaddleCard({ paddle, index = 0, heartCount = 0, dislikeC
       {/* Image */}
       <Link href={`/paddles/${paddle.slug}`} tabIndex={-1} className="block">
         <div
-          className="relative aspect-square overflow-hidden rounded-t-2xl flex flex-col items-center justify-center"
+          className="relative aspect-[4/5] overflow-hidden rounded-t-2xl flex flex-col items-center justify-center"
           style={{ background: "var(--bg-section)" }}
         >
           {paddle.image ? (
@@ -93,8 +95,8 @@ export default function PaddleCard({ paddle, index = 0, heartCount = 0, dislikeC
           ) : (
             <>
               <svg viewBox="0 0 120 160" fill="none" className="w-20 h-auto mb-2 opacity-15" aria-hidden>
-                <rect x="5" y="5" width="110" height="115" rx="55" fill="#60a5fa" />
-                <rect x="45" y="116" width="30" height="40" rx="15" fill="#11295f" />
+                <rect x="5" y="5" width="110" height="115" rx="55" fill="#5a9df9" />
+                <rect x="45" y="116" width="30" height="40" rx="15" fill="#1e3a6e" />
               </svg>
               <p className="text-[10px] font-medium tracking-wide" style={{ color: "var(--text-muted)" }}>
                 Image coming soon
@@ -117,7 +119,7 @@ export default function PaddleCard({ paddle, index = 0, heartCount = 0, dislikeC
 
         <p
           className="inline-block self-start text-[10px] font-extrabold uppercase tracking-widest mb-2 px-2 py-0.5 rounded"
-          style={{ background: "#DC2626", color: "#fff", border: "2px solid #ffffff", boxShadow: "0 0 0 1px #DC2626" }}
+          style={{ background: "linear-gradient(135deg,#e52222 0%,#b81b1b 100%)", color: "#fff", boxShadow: "0 2px 8px rgba(190,10,10,0.45), 0 1px 2px rgba(0,0,0,0.3)" }}
         >
           {paddle.brand}
         </p>
@@ -161,22 +163,21 @@ export default function PaddleCard({ paddle, index = 0, heartCount = 0, dislikeC
           )}
         </div>
 
-        {paddle.tagline && (
+        {!compact && paddle.tagline && (
           <p className="text-sm leading-relaxed mb-2 line-clamp-2" style={{ color: "var(--text-muted)" }}>
             {paddle.tagline}
           </p>
         )}
 
-        {/* Price row — bigger now that the card has more horizontal real
-            estate, with the Save % chip pinned to the right of the line. */}
+        {/* Price row */}
         {paddle.price && (() => {
           const discounted = calcDiscountedPrice(paddle.price!, paddle.amountOff);
-          const hasSavings = !!paddle.amountOff && paddle.amountOff !== "$0" && paddle.amountOff !== "";
+          const hasSavings = !compact && !!paddle.amountOff && paddle.amountOff !== "$0" && paddle.amountOff !== "";
           return (
-            <div className="flex items-baseline justify-between gap-2 mb-3">
-              <div className="flex items-baseline gap-2 min-w-0">
+            <div className={`flex ${compact ? "flex-col items-start gap-0.5" : "items-baseline justify-between gap-2"} mb-3`}>
+              <div className="flex items-baseline gap-1.5 min-w-0 flex-wrap">
                 <span
-                  className={discounted ? "text-sm font-semibold" : "text-2xl font-extrabold"}
+                  className={discounted ? "text-xs font-semibold" : compact ? "text-base font-extrabold" : "text-2xl font-extrabold"}
                   style={{
                     color: discounted ? "var(--text-muted)" : "var(--text-primary)",
                     textDecoration: discounted ? "line-through" : "none",
@@ -185,7 +186,7 @@ export default function PaddleCard({ paddle, index = 0, heartCount = 0, dislikeC
                   {paddle.price}
                 </span>
                 {discounted && (
-                  <span className="text-2xl font-extrabold tabular-nums" style={{ color: "var(--flip-text-head)" }}>
+                  <span className={`${compact ? "text-base" : "text-2xl"} font-extrabold tabular-nums`} style={{ color: "var(--flip-text-head)" }}>
                     {discounted}
                   </span>
                 )}
@@ -207,7 +208,7 @@ export default function PaddleCard({ paddle, index = 0, heartCount = 0, dislikeC
         })()}
 
         {/* Performance bars */}
-        {paddle.ratings && (
+        {!compact && paddle.ratings && (
           <div className="space-y-2.5 mb-4">
             {BARS.map(({ key, label }) => {
               const val = paddle.ratings![key];
@@ -226,11 +227,8 @@ export default function PaddleCard({ paddle, index = 0, heartCount = 0, dislikeC
           </div>
         )}
 
-        {/* Specs — single inline line. Uses swing weight (the spec people
-            actually shop on) when available, falling back to twist weight
-            only if SW isn't measured yet. Half the height of the old 3-col
-            boxed strip with a clearer scan rhythm. */}
-        {(paddle.weight || paddle.swingWeight || paddle.thickness) && (() => {
+        {/* Specs — hidden in compact mode */}
+        {!compact && (paddle.weight || paddle.swingWeight || paddle.thickness) && (() => {
           const bits: string[] = [];
           if (paddle.weight && paddle.weight.trim()) bits.push(paddle.weight);
           if (paddle.swingWeight && paddle.swingWeight > 0) {
@@ -250,15 +248,15 @@ export default function PaddleCard({ paddle, index = 0, heartCount = 0, dislikeC
           );
         })()}
 
-        {/* Vote pill — Save % moved up to the price row, so this stays
-            single-purpose. */}
-        <div className="mb-3">
-          <VotePill paddleId={paddle.id} upCount={heartCount} downCount={dislikeCount} size="sm" />
-        </div>
+        {/* Vote pill — hidden in compact mode */}
+        {!compact && (
+          <div className="mb-3">
+            <VotePill paddleId={paddle.id} upCount={heartCount} downCount={dislikeCount} size="sm" />
+          </div>
+        )}
 
-        {/* Discount code chip — "Code: PLAYBOOK 📋", dashed teal outline,
-            copy-to-clipboard. Suppressed for paddles without a usable code. */}
-        {(() => {
+        {/* Discount code chip — hidden in compact mode */}
+        {!compact && (() => {
           const hasRealDiscount = !!paddle.amountOff && paddle.amountOff !== "$0" && paddle.amountOff !== "";
           const isSelkirk = paddle.brand === "Selkirk" || paddle.brand === "SLK";
           const isSelkirkGiftCard = isSelkirk && !hasRealDiscount && !!paddle.discountLink?.trim() && !paddle.discountLink.includes("lockerroompickleball.com");

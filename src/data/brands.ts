@@ -8,6 +8,13 @@ export interface Brand {
   // Optional override — when set, the brand page hero features this paddle
   // instead of auto-picking the highest trendingScore. Use the paddle slug.
   featuredPaddleSlug?: string;
+  // Two-paddle featured grid — when set with exactly 2 slugs, renders a
+  // side-by-side pair of featured cards instead of a single hero.
+  featuredPaddleSlugs?: string[];
+  // General store link for the brand discount page hero button.
+  // Use when paddle-level discountLinks point to specific products and a
+  // general store URL is preferable for the top-level "Shop [Brand]" CTA.
+  storeLink?: string;
 }
 
 export const brands: Brand[] = [
@@ -15,7 +22,7 @@ export const brands: Brand[] = [
   { name: "Six Zero", slug: "6-0", logo: "/images/brands/6.0-Pickleball.png", description: "Six Zero delivers well-spec'd all-court paddles at fair prices. Their Coral series offers balanced performance for players who want versatility." },
   { name: "Aireo", slug: "aireo", logo: "/images/brands/Aireo-Pickleball.png", description: "Aireo brings NanoGraph technology to pickleball, producing ultra-lightweight paddles like the Cyclone that prioritize hand speed and maneuverability." },
   { name: "Beyond Measure", slug: "beyond-measure", logo: "/images/brands/Beyond-measure-pickleball.png", description: "Beyond Measure delivers competitive specs at accessible prices. The Ronin series proves you don't need to spend $200+ to get a serious all-court paddle." },
-  { name: "Bread & Butter", slug: "bread-and-butter", logo: "/images/brands/Bread-and-Butter-Pickleball-Co.png", description: "Bread & Butter has become one of the most talked-about brands in competitive pickleball. Their Loco series delivers serious power across three shapes." },
+  { name: "Bread & Butter", slug: "bread-and-butter", logo: "/images/brands/Bread-and-Butter-Pickleball-Co.png", description: "Bread & Butter has become one of the most talked-about brands in competitive pickleball. The Loco 2 is the hottest power paddle of 2026 — bigger sweet spot, durable grit surface, and elite swing weight across the Elongated and Hybrid shapes.", featuredPaddleSlugs: ["bread-and-butter-loco-2-elongated", "bread-and-butter-loco-2-hybrid"] },
   { name: "Chorus", slug: "chorus", logo: "/images/brands/Chorus-Pickleball.png", description: "Chorus Pickleball brings the Coda Harmony Grit series with all-foam power construction available in three shapes for every play style." },
   { name: "CRBN", slug: "crbn", logo: "/images/brands/CRBN-Pickleball.png", description: "CRBN has built a loyal following with innovative TruFoam core technology. Their Barrage series brings proprietary foam construction to power-oriented play." },
   { name: "Engage", slug: "engage", logo: "/images/brands/Engage-Pickleball.png", description: "Engage has been a staple in competitive pickleball for years. Their X2 represents their latest thinking on all-court elongated design." },
@@ -28,7 +35,7 @@ export const brands: Brand[] = [
   { name: "Head", slug: "head", logo: "/images/brands/Head-pickleball.png", description: "Head brings decades of racket sport engineering to pickleball. The Radical Pro 15 features a unique 15mm core that fills a gap between control and power." },
   { name: "Honolulu", slug: "honolulu", logo: "/images/brands/Honolulu-Pickleball-Company.png", description: "Honolulu Pickleball brings island spirit and serious specs. Their Crystal Blue Endurance Surface series features a long-lasting textured face across three shapes." },
   { name: "Hudef", slug: "hudef", logo: "/images/brands/Hudef-Pickleball.png", description: "Hudef delivers power-oriented paddles with solid construction quality at competitive prices." },
-  { name: "Joola", slug: "joola", logo: "/images/brands/Joola-pickleball.png", description: "Joola is one of the biggest names in racket sports, bringing European engineering pedigree to pickleball. Their Pro V line is used by tour-level professionals." },
+  { name: "Joola", slug: "joola", logo: "/images/brands/Joola-pickleball.png", description: "Joola is one of the biggest names in racket sports, bringing European engineering pedigree to pickleball. Their Pro V line is used by tour-level professionals.", storeLink: "https://www.awin1.com/cread.php?awinmid=124160&awinaffid=2831454&ued=https%3A%2F%2Fjoola.com%2Fcollections%2Fall" },
   { name: "Joysent", slug: "joysent", logo: "/images/brands/Joysent-Pickleball.png", description: "Joysent offers the Gearfoam Max with a unique foam core construction at an accessible price point for all-court players." },
   { name: "Kobo", slug: "kobo", logo: "/images/brands/Kobo-Pickleball.png", description: "Kobo's Thunder Axe Infinity uses an 18mm core to deliver control so soft it almost feels like cheating — a premium instrument for NVZ specialists." },
   { name: "Luzz", slug: "luzz", logo: "/images/brands/Luzz-Pickleball.png", description: "Luzz makes waves with paddles that pack serious specs at competitive prices. The Inferno and Cannon deliver high swing weights at prices that undercut the competition.", featuredPaddleSlug: "luzz-glider-hybrid" },

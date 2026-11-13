@@ -507,11 +507,13 @@ function ClipEditor({
 export default function ShortsPage() {
   const [tab, setTab] = useState<Tab>("new");
 
-  const [inputMode, setInputMode] = useState<"upload" | "url">("upload");
+  const [inputMode, setInputMode] = useState<"upload" | "url">("url");
   const [url, setUrl] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadSpeed, setUploadSpeed] = useState(0); // bytes/sec
+  const [uploadEta, setUploadEta] = useState(0); // seconds remaining
   const [isDragging, setIsDragging] = useState(false);
   const [topTitle, setTopTitle] = useState(false);
   const [job, setJob] = useState<Job | null>(null);
@@ -649,13 +651,19 @@ export default function ShortsPage() {
 
   async function handleUpload() {
     if (!selectedFile) return;
+    if (selectedFile.size === 0) {
+      setError("File is empty (0 bytes). If this is an iCloud file, right-click it in Finder → \"Download Now\" and try again.");
+      return;
+    }
     setLoading(true);
     setError("");
     setUploadProgress(0);
+    setUploadSpeed(0);
+    setUploadEta(0);
     setJob({ status: "queued", message: "Uploading…", progress: 0 });
 
     try {
-      // 1. Reserve an upload slot on Railway (server-to-server with Bearer auth).
+      // Reserve upload slot via Vercel proxy (bearer auth server-to-server)
       const reserveRes = await fetch("/api/admin/shorts/upload-reserve", { method: "POST" });
       const reserveData = await reserveRes.json();
       if (!reserveRes.ok) throw new Error(reserveData.error || "Reserve failed");
@@ -663,62 +671,64 @@ export default function ShortsPage() {
         uploadId: string; token: string; exp: number; uploadBaseUrl: string;
       };
 
-      // 2. Upload all chunks directly to Railway in parallel (4 simultaneous
-      //    streams). Each chunk is saved independently — no ordering dependency —
-      //    then finalized server-side once all are received.
-      const CHUNK_SIZE = 10 * 1024 * 1024;
-      const CONCURRENCY = 4;
-      const totalChunks = Math.ceil(selectedFile.size / CHUNK_SIZE);
-      let uploadedCount = 0;
+      // Upload chunks directly to Railway via XHR so upload.onprogress gives
+      // byte-level feedback inside each chunk (fetch doesn't support this).
+      // CORS is already configured on Railway for playbookpaddles.com.
+      const CHUNK_SIZE = 5 * 1024 * 1024;
+      const totalBytes = selectedFile.size;
+      const total = Math.ceil(totalBytes / CHUNK_SIZE);
+      const filename = selectedFile.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 200) || "upload.mp4";
+      const baseParams = new URLSearchParams({
+        token, exp: String(exp), total: String(total),
+        chunkSize: String(CHUNK_SIZE), filename,
+      });
 
-      const uploadChunk = async (i: number): Promise<void> => {
-        const chunk = selectedFile.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
-        const qs = new URLSearchParams({
-          token,
-          exp: String(exp),
-          index: String(i),
-          total: String(totalChunks),
-          filename: selectedFile.name,
+      const uploadStart = Date.now();
+
+      const xhrChunk = (url: string, blob: Blob, bytesBeforeChunk: number): Promise<Record<string, unknown>> => {
+        return new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open("POST", url);
+          xhr.setRequestHeader("Content-Type", "application/octet-stream");
+          xhr.upload.onprogress = (e) => {
+            if (!e.lengthComputable) return;
+            const done = bytesBeforeChunk + e.loaded;
+            const elapsed = (Date.now() - uploadStart) / 1000;
+            const speed = elapsed > 0.5 ? done / elapsed : 0;
+            const eta = speed > 0 ? (totalBytes - done) / speed : 0;
+            setUploadProgress(Math.round((done / totalBytes) * 100));
+            setUploadSpeed(speed);
+            setUploadEta(eta);
+          };
+          xhr.onload = () => {
+            try {
+              const d = JSON.parse(xhr.responseText) as Record<string, unknown>;
+              if (xhr.status >= 200 && xhr.status < 300) resolve(d);
+              else reject(new Error((d.error as string) || `Chunk failed (${xhr.status})`));
+            } catch {
+              reject(new Error(`Unexpected response (${xhr.status})`));
+            }
+          };
+          xhr.onerror = () => reject(new Error("Network error — check your connection"));
+          xhr.send(blob);
         });
-        const r = await fetch(
-          `${uploadBaseUrl}/api/file-upload/${uploadId}/chunk?${qs}`,
-          { method: "POST", body: chunk }
+      }
+
+      let finalPath: string | null = null;
+      for (let i = 0; i < total; i++) {
+        const start = i * CHUNK_SIZE;
+        const chunk = selectedFile.slice(start, start + CHUNK_SIZE);
+        const d = await xhrChunk(
+          `${uploadBaseUrl}/api/file-upload/${uploadId}/chunk?${baseParams}&index=${i}`,
+          chunk,
+          start,
         );
-        const d = await r.json();
-        if (!r.ok) throw new Error(d.error || `Chunk ${i} upload failed`);
-        uploadedCount++;
-        setUploadProgress(Math.round((uploadedCount / totalChunks) * 48));
-      };
+        if (d.done && d.path) finalPath = d.path as string;
+      }
+      if (!finalPath) throw new Error("Upload completed but no path returned");
 
-      // Worker pool — CONCURRENCY workers each pull from the queue until empty.
-      const queue = Array.from({ length: totalChunks }, (_, i) => i);
-      await Promise.all(
-        Array.from({ length: Math.min(CONCURRENCY, totalChunks) }, async () => {
-          while (queue.length > 0) {
-            const i = queue.shift()!;
-            await uploadChunk(i);
-          }
-        })
-      );
+      setJob({ status: "queued", message: "Starting…", progress: 0 });
 
-      setUploadProgress(49);
-
-      // 3. Assemble chunks into the final file on Railway.
-      const finalizeRes = await fetch(
-        `${uploadBaseUrl}/api/file-upload/${uploadId}/finalize`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token, exp, total: totalChunks, filename: selectedFile.name }),
-        }
-      );
-      const finalizeData = await finalizeRes.json();
-      if (!finalizeRes.ok) throw new Error(finalizeData.error || "Finalize failed");
-      const finalPath = finalizeData.path as string;
-
-      if (!finalPath) throw new Error("Upload did not complete — no path returned");
-
-      // 4. Kick off processing (skips yt-dlp entirely)
       const processRes = await fetch("/api/admin/shorts/process-local", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -729,16 +739,12 @@ export default function ShortsPage() {
 
       const newJobId: string = processData.jobId;
       setJobId(newJobId);
-      setJob({ status: "queued", message: "Starting…", progress: 50 });
 
-      // 4. Poll for status
       if (pollRef.current) clearInterval(pollRef.current);
       pollRef.current = setInterval(async () => {
         try {
           const r = await fetch(`/api/admin/shorts/jobs/${newJobId}/status`);
           const d: Job = await r.json();
-          // Map backend progress (0-100) to the 50-100 range since 0-50 was upload
-          if (d.progress !== undefined) d.progress = 50 + Math.round((d.progress / 100) * 50);
           setJob(d);
           if (d.status === "done" || d.status === "error") {
             if (pollRef.current) clearInterval(pollRef.current);
@@ -770,6 +776,8 @@ export default function ShortsPage() {
     setVideoUrl("");
     setSelectedFile(null);
     setUploadProgress(0);
+    setUploadSpeed(0);
+    setUploadEta(0);
     setError("");
     setLoading(false);
   }
@@ -838,9 +846,8 @@ export default function ShortsPage() {
           <>
             {!job && (
               <div className="mb-8 space-y-4">
-                {/* Input mode toggle */}
                 <div className="inline-flex bg-gray-900 border border-gray-800 rounded-xl p-1 mb-1">
-                  {(["upload", "url"] as const).map((m) => (
+                  {(["url", "upload"] as const).map((m) => (
                     <button
                       key={m}
                       onClick={() => setInputMode(m)}
@@ -848,12 +855,29 @@ export default function ShortsPage() {
                         inputMode === m ? "bg-accent-500 text-black" : "text-gray-400 hover:text-white"
                       }`}
                     >
-                      {m === "upload" ? "Upload video" : "YouTube URL"}
+                      {m === "url" ? "YouTube URL" : "Upload video"}
                     </button>
                   ))}
                 </div>
 
-                {inputMode === "upload" ? (
+                {inputMode === "url" ? (
+                  <div className="flex gap-3">
+                    <input
+                      className="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white outline-none"
+                      placeholder="https://youtube.com/watch?v=..."
+                      value={url}
+                      onChange={(e) => setUrl(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+                    />
+                    <button
+                      onClick={handleSubmit}
+                      disabled={loading || !url.trim()}
+                      className="bg-accent-500 hover:bg-accent-400 disabled:bg-gray-700 text-black font-bold px-6 rounded-xl"
+                    >
+                      Cut It
+                    </button>
+                  </div>
+                ) : (
                   <div className="flex gap-3 items-center">
                     <label
                       className="flex-1 cursor-pointer"
@@ -877,7 +901,7 @@ export default function ShortsPage() {
                         {selectedFile ? (
                           <div>
                             <p className="text-white text-sm font-medium">{selectedFile.name}</p>
-                            <p className="text-gray-400 text-xs mt-0.5">{(selectedFile.size / 1024 / 1024).toFixed(1)} MB · Click or drag to replace</p>
+                            <p className="text-gray-400 text-xs mt-0.5">{(selectedFile.size / 1024 / 1024).toFixed(0)} MB · Click or drag to replace</p>
                           </div>
                         ) : (
                           <div>
@@ -886,34 +910,13 @@ export default function ShortsPage() {
                           </div>
                         )}
                       </div>
-                      <input
-                        type="file"
-                        accept="video/*"
-                        className="hidden"
-                        onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)}
-                      />
+                      <input type="file" accept="video/*" className="hidden"
+                        onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)} />
                     </label>
                     <button
                       onClick={handleUpload}
                       disabled={loading || !selectedFile}
                       className="bg-accent-500 hover:bg-accent-400 disabled:bg-gray-700 text-black font-bold px-6 py-6 rounded-xl self-stretch"
-                    >
-                      Cut It
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flex gap-3">
-                    <input
-                      className="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white outline-none"
-                      placeholder="https://youtube.com/watch?v=..."
-                      value={url}
-                      onChange={(e) => setUrl(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-                    />
-                    <button
-                      onClick={handleSubmit}
-                      disabled={loading || !url.trim()}
-                      className="bg-accent-500 hover:bg-accent-400 disabled:bg-gray-700 text-black font-bold px-6 rounded-xl"
                     >
                       Cut It
                     </button>
@@ -975,20 +978,38 @@ export default function ShortsPage() {
 
             {inProgress && (
               <div className="bg-gray-900 rounded-2xl p-6 mb-8">
-                <div className="flex justify-between mb-2">
-                  <span className="text-accent-400">
-                    {job?.message === "Uploading…" && uploadProgress < 100
-                      ? `Uploading… ${uploadProgress}%`
-                      : job?.message || "Working..."}
-                  </span>
-                  <span className="text-accent-400 font-bold">{job?.progress || 0}%</span>
-                </div>
-                <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-accent-500 rounded-full transition-all"
-                    style={{ width: `${job?.progress || 0}%` }}
-                  />
-                </div>
+                {(() => {
+                  const isUploading = job?.message === "Uploading…";
+                  const pct = isUploading ? uploadProgress : (job?.progress || 0);
+                  const fmtSpeed = (bps: number) => bps > 1048576
+                    ? `${(bps / 1048576).toFixed(1)} MB/s`
+                    : `${(bps / 1024).toFixed(0)} KB/s`;
+                  const fmtEta = (s: number) => s > 3600
+                    ? `${Math.floor(s / 3600)}h ${Math.floor((s % 3600) / 60)}m`
+                    : s > 60 ? `${Math.ceil(s / 60)} min` : `${Math.ceil(s)} sec`;
+                  return (
+                    <>
+                      <div className="flex justify-between mb-2">
+                        <span className="text-accent-400">
+                          {isUploading ? `Uploading… ${uploadProgress}%` : job?.message || "Working..."}
+                        </span>
+                        <span className="text-accent-400 font-bold">{pct}%</span>
+                      </div>
+                      <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-accent-500 rounded-full transition-all duration-100"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                      {isUploading && uploadSpeed > 0 && (
+                        <p className="text-xs text-gray-500 mt-2">
+                          {fmtSpeed(uploadSpeed)}
+                          {uploadEta > 0 && ` · ~${fmtEta(uploadEta)} remaining`}
+                        </p>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
             )}
 
@@ -1028,7 +1049,9 @@ export default function ShortsPage() {
                       />
                       <div className="p-4">
                         <p className="font-semibold mb-1">{clip.title}</p>
-                        <p className="text-gray-400 text-sm mb-3">{clip.reason}</p>
+                        {clip.reason && (
+                          <p className="text-gray-500 text-xs mb-3 italic">Why we picked this: {clip.reason}</p>
+                        )}
                         <p className="text-gray-600 text-xs mb-3">
                           {effectiveDuration(clip)}s
                           {clip.edit?.trim && (
@@ -1053,6 +1076,10 @@ export default function ShortsPage() {
 
                         {/* Reel / Short description + copy */}
                         <div className="mt-4 pt-4 border-t border-gray-800">
+                          <p className="text-xs uppercase tracking-wide text-gray-500 mb-2">Post caption</p>
+                          {!clip.description && clip.reason && (
+                            <p className="text-xs text-yellow-600 mb-2">⚠ Using internal note as caption — reprocess to get an AI-written social post.</p>
+                          )}
                           <div className="flex flex-wrap gap-1.5 mb-2">
                             {REEL_TAG_OPTIONS.map((t) => {
                               const on = isTagEnabled(i, t.handle);

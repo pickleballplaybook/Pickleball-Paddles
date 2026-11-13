@@ -76,7 +76,7 @@ export default function FeaturedGearPanel({ paddleId }: Props) {
           )}
           <span
             className="absolute top-3 left-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest"
-            style={{ background: "#0a64bc", color: "#ffffff", border: "2px solid #ffffff", boxShadow: "0 0 0 1px #0a64bc" }}
+            style={{ background: "#5a9df9", color: "#ffffff" }}
           >
             <Sparkles className="w-3 h-3" strokeWidth={3} />
             Recommended
@@ -94,11 +94,11 @@ export default function FeaturedGearPanel({ paddleId }: Props) {
 
       {/* Body */}
       <div className="p-5">
-        <p className="text-[10px] font-bold uppercase tracking-widest mb-1.5" style={{ color: "#60a5fa" }}>
+        <p className="text-[10px] font-bold uppercase tracking-widest mb-1.5" style={{ color: "#5a9df9" }}>
           {gear.brand}
         </p>
         <Link href={`/gear/${gear.id}`} className="block group">
-          <h3 className="text-lg font-extrabold leading-tight mb-2 group-hover:text-teal-400 transition-colors" style={{ color: "var(--flip-text-head)" }}>
+          <h3 className="text-lg font-extrabold leading-tight mb-2 group-hover:text-[#5a9df9] transition-colors" style={{ color: "var(--flip-text-head)" }}>
             {gear.name}
           </h3>
         </Link>
@@ -126,7 +126,7 @@ export default function FeaturedGearPanel({ paddleId }: Props) {
         {/* Secondary: "Read review" link to /gear/[id] detail */}
         <Link
           href={`/gear/${gear.id}`}
-          className="flex items-center justify-center gap-1.5 text-xs font-semibold pt-1 transition-colors hover:text-teal-400"
+          className="flex items-center justify-center gap-1.5 text-xs font-semibold pt-1 transition-colors hover:text-[#5a9df9]"
           style={{ color: "var(--flip-text-muted)" }}
         >
           Read full review

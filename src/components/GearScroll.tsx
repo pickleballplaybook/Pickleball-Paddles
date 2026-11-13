@@ -68,9 +68,9 @@ export default function GearScroll() {
                   <span
                     className="self-start text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full mb-1.5"
                     style={{
-                      background: "rgba(10, 100, 188,0.30)",
-                      color: "#60a5fa",
-                      border: "1px solid rgba(10, 100, 188,0.3)",
+                      background: "rgba(90,157,249,0.15)",
+                      color: "#5a9df9",
+                      border: "1px solid rgba(90,157,249,0.3)",
                     }}
                   >
                     {p.badge}
@@ -88,7 +88,7 @@ export default function GearScroll() {
                 <div className="mt-auto">
                   <span
                     className="inline-flex items-center justify-center w-full gap-1 text-xs font-bold py-2 rounded-xl text-white"
-                    style={{ background: "linear-gradient(135deg,#11295f,#0a64bc)" }}
+                    style={{ background: "#5a9df9" }}
                   >
                     {p.ctaText}
                   </span>

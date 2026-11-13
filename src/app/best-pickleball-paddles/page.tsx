@@ -281,7 +281,7 @@ export default function BestPaddlesPage() {
 
           {/* ── Hero ──────────────────────────────────────────────────────── */}
           <div className="mb-12 max-w-3xl">
-            <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "#60a5fa" }}>
+            <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "#5a9df9" }}>
               Editor&apos;s Picks · Updated May 2026
             </p>
             <h1
@@ -299,7 +299,7 @@ export default function BestPaddlesPage() {
             <div className="flex flex-wrap gap-4">
               {[`${getPaddleCountLabel()} Paddles Tested`, "Unsponsored Reviews", "Lab-Measured Specs", "Updated May 2026"].map((t) => (
                 <div key={t} className="flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4 flex-shrink-0" style={{ color: "#60a5fa" }} />
+                  <CheckCircle2 className="w-4 h-4 flex-shrink-0" style={{ color: "#5a9df9" }} />
                   <span className="text-sm font-medium" style={{ color: "var(--text-muted)" }}>{t}</span>
                 </div>
               ))}
@@ -315,16 +315,16 @@ export default function BestPaddlesPage() {
           <Link
             href="/best-pickleball-paddles/weekly"
             className="group flex flex-col sm:flex-row sm:items-center gap-4 rounded-2xl p-5 sm:p-6 mb-16 max-w-3xl transition-all hover:scale-[1.01]"
-            style={{ background: "var(--bg-card)", border: "1px solid rgba(10, 100, 188,0.3)" }}
+            style={{ background: "var(--bg-card)", border: "1px solid rgba(90,157,249,0.15)" }}
           >
             <div
               className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{ background: "rgba(10, 100, 188,0.30)", border: "1px solid rgba(10, 100, 188,0.30)" }}
+              style={{ background: "rgba(90,157,249,0.15)", border: "1px solid rgba(90,157,249,0.15)" }}
             >
-              <TrendingUp className="w-5 h-5" style={{ color: "#60a5fa" }} strokeWidth={2.2} />
+              <TrendingUp className="w-5 h-5" style={{ color: "#5a9df9" }} strokeWidth={2.2} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-bold uppercase tracking-widest mb-1" style={{ color: "#60a5fa" }}>
+              <p className="text-[11px] font-bold uppercase tracking-widest mb-1" style={{ color: "#5a9df9" }}>
                 Updated Weekly
               </p>
               <h2 className="text-lg font-extrabold leading-snug mb-1" style={{ color: "var(--text-primary)" }}>
@@ -336,7 +336,7 @@ export default function BestPaddlesPage() {
             </div>
             <span
               className="inline-flex items-center justify-center gap-2 font-bold text-sm px-5 py-2.5 rounded-xl text-white flex-shrink-0 transition-all group-hover:gap-3"
-              style={{ background: "#0a64bc" }}
+              style={{ background: "#5a9df9" }}
             >
               View this week&apos;s top 10 <ArrowRight className="w-4 h-4" />
             </span>
@@ -345,7 +345,7 @@ export default function BestPaddlesPage() {
           {/* ── Jump links ────────────────────────────────────────────────── */}
           <div
             className="flex flex-wrap gap-2 mb-16 pb-12"
-            style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}
+            style={{ borderBottom: "1px solid var(--border)" }}
           >
             {PICKS.map((p) => (
               <a
@@ -376,9 +376,9 @@ export default function BestPaddlesPage() {
               href="/best-pickleball-paddles/under-200"
               className="text-sm font-bold px-4 py-2 rounded-xl transition-all hover:scale-[1.02]"
               style={{
-                background: "rgba(10, 100, 188,0.30)",
-                border: "1px solid rgba(10, 100, 188,0.4)",
-                color: "#60a5fa",
+                background: "rgba(90,157,249,0.15)",
+                border: "1px solid rgba(90,157,249,0.3)",
+                color: "#5a9df9",
               }}
             >
               Under $200 →
@@ -386,7 +386,7 @@ export default function BestPaddlesPage() {
             {/* Audience pillar pages + spec collection pages — high-intent long-tail */}
             {[
               { href: "/best-pickleball-paddles/for-beginners", label: "For Beginners →", color: "#4ade80" },
-              { href: "/best-pickleball-paddles/for-intermediate", label: "For Intermediate →", color: "#60a5fa" },
+              { href: "/best-pickleball-paddles/for-intermediate", label: "For Intermediate →", color: "#5a9df9" },
               { href: "/best-pickleball-paddles/for-tennis-players", label: "For Tennis Players →", color: "#ef4444" },
               { href: "/best-pickleball-paddles/for-women", label: "For Women →", color: "#f472b6" },
               { href: "/best-pickleball-paddles/for-elbow-pain", label: "For Elbow Pain →", color: "#f59e0b" },
@@ -438,7 +438,7 @@ export default function BestPaddlesPage() {
                     >
                       {pick.category}
                     </span>
-                    <div className="h-px flex-1" style={{ background: "rgba(255,255,255,0.07)" }} />
+                    <div className="h-px flex-1" style={{ background: "var(--border)" }} />
                   </div>
 
                   {/* Main pick card */}
@@ -446,7 +446,7 @@ export default function BestPaddlesPage() {
                     className="rounded-3xl overflow-hidden"
                     style={{
                       background: "var(--bg-card)",
-                      border: "1px solid rgba(255,255,255,0.08)",
+                      border: "1px solid var(--border)",
                       boxShadow: "0 16px 48px rgba(0,0,0,0.3)",
                     }}
                   >
@@ -483,7 +483,7 @@ export default function BestPaddlesPage() {
                                         style={{ maxHeight: "180px", filter: "drop-shadow(0 6px 16px rgba(0,0,0,0.4))" }}
                                       />
                                     )}
-                                    <p className="text-[10px] font-bold text-center mt-1.5 truncate w-full" style={{ color: "rgba(255,255,255,0.6)" }}>
+                                    <p className="text-[10px] font-bold text-center mt-1.5 truncate w-full" style={{ color: "var(--text-muted)" }}>
                                       {sp.shape}
                                     </p>
                                   </div>
@@ -506,7 +506,7 @@ export default function BestPaddlesPage() {
                       <div className="flex-1 p-8 md:p-10 flex flex-col justify-center">
                         <p
                           className="text-[11px] font-bold uppercase tracking-[0.22em] mb-1"
-                          style={{ color: "rgba(255,255,255,0.35)" }}
+                          style={{ color: "var(--text-muted)" }}
                         >
                           {paddle.brand}
                         </p>
@@ -516,7 +516,7 @@ export default function BestPaddlesPage() {
                         >
                           {seriesPaddles ? "Crystal Blue Endurance Surface" : paddle.name}
                         </h2>
-                        <p className="text-sm mb-5" style={{ color: "rgba(255,255,255,0.38)" }}>
+                        <p className="text-sm mb-5" style={{ color: "var(--text-muted)" }}>
                           {seriesPaddles
                             ? `${seriesPaddles.map((sp) => sp!.shape).join(", ")} · ${paddle.thickness}`
                             : `${paddle.shape} · ${paddle.thickness}`}
@@ -541,9 +541,9 @@ export default function BestPaddlesPage() {
                               key={s}
                               className="text-xs font-bold px-3 py-1.5 rounded-full font-mono"
                               style={{
-                                background: "rgba(255,255,255,0.05)",
-                                border: "1px solid rgba(255,255,255,0.1)",
-                                color: "rgba(255,255,255,0.55)",
+                                background: "var(--bg-section)",
+                                border: "1px solid var(--border)",
+                                color: "var(--text-muted)",
                               }}
                             >
                               {s}
@@ -556,8 +556,8 @@ export default function BestPaddlesPage() {
                             href={seriesPaddles ? `/series/${paddle.seriesSlug ?? pick.slug}` : `/paddles/${pick.slug}`}
                             className="inline-flex items-center gap-2 font-bold text-sm px-6 py-3 rounded-xl text-white transition-all duration-200 hover:scale-[1.02]"
                             style={{
-                              background: "linear-gradient(135deg, #11295f, #0a64bc)",
-                              boxShadow: "0 0 24px rgba(10, 100, 188,0.3)",
+                              background: "linear-gradient(135deg, #3a8bf0, #2066d0)",
+                              boxShadow: "0 0 24px rgba(90,157,249,0.15)",
                             }}
                           >
                             {seriesPaddles ? "View Series" : "Full Review"}
@@ -570,8 +570,8 @@ export default function BestPaddlesPage() {
                               rel="noopener noreferrer sponsored"
                               className="inline-flex items-center gap-2 font-bold text-sm px-6 py-3 rounded-xl transition-all duration-200 hover:scale-[1.02]"
                               style={{
-                                border: "1.5px solid rgba(10, 100, 188,0.4)",
-                                color: "#60a5fa",
+                                border: "1.5px solid rgba(90,157,249,0.3)",
+                                color: "#5a9df9",
                               }}
                             >
                               Buy at {paddle.brand}
@@ -594,7 +594,7 @@ export default function BestPaddlesPage() {
                             className="rounded-2xl p-6 flex gap-5"
                             style={{
                               background: "var(--bg-card)",
-                              border: "1px solid rgba(255,255,255,0.06)",
+                              border: "1px solid var(--border)",
                             }}
                           >
                             {/* Thumbnail */}
@@ -624,7 +624,7 @@ export default function BestPaddlesPage() {
                               <p className="text-sm font-bold mb-0.5" style={{ color: "var(--text-primary)" }}>
                                 {ruPaddle.brand} {ruPaddle.name}
                               </p>
-                              <p className="text-xs mb-2" style={{ color: "rgba(255,255,255,0.35)" }}>
+                              <p className="text-xs mb-2" style={{ color: "var(--text-muted)" }}>
                                 {ruPaddle.shape} · {ruPaddle.thickness}
                                 {ruPrice ? ` · $${ruPrice.toFixed(2)}` : ""}
                                 {ruPaddle.amountOff && ruPaddle.amountOff !== "$0" ? ` (${ruPaddle.amountOff} off)` : ""}
@@ -635,7 +635,7 @@ export default function BestPaddlesPage() {
                               <Link
                                 href={`/paddles/${ruSlug}`}
                                 className="inline-flex items-center gap-1 text-xs font-semibold transition-colors"
-                                style={{ color: "#60a5fa" }}
+                                style={{ color: "#5a9df9" }}
                               >
                                 View Paddle <ArrowRight className="w-3 h-3" />
                               </Link>
@@ -652,7 +652,7 @@ export default function BestPaddlesPage() {
 
           {/* ── FAQ ───────────────────────────────────────────────────────── */}
           <div className="mt-24 max-w-3xl">
-            <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "#60a5fa" }}>
+            <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "#5a9df9" }}>
               Common Questions
             </p>
             <h2
@@ -668,7 +668,7 @@ export default function BestPaddlesPage() {
                   className="p-6 rounded-2xl"
                   style={{
                     background: "var(--bg-card)",
-                    border: "1px solid rgba(255,255,255,0.07)",
+                    border: "1px solid var(--border)",
                   }}
                 >
                   <h3 className="font-bold text-base mb-2" style={{ color: "var(--text-primary)" }}>
@@ -691,8 +691,8 @@ export default function BestPaddlesPage() {
               href="/paddles"
               className="inline-flex items-center gap-2 font-bold text-base px-10 py-4 rounded-2xl text-white transition-all duration-200 hover:scale-[1.02]"
               style={{
-                background: "#0a64bc",
-                boxShadow: "0 0 40px rgba(10, 100, 188,0.4)",
+                background: "#5a9df9",
+                boxShadow: "0 0 40px rgba(90,157,249,0.3)",
               }}
             >
               Browse All Paddles

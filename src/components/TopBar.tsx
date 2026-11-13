@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
-import { X, ThumbsUp, ThumbsDown } from "lucide-react";
+import { X } from "lucide-react";
 
 export default function TopBar() {
   const [dismissed, setDismissed] = useState(false);
@@ -47,33 +47,23 @@ export default function TopBar() {
           {/* Line 1 */}
           <p
             className="md:text-[15px] text-[13px]"
-            style={{ margin: 0, fontWeight: 800, lineHeight: 1, letterSpacing: "0.12em", color: "#ffffff" }}
+            style={{ margin: 0, fontWeight: 400, lineHeight: 1.3, color: "rgba(255,255,255,0.85)" }}
           >
-            RATE PADDLES YOU&apos;VE TRIED
+            The most effective app for leveling up your pickleball game.
           </p>
 
-          {/* Line 2 */}
-          <p
-            className="flex items-center justify-center gap-1.5 md:text-[13px] text-[12px]"
-            style={{ margin: "5px 0 0", lineHeight: 1.1, fontWeight: 400, color: "rgba(255,255,255,0.5)" }}
-          >
-            Tap
-            <ThumbsUp className="w-3 h-3 flex-shrink-0" fill="none" stroke="#0a64bc" strokeWidth={2} />
-            or
-            <ThumbsDown className="w-3 h-3 flex-shrink-0" fill="none" stroke="#fb7185" strokeWidth={2} />
-            to shape the rankings
-          </p>
-
-          {/* Line 3 — CTA */}
+          {/* CTA */}
           <div style={{ marginTop: "7px" }}>
-            <Link
-              href="/review-paddles"
+            <a
+              href="https://pbdrills.com"
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex items-center gap-1 md:text-[13px] text-[12px]"
               style={{ fontWeight: 600, color: "#60a5fa", letterSpacing: "0.01em" }}
             >
-              Start Voting
+              Try the app
               <span aria-hidden style={{ fontSize: "0.85em" }}>→</span>
-            </Link>
+            </a>
           </div>
         </div>
 

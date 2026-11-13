@@ -29,6 +29,8 @@ export default async function LessonEditorPage({ params }: PageProps) {
     coverImageUrl: (r.coverImageUrl as string | null) ?? null,
     published: r.published === true,
     sortOrder: (r.sortOrder as number) ?? 0,
+    category: (r.category as "technique" | "strategy" | "mindset" | "gold" | null) ?? null,
+    shotType: (r.shotType as string | null) ?? null,
   };
 
   const nodes = nodesSnap.docs.map((d) => {

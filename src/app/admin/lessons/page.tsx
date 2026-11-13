@@ -24,6 +24,7 @@ async function loadData(): Promise<{ courses: Course[] }> {
       memberTier: (r.memberTier as "basic" | "pro" | null) ?? null,
       proTier: (r.proTier as "basic" | "pro" | null) ?? null,
       category: (r.category as "technique" | "strategy" | "mindset" | null) ?? null,
+      shotType: (r.shotType as string | null) ?? null,
     };
   });
 

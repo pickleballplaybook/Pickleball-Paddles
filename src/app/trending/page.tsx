@@ -113,25 +113,24 @@ export default function TrendingPage() {
   const hasViews = Object.keys(weightedViews).length > 0;
   const dataReady = heartsLoaded && viewsLoaded;
 
-  // Sort by combined engagement (weighted hearts via getHeartWeight inside
-  // getTrendingPaddles → weightedScore; weighted views from the endpoint;
-  // rating counts as before). Use weightedScore as the primary signal, not
-  // raw totalHearts — otherwise a paddle hearted 28 days ago at full count
-  // outranks one hearted heavily today.
-  const top10Pre = allTrending
+  // Mirror TrendingSection.tsx exactly: views-primary sort, qualify on
+  // views OR engagement, backfill to full list when fewer than 6 qualify.
+  const trendingScored = allTrending
     .map((t) => ({
       ...t,
+      views: weightedViews[t.paddle.slug] ?? 0,
       engagement: engagementScore(
         t.weightedScore < 0 ? 0 : t.weightedScore,
         weightedViews[t.paddle.slug] ?? 0,
       ),
     }))
-    .sort((a, b) => b.engagement - a.engagement || (b.lastHeart ?? 0) - (a.lastHeart ?? 0))
-    // Minimum engagement floor — same single-heart-no-views filter the
-    // homepage Trending section uses, kept in lockstep via MIN_TRENDING_ENGAGEMENT
-    // so /trending and the homepage never disagree about what qualifies.
-    .filter((t) => (hasHearts || hasRatings || hasViews) ? t.engagement >= MIN_TRENDING_ENGAGEMENT : true)
+    .sort((a, b) => b.views - a.views || b.engagement - a.engagement)
     .filter((t) => !isTrendingExcluded(t.paddle.slug));
+  const hasSignal = hasHearts || hasRatings || hasViews;
+  const qualifiedTrending = hasSignal
+    ? trendingScored.filter((t) => t.views > 0 || t.engagement >= MIN_TRENDING_ENGAGEMENT)
+    : trendingScored;
+  const top10Pre = qualifiedTrending.length >= 6 ? qualifiedTrending : trendingScored;
   const top10 = takeTopBySeriesDedup(top10Pre, 10);
 
   // ── PNG export ────────────────────────────────────────────────────────────
@@ -250,21 +249,21 @@ export default function TrendingPage() {
   }, [canExport]);
 
   return (
-    <div className="min-h-screen pt-[156px] pb-20" style={{ background: "#060e1a" }}>
+    <div className="min-h-screen pt-[156px] pb-20" style={{ background: "var(--bg-page)" }}>
       <div className="max-w-[640px] mx-auto px-4">
 
         {/* Header */}
         <div className="mb-10 text-center">
-          <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#60a5fa" }}>
+          <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#5a9df9" }}>
             Weekly Trending
           </p>
           <h1
             className="text-4xl md:text-5xl font-extrabold tracking-tight mb-3"
-            style={{ color: "#fff" }}
+            style={{ color: "var(--text-primary)" }}
           >
             Top 10 Trending Paddles
           </h1>
-          <p className="text-base" style={{ color: "rgba(255,255,255,0.5)" }}>
+          <p className="text-base" style={{ color: "var(--text-muted)" }}>
             Ranked by views, hearts, and ratings — last 30 days
           </p>
         </div>
@@ -272,7 +271,7 @@ export default function TrendingPage() {
         {/* Single card display — wait for data to avoid order jumps */}
         {!dataReady && (
           <div className="flex items-center justify-center py-20">
-            <div className="w-8 h-8 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
+            <div className="w-8 h-8 border-2 border-[#5a9df9] border-t-transparent rounded-full animate-spin" />
           </div>
         )}
         {dataReady && top10.length > 0 && (
@@ -296,9 +295,9 @@ export default function TrendingPage() {
                 disabled={currentIndex === 0}
                 aria-label="Previous paddle"
                 className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 w-11 h-11 rounded-full flex items-center justify-center transition-all disabled:opacity-20 z-20 hover:scale-105"
-                style={{ background: "rgba(15,23,42,0.85)", border: "1px solid rgba(255,255,255,0.18)", backdropFilter: "blur(8px)", boxShadow: "0 6px 18px rgba(0,0,0,0.35)" }}
+                style={{ background: "var(--bg-card)", border: "1px solid var(--border)", backdropFilter: "blur(8px)", boxShadow: "0 6px 18px rgba(0,0,0,0.15)" }}
               >
-                <ChevronLeft className="w-5 h-5 text-white" />
+                <ChevronLeft className="w-5 h-5" style={{ color: "var(--text-primary)" }} />
               </button>
               {/* Next — right edge */}
               <button
@@ -306,15 +305,15 @@ export default function TrendingPage() {
                 disabled={currentIndex >= top10.length - 1}
                 aria-label="Next paddle"
                 className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-11 h-11 rounded-full flex items-center justify-center transition-all disabled:opacity-20 z-20 hover:scale-105"
-                style={{ background: "rgba(15,23,42,0.85)", border: "1px solid rgba(255,255,255,0.18)", backdropFilter: "blur(8px)", boxShadow: "0 6px 18px rgba(0,0,0,0.35)" }}
+                style={{ background: "var(--bg-card)", border: "1px solid var(--border)", backdropFilter: "blur(8px)", boxShadow: "0 6px 18px rgba(0,0,0,0.15)" }}
               >
-                <ChevronRight className="w-5 h-5 text-white" />
+                <ChevronRight className="w-5 h-5" style={{ color: "var(--text-primary)" }} />
               </button>
             </div>
 
             {/* Position counter below the card — arrows moved away */}
             <div className="flex items-center justify-center mt-4">
-              <span className="text-sm font-bold tabular-nums" style={{ color: "rgba(255,255,255,0.5)" }}>
+              <span className="text-sm font-bold tabular-nums" style={{ color: "var(--text-muted)" }}>
                 {currentIndex + 1} / {top10.length}
               </span>
             </div>
@@ -325,7 +324,7 @@ export default function TrendingPage() {
                 onClick={() => downloadOne(currentIndex)}
                 disabled={exporting !== "none"}
                 className="inline-flex items-center justify-center gap-2 font-bold text-sm px-6 py-3 rounded-xl text-white transition-all hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100 w-full sm:w-auto"
-                style={{ background: "#0a64bc" }}
+                style={{ background: "#5a9df9" }}
               >
                 {exporting === currentIndex
                   ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</>
@@ -335,7 +334,7 @@ export default function TrendingPage() {
                 onClick={downloadAll}
                 disabled={exporting !== "none"}
                 className="inline-flex items-center justify-center gap-2 font-bold text-sm px-6 py-3 rounded-xl transition-all hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100 w-full sm:w-auto"
-                style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff" }}
+                style={{ background: "var(--bg-section)", border: "1px solid var(--border)", color: "var(--text-primary)" }}
               >
                 {exporting === "all"
                   ? <><Loader2 className="w-4 h-4 animate-spin" /> Building zip…</>
@@ -343,8 +342,8 @@ export default function TrendingPage() {
               </button>
             </div>}
             {canExport && (
-              <p className="text-center text-xs mt-3" style={{ color: "rgba(255,255,255,0.35)" }}>
-                Tip: press <kbd className="font-mono font-bold" style={{ color: "rgba(255,255,255,0.6)" }}>⌘I</kbd> (or <kbd className="font-mono font-bold" style={{ color: "rgba(255,255,255,0.6)" }}>Ctrl+I</kbd>) to download all {top10.length} instantly.
+              <p className="text-center text-xs mt-3" style={{ color: "var(--text-muted)" }}>
+                Tip: press <kbd className="font-mono font-bold" style={{ color: "var(--text-secondary)" }}>⌘I</kbd> (or <kbd className="font-mono font-bold" style={{ color: "var(--text-secondary)" }}>Ctrl+I</kbd>) to download all {top10.length} instantly.
               </p>
             )}
 
@@ -356,7 +355,7 @@ export default function TrendingPage() {
                   onClick={() => setCurrentIndex(i)}
                   className="w-2.5 h-2.5 rounded-full transition-all"
                   style={{
-                    background: i === currentIndex ? "#0a64bc" : "rgba(255,255,255,0.2)",
+                    background: i === currentIndex ? "#5a9df9" : "var(--border)",
                     transform: i === currentIndex ? "scale(1.3)" : "scale(1)",
                   }}
                 />
@@ -367,7 +366,7 @@ export default function TrendingPage() {
 
         {/* List view for quick reference */}
         {dataReady && <div className="mt-16">
-          <h2 className="text-2xl font-extrabold mb-6" style={{ color: "#fff" }}>
+          <h2 className="text-2xl font-extrabold mb-6" style={{ color: "var(--text-primary)" }}>
             Full Rankings
           </h2>
           <div className="flex flex-col gap-3">
@@ -377,25 +376,25 @@ export default function TrendingPage() {
                 <div
                   key={paddle.id}
                   className="flex items-center gap-4 p-4 rounded-2xl"
-                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+                  style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}
                 >
                   <span
                     className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-extrabold flex-shrink-0"
-                    style={{ background: "rgba(10, 100, 188,0.30)", color: "#60a5fa" }}
+                    style={{ background: "rgba(90,157,249,0.15)", color: "#5a9df9" }}
                   >
                     {i + 1}
                   </span>
-                  <div className="w-12 h-12 rounded-xl flex-shrink-0 flex items-center justify-center" style={{ background: "rgba(255,255,255,0.06)" }}>
+                  <div className="w-12 h-12 rounded-xl flex-shrink-0 flex items-center justify-center" style={{ background: "var(--bg-section)" }}>
                     {paddle.image && (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={paddle.image} alt={paddle.name} className="w-full h-full object-contain p-1" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-white truncate">
+                    <p className="text-sm font-bold truncate" style={{ color: "var(--text-primary)" }}>
                       {paddle.brand} {paddle.name}
                     </p>
-                    <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>
                       {paddle.shape} · {paddle.thickness} · {paddle.weight}
                       {paddle.swingWeight ? ` · SW ${paddle.swingWeight}` : ""}
                       {paddle.twistWeight ? ` · TW ${paddle.twistWeight}` : ""}
@@ -403,7 +402,7 @@ export default function TrendingPage() {
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
                     {hasLink && (
-                      <span className="text-[10px] font-bold font-mono px-2 py-0.5 rounded-md" style={{ background: "rgba(10, 100, 188,0.30)", color: "#60a5fa" }}>
+                      <span className="text-[10px] font-bold font-mono px-2 py-0.5 rounded-md" style={{ background: "rgba(90,157,249,0.15)", color: "#5a9df9" }}>
                         {getCode(paddle.brand, paddle.discountLink)}
                       </span>
                     )}
@@ -431,6 +430,7 @@ export default function TrendingPage() {
               rank={i + 1}
               code={getCode(t.paddle.brand, t.paddle.discountLink)}
               totalCards={top10.length}
+              forExport={true}
             />
           </div>
         ))}

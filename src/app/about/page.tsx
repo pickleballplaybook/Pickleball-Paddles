@@ -403,7 +403,7 @@ export default function AboutPage() {
                 href={siteConfig.youtubeChannelUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-2xl p-5 transition-colors hover:border-teal-400/50"
+                className="rounded-2xl p-5 transition-colors hover:border-[#5a9df9]/50"
                 style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}
               >
                 <Youtube className="w-5 h-5 mb-3 text-red-500" />
@@ -414,7 +414,7 @@ export default function AboutPage() {
                 href={siteConfig.substackUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-2xl p-5 transition-colors hover:border-teal-400/50"
+                className="rounded-2xl p-5 transition-colors hover:border-[#5a9df9]/50"
                 style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}
               >
                 <Mail className="w-5 h-5 mb-3" style={{ color: "#60a5fa" }} />
@@ -423,7 +423,7 @@ export default function AboutPage() {
               </a>
               <Link
                 href="/contact"
-                className="rounded-2xl p-5 transition-colors hover:border-teal-400/50"
+                className="rounded-2xl p-5 transition-colors hover:border-[#5a9df9]/50"
                 style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}
               >
                 <Mail className="w-5 h-5 mb-3" style={{ color: "#60a5fa" }} />

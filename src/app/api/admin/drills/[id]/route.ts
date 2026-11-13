@@ -61,6 +61,8 @@ export async function PUT(req: NextRequest, { params }: RouteCtx) {
 
   const name = (formData.get("name") ?? "").toString().trim();
   const summary = (formData.get("summary") ?? "").toString().trim();
+  const description_mode = (formData.get("description_mode") ?? "leveled").toString();
+  const description_single = (formData.get("description_single") ?? "").toString();
   const description_beginner = (
     formData.get("description_beginner") ?? ""
   ).toString();
@@ -70,10 +72,10 @@ export async function PUT(req: NextRequest, { params }: RouteCtx) {
   const description_advanced = (
     formData.get("description_advanced") ?? ""
   ).toString();
+  // Single mode stores content in `description`; leveled mode clears it so
+  // the Flutter model derives it from the level fields as usual.
+  const description = description_mode === "single" ? description_single : "";
   const category = (formData.get("category") ?? "").toString().trim();
-  const week_number_raw = (formData.get("week_number") ?? "")
-    .toString()
-    .trim();
   const video_url = (formData.get("video_url") ?? "").toString().trim();
   const is_published = formData.get("is_published") === "true";
   const scheduled_publish_at_raw = (
@@ -90,12 +92,6 @@ export async function PUT(req: NextRequest, { params }: RouteCtx) {
   if (!name) missing.push("name");
   if (!category) missing.push("category");
   if (!video_url) missing.push("video_url");
-  // Per-level descriptions are optional.
-
-  const week_number = Number(week_number_raw);
-  if (!Number.isFinite(week_number) || !Number.isInteger(week_number)) {
-    missing.push("week_number");
-  }
 
   if (missing.length > 0) {
     return NextResponse.json(
@@ -171,12 +167,12 @@ export async function PUT(req: NextRequest, { params }: RouteCtx) {
     name,
     summary,
     video_url,
+    description,
     description_beginner,
     description_intermediate,
     description_advanced,
     level: "All",
     category,
-    week_number,
     image: imageUrl ?? "",
     scheduled_publish_at,
     is_published,

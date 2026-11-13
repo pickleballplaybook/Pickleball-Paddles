@@ -6,6 +6,11 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Paddle } from "@/types";
 
 const SCROLL = 290;
+const NEW_DAYS = 14;
+
+function daysAgo(iso: string): number {
+  return Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+}
 
 function ArrowBtn({ dir, onClick }: { dir: "left" | "right"; onClick: () => void }) {
   return (
@@ -43,6 +48,9 @@ function calcDiscountedPrice(price: string, amountOff: string): string | null {
 }
 
 function PaddleCard({ paddle }: { paddle: Paddle }) {
+  const age = daysAgo(paddle.addedAt);
+  const isNew = age <= NEW_DAYS;
+  const newLabel = age === 0 ? "Today" : age === 1 ? "Yesterday" : `${age}d ago`;
   return (
     <Link
       href={`/paddles/${paddle.slug}`}
@@ -51,7 +59,6 @@ function PaddleCard({ paddle }: { paddle: Paddle }) {
         background: "var(--bg-card)",
         border: "1px solid var(--border)",
         boxShadow: "0 4px 24px rgba(0,0,0,0.18)",
-        scrollSnapAlign: "start",
       }}
     >
       {/* Image area — minimal padding so source images (especially 1000x1000
@@ -77,8 +84,18 @@ function PaddleCard({ paddle }: { paddle: Paddle }) {
             style={{ filter: "drop-shadow(0 8px 24px rgba(0,0,0,0.38))" }}
           />
         ) : (
-          <div className="w-16 h-16 rounded-full bg-teal-500/10" />
+          <div className="w-16 h-16 rounded-full bg-[#5a9df9]/10" />
         )}
+        {/* NEW badge */}
+        {isNew && (
+          <span
+            className="absolute top-3 right-3 z-20 text-[9px] font-extrabold uppercase tracking-widest px-2 py-1 rounded-full"
+            style={{ background: "#5a9df9", color: "#fff", boxShadow: "0 2px 8px rgba(90,157,249,0.45)" }}
+          >
+            NEW · {newLabel}
+          </span>
+        )}
+
         {/* PlayStyle badge */}
         {paddle.playStyle && (
           <span
@@ -164,7 +181,9 @@ export default function LatestPaddles({ paddles }: { paddles: Paddle[] }) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   function scroll(dir: "left" | "right") {
-    scrollRef.current?.scrollBy({ left: dir === "left" ? -SCROLL : SCROLL, behavior: "smooth" });
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollTo({ left: el.scrollLeft + (dir === "left" ? -SCROLL : SCROLL), behavior: "smooth" });
   }
 
   return (
@@ -187,7 +206,18 @@ export default function LatestPaddles({ paddles }: { paddles: Paddle[] }) {
               The newest paddles added to our database.
             </p>
           </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center gap-3 flex-shrink-0">
+            <Link
+              href="/paddles"
+              className="hidden sm:inline-flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-xl transition-all duration-150 hover:scale-[1.03]"
+              style={{
+                background: "rgba(10, 100, 188, 0.12)",
+                color: "#60a5fa",
+                border: "1px solid rgba(10, 100, 188, 0.3)",
+              }}
+            >
+              View All <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
             <ArrowBtn dir="left" onClick={() => scroll("left")} />
             <ArrowBtn dir="right" onClick={() => scroll("right")} />
           </div>
@@ -198,7 +228,6 @@ export default function LatestPaddles({ paddles }: { paddles: Paddle[] }) {
           ref={scrollRef}
           className="flex gap-5 overflow-x-auto pb-4"
           style={{
-            scrollSnapType: "x mandatory",
             scrollbarWidth: "none",
             msOverflowStyle: "none",
           }}

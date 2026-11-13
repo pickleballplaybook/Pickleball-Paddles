@@ -40,7 +40,10 @@ function getAllSeries(): Series[] {
       const shapes = Array.from(new Set(arr.map((p) => p.shape)));
       return { slug, brand, title, paddles: arr, shapes };
     })
-    .sort((a, b) => b.paddles.length - a.paddles.length || a.brand.localeCompare(b.brand));
+    .sort((a, b) => {
+      const maxId = (s: Series) => Math.max(...s.paddles.map((p) => Number(p.id)));
+      return maxId(b) - maxId(a);
+    });
 }
 
 export default function SeriesIndexPage() {
@@ -96,7 +99,7 @@ export default function SeriesIndexPage() {
                   <p className="text-[11px] font-bold uppercase tracking-widest mb-1" style={{ color: "#60a5fa" }}>
                     {series.brand} &middot; {series.paddles.length} shapes
                   </p>
-                  <h2 className="text-lg font-extrabold group-hover:text-teal-500 transition-colors mb-2" style={{ color: "var(--flip-text-head)" }}>
+                  <h2 className="text-lg font-extrabold group-hover:text-[#5a9df9] transition-colors mb-2" style={{ color: "var(--flip-text-head)" }}>
                     {series.title}
                   </h2>
                   <div className="flex flex-wrap gap-1.5 mb-3">
@@ -110,7 +113,7 @@ export default function SeriesIndexPage() {
                       </span>
                     ))}
                   </div>
-                  <span className="inline-flex items-center gap-1 text-sm font-semibold group-hover:text-teal-400 transition-colors" style={{ color: "#60a5fa" }}>
+                  <span className="inline-flex items-center gap-1 text-sm font-semibold group-hover:text-[#5a9df9] transition-colors" style={{ color: "#60a5fa" }}>
                     Compare Shapes <ArrowRight className="w-3.5 h-3.5" />
                   </span>
                 </div>

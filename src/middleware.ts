@@ -20,6 +20,12 @@ export async function middleware(request: NextRequest) {
   // Drills upload — same shorts_auth cookie gating.
   const isDrillsApi  = pathname.startsWith("/api/admin/drills");
   const isDrillsPage = pathname.startsWith("/admin/drills");
+  // Member bundles admin.
+  const isBundlesApi  = pathname.startsWith("/api/admin/bundles");
+  const isBundlesPage = pathname.startsWith("/admin/bundles");
+  // Video dubbing — same shorts_auth cookie gating.
+  const isDubApi  = pathname.startsWith("/api/admin/dub");
+  const isDubPage = pathname.startsWith("/admin/dub");
   // Email automation — trial signup CSV export, drip log, FAQ auto-reply.
   const isEmailApi  = pathname.startsWith("/api/admin/email");
   const isEmailPage = pathname.startsWith("/admin/email");
@@ -45,10 +51,11 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith("/api/admin/stripe-backfill") ||
     pathname.startsWith("/api/admin/mirror-diagnostic") ||
     pathname.startsWith("/api/admin/hide-test-accounts") ||
+    pathname.startsWith("/api/admin/purge-austin-plus") ||
     pathname.startsWith("/api/admin/winback-diagnostic") ||
     pathname.startsWith("/api/admin/send-test-comeback-email") ||
     pathname.startsWith("/api/admin/sync-substack");
-  const isApiGated = isShortsApi || isPublishApi || isNewsletterApi || isDrillsApi || isEmailApi || isChurnApi || isAcquisitionApi || isChallengesApi || isAdminMaintenanceApi;
+  const isApiGated = isShortsApi || isPublishApi || isNewsletterApi || isDrillsApi || isEmailApi || isChurnApi || isAcquisitionApi || isChallengesApi || isAdminMaintenanceApi || isBundlesApi || isDubApi;
   const isGated =
     isShortsPage || isShortsApi || isPublishPage || isPublishApi || isPublishOAuth ||
     isNewsletterApi || isNewsletterPage || isDrillsApi || isDrillsPage ||
@@ -57,7 +64,9 @@ export async function middleware(request: NextRequest) {
     isAcquisitionApi || isAcquisitionPage ||
     isChallengesApi || isChallengesPage ||
     isScheduledPage ||
-    isAdminMaintenanceApi;
+    isAdminMaintenanceApi ||
+    isBundlesApi || isBundlesPage ||
+    isDubApi || isDubPage;
 
   if (isGated) {
     const isLoginPage = pathname === "/admin/shorts/login";
@@ -79,6 +88,23 @@ export async function middleware(request: NextRequest) {
       const url = request.nextUrl.clone();
       url.pathname = "/admin/shorts";
       url.searchParams.delete("next");
+      return NextResponse.redirect(url);
+    }
+  }
+
+  // ── Member bundle page gating ─────────────────────────────────────────
+  // Full HMAC verification happens inside the Server Component;
+  // middleware just does a fast presence check and redirects to login.
+  const isMemberBundle =
+    pathname.startsWith("/members/") &&
+    !pathname.startsWith("/members/login") &&
+    !pathname.startsWith("/members/reset-password");
+  if (isMemberBundle) {
+    const hasSession = !!request.cookies.get("bundle_session")?.value;
+    if (!hasSession) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/members/login";
+      url.searchParams.set("next", pathname);
       return NextResponse.redirect(url);
     }
   }

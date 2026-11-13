@@ -1,71 +1,37 @@
 // ─────────────────────────────────────────────────────────────────────────────
-//  /specs — admin-friendly spec-card index of every paddle in the catalog.
-//
-//  Layout: 3-column grid (1 col on mobile, 2 on tablet, 3 on desktop),
-//  paginated 18 paddles per page (6 rows × 3 columns on desktop). Same 4:5
-//  IG-export card the /trending top-10 page uses, but with rank+dot pager
-//  hidden — every paddle gets a card, not just the ranked subset.
-//
-//  Proportion fix: TrendingCard is tuned for a 600 × 750 px design surface
-//  (4:5 portrait). In a narrower grid column the absolutely-positioned
-//  header overlaps the content row (long paddle names wrap into the
-//  discount chip). To preserve the exported look pixel-for-pixel we render
-//  each card at its native 600 × 750 px size inside a container-query
-//  wrapper that uniformly scales the rendered output to fit the column.
-//  Result: every card on /specs looks identical to its PNG export.
-//
-//  Downloads: a 'PNG' button sits below every card. Captures from the
-//  unscaled 600 × 750 ref at pixelRatio 1.8, so exports always render at a
-//  consistent 1080 × 1350 (Instagram's preferred portrait feed size),
-//  independent of viewport. No unlock secret — /specs is admin-only by
-//  virtue of not being linked from the nav.
-//
-//  Not linked from the main nav — this URL is discoverable only by typing
-//  /specs directly. No robots block (it's an admin URL, not secret data),
-//  but no internal links either.
+//  /specs — admin spec-card index of every paddle in the catalog.
+//  Premium redesign: editorial hero, sticky controls bar, floating card grid.
+//  All functional machinery (sort, pagination, format toggle, PNG export) is
+//  preserved exactly; only the visual presentation changed.
 // ─────────────────────────────────────────────────────────────────────────────
 
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
-import { ChevronLeft, ChevronRight, Download, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, Loader2, Search, X } from "lucide-react";
 import { toPng } from "html-to-image";
 import { paddles } from "@/data/paddles";
 import TrendingCard, {
   EXPORT_PIXEL_RATIO,
+  EXPORT_WIDTH,
   FORMAT_SPECS,
   getCode,
   type CardFormat,
 } from "@/components/TrendingCard";
 
-// 18 = 6 rows × 3 cols on desktop. Browsing felt a little dense at 24 and a
-// little sparse at 12 — 18 is the sweet spot per the request.
 const PAGE_SIZE = 18;
 
-// Sort options surfaced in the dropdown above the grid. A-Z is the default
-// because it makes any given paddle land on the same page across refreshes,
-// which matters when bulk-exporting cards. Price/date sorts re-shuffle that
-// stable order on demand.
-type SortKey =
-  | "az"
-  | "za"
-  | "price-asc"
-  | "price-desc"
-  | "newest"
-  | "oldest";
+type SortKey = "az" | "za" | "price-asc" | "price-desc" | "newest" | "oldest";
 
 const SORT_LABELS: Record<SortKey, string> = {
   "az":         "A → Z",
   "za":         "Z → A",
   "price-asc":  "Price: Low → High",
   "price-desc": "Price: High → Low",
-  "newest":     "Newest → Oldest",
-  "oldest":     "Oldest → Newest",
+  "newest":     "Newest First",
+  "oldest":     "Oldest First",
 };
 
-// Parse a price string like "$209.99" → 209.99. Returns Infinity for
-// missing / unparseable prices so they sort to the *end* on both
-// directions instead of randomly clumping at one extreme.
 function parsePrice(p?: string): number {
   if (!p) return Infinity;
   const n = parseFloat(p.replace(/[^0-9.]/g, ""));
@@ -74,55 +40,43 @@ function parsePrice(p?: string): number {
 
 export default function SpecsPage() {
   const [sortKey, setSortKey] = useState<SortKey>("newest");
-  // Export format — drives both the on-page card aspect ratio and the
-  // dimensions of the downloaded PNG. "ig" = 4:5 portrait (1080×1350,
-  // Instagram feed). "yt" = 9:16 vertical (1080×1920, YouTube/Shorts).
   const [format, setFormat] = useState<CardFormat>("ig");
+  const [searchQuery, setSearchQuery] = useState("");
   const { width: cardDesignWidth, height: cardDesignHeight, aspect: cardAspect } = FORMAT_SPECS[format];
 
-  // Apply the selected sort. A-Z (default) sorts by brand then name so the
-  // catalog browses predictably. The other options re-shuffle by the
-  // requested key.
   const sorted = useMemo(() => {
     const arr = [...paddles];
     switch (sortKey) {
-      case "az":
-        return arr.sort((a, b) => {
-          const bc = a.brand.localeCompare(b.brand);
-          return bc !== 0 ? bc : a.name.localeCompare(b.name);
-        });
-      case "za":
-        return arr.sort((a, b) => {
-          const bc = b.brand.localeCompare(a.brand);
-          return bc !== 0 ? bc : b.name.localeCompare(a.name);
-        });
-      case "price-asc":
-        return arr.sort((a, b) => parsePrice(a.price) - parsePrice(b.price));
-      case "price-desc":
-        return arr.sort((a, b) => parsePrice(b.price) - parsePrice(a.price));
-      case "newest":
-        return arr.sort((a, b) => b.addedAt.localeCompare(a.addedAt));
-      case "oldest":
-        return arr.sort((a, b) => a.addedAt.localeCompare(b.addedAt));
+      case "az":        return arr.sort((a, b) => { const bc = a.brand.localeCompare(b.brand); return bc !== 0 ? bc : a.name.localeCompare(b.name); });
+      case "za":        return arr.sort((a, b) => { const bc = b.brand.localeCompare(a.brand); return bc !== 0 ? bc : b.name.localeCompare(a.name); });
+      case "price-asc": return arr.sort((a, b) => parsePrice(a.price) - parsePrice(b.price));
+      case "price-desc":return arr.sort((a, b) => parsePrice(b.price) - parsePrice(a.price));
+      case "newest":    return arr.sort((a, b) => b.addedAt.localeCompare(a.addedAt));
+      case "oldest":    return arr.sort((a, b) => a.addedAt.localeCompare(b.addedAt));
     }
   }, [sortKey]);
 
-  const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
+  const filtered = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return sorted;
+    return sorted.filter((p) =>
+      `${p.brand} ${p.name}`.toLowerCase().includes(q) ||
+      p.brand.toLowerCase().includes(q) ||
+      p.name.toLowerCase().includes(q)
+    );
+  }, [sorted, searchQuery]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const [page, setPage] = useState(1);
   const [jumpValue, setJumpValue] = useState("");
 
-  // Whenever the sort changes, jump back to page 1 so the user sees the
-  // start of the new order instead of landing mid-list.
-  useEffect(() => { setPage(1); }, [sortKey]);
+  useEffect(() => { setPage(1); }, [sortKey, searchQuery]);
 
   const startIdx = (page - 1) * PAGE_SIZE;
-  const pageItems = sorted.slice(startIdx, startIdx + PAGE_SIZE);
+  const pageItems = filtered.slice(startIdx, startIdx + PAGE_SIZE);
 
-  // ── Per-card refs — one slot per visible card on the current page. Reset
-  // when the page changes. captureCard reads the unscaled 600 px card via
-  // its ref so every export PNG is consistently 1200 × 1200 (pixelRatio 2)
-  // regardless of viewport.
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const exportCardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [exporting, setExporting] = useState<number | null>(null);
 
   function fileName(paddleSlug: string, globalIndex: number): string {
@@ -130,13 +84,9 @@ export default function SpecsPage() {
   }
 
   async function captureCard(visibleIndex: number): Promise<string> {
-    const node = cardRefs.current[visibleIndex];
+    const node = exportCardRefs.current[visibleIndex];
     if (!node) throw new Error(`card ${visibleIndex} not mounted`);
     if (document.fonts?.ready) await document.fonts.ready;
-    // Explicitly decode every <img> inside the card before capturing.
-    // Without this, the first click can fail because html-to-image starts
-    // serializing before the paddle image is fully ready in the renderer
-    // — by the second click the browser has cached it and it works.
     await Promise.all(
       Array.from(node.querySelectorAll("img")).map(async (img) => {
         try {
@@ -150,9 +100,6 @@ export default function SpecsPage() {
         } catch { /* missing image shouldn't block the export */ }
       }),
     );
-    // Warm-up pass: html-to-image populates its internal image cache on
-    // the first call, so the second call renders reliably. Swallow any
-    // warm-up error so a transient failure doesn't abort the real capture.
     const opts = { pixelRatio: EXPORT_PIXEL_RATIO, cacheBust: false, backgroundColor: "#060e1a" };
     try { await toPng(node, opts); } catch { /* warm-up only */ }
     return toPng(node, opts);
@@ -180,14 +127,11 @@ export default function SpecsPage() {
     }
   }
 
-  // Reset the refs array when the page changes so stale refs from the previous
-  // page can't get hit by a stray download click during a re-render.
   useEffect(() => {
     cardRefs.current = [];
+    exportCardRefs.current = [];
   }, [page]);
 
-  // Arrow-key page navigation. Skipped when typing in inputs (the jump-to
-  // box, etc.) so it doesn't fight text editing.
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
@@ -200,8 +144,6 @@ export default function SpecsPage() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [totalPages]);
 
-  // Smooth-scroll to the top of the grid on page change so the user never
-  // lands deep into row 6 of the new page.
   const gridTopRef = useRef<HTMLDivElement | null>(null);
   function changePage(next: number) {
     setPage(next);
@@ -211,44 +153,136 @@ export default function SpecsPage() {
   }
 
   return (
-    <div className="min-h-screen pt-[156px] pb-20" style={{ background: "#060e1a" }}>
-      <div className="max-w-7xl mx-auto px-4">
+    <div className="min-h-screen" style={{ background: "var(--bg-page)" }}>
 
-        {/* Header */}
-        <div className="mb-10 text-center">
-          <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#60a5fa" }}>
-            Catalog
-          </p>
+      {/* ── Hero ──────────────────────────────────────────────────────────── */}
+      <div
+        className="relative overflow-hidden"
+        style={{ paddingTop: "calc(var(--topbar-h, 0px) + 88px)", paddingBottom: "72px" }}
+      >
+        {/* Atmospheric glow behind title */}
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: "900px",
+            height: "420px",
+            background: "radial-gradient(ellipse, rgba(90,157,249,0.11) 0%, transparent 68%)",
+            pointerEvents: "none",
+          }}
+        />
+        {/* Subtle horizontal rule above */}
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            top: "calc(var(--topbar-h, 0px) + 0px)",
+            left: 0,
+            right: 0,
+            height: "1px",
+            background: "linear-gradient(90deg, transparent, rgba(90,157,249,0.2) 30%, rgba(90,157,249,0.2) 70%, transparent)",
+            pointerEvents: "none",
+          }}
+        />
+
+        <div className="max-w-7xl mx-auto px-6 text-center relative" style={{ zIndex: 1 }}>
+          {/* Eyebrow */}
+          <div className="flex items-center justify-center gap-3 mb-7">
+            <span
+              aria-hidden
+              style={{ height: "1px", width: "48px", background: "linear-gradient(90deg, transparent, rgba(90,157,249,0.55))" }}
+            />
+            <span
+              style={{
+                fontSize: "10px",
+                fontWeight: 800,
+                letterSpacing: "0.50em",
+                textTransform: "uppercase",
+                color: "#5a9df9",
+              }}
+            >
+              PlaybookPaddles
+            </span>
+            <span
+              aria-hidden
+              style={{ height: "1px", width: "48px", background: "linear-gradient(90deg, rgba(90,157,249,0.55), transparent)" }}
+            />
+          </div>
+
+          {/* Display title */}
           <h1
-            className="text-4xl md:text-5xl font-extrabold tracking-tight mb-3"
-            style={{ color: "#fff" }}
+            style={{
+              fontSize: "clamp(58px, 10vw, 108px)",
+              fontWeight: 900,
+              letterSpacing: "-0.04em",
+              lineHeight: 0.88,
+              margin: "0 0 32px",
+              color: "var(--text-primary)",
+            }}
           >
-            Every Paddle · Spec Cards
+            Spec Sheets
           </h1>
-          <p className="text-base" style={{ color: "rgba(255,255,255,0.5)" }}>
-            {sorted.length} paddles · {PAGE_SIZE} per page · ← / → to flip pages
-          </p>
-        </div>
 
-        {/* Format toggle + sort dropdown — controls grouped on one row.
-            Format is a segmented control (IG portrait vs YT vertical)
-            since there are only two options. Sort uses a native <select>
-            since there are six. */}
-        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 mb-8">
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.50)" }}>
+          {/* Meta line */}
+          <div
+            className="flex items-center justify-center flex-wrap"
+            style={{ gap: "16px", fontSize: "13px", color: "var(--text-muted)" }}
+          >
+            <span>
+              <span style={{ fontWeight: 700, color: "var(--text-primary)" }}>{filtered.length}</span>
+              {searchQuery.trim() ? " results" : " paddles"}
+            </span>
+            <span aria-hidden style={{ width: "3px", height: "3px", borderRadius: "50%", background: "var(--text-muted)", opacity: 0.4, display: "inline-block" }} />
+            <span>
+              <span style={{ fontWeight: 700, color: "var(--text-primary)" }}>{PAGE_SIZE}</span>
+              {" per page"}
+            </span>
+            <span aria-hidden style={{ width: "3px", height: "3px", borderRadius: "50%", background: "var(--text-muted)", opacity: 0.4, display: "inline-block" }} />
+            <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+              <kbd style={{ fontFamily: "ui-monospace, monospace", background: "rgba(90,157,249,0.08)", border: "1px solid rgba(90,157,249,0.22)", borderRadius: "5px", padding: "1px 7px", fontSize: "11px", color: "#5a9df9", fontWeight: 700 }}>←</kbd>
+              <kbd style={{ fontFamily: "ui-monospace, monospace", background: "rgba(90,157,249,0.08)", border: "1px solid rgba(90,157,249,0.22)", borderRadius: "5px", padding: "1px 7px", fontSize: "11px", color: "#5a9df9", fontWeight: 700 }}>→</kbd>
+              <span>flip pages</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Sticky controls bar ───────────────────────────────────────────── */}
+      <div
+        style={{
+          position: "sticky",
+          top: "var(--topbar-h, 0px)",
+          zIndex: 30,
+          backdropFilter: "blur(24px)",
+          WebkitBackdropFilter: "blur(24px)",
+          background: "rgba(6,14,26,0.88)",
+          borderTop: "1px solid rgba(90,157,249,0.10)",
+          borderBottom: "1px solid rgba(90,157,249,0.10)",
+        }}
+      >
+        <div
+          className="max-w-7xl mx-auto px-6"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            height: "52px",
+            gap: "12px",
+          }}
+        >
+          {/* Format toggle */}
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
+            <span style={{ fontSize: "9px", fontWeight: 800, letterSpacing: "0.45em", textTransform: "uppercase", color: "rgba(255,255,255,0.30)" }}>
               Format
             </span>
             <div
               role="radiogroup"
               aria-label="Export format"
-              className="inline-flex rounded-lg p-1"
-              style={{ background: "rgba(15,23,42,0.85)", border: "1px solid rgba(10, 100, 188,0.35)" }}
+              style={{ display: "flex", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(90,157,249,0.18)", borderRadius: "7px", padding: "3px", gap: "2px" }}
             >
-              {([
-                { key: "ig" as const, label: "IG · 1080×1350" },
-                { key: "yt" as const, label: "YT · 1920×1080" },
-              ]).map((opt) => {
+              {([ { key: "ig" as const, label: "IG · 4:5" }, { key: "yt" as const, label: "YT · 16:9" } ]).map((opt) => {
                 const active = format === opt.key;
                 return (
                   <button
@@ -256,10 +290,17 @@ export default function SpecsPage() {
                     role="radio"
                     aria-checked={active}
                     onClick={() => setFormat(opt.key)}
-                    className="text-sm font-bold px-3 py-1.5 rounded-md transition-colors"
                     style={{
-                      background: active ? "rgba(10, 100, 188,0.30)" : "transparent",
-                      color: active ? "#0a64bc" : "rgba(255,255,255,0.55)",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      padding: "3px 11px",
+                      borderRadius: "5px",
+                      border: "none",
+                      cursor: "pointer",
+                      background: active ? "rgba(90,157,249,0.20)" : "transparent",
+                      color: active ? "#5a9df9" : "rgba(255,255,255,0.38)",
+                      letterSpacing: "0.03em",
+                      transition: "all 0.15s",
                     }}
                   >
                     {opt.label}
@@ -269,135 +310,389 @@ export default function SpecsPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <label htmlFor="specs-sort" className="text-xs font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.50)" }}>
-              Sort by
+          {/* Search */}
+          <div style={{ position: "relative", flex: 1, maxWidth: 280, margin: "0 16px" }}>
+            <Search style={{ position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)", width: 13, height: 13, color: "rgba(90,157,249,0.55)", pointerEvents: "none" }} />
+            <input
+              type="text"
+              placeholder="Search paddles…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                width: "100%",
+                fontSize: "11px",
+                fontWeight: 600,
+                padding: "5px 28px 5px 28px",
+                borderRadius: "7px",
+                background: "rgba(255,255,255,0.03)",
+                border: "1px solid rgba(90,157,249,0.18)",
+                color: "var(--text-primary)",
+                outline: "none",
+                letterSpacing: "0.02em",
+              }}
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0, color: "rgba(255,255,255,0.35)", display: "flex" }}
+              >
+                <X style={{ width: 11, height: 11 }} />
+              </button>
+            )}
+          </div>
+
+          {/* Spacer → pagination in center */}
+          <div style={{ flex: 1 }} />
+
+          {/* Center: Pagination controls */}
+          {totalPages > 1 && (
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 }}>
+              <button
+                onClick={() => changePage(Math.max(1, page - 1))}
+                disabled={page === 1}
+                aria-label="Previous page"
+                style={{
+                  width: "28px",
+                  height: "28px",
+                  borderRadius: "50%",
+                  border: "1px solid rgba(90,157,249,0.18)",
+                  background: "rgba(255,255,255,0.03)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: page === 1 ? "default" : "pointer",
+                  opacity: page === 1 ? 0.22 : 1,
+                  color: "rgba(255,255,255,0.75)",
+                  transition: "opacity 0.15s",
+                }}
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+
+              <span
+                style={{
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  fontVariantNumeric: "tabular-nums",
+                  letterSpacing: "0.04em",
+                  color: "rgba(255,255,255,0.55)",
+                  minWidth: "60px",
+                  textAlign: "center",
+                }}
+              >
+                <span style={{ color: "rgba(255,255,255,0.90)" }}>{page}</span>
+                <span style={{ margin: "0 4px", opacity: 0.35 }}>/</span>
+                {totalPages}
+              </span>
+
+              <button
+                onClick={() => changePage(Math.min(totalPages, page + 1))}
+                disabled={page === totalPages}
+                aria-label="Next page"
+                style={{
+                  width: "28px",
+                  height: "28px",
+                  borderRadius: "50%",
+                  border: "1px solid rgba(90,157,249,0.18)",
+                  background: "rgba(255,255,255,0.03)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: page === totalPages ? "default" : "pointer",
+                  opacity: page === totalPages ? 0.22 : 1,
+                  color: "rgba(255,255,255,0.75)",
+                  transition: "opacity 0.15s",
+                }}
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+
+          {/* Spacer ← sort on right */}
+          <div style={{ flex: 1 }} />
+
+          {/* Sort */}
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
+            <label htmlFor="specs-sort" style={{ fontSize: "9px", fontWeight: 800, letterSpacing: "0.45em", textTransform: "uppercase", color: "rgba(255,255,255,0.30)" }}>
+              Sort
             </label>
             <select
               id="specs-sort"
               value={sortKey}
               onChange={(e) => setSortKey(e.target.value as SortKey)}
-              className="text-sm font-bold px-3 py-2 rounded-lg cursor-pointer focus:outline-none focus:ring-2"
               style={{
-                background: "rgba(15,23,42,0.85)",
-                border: "1px solid rgba(10, 100, 188,0.35)",
-                color: "#60a5fa",
+                fontSize: "11px",
+                fontWeight: 700,
+                padding: "4px 10px",
+                borderRadius: "6px",
+                cursor: "pointer",
+                background: "rgba(255,255,255,0.03)",
+                border: "1px solid rgba(90,157,249,0.18)",
+                color: "#5a9df9",
+                outline: "none",
+                letterSpacing: "0.03em",
               }}
             >
               {(Object.keys(SORT_LABELS) as SortKey[]).map((k) => (
-                <option key={k} value={k} style={{ background: "#0f172a", color: "#fff" }}>
-                  {SORT_LABELS[k]}
-                </option>
+                <option key={k} value={k}>{SORT_LABELS[k]}</option>
               ))}
             </select>
           </div>
         </div>
+      </div>
 
-        {/* Grid anchor — used for scroll-to-top on page change */}
-        <div ref={gridTopRef} />
+      {/* ── Grid ─────────────────────────────────────────────────────────── */}
+      <div className="max-w-7xl mx-auto px-6" style={{ paddingTop: "48px", paddingBottom: "80px" }}>
 
-        {/* 3-column grid of cards. Mobile collapses to 1 column, tablet to 2. */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+        {/* Grid scroll anchor */}
+        <div ref={gridTopRef} style={{ scrollMarginTop: "80px" }} />
+
+        <div
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+          style={{ gap: "32px", marginBottom: "64px" }}
+        >
           {pageItems.map((paddle, i) => {
             const globalIndex = startIdx + i;
+            const isExporting = exporting === i;
             return (
-              <div key={paddle.id} className="flex flex-col gap-2">
-                {/* Scaled-card wrapper. The outer div mirrors the export
-                    aspect (4:5 for IG, 9:16 for YT) and uses
-                    container-type: inline-size so the inner 600 × N card
-                    scales to exactly the column width via
-                    `transform: scale(calc(100cqw / 600px))`. Result:
-                    proportions are identical to the PNG export at any
-                    viewport, no flicker, no JS measurement. */}
+              <div key={paddle.id} className="group flex flex-col" style={{ gap: "14px" }}>
+
+                {/* Card shell — hover lifts with a blue rim */}
                 <div
                   style={{
                     position: "relative",
-                    width: "100%",
-                    aspectRatio: cardAspect,
-                    containerType: "inline-size",
-                  } as React.CSSProperties}
+                    borderRadius: "18px",
+                    overflow: "hidden",
+                    boxShadow: "0 2px 20px rgba(0,0,0,0.35), 0 0 0 1px rgba(90,157,249,0.07)",
+                    transition: "box-shadow 0.22s ease, transform 0.22s ease",
+                  }}
+                  className="group-hover:shadow-[0_8px_44px_rgba(0,0,0,0.50),0_0_0_1.5px_rgba(90,157,249,0.28)] group-hover:scale-[1.008]"
                 >
+                  {/* Aspect-ratio wrapper with container-query scale trick */}
                   <div
                     style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      width: cardDesignWidth,
-                      height: cardDesignHeight,
-                      transformOrigin: "top left",
-                      // Modern CSS: dividing a length by a length yields a
-                      // unitless number that scale() accepts. Supported in
-                      // all evergreen browsers since 2023.
-                      transform: `scale(calc(100cqw / ${cardDesignWidth}px))`,
-                    }}
+                      position: "relative",
+                      width: "100%",
+                      aspectRatio: cardAspect,
+                      containerType: "inline-size",
+                    } as React.CSSProperties}
                   >
-                    <div ref={(el) => { cardRefs.current[i] = el; }}>
-                      <TrendingCard
-                        paddle={paddle}
-                        rank={0}           // hide podium badge — these aren't ranked
-                        code={getCode(paddle.brand, paddle.discountLink)}
-                        totalCards={0}     // hide bottom dot pager
-                        format={format}
-                      />
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: cardDesignWidth,
+                        height: cardDesignHeight,
+                        transformOrigin: "top left",
+                        transform: `scale(calc(100cqw / ${cardDesignWidth}px))`,
+                      }}
+                    >
+                      <div ref={(el) => { cardRefs.current[i] = el; }}>
+                        <TrendingCard
+                          paddle={paddle}
+                          rank={0}
+                          code={getCode(paddle.brand, paddle.discountLink)}
+                          totalCards={0}
+                          format={format}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Index + name caption + download button. Always visible
-                    on /specs — the page is unlinked from nav, so it's
-                    admin-discoverable rather than gated by an unlock. */}
-                <div className="flex items-center justify-between gap-3 px-1">
-                  <p className="text-sm font-bold truncate" style={{ color: "rgba(255,255,255,0.75)" }}>
-                    <span className="font-mono tabular-nums" style={{ color: "rgba(255,255,255,0.40)" }}>
-                      #{String(globalIndex + 1).padStart(3, "0")}
-                    </span>{" "}
-                    {paddle.brand} {paddle.name}
-                  </p>
+                {/* Caption + download */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: "12px",
+                    padding: "0 2px",
+                  }}
+                >
+                  {/* Name + meta */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: "3px", minWidth: 0 }}>
+                    <p
+                      style={{
+                        margin: 0,
+                        fontSize: "13px",
+                        fontWeight: 700,
+                        color: "var(--text-primary)",
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {paddle.brand} {paddle.name}
+                    </p>
+                    <p
+                      style={{
+                        margin: 0,
+                        fontSize: "10px",
+                        fontWeight: 600,
+                        color: "var(--text-muted)",
+                        letterSpacing: "0.06em",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      <span style={{ fontFamily: "ui-monospace, monospace", opacity: 0.6 }}>
+                        #{String(globalIndex + 1).padStart(3, "0")}
+                      </span>
+                      {" · "}
+                      {paddle.shape} · {paddle.thickness}
+                    </p>
+                  </div>
+
+                  {/* Download button */}
                   <button
                     onClick={() => downloadOne(i)}
                     disabled={exporting !== null}
                     aria-label={`Download ${paddle.brand} ${paddle.name} card as PNG`}
-                    className="inline-flex items-center gap-1.5 font-bold text-xs px-3 py-1.5 rounded-lg flex-shrink-0 transition-all hover:scale-[1.03] disabled:opacity-50 disabled:hover:scale-100"
-                    style={{ background: "rgba(10, 100, 188,0.30)", border: "1px solid rgba(10, 100, 188,0.40)", color: "#60a5fa" }}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "5px",
+                      fontSize: "10px",
+                      fontWeight: 800,
+                      letterSpacing: "0.08em",
+                      textTransform: "uppercase",
+                      padding: "7px 14px",
+                      borderRadius: "8px",
+                      border: "1px solid rgba(90,157,249,0.28)",
+                      background: isExporting
+                        ? "rgba(90,157,249,0.22)"
+                        : "rgba(90,157,249,0.07)",
+                      color: "#5a9df9",
+                      cursor: exporting !== null ? "default" : "pointer",
+                      flexShrink: 0,
+                      opacity: exporting !== null && !isExporting ? 0.4 : 1,
+                      transition: "background 0.15s, opacity 0.15s",
+                    }}
                   >
-                    {exporting === i
-                      ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Saving…</>
-                      : <><Download className="w-3.5 h-3.5" /> PNG</>}
+                    {isExporting
+                      ? <><Loader2 className="w-3 h-3 animate-spin" /> Saving</>
+                      : <><Download className="w-3 h-3" /> PNG</>
+                    }
                   </button>
                 </div>
+
               </div>
             );
           })}
         </div>
 
-        {/* Pagination — prev, current/total, next, plus a small jump-to-page
-            box for power browsing. Hidden when there's only one page. */}
+        {/* ── Bottom pagination + jump-to-page ─────────────────────────── */}
         {totalPages > 1 && (
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-4">
-            <div className="flex items-center gap-3">
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "20px",
+            }}
+          >
+            {/* Prev / dots / Next */}
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
               <button
                 onClick={() => changePage(Math.max(1, page - 1))}
                 disabled={page === 1}
                 aria-label="Previous page"
-                className="w-10 h-10 rounded-full flex items-center justify-center transition-all disabled:opacity-25 hover:scale-105"
-                style={{ background: "rgba(15,23,42,0.85)", border: "1px solid rgba(255,255,255,0.18)" }}
+                style={{
+                  width: "42px",
+                  height: "42px",
+                  borderRadius: "50%",
+                  border: "1px solid rgba(90,157,249,0.18)",
+                  background: "rgba(255,255,255,0.02)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: page === 1 ? "default" : "pointer",
+                  opacity: page === 1 ? 0.22 : 1,
+                  color: "var(--text-primary)",
+                  transition: "all 0.15s",
+                }}
               >
-                <ChevronLeft className="w-5 h-5 text-white" />
+                <ChevronLeft className="w-5 h-5" />
               </button>
-              <span className="text-sm font-bold tabular-nums px-4 py-2 rounded-lg" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.85)" }}>
-                Page {page} / {totalPages}
-              </span>
+
+              {/* Page pills — show up to 7, ellipse the rest */}
+              <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                {Array.from({ length: Math.min(totalPages, 7) }, (_, idx) => {
+                  let p: number;
+                  if (totalPages <= 7) {
+                    p = idx + 1;
+                  } else if (page <= 4) {
+                    p = idx < 6 ? idx + 1 : totalPages;
+                  } else if (page >= totalPages - 3) {
+                    p = idx === 0 ? 1 : totalPages - 6 + idx;
+                  } else {
+                    const map = [1, page - 2, page - 1, page, page + 1, page + 2, totalPages];
+                    p = map[idx];
+                  }
+                  const isActive = p === page;
+                  const isEllipsis =
+                    totalPages > 7 &&
+                    ((idx === 1 && p !== 2) || (idx === 5 && p !== totalPages - 1));
+
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => !isEllipsis && changePage(p)}
+                      aria-label={isEllipsis ? undefined : `Page ${p}`}
+                      aria-current={isActive ? "page" : undefined}
+                      style={{
+                        width: "36px",
+                        height: "36px",
+                        borderRadius: "8px",
+                        border: isActive
+                          ? "1px solid rgba(90,157,249,0.45)"
+                          : "1px solid rgba(255,255,255,0.06)",
+                        background: isActive
+                          ? "rgba(90,157,249,0.18)"
+                          : "rgba(255,255,255,0.02)",
+                        color: isActive ? "#5a9df9" : "var(--text-muted)",
+                        fontSize: "12px",
+                        fontWeight: isActive ? 800 : 600,
+                        cursor: isEllipsis ? "default" : "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        transition: "all 0.15s",
+                        fontVariantNumeric: "tabular-nums",
+                      }}
+                    >
+                      {isEllipsis ? "…" : p}
+                    </button>
+                  );
+                })}
+              </div>
+
               <button
                 onClick={() => changePage(Math.min(totalPages, page + 1))}
                 disabled={page === totalPages}
                 aria-label="Next page"
-                className="w-10 h-10 rounded-full flex items-center justify-center transition-all disabled:opacity-25 hover:scale-105"
-                style={{ background: "rgba(15,23,42,0.85)", border: "1px solid rgba(255,255,255,0.18)" }}
+                style={{
+                  width: "42px",
+                  height: "42px",
+                  borderRadius: "50%",
+                  border: "1px solid rgba(90,157,249,0.18)",
+                  background: "rgba(255,255,255,0.02)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: page === totalPages ? "default" : "pointer",
+                  opacity: page === totalPages ? 0.22 : 1,
+                  color: "var(--text-primary)",
+                  transition: "all 0.15s",
+                }}
               >
-                <ChevronRight className="w-5 h-5 text-white" />
+                <ChevronRight className="w-5 h-5" />
               </button>
             </div>
 
+            {/* Jump to page */}
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -407,7 +702,7 @@ export default function SpecsPage() {
                   setJumpValue("");
                 }
               }}
-              className="flex items-center gap-2"
+              style={{ display: "flex", alignItems: "center", gap: "8px" }}
             >
               <input
                 type="number"
@@ -416,13 +711,35 @@ export default function SpecsPage() {
                 placeholder="Jump"
                 value={jumpValue}
                 onChange={(e) => setJumpValue(e.target.value)}
-                className="text-sm font-mono px-3 py-1.5 rounded-md w-20 text-center tabular-nums"
-                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#fff" }}
+                style={{
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  fontFamily: "ui-monospace, monospace",
+                  padding: "7px 10px",
+                  borderRadius: "7px",
+                  width: "68px",
+                  textAlign: "center",
+                  background: "rgba(255,255,255,0.02)",
+                  border: "1px solid rgba(90,157,249,0.18)",
+                  color: "var(--text-primary)",
+                  outline: "none",
+                  fontVariantNumeric: "tabular-nums",
+                }}
               />
               <button
                 type="submit"
-                className="text-xs font-bold px-3 py-1.5 rounded-md"
-                style={{ background: "rgba(10, 100, 188,0.30)", border: "1px solid rgba(10, 100, 188,0.35)", color: "#60a5fa" }}
+                style={{
+                  fontSize: "10px",
+                  fontWeight: 800,
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  padding: "7px 14px",
+                  borderRadius: "7px",
+                  border: "1px solid rgba(90,157,249,0.25)",
+                  background: "rgba(90,157,249,0.08)",
+                  color: "#5a9df9",
+                  cursor: "pointer",
+                }}
               >
                 Go
               </button>
@@ -431,6 +748,27 @@ export default function SpecsPage() {
         )}
 
       </div>
+
+      {/* ── Hidden off-screen export cards (always dark) ─────────────────── */}
+      <div aria-hidden style={{ position: "fixed", top: 0, left: -99999, pointerEvents: "none" }}>
+        {pageItems.map((paddle, i) => (
+          <div
+            key={paddle.id}
+            ref={(el) => { exportCardRefs.current[i] = el; }}
+            style={{ width: FORMAT_SPECS[format].width }}
+          >
+            <TrendingCard
+              paddle={paddle}
+              rank={0}
+              code={getCode(paddle.brand, paddle.discountLink)}
+              totalCards={0}
+              format={format}
+              forExport={true}
+            />
+          </div>
+        ))}
+      </div>
+
     </div>
   );
 }

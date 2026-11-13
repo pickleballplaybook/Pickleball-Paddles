@@ -36,11 +36,11 @@ export default function WeeklyRankingsView({ rankings, heading, subheading }: Pr
           <Link
             href="/best-pickleball-paddles"
             className="inline-flex items-center gap-1 text-sm font-semibold mb-4 transition-colors hover:text-brand-400"
-            style={{ color: "#60a5fa" }}
+            style={{ color: "#5a9df9" }}
           >
             &larr; Best Paddles
           </Link>
-          <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#60a5fa" }}>
+          <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#5a9df9" }}>
             Weekly Rankings
           </p>
           <h1
@@ -61,7 +61,7 @@ export default function WeeklyRankingsView({ rankings, heading, subheading }: Pr
               key={r.paddle.slug}
               href={`/paddles/${r.paddle.slug}`}
               className="flex-shrink-0 w-20 h-20 rounded-xl flex items-center justify-center transition-transform hover:scale-105"
-              style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.08)" }}
+              style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}
             >
               {r.paddle.image && (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -78,7 +78,7 @@ export default function WeeklyRankingsView({ rankings, heading, subheading }: Pr
         {/* ── Narrative ─────────────────────────────────────────────── */}
         <div
           className="rounded-2xl p-6 mb-10"
-          style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.08)" }}
+          style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}
         >
           <p className="text-base leading-relaxed" style={{ color: "var(--text-muted)" }}>
             {narrative}
@@ -122,7 +122,7 @@ export default function WeeklyRankingsView({ rankings, heading, subheading }: Pr
               <div
                 key={r.paddle.slug}
                 className="rounded-2xl overflow-hidden"
-                style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.08)" }}
+                style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}
               >
                 <div className="flex flex-col sm:flex-row">
                   {/* Rank + image */}
@@ -139,7 +139,7 @@ export default function WeeklyRankingsView({ rankings, heading, subheading }: Pr
                     <Link
                       href={`/paddles/${r.paddle.slug}`}
                       className="w-16 h-16 rounded-xl flex items-center justify-center flex-shrink-0"
-                      style={{ background: "rgba(255,255,255,0.04)" }}
+                      style={{ background: "var(--bg-section)" }}
                     >
                       {r.paddle.image && (
                         // eslint-disable-next-line @next/next/no-img-element
@@ -151,7 +151,7 @@ export default function WeeklyRankingsView({ rankings, heading, subheading }: Pr
                       )}
                     </Link>
                     <div className="min-w-0">
-                      <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#60a5fa" }}>
+                      <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#5a9df9" }}>
                         {r.paddle.brand}
                       </p>
                       <Link href={`/paddles/${r.paddle.slug}`}>
@@ -170,17 +170,17 @@ export default function WeeklyRankingsView({ rankings, heading, subheading }: Pr
                     {/* Specs */}
                     <div className="flex flex-wrap gap-1.5">
                       {r.paddle.weight && (
-                        <span className="text-[11px] font-bold font-mono px-2 py-1 rounded-md" style={{ background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.5)" }}>
+                        <span className="text-[11px] font-bold font-mono px-2 py-1 rounded-md" style={{ background: "var(--bg-section)", color: "var(--text-muted)" }}>
                           {r.paddle.weight}
                         </span>
                       )}
                       {r.paddle.swingWeight > 0 && (
-                        <span className="text-[11px] font-bold font-mono px-2 py-1 rounded-md" style={{ background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.5)" }}>
+                        <span className="text-[11px] font-bold font-mono px-2 py-1 rounded-md" style={{ background: "var(--bg-section)", color: "var(--text-muted)" }}>
                           SW {r.paddle.swingWeight}
                         </span>
                       )}
                       {r.paddle.twistWeight > 0 && (
-                        <span className="text-[11px] font-bold font-mono px-2 py-1 rounded-md" style={{ background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.5)" }}>
+                        <span className="text-[11px] font-bold font-mono px-2 py-1 rounded-md" style={{ background: "var(--bg-section)", color: "var(--text-muted)" }}>
                           TW {r.paddle.twistWeight}
                         </span>
                       )}
@@ -188,7 +188,7 @@ export default function WeeklyRankingsView({ rankings, heading, subheading }: Pr
 
                     {/* Engagement — readable breakdown (composite stays in the DB, not shown) */}
                     <div className="flex items-center flex-wrap gap-1.5 text-[11px]" style={{ color: "var(--text-muted)" }}>
-                      <Bookmark className="w-3 h-3 flex-shrink-0" style={{ color: "#60a5fa" }} fill="currentColor" />
+                      <Bookmark className="w-3 h-3 flex-shrink-0" style={{ color: "#5a9df9" }} fill="currentColor" />
                       <span>
                         {plural(r.hearts, "save")} · {plural(r.ratings, "rating")} · {plural(r.views, "view")} this week
                       </span>
@@ -207,7 +207,7 @@ export default function WeeklyRankingsView({ rankings, heading, subheading }: Pr
                         </span>
                       )}
                       {!noDiscount && (
-                        <span className="text-[10px] font-bold font-mono px-1.5 py-0.5 rounded-md" style={{ background: "rgba(10, 100, 188,0.30)", color: "#60a5fa" }}>
+                        <span className="text-[10px] font-bold font-mono px-1.5 py-0.5 rounded-md" style={{ background: "rgba(10, 100, 188,0.30)", color: "#5a9df9" }}>
                           {code}
                         </span>
                       )}

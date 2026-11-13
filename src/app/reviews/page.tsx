@@ -53,6 +53,7 @@ function PromoSlot({ product }: { product: typeof gearProducts[number] }) {
         ctaHref={product.link}
         image={product.image || undefined}
         imageAlt={`${product.brand} ${product.name}`}
+        imageMode={product.imageMode}
         badge={product.badge || undefined}
         bg={product.bg}
       />

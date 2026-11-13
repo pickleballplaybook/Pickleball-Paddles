@@ -114,7 +114,7 @@ export default function BrandPaddleGrid({ paddles, shapes }: Props) {
           <select
             value={sortKey}
             onChange={(e) => setSortKey(e.target.value as SortKey)}
-            className="text-xs font-bold px-3 py-1.5 rounded-full bg-transparent transition-colors cursor-pointer focus:outline-none focus:border-teal-400"
+            className="text-xs font-bold px-3 py-1.5 rounded-full bg-transparent transition-colors cursor-pointer focus:outline-none focus:border-[#5a9df9]"
             style={{
               border: "1px solid var(--border)",
               color: "var(--text-primary)",

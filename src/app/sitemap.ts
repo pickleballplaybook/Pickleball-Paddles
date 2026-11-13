@@ -58,6 +58,38 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${siteConfig.siteUrl}/best-pickleball-paddles/for-tennis-players`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
     { url: `${siteConfig.siteUrl}/best-pickleball-paddles/for-women`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
     { url: `${siteConfig.siteUrl}/best-pickleball-paddles/for-elbow-pain`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/for-seniors`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/for-3.0-players`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/for-3.5-players`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/for-4.0-players`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/for-5.0-players`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/for-advanced-players`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/for-recreational-players`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/for-doubles`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/for-singles`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/for-bangers`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/for-kitchen-game`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/for-two-handed-backhand`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/for-outdoor-play`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/lightweight`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/most-forgiving`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/under-100`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/thermoformed`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/raw-carbon-fiber`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/for-4.5-players`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/for-spin-players`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/for-competitive-players`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/foam-core`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/for-lefties`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    // Best-brand pillar pages — target "best [brand] pickleball paddle" searches.
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/best-selkirk-paddles`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/best-joola-paddles`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/best-bread-and-butter-paddles`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/best-luzz-paddles`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/best-gearbox-paddles`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/best-11six24-paddles`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/best-enhance-paddles`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${siteConfig.siteUrl}/best-pickleball-paddles/best-honolulu-paddles`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
     // Spec-driven collection pages — programmatic SEO targeting shape, core
     // thickness, budget tier, and play style. All ranked from real catalog
     // data; refresh as catalog changes.
@@ -82,6 +114,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${siteConfig.siteUrl}/discounts`, lastModified: now, changeFrequency: "weekly", priority: 0.85 },
     { url: `${siteConfig.siteUrl}/discount-codes`, lastModified: now, changeFrequency: "weekly", priority: 0.85 },
     { url: `${siteConfig.siteUrl}/newsletter`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${siteConfig.siteUrl}/pickleball-drills-reviews`, lastModified: now, changeFrequency: "weekly", priority: 0.75 },
     { url: `${siteConfig.siteUrl}/brands`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
     // Trust / E-E-A-T pages — referenced from JSON-LD author and editorial
     // schemas, so they need to be crawlable for Google to associate authorship
@@ -142,6 +175,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
+  // Brand vs Brand comparison pages
+  const { buildBrandMatchups } = await import("./compare-brands/[matchup]/helpers");
+  const brandMatchupPages: MetadataRoute.Sitemap = [
+    { url: `${siteConfig.siteUrl}/compare-brands`, lastModified: now, changeFrequency: "monthly" as const, priority: 0.75 },
+    ...buildBrandMatchups().map((matchup) => ({
+      url: `${siteConfig.siteUrl}/compare-brands/${matchup}`,
+      lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.72,
+    })),
+  ];
+
+  // Paddle alternatives pages — one per active (non-discontinued) paddle.
+  const alternativesPages: MetadataRoute.Sitemap = paddles
+    .filter((p) => !p.discontinued)
+    .map((p) => ({
+      url: `${siteConfig.siteUrl}/paddles/${p.slug}/alternatives`,
+      lastModified: new Date(p.addedAt),
+      changeFrequency: "monthly" as const,
+      priority: 0.65,
+    }));
+
   // Guides hub + every individual guide page. Priority 0.8 — these are
   // dedicated informational pages targeting evergreen Google queries; we
   // want them crawled as eagerly as our paddle pages.
@@ -158,6 +213,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     ...staticPages,
     ...paddlePages,
+    ...alternativesPages,
+    ...brandMatchupPages,
     ...gearPages,
     ...blogPages,
     ...seriesPages,

@@ -3,7 +3,10 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Check, Star, ExternalLink, ChevronRight } from "lucide-react";
 import { gearProducts } from "@/data/products";
+import { paddles } from "@/data/paddles";
 import { siteConfig } from "@/config/site";
+import GearGallery from "./GearGallery";
+import SidebarPaddleLoader from "@/components/SidebarPaddleLoader";
 import YouTubeEmbed from "@/components/YouTubeEmbed";
 import AutoCutVideo from "@/components/AutoCutVideo";
 import ViewCounter from "@/components/ViewCounter";
@@ -80,6 +83,9 @@ function calcDiscountedPrice(price: string, badge: string): string | null {
 export default function GearProductPage({ params }: Props) {
   const product = gearProducts.find((p) => p.id === params.id);
   if (!product) notFound();
+
+  // Candidate paddles for the sidebar — client component fetches real 30-day view counts to sort
+  const sidebarCandidates = paddles.filter((p) => p.image && p.discountLink?.trim());
 
   const fullName = `${product.brand ? product.brand + " " : ""}${product.name}`;
   const discountedPrice = calcDiscountedPrice(product.price, product.badge);
@@ -171,8 +177,7 @@ export default function GearProductPage({ params }: Props) {
       <div className="min-h-screen pt-[156px]" style={{ background: "var(--bg-page)" }}>
         <div className="container-xl py-10">
 
-          {/* Breadcrumb nav — matches the JSON-LD breadcrumb so users and
-              search engines see the same path. */}
+          {/* Breadcrumb nav */}
           <nav aria-label="Breadcrumb" className="mb-8">
             <ol className="inline-flex flex-wrap items-center gap-1.5 text-sm" style={{ color: "var(--text-muted)" }}>
               <li>
@@ -192,36 +197,45 @@ export default function GearProductPage({ params }: Props) {
             </ol>
           </nav>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+          {/* Top section: 2-col — gallery (sticky) | product header */}
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.3fr] gap-8 items-start">
 
-            {/* Image — renders as-is so manufacturer shots with baked-in
-                white backgrounds keep their intended look. Transparent PNGs
-                sit on the radial-gradient backdrop. */}
-            <div
-              className="rounded-3xl overflow-hidden w-full"
-              style={{
-                background:
-                  "radial-gradient(circle at 50% 35%, var(--product-bg-spotlight) 0%, var(--product-bg-base) 100%)",
-                aspectRatio: "1/1",
-              }}
-            >
-              {product.imageAspect !== "none" && (product.featuredImage || product.image) ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={product.featuredImage ?? product.image}
-                  alt={`${fullName} for pickleball`}
-                  className="w-full h-full object-cover object-center"
+            {/* Col 1: Image — sticky so it stays visible while reading */}
+            <div className="lg:sticky lg:top-[140px] self-start">
+              {product.gallery && product.gallery.length > 0 ? (
+                <GearGallery
+                  heroAlt={`${fullName} for pickleball`}
+                  gallery={product.gallery}
+                  bg={product.bg}
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <p className="text-sm font-medium" style={{ color: "rgba(255,255,255,0.4)" }}>
-                    No image
-                  </p>
+                <div
+                  className="rounded-3xl overflow-hidden w-full"
+                  style={{
+                    background:
+                      "radial-gradient(circle at 50% 35%, var(--product-bg-spotlight) 0%, var(--product-bg-base) 100%)",
+                    aspectRatio: "1/1",
+                  }}
+                >
+                  {product.imageAspect !== "none" && (product.featuredImage || product.image) ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={product.featuredImage ?? product.image}
+                      alt={`${fullName} for pickleball`}
+                      className="w-full h-full object-cover object-center"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <p className="text-sm font-medium" style={{ color: "var(--text-muted)" }}>
+                        No image
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
 
-            {/* Details */}
+            {/* Col 2: Product header — badge, name, price, subtitle, best for, stars, buy */}
             <div className="flex flex-col">
 
               {product.badge && (
@@ -229,7 +243,7 @@ export default function GearProductPage({ params }: Props) {
                   className="self-start text-[11px] font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-5"
                   style={{
                     background: "rgba(10, 100, 188,0.30)",
-                    color: "#60a5fa",
+                    color: "#5a9df9",
                     border: "1px solid rgba(10, 100, 188,0.35)",
                   }}
                 >
@@ -261,7 +275,7 @@ export default function GearProductPage({ params }: Props) {
                       <span className="text-2xl font-semibold line-through" style={{ color: "var(--text-muted)" }}>
                         {product.price}
                       </span>
-                      <span className="text-3xl font-extrabold" style={{ color: "#60a5fa" }}>
+                      <span className="text-3xl font-extrabold" style={{ color: "#5a9df9" }}>
                         {discountedPrice}
                       </span>
                     </>
@@ -284,9 +298,9 @@ export default function GearProductPage({ params }: Props) {
                   className="rounded-xl px-4 py-3 mb-5 flex items-start gap-3"
                   style={{ background: "rgba(10, 100, 188,0.28)", border: "1px solid rgba(10, 100, 188,0.30)" }}
                 >
-                  <Star className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: "#60a5fa" }} />
+                  <Star className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: "#5a9df9" }} />
                   <div>
-                    <p className="text-[11px] font-bold uppercase tracking-widest mb-1" style={{ color: "#60a5fa" }}>
+                    <p className="text-[11px] font-bold uppercase tracking-widest mb-1" style={{ color: "#5a9df9" }}>
                       Best For
                     </p>
                     <p className="text-sm leading-snug" style={{ color: "var(--text-primary)" }}>
@@ -310,24 +324,58 @@ export default function GearProductPage({ params }: Props) {
                 <ViewCounter slug={product.id} type="gear" />
               </div>
 
+              {(product.badge || product.code) && (
+                <div className="mb-3 flex flex-col gap-1.5">
+                  {product.badge && (
+                    <p className="text-sm font-bold" style={{ color: "#4ade80" }}>
+                      Save {product.badge} — applied automatically through our link.
+                    </p>
+                  )}
+                  {product.code && (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm" style={{ color: "var(--text-muted)" }}>Use code</span>
+                      <span
+                        className="inline-block font-extrabold text-sm px-3 py-1 rounded-lg tracking-[0.14em] select-all"
+                        style={{
+                          background: "rgba(90,157,249,0.12)",
+                          color: "#5a9df9",
+                          border: "1px solid rgba(90,157,249,0.30)",
+                        }}
+                      >
+                        {product.code}
+                      </span>
+                      <span className="text-sm" style={{ color: "var(--text-muted)" }}>at checkout</span>
+                    </div>
+                  )}
+                </div>
+              )}
               <a
                 href={product.link}
                 target="_blank"
                 rel="noopener noreferrer sponsored"
                 className="self-start inline-flex items-center gap-2 font-bold text-base px-8 py-4 rounded-2xl text-white transition-all duration-200 active:scale-[0.97] mb-2"
                 style={{
-                  background: "#0a64bc",
+                  background: "#5a9df9",
                   border: "2px solid #ffffff",
                   boxShadow: "0 0 0 1px #0a64bc, 0 0 32px rgba(10,100,188,0.35), 0 4px 12px rgba(0,0,0,0.25)",
                 }}
               >
-                {product.ctaText}
+                Buy at {product.brand || "Brand Site"}
                 <ArrowRight className="w-5 h-5" strokeWidth={2.5} />
               </a>
 
-              <p className="text-[11px] mb-8" style={{ color: "var(--text-muted)" }}>
+              <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
                 Affiliate link. We may earn a commission — it never affects our recommendations.
               </p>
+
+            </div>{/* end header col */}
+          </div>{/* end top 2-col grid */}
+
+          {/* Bottom section: 2-col — content (left) | sidebar (right, sticky) */}
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-8 items-start mt-10">
+
+            {/* Content column */}
+            <div className="flex flex-col">
 
               {/* Highlights — quick-scan bullet list of standout benefits. */}
               {product.highlights && product.highlights.length > 0 && (
@@ -335,13 +383,13 @@ export default function GearProductPage({ params }: Props) {
                   className="rounded-2xl p-5 mb-8"
                   style={{ background: "var(--bg-section)", border: "1px solid var(--border)" }}
                 >
-                  <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: "#60a5fa" }}>
+                  <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: "#5a9df9" }}>
                     Why We Recommend It
                   </p>
                   <ul className="flex flex-col gap-3">
                     {product.highlights.map((h) => (
                       <li key={h} className="flex items-start gap-2.5">
-                        <Check className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: "#60a5fa" }} />
+                        <Check className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: "#5a9df9" }} />
                         <span className="text-sm leading-snug" style={{ color: "var(--text-secondary)" }}>{h}</span>
                       </li>
                     ))}
@@ -368,7 +416,7 @@ export default function GearProductPage({ params }: Props) {
                   className="rounded-2xl p-5 mb-8"
                   style={{ background: "var(--bg-section)", border: "1px solid var(--border)" }}
                 >
-                  <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: "#60a5fa" }}>
+                  <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: "#5a9df9" }}>
                     Specifications
                   </p>
                   {product.specs.map((spec, i) => (
@@ -384,19 +432,15 @@ export default function GearProductPage({ params }: Props) {
                 </div>
               )}
 
-            </div>
-          </div>
-
-          {/* Overview & Buying Guide — long-form AI-generated SEO content.
-              Targets the high-intent "<product name> review" query. */}
+          {/* Overview & Buying Guide */}
           {longForm?.overview && (
-            <section className="mt-14 max-w-3xl">
+            <section className="mt-14">
               <h2 className="text-2xl md:text-3xl font-extrabold mb-6" style={{ color: "var(--text-primary)" }}>
                 {fullName} Review &amp; Buying Guide
               </h2>
               <div
                 className="rounded-2xl p-6 md:p-8"
-                style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.08)" }}
+                style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}
               >
                 {longForm.overview.split("\n\n").map((paragraph, i) => (
                   <p
@@ -411,10 +455,9 @@ export default function GearProductPage({ params }: Props) {
             </section>
           )}
 
-          {/* Use cases — "Who is this for?" card grid. Each card targets a
-              long-tail search intent like "best <category> for <player type>". */}
+          {/* Use cases */}
           {longForm?.useCases && longForm.useCases.length > 0 && (
-            <section className="mt-14 max-w-4xl">
+            <section className="mt-14">
               <h2 className="text-2xl md:text-3xl font-extrabold mb-6" style={{ color: "var(--text-primary)" }}>
                 Who Is the {fullName} For?
               </h2>
@@ -423,9 +466,9 @@ export default function GearProductPage({ params }: Props) {
                   <div
                     key={i}
                     className="rounded-2xl p-5"
-                    style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.08)" }}
+                    style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}
                   >
-                    <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#60a5fa" }}>
+                    <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#5a9df9" }}>
                       {uc.title}
                     </p>
                     <p className="text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
@@ -439,12 +482,12 @@ export default function GearProductPage({ params }: Props) {
 
           {/* Austin's Take */}
           {product.description && (
-            <div className="mt-14 max-w-3xl">
+            <div className="mt-14">
               <div
                 className="rounded-2xl p-6 md:p-8"
-                style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.08)" }}
+                style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}
               >
-                <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: "#60a5fa" }}>
+                <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: "#5a9df9" }}>
                   Austin&apos;s Take
                 </p>
                 {product.description.split("\n\n").map((paragraph, i) => (
@@ -462,7 +505,7 @@ export default function GearProductPage({ params }: Props) {
 
           {/* Second CTA — conversion nudge after reading Austin's Take */}
           {product.badge && (
-            <div className="mt-10 max-w-3xl">
+            <div className="mt-10">
               <div
                 className="rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4"
                 style={{ background: "rgba(10, 100, 188,0.23)", border: "1px solid rgba(10, 100, 188,0.30)" }}
@@ -480,9 +523,9 @@ export default function GearProductPage({ params }: Props) {
                   target="_blank"
                   rel="noopener noreferrer sponsored"
                   className="inline-flex items-center gap-2 font-bold text-sm px-6 py-3 rounded-xl text-white transition-all hover:scale-[1.02] flex-shrink-0"
-                  style={{ background: "#0a64bc", border: "2px solid #ffffff", boxShadow: "0 0 0 1px #0a64bc" }}
+                  style={{ background: "linear-gradient(135deg, #3a8bf0, #2066d0)", boxShadow: "0 0 24px rgba(90,157,249,0.35)" }}
                 >
-                  {product.ctaText} <ArrowRight className="w-4 h-4" />
+                  Buy at {product.brand || "Brand Site"} <ArrowRight className="w-4 h-4" />
                 </a>
               </div>
             </div>
@@ -490,15 +533,15 @@ export default function GearProductPage({ params }: Props) {
 
           {/* Video review — YouTube first, then local MP4 as fallback. */}
           {product.videoId ? (
-            <div className="mt-14 max-w-3xl">
-              <p className="text-xs font-bold uppercase tracking-widest mb-5" style={{ color: "#60a5fa" }}>
+            <div className="mt-14">
+              <p className="text-xs font-bold uppercase tracking-widest mb-5" style={{ color: "#5a9df9" }}>
                 Video Review
               </p>
               <YouTubeEmbed videoId={product.videoId} title={`${fullName} Review`} />
             </div>
           ) : product.videoUrl ? (
-            <div className="mt-14 max-w-3xl">
-              <p className="text-xs font-bold uppercase tracking-widest mb-5" style={{ color: "#60a5fa" }}>
+            <div className="mt-14">
+              <p className="text-xs font-bold uppercase tracking-widest mb-5" style={{ color: "#5a9df9" }}>
                 On-Court Video
               </p>
               <AutoCutVideo
@@ -513,7 +556,7 @@ export default function GearProductPage({ params }: Props) {
           {/* FAQ — surfaced before reviews so shoppers find common
               answers fast. Mirrors the FAQPage JSON-LD above for SEO. */}
           {product.faqs && product.faqs.length > 0 && (
-            <div className="mt-14 max-w-3xl">
+            <div className="mt-14">
               <h2 className="text-2xl font-extrabold mb-6" style={{ color: "var(--text-primary)" }}>
                 Frequently Asked Questions
               </h2>
@@ -522,7 +565,7 @@ export default function GearProductPage({ params }: Props) {
                   <details
                     key={i}
                     className="group rounded-2xl px-5 py-4"
-                    style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.08)" }}
+                    style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}
                   >
                     <summary className="cursor-pointer list-none flex items-start justify-between gap-4">
                       <span className="text-base font-bold leading-snug" style={{ color: "var(--text-primary)" }}>
@@ -542,11 +585,8 @@ export default function GearProductPage({ params }: Props) {
             </div>
           )}
 
-          {/* Community reviews — plus an outbound link to the brand's own
-              customer reviews page when provided (non-affiliate, so shoppers
-              can vet feedback independently before clicking through the
-              discount link). */}
-          <div id="discussion" className="mt-14 max-w-3xl scroll-mt-40">
+          {/* Community reviews */}
+          <div id="discussion" className="mt-14 scroll-mt-40">
             <div className="flex flex-wrap items-baseline justify-between gap-4 mb-6">
               <h2 className="text-2xl font-extrabold" style={{ color: "var(--text-primary)" }}>
                 Reviews
@@ -557,7 +597,7 @@ export default function GearProductPage({ params }: Props) {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 text-sm font-semibold transition-colors hover:text-brand-500"
-                  style={{ color: "#60a5fa" }}
+                  style={{ color: "#5a9df9" }}
                 >
                   Customer reviews on {reviewsHost}
                   <ExternalLink className="w-3.5 h-3.5" />
@@ -566,6 +606,15 @@ export default function GearProductPage({ params }: Props) {
             </div>
             <div id="community-reviews" />
           </div>
+
+            </div>{/* end content col */}
+
+            {/* Sidebar — sticky, hidden on mobile, sorted by real 30-day views */}
+            <div className="hidden lg:block lg:sticky lg:top-[140px] self-start">
+              <SidebarPaddleLoader candidates={sidebarCandidates} />
+            </div>
+
+          </div>{/* end bottom 2-col grid */}
 
         </div>
       </div>

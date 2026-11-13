@@ -2,6 +2,7 @@ import { getApps, initializeApp, cert, type App } from "firebase-admin/app";
 import { getFirestore, type Firestore } from "firebase-admin/firestore";
 import { getStorage, type Storage } from "firebase-admin/storage";
 import { getRemoteConfig, type RemoteConfig } from "firebase-admin/remote-config";
+import { getAuth, type Auth } from "firebase-admin/auth";
 
 let cachedApp: App | null = null;
 
@@ -42,6 +43,10 @@ export function getFirebaseStorage(): Storage {
 
 export function getFirebaseRemoteConfig(): RemoteConfig {
   return getRemoteConfig(getApp());
+}
+
+export function getFirebaseAuth(): Auth {
+  return getAuth(getApp());
 }
 
 /**

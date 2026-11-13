@@ -436,7 +436,7 @@ export default function BlogPostPage({ params }: Props) {
         <div className="max-w-6xl mx-auto mb-6">
           <Link
             href="/blog"
-            className="inline-flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-teal-500"
+            className="inline-flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-[#5a9df9]"
             style={{ color: "var(--text-muted)" }}
           >
             <ArrowLeft className="w-4 h-4" /> All Reviews
@@ -537,7 +537,7 @@ export default function BlogPostPage({ params }: Props) {
                     <li key={t.id}>
                       <a
                         href={`#${t.id}`}
-                        className="inline-flex items-center gap-1.5 text-base font-medium hover:text-teal-500 transition-colors"
+                        className="inline-flex items-center gap-1.5 text-base font-medium hover:text-[#5a9df9] transition-colors"
                         style={{ color: "var(--flip-text-head)" }}
                       >
                         <ArrowRight className="w-3.5 h-3.5 opacity-70" /> {t.text}
@@ -707,7 +707,7 @@ export default function BlogPostPage({ params }: Props) {
                     (which is no longer in the hamburger). */}
                 <Link
                   href="/compare"
-                  className="block rounded-2xl p-5 transition-colors hover:border-teal-500/40"
+                  className="block rounded-2xl p-5 transition-colors hover:border-[#5a9df9]/40"
                   style={{
                     background: "var(--flip-bg-card)",
                     border: "1px solid var(--flip-card-border)",
@@ -738,7 +738,7 @@ export default function BlogPostPage({ params }: Props) {
           <div className="border-t pt-8 mt-10" style={{ borderColor: "var(--border)" }}>
             <Link
               href="/blog"
-              className="inline-flex items-center gap-1.5 text-sm font-semibold transition-colors hover:text-teal-500"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold transition-colors hover:text-[#5a9df9]"
               style={{ color: "var(--text-muted)" }}
             >
               <ArrowLeft className="w-4 h-4" /> Back to all reviews

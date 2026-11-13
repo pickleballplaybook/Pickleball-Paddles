@@ -260,7 +260,7 @@ export default function MatchHistoryPage() {
           </Link>
           <p className="mt-6 text-xs" style={{ color: "var(--text-muted)" }}>
             Or{" "}
-            <Link href="/match/analysis" className="underline hover:text-teal-400">
+            <Link href="/match/analysis" className="underline hover:text-[#5a9df9]">
               start tallying a match
             </Link>{" "}
             without signing in (you&apos;ll need to sign in to save it).

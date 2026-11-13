@@ -46,7 +46,7 @@ interface BalanceCategory {
 // colors per category. The 'AVERAGE' middle band intentionally avoids
 // 'Neutral Balance' or 'Perfectly Balanced' — it just means 'sits in the
 // typical band of pickleball paddles', which is what an average paddle is.
-const TEAL_RGB = "45, 212, 191";
+const TEAL_RGB = "90, 157, 249"; // brand blue
 
 function categorize(bp: number): BalanceCategory {
   if (bp < 23.5) {

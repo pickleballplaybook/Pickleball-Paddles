@@ -87,9 +87,9 @@ const SPEC_META: Record<SpecKind, {
 // so the card color doesn't need to differentiate. Cohesive premium look
 // instead of the previous indigo/teal/orange spread.
 const ZONE_COLORS = {
-  low:  { accent: "45, 212, 191" }, // teal-300
-  avg:  { accent: "45, 212, 191" }, // teal-300
-  high: { accent: "45, 212, 191" }, // teal-300
+  low:  { accent: "90, 157, 249" }, // brand blue
+  avg:  { accent: "90, 157, 249" }, // brand blue
+  high: { accent: "90, 157, 249" }, // brand blue
 } as const;
 
 export default function SpecBar({ label, value, unit = "", min, max, avg, kind = "generic", descriptor }: Props) {
