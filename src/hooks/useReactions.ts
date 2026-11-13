@@ -42,6 +42,7 @@ async function heartExists(paddleId: string, userKey: string): Promise<boolean> 
 }
 
 async function addHeart(paddleId: string, userKey: string): Promise<void> {
+  if (process.env.NEXT_PUBLIC_VERCEL_ENV !== "production") return;
   const { error } = await supabase
     .from("paddle_hearts")
     .upsert({ paddle_id: paddleId, user_key: userKey }, { onConflict: "paddle_id,user_key" });
@@ -49,6 +50,7 @@ async function addHeart(paddleId: string, userKey: string): Promise<void> {
 }
 
 async function removeHeart(paddleId: string, userKey: string): Promise<void> {
+  if (process.env.NEXT_PUBLIC_VERCEL_ENV !== "production") return;
   const { error } = await supabase
     .from("paddle_hearts")
     .delete()
@@ -79,6 +81,7 @@ async function dislikeExists(paddleId: string, userKey: string): Promise<boolean
 }
 
 async function addDislike(paddleId: string, userKey: string): Promise<void> {
+  if (process.env.NEXT_PUBLIC_VERCEL_ENV !== "production") return;
   try {
     const { error } = await supabase
       .from("paddle_dislikes")
@@ -90,6 +93,7 @@ async function addDislike(paddleId: string, userKey: string): Promise<void> {
 }
 
 async function removeDislike(paddleId: string, userKey: string): Promise<void> {
+  if (process.env.NEXT_PUBLIC_VERCEL_ENV !== "production") return;
   try {
     const { error } = await supabase
       .from("paddle_dislikes")

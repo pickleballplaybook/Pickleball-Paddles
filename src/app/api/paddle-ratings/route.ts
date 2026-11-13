@@ -42,6 +42,10 @@ export async function GET(req: NextRequest) {
 
 // POST /api/paddle-ratings  { paddleId, stars, userKey, comment? }
 export async function POST(req: NextRequest) {
+  if (process.env.VERCEL_ENV !== "production") {
+    return NextResponse.json({ average: 0, count: 0, reviews: [], skipped: true }, { headers: NO_CACHE });
+  }
+
   const body = await req.json();
   const { paddleId, stars, userKey, comment } = body;
 

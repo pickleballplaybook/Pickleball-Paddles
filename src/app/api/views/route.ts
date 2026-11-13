@@ -57,6 +57,10 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  if (process.env.VERCEL_ENV !== "production") {
+    return NextResponse.json({ count: 0, skipped: true });
+  }
+
   const { slug, type = "paddle" } = await req.json();
 
   if (!slug) {
