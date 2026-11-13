@@ -1,192 +1,57 @@
 "use client";
 
-import { useRef, useMemo } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { RoundedBox } from "@react-three/drei";
+import { useRef } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { useTexture } from "@react-three/drei";
 import * as THREE from "three";
 
-// ── Procedural face texture (carbon weave + crosshair) ────────────────────────
-function buildFaceTexture(): THREE.CanvasTexture {
-  const size = 512;
-  const canvas = document.createElement("canvas");
-  canvas.width = size;
-  canvas.height = Math.round(size * 1.2);
-  const ctx = canvas.getContext("2d")!;
-
-  // Carbon-dark base
-  ctx.fillStyle = "#0f1f12";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  // Carbon weave pattern — small diagonal rectangles
-  const cell = 12;
-  for (let y = 0; y < canvas.height; y += cell) {
-    for (let x = 0; x < canvas.width; x += cell) {
-      const phase = Math.floor(y / cell) % 2;
-      const shade = (Math.floor(x / cell) + phase) % 2;
-      ctx.fillStyle = shade === 0 ? "rgba(163,230,53,0.09)" : "rgba(163,230,53,0.045)";
-      ctx.fillRect(x + 1, y + 1, cell - 2, cell - 2);
-    }
-  }
-
-  // Fine grid overlay
-  ctx.strokeStyle = "rgba(163,230,53,0.1)";
-  ctx.lineWidth = 0.5;
-  for (let x = 0; x < canvas.width; x += 32) {
-    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
-  }
-  for (let y = 0; y < canvas.height; y += 32) {
-    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
-  }
-
-  // Center crosshair
-  const cx = canvas.width / 2;
-  const cy = canvas.height / 2;
-  ctx.strokeStyle = "rgba(163,230,53,0.14)";
-  ctx.lineWidth = 1;
-  ctx.setLineDash([6, 6]);
-  ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, canvas.height); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(canvas.width, cy); ctx.stroke();
-  ctx.setLineDash([]);
-
-  // Center dot
-  ctx.beginPath();
-  ctx.arc(cx, cy, 4, 0, Math.PI * 2);
-  ctx.fillStyle = "rgba(163,230,53,0.4)";
-  ctx.fill();
-
-  // Concentric measurement rings
-  for (const r of [60, 120, 180]) {
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.strokeStyle = "rgba(163,230,53,0.06)";
-    ctx.lineWidth = 0.75;
-    ctx.stroke();
-  }
-
-  // "PLAYBOOK LAB" watermark (safe system font — custom font may not load in canvas)
-  ctx.textAlign = "center";
-  ctx.font = "bold 28px Arial, sans-serif";
-  ctx.fillStyle = "rgba(163,230,53,0.08)";
-  ctx.letterSpacing = "8px";
-  ctx.fillText("PLAYBOOK", cx, cy - 10);
-  ctx.font = "12px Arial, sans-serif";
-  ctx.fillStyle = "rgba(163,230,53,0.05)";
-  ctx.fillText("LAB SERIES", cx, cy + 14);
-
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.needsUpdate = true;
-  return tex;
-}
-
-// ── Paddle mesh ───────────────────────────────────────────────────────────────
-function PaddleMesh() {
+function PaddleImage() {
   const groupRef = useRef<THREE.Group>(null);
-
-  const faceTexture = useMemo(() => buildFaceTexture(), []);
-
-  // Edge glow geometry — a slightly larger plane behind the face
-  const edgeGlowGeo = useMemo(() => new THREE.PlaneGeometry(0.90, 1.08), []);
+  const texture = useTexture("/images/paddles/Boomstik-ST-Elongated-16mm.png");
+  texture.colorSpace = THREE.SRGBColorSpace;
 
   useFrame((state, delta) => {
     if (!groupRef.current) return;
-    // Slow continuous Y rotation
-    groupRef.current.rotation.y += delta * 0.22;
-    // Mouse-driven X tilt (subtle pitch)
-    const targetX = state.mouse.y * -0.14;
+    groupRef.current.rotation.y += delta * 0.55;
+    // Subtle mouse-driven pitch
+    const targetX = state.mouse.y * -0.12;
     groupRef.current.rotation.x +=
       (targetX - groupRef.current.rotation.x) * 0.045;
   });
 
   return (
-    <group ref={groupRef}>
-      {/* ── Paddle head ──────────────────────────────────────────────── */}
-      <RoundedBox
-        args={[0.86, 1.06, 0.056]}
-        radius={0.11}
-        smoothness={4}
-        position={[0, 0.26, 0]}
-      >
-        <meshStandardMaterial
-          color="#1e3020"
-          roughness={0.22}
-          metalness={0.45}
-          envMapIntensity={0.6}
-        />
-      </RoundedBox>
-
-      {/* Edge glow — slightly larger plane at same Z as face */}
-      <mesh position={[0, 0.26, 0.029]} geometry={edgeGlowGeo}>
-        <meshBasicMaterial
-          color="#a3e635"
-          transparent
-          opacity={0.28}
-        />
+    <>
+      {/* Fixed glow backdrop — stays put while paddle spins */}
+      <mesh position={[0, 0, -0.4]}>
+        <circleGeometry args={[1.1, 64]} />
+        <meshBasicMaterial color="#1e3a14" transparent opacity={0.55} />
       </mesh>
 
-      {/* ── Face surface with carbon texture ─────────────────────────── */}
-      <mesh position={[0, 0.26, 0.030]}>
-        <planeGeometry args={[0.84, 1.04]} />
-        <meshStandardMaterial
-          map={faceTexture}
-          roughness={0.08}
-          metalness={0.15}
-        />
-      </mesh>
-
-      {/* ── Throat taper connecting head to handle ────────────────────── */}
-      <mesh position={[0, -0.265, 0]}>
-        <cylinderGeometry args={[0.055, 0.075, 0.12, 20]} />
-        <meshStandardMaterial color="#1a2818" roughness={0.4} metalness={0.3} />
-      </mesh>
-
-      {/* ── Handle core ───────────────────────────────────────────────── */}
-      <mesh position={[0, -0.44, 0]}>
-        <cylinderGeometry args={[0.052, 0.046, 0.46, 20]} />
-        <meshStandardMaterial color="#161616" roughness={0.85} metalness={0.05} />
-      </mesh>
-
-      {/* ── Grip wrap (slightly larger cylinder, ribbed look) ─────────── */}
-      <mesh position={[0, -0.44, 0]}>
-        <cylinderGeometry args={[0.058, 0.052, 0.42, 20, 12]} />
-        <meshStandardMaterial
-          color="#1e2a1c"
-          roughness={0.92}
-          metalness={0.0}
-        />
-      </mesh>
-
-      {/* ── Butt cap ──────────────────────────────────────────────────── */}
-      <mesh position={[0, -0.665, 0]}>
-        <cylinderGeometry args={[0.055, 0.052, 0.025, 20]} />
-        <meshStandardMaterial color="#c8f135" roughness={0.5} metalness={0.2} />
-      </mesh>
-    </group>
+      <group ref={groupRef}>
+        <mesh>
+          <planeGeometry args={[2.2, 2.2]} />
+          <meshBasicMaterial
+            map={texture}
+            transparent
+            alphaTest={0.02}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+      </group>
+    </>
   );
 }
 
-// ── Scene wrapper ─────────────────────────────────────────────────────────────
 export default function PaddleScene() {
   return (
     <Canvas
-      camera={{ position: [0, 0.1, 3.4], fov: 46 }}
+      camera={{ position: [0, 0, 3.5], fov: 46 }}
       dpr={[1, 1.5]}
       gl={{ antialias: true, alpha: true }}
       style={{ background: "transparent", width: "100%", height: "100%" }}
     >
-      {/* Soft fill */}
-      <ambientLight intensity={0.55} color="#d4f0da" />
-      {/* Key light — upper-left */}
-      <directionalLight position={[3, 5, 4]}  intensity={2.8}  color="#e8f4e8" />
-      {/* Front fill — lifts the dark face off the background */}
-      <pointLight position={[0, 0.2, 2.8]} intensity={2.2} color="#c8f0d0" />
-      {/* Rim light — lime accent, from right */}
-      <directionalLight position={[-4, 2, 2]} intensity={1.1} color="#a3e635" />
-      {/* Fill light — from below-right */}
-      <directionalLight position={[2, -3, 1]} intensity={0.5} color="#fb923c" />
-      {/* Back light — depth separation */}
-      <directionalLight position={[0, 0, -4]} intensity={0.3} color="#1a2018" />
-
-      <PaddleMesh />
+      <ambientLight intensity={1.0} />
+      <PaddleImage />
     </Canvas>
   );
 }
