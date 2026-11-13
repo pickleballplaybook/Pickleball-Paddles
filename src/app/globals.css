@@ -20,23 +20,28 @@
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   THEME TOKENS — light mode defaults, dark mode via html.dark class
+   THEME TOKENS — Pickleball Drills app palette
+   Primary accent: #5a9df9 (same blue as the logo paddle fills).
+   Light mode: white bg, dark text, blue accents.
+   Dark mode: near-black bg, light text, same blue accents.
 ───────────────────────────────────────────────────────────────────────────── */
 
 :root {
   --font-inter: "Inter", system-ui, sans-serif;
-  --teal:  #0a64bc;
-  --navy:  #163a6a;
+  --teal:      #5a9df9;    /* brand blue — matches logo paddle fills */
+  --teal-text: #0a64bc;    /* darker blue for legible text on white bg */
+  --navy:      #163a6a;
+  --grid-line: rgba(0,0,0,0.05);
 
   /* ── Page backgrounds ──────────────────────────────────────────────────── */
-  --bg-page:    #f8fafc;   /* off-white — not pure white */
+  --bg-page:    #f8fafc;
   --bg-section: #f1f5f9;
   --bg-alt:     #e8edf5;
 
-  /* ── "Flip" tokens — sections that are dark in dark mode, light in light ─ */
+  /* ── "Flip" tokens ─────────────────────────────────────────────────────── */
   --flip-bg:          #f1f5f9;
   --flip-bg-alt:      #e8edf5;
-  --flip-bg-card:     #ffffff;           /* white cards on off-white bg */
+  --flip-bg-card:     #ffffff;
   --flip-card-border: rgba(15,23,42,0.07);
   --flip-divider:     rgba(15,23,42,0.06);
   --flip-text-head:   #0f172a;
@@ -63,36 +68,32 @@
   --nav-border:   rgba(15,23,42,0.07);
   --nav-shadow:   0 1px 4px rgba(15,23,42,0.06);
   --nav-text:     #0f172a;
-  --nav-hover-bg: rgba(10, 100, 188,0.23);
+  --nav-hover-bg: rgba(90,157,249,0.12);
 
-  /* ── Discount savings text — dark teal for legibility on white cards ──── */
+  /* ── Discount savings text — dark blue legible on white cards ──────────── */
   --discount-text: #11295f;
 
-  /* ── Buy button — brand blue #0a64bc for PADDLE buy actions. White
-        outline + outer blue ring carry the same CTA look the red variant
-        had. Gear buys stay red via --btn-gear-* below. */
-  --btn-buy-bg:       #0a64bc;
-  --btn-buy-bg-hover: #084585;
+  /* ── Buy button — brand blue, white text ──────────────────────────────── */
+  --btn-buy-bg:       #5a9df9;
+  --btn-buy-bg-hover: #2d7ade;
   --btn-buy-text:     #ffffff;
   --btn-buy-border:   2px solid #ffffff;
-  --btn-buy-shadow:   0 0 0 1px #0a64bc, 0 4px 16px rgba(10,100,188,0.28), 0 2px 4px rgba(10,100,188,0.18);
-  --btn-gear-bg:      #DC2626;
-  --btn-gear-bg-hover:#B91C1C;
-  --btn-gear-shadow:  0 0 0 1px #DC2626, 0 4px 16px rgba(220,38,38,0.28), 0 2px 4px rgba(220,38,38,0.18);
+  --btn-buy-shadow:   0 0 0 1px #5a9df9, 0 4px 16px rgba(90,157,249,0.28), 0 2px 4px rgba(90,157,249,0.18);
+  --btn-gear-bg:      #5a9df9;
+  --btn-gear-bg-hover:#2d7ade;
+  --btn-gear-shadow:  0 0 0 1px #5a9df9, 0 4px 16px rgba(90,157,249,0.28), 0 2px 4px rgba(90,157,249,0.18);
 
-  /* ── Code chip + price accent — theme-responsive for legibility in both modes. */
-  /* Light: deeper teal on slightly tinted bg; dark: bright teal on faint tint. */
+  /* ── Code chip + price accent ─────────────────────────────────────────── */
   --code-text:   #11295f;
-  --code-bg:     rgba(10, 100, 188,0.30);
-  --code-border: rgba(10, 100, 188,0.55);
+  --code-bg:     rgba(90,157,249,0.14);
+  --code-border: rgba(90,157,249,0.40);
   --code-muted:  #64748b;
 
-  /* ── Product photography background — radial "showroom spotlight" effect. */
-  /* Light: soft off-white center, slightly cooler edges = clean product photo. */
+  /* ── Product photography background ───────────────────────────────────── */
   --product-bg-spotlight: #ffffff;
   --product-bg-base:      #eef2f7;
 
-  /* ── Sticky bar bg components — RGB triples so the bar can use rgba() blur. */
+  /* ── Sticky bar bg components ─────────────────────────────────────────── */
   --sticky-bg-rgb: 255,255,255;
 
   /* ── TopBar height — JS in TopBar.tsx keeps this in sync ───────────────── */
@@ -101,6 +102,10 @@
 }
 
 html.dark {
+  --teal-text: #5a9df9;    /* bright blue legible on dark bg */
+  --navy:      #163a6a;
+  --grid-line: rgba(255,255,255,0.05);
+
   --bg-page:    #020617;
   --bg-section: #080f1e;
   --bg-alt:     #0c1525;
@@ -130,37 +135,27 @@ html.dark {
   --nav-border:   rgba(255,255,255,0.06);
   --nav-shadow:   0 1px 3px rgba(0,0,0,0.4);
   --nav-text:     #e2e8f0;
-  --nav-hover-bg: rgba(255,255,255,0.06);
+  --nav-hover-bg: rgba(90,157,249,0.12);
 
-  /* ── Discount savings text — yellow-green pops on dark cards ─────────── */
-  --discount-text: #0a64bc;
+  --discount-text: #5a9df9;
 
-  /* ── Buy button — brand blue #0a64bc for PADDLE buy actions in dark mode.
-        Gear stays red via --btn-gear-* below. */
-  --btn-buy-bg:       #0a64bc;
-  --btn-buy-bg-hover: #084585;
+  --btn-buy-bg:       #5a9df9;
+  --btn-buy-bg-hover: #2d7ade;
   --btn-buy-text:     #ffffff;
-  --btn-buy-border:   2px solid #ffffff;
-  --btn-buy-shadow:   0 0 0 1px #0a64bc, 0 4px 24px rgba(10,100,188,0.28);
-  --btn-gear-bg:      #DC2626;
-  --btn-gear-bg-hover:#B91C1C;
-  --btn-gear-shadow:  0 0 0 1px #DC2626, 0 4px 24px rgba(220,38,38,0.28);
+  --btn-buy-border:   2px solid rgba(255,255,255,0.15);
+  --btn-buy-shadow:   0 0 0 1px #5a9df9, 0 4px 24px rgba(90,157,249,0.35);
+  --btn-gear-bg:      #5a9df9;
+  --btn-gear-bg-hover:#2d7ade;
+  --btn-gear-shadow:  0 0 0 1px #5a9df9, 0 4px 24px rgba(90,157,249,0.35);
 
-  /* ── Code chip tokens — neutral white on dark cards. Stays out of a
-        color clash with the red buy CTA right next to it. The chartreuse
-        accent is reserved for eyebrows and "RECOMMENDED" pills, not the
-        big price + code area which sits adjacent to the buy button. */
-  --code-text:   #f1f5f9;
-  --code-bg:     rgba(255,255,255,0.05);
-  --code-border: rgba(255,255,255,0.30);
+  --code-text:   #5a9df9;
+  --code-bg:     rgba(90,157,249,0.10);
+  --code-border: rgba(90,157,249,0.30);
   --code-muted:  rgba(255,255,255,0.4);
 
-  /* ── Product photography background — subtle dark gradient with center spotlight. */
-  /* Dark: very slight tonal lift in the center mimics showroom lighting. */
   --product-bg-spotlight: #1a2540;
   --product-bg-base:      #0a1628;
 
-  /* ── Sticky bar bg components — dark navy in dark mode. */
   --sticky-bg-rgb: 15,23,42;
 }
 
@@ -223,10 +218,10 @@ html.dark .brand-photo {
            bg-transparent transition-all duration-200 active:scale-[0.98]
            border-2 focus-visible:outline-none focus-visible:ring-2
            focus-visible:ring-offset-2 focus-visible:ring-brand-500;
-    color: var(--teal);
-    border-color: var(--teal);
+    color: var(--teal-text);
+    border-color: var(--teal-text);
   }
-  .btn-teal:hover { background-color: rgba(10, 100, 188,0.28); }
+  .btn-teal:hover { background-color: rgba(90,157,249,0.14); }
 
   /* Ghost — neutral */
   .btn-secondary {
@@ -246,7 +241,7 @@ html.dark .brand-photo {
            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2;
     background-color: var(--teal);
   }
-  .btn-brand:hover { background-color: #11295f; }
+  .btn-brand:hover { background-color: #2d7ade; }
 
   /* Brand red — primary affiliate/buy CTA. Matches the blog button style
      (red bg + white outline + white text) and the YouTube thumbnail palette.
@@ -286,9 +281,9 @@ html.dark .brand-photo {
   .discount-badge {
     @apply inline-flex items-center gap-2 font-mono font-bold text-sm
            px-4 py-2 rounded-lg tracking-widest uppercase;
-    background: rgba(10, 100, 188,0.28);
-    border: 1px solid rgba(10, 100, 188,0.30);
-    color: #60a5fa;
+    background: rgba(90,157,249,0.12);
+    border: 1px solid rgba(90,157,249,0.30);
+    color: var(--teal-text);
   }
 
   /* ── Badge pills ──────────────────────────────────────────────────────── */
@@ -299,13 +294,129 @@ html.dark .brand-photo {
   .badge-navy   { @apply badge bg-navy-50   text-navy-700   border border-navy-200; }
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   CARBON LAB DESIGN TOKENS
+   Accent: #a3e635 (lime-400 — shifted toward the brand ball's chartreuse)
+   Secondary: #fb923c (orange-400 — gauges, power readings, rank arrows)
+   Base: #060a08 (near-black with faint green undertone)
+   ═══════════════════════════════════════════════════════════════════════════ */
+:root {
+  /* Fonts */
+  --font-space-grotesk:   "Space Grotesk",   var(--font-inter), system-ui, sans-serif;
+  --font-jetbrains-mono:  "JetBrains Mono",  "SF Mono", "Fira Code", monospace;
+
+  /* Lab backgrounds */
+  --lab-bg:          #060a08;
+  --lab-surface:     #0c1410;
+  --lab-elevated:    #121e17;
+
+  /* Lab accent: lime → matches brand logo ball colour family */
+  --lab-green:       #a3e635;
+  --lab-green-dim:   rgba(163,230,53,0.12);
+  --lab-green-glow:  rgba(163,230,53,0.28);
+  --lab-green-rgb:   163,230,53;
+
+  /* Lab secondary: orange → gauge needles, rank movement, power readings */
+  --lab-orange:      #fb923c;
+  --lab-orange-dim:  rgba(251,146,60,0.12);
+  --lab-orange-rgb:  251,146,60;
+
+  /* Lab text */
+  --lab-text-primary:  #f0faf2;
+  --lab-text-body:     #86a88e;
+  --lab-text-muted:    #445749;
+  --lab-text-mono:     #86efac;  /* data readouts — lighter green */
+
+  /* Lab borders */
+  --lab-border:        rgba(255,255,255,0.05);
+  --lab-border-accent: rgba(163,230,53,0.20);
+
+  /* Lab grid/calibration marks */
+  --lab-grid:  rgba(163,230,53,0.04);
+  --lab-tick:  rgba(163,230,53,0.12);
+
+  /* Lab semantic */
+  --lab-up:    #4ade80;
+  --lab-down:  #f87171;
+  --lab-new:   #a3e635;
+}
+
+/* Lab-scoped component classes */
+.lab-section {
+  background: var(--lab-bg);
+  color: var(--lab-text-primary);
+}
+
+/* Monospace readout: used for mph, RPM, SW, TW, oz, mm */
+.lab-mono {
+  font-family: var(--font-jetbrains-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--lab-text-mono);
+  letter-spacing: -0.02em;
+}
+
+/* Eyebrow label: "PLAYBOOK LAB // 203 PADDLES" */
+.lab-eyebrow {
+  font-family: var(--font-jetbrains-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--lab-green);
+}
+
+/* Display headline: Space Grotesk */
+.lab-headline {
+  font-family: var(--font-space-grotesk);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 0.95;
+  color: var(--lab-text-primary);
+}
+
+/* HUD readout chip */
+.lab-hud-chip {
+  font-family: var(--font-jetbrains-mono);
+  background: rgba(6,10,8,0.88);
+  border: 1px solid var(--lab-border-accent);
+  border-radius: 8px;
+  padding: 8px 12px;
+  backdrop-filter: blur(12px);
+  min-width: 72px;
+}
+
+/* Lab keyframes */
+@keyframes lab-count-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes lab-pulse-ring {
+  0%   { transform: scale(1);   opacity: 0.5; }
+  100% { transform: scale(1.5); opacity: 0;   }
+}
+
+@keyframes lab-glow-pulse {
+  0%, 100% { opacity: 0.4; }
+  50%       { opacity: 0.9; }
+}
+
+@keyframes lab-spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes lab-dash {
+  to { stroke-dashoffset: 0; }
+}
+
 @layer utilities {
   .text-balance { text-wrap: balance; }
 
   .bg-grid {
     background-image:
-      linear-gradient(to right,  rgba(0,0,0,0.04) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(0,0,0,0.04) 1px, transparent 1px);
+      linear-gradient(to right,  var(--grid-line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
     background-size: 40px 40px;
   }
 
@@ -447,6 +558,6 @@ html.dark .brand-photo {
   transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 .paddle-card:hover {
-  border-color: rgba(10, 100, 188, 0.35);
+  border-color: rgba(90,157,249, 0.35);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
 }

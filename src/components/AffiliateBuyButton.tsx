@@ -71,7 +71,7 @@ export default function AffiliateBuyButton({
       <a
         href={href}
         target="_blank"
-        rel="noopener noreferrer sponsored"
+        rel="noopener noreferrer nofollow sponsored"
         onClick={handleClick}
         className={className}
         style={style}

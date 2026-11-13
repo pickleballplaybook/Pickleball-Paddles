@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import { headers } from "next/headers";
 import "./globals.css";
 import Navigation from "@/components/Navigation";
@@ -14,6 +14,20 @@ const inter = Inter({
   variable: "--font-inter",
   display: "swap",
   weight: ["300", "400", "500", "600", "700", "800"],
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-space-grotesk",
+  display: "swap",
+  weight: ["300", "400", "500", "600", "700"],
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-jetbrains-mono",
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
 });
 
 export const viewport: Viewport = {
@@ -44,11 +58,23 @@ export const metadata: Metadata = {
     "Engage",
     "Paddletek",
   ],
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon-32x32.png", type: "image/png", sizes: "32x32" },
+      { url: "/favicon-192.png", type: "image/png", sizes: "192x192" },
+      { url: "/og-logo.png", type: "image/png", sizes: "512x512" },
+    ],
+    apple: { url: "/favicon-192.png", sizes: "192x192", type: "image/png" },
+    shortcut: "/favicon.ico",
+  },
   openGraph: {
     type: "website",
     locale: "en_US",
     siteName: siteConfig.name,
     url: siteConfig.siteUrl,
+    images: [{ url: `${siteConfig.siteUrl}/images/og-logo.png`, width: 512, height: 512, alt: "Pickleball Playbook" }],
   },
   twitter: {
     card: "summary_large_image",
@@ -70,9 +96,11 @@ export default function RootLayout({
     headersList.get("x-pathname") ||
     "";
   const isAdmin = pathname.startsWith("/admin");
+  const isStandalone = pathname.startsWith("/app-update");
+  const isMembers = pathname.startsWith("/members");
 
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable}`}>
       <head>
         {/* Google AdSense — loader script + site-ownership verification
             for pub-1759885338421837. Once AdSense verifies + approves
@@ -90,7 +118,12 @@ export default function RootLayout({
             "@type": "Organization",
             "name": "Pickleball Playbook",
             "url": siteConfig.siteUrl,
-            "logo": `${siteConfig.siteUrl}/images/Logo.svg`,
+            "logo": {
+              "@type": "ImageObject",
+              "url": `${siteConfig.siteUrl}/images/Logo.png`,
+              "width": 512,
+              "height": 512,
+            },
             "description": "Independent pickleball paddle reviews, lab-measured specs, and exclusive discount codes. Every review is unsponsored.",
             "sameAs": [siteConfig.youtubeChannelUrl],
             "founder": { "@type": "Person", "name": "Austin Hardy" },
@@ -117,7 +150,7 @@ export default function RootLayout({
       </head>
       <body className="font-sans antialiased">
         <ThemeProvider>
-          {!isAdmin && (
+          {!isAdmin && !isStandalone && !isMembers && (
             <>
               <div
                 className="fixed inset-x-0 top-0 pointer-events-none"
@@ -133,8 +166,8 @@ export default function RootLayout({
             </>
           )}
           <main>{children}</main>
-          {!isAdmin && <Footer />}
-          {!isAdmin && <StickyNewsletterBar />}
+          {!isAdmin && !isStandalone && !isMembers && <Footer />}
+          {!isAdmin && !isStandalone && !isMembers && <StickyNewsletterBar />}
         </ThemeProvider>
       </body>
     </html>

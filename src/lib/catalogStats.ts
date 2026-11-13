@@ -54,3 +54,18 @@ export function getCatalogStats(): CatalogStats {
   };
   return cache;
 }
+
+/** Paddles that have a video review (reviewUrl or manualVideoId set). */
+export function getReviewedCount(): number {
+  return paddles.filter(p => !!(p.reviewUrl || p.manualVideoId)).length;
+}
+
+/** Paddles that have full physical lab measurements (testedDate set). */
+export function getLabTestedCount(): number {
+  return paddles.filter(p => !!p.testedDate).length;
+}
+
+/** Number of distinct brands in the paddle database. */
+export function getBrandCount(): number {
+  return new Set(paddles.map(p => p.brand)).size;
+}

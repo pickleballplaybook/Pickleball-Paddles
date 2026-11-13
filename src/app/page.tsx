@@ -1,13 +1,14 @@
-import { paddles, getJustAdded, getLatestPaddles, reviewDates } from "@/data/paddles";
+import { paddles, getJustAdded, getLatestPaddles, reviewDates, getPaddleBySlug } from "@/data/paddles";
 import { gearProducts } from "@/data/products";
 import { getReviewGroups } from "@/lib/youtube";
 import { siteConfig } from "@/config/site";
-import { getPaddleCountLabel } from "@/lib/catalogStats";
+import { getPaddleCountLabel, getReviewedCount, getBrandCount } from "@/lib/catalogStats";
 import { Paddle, ReviewGroup } from "@/types";
 import { Smartphone, GraduationCap, Play } from "lucide-react";
 
-import Hero           from "@/components/Hero";
-import LatestPaddles  from "@/components/LatestPaddles";
+import LabHero          from "@/components/lab/LabHero";
+import PlayStyleFinder  from "@/components/PlayStyleFinder";
+import LatestPaddles    from "@/components/LatestPaddles";
 import Link           from "next/link";
 import HottestPaddle  from "@/components/HottestPaddle";
 import TrendingSection from "@/components/TrendingSection";
@@ -137,6 +138,13 @@ export default async function HomePage() {
   const latestPaddles = getLatestPaddles(12);
   const allGroups = await getReviewGroups(paddles, reviewDates);
 
+  // ── Computed stats for LabHero (all from data at build time, never hardcoded) ──
+  const totalPaddles  = paddles.length;
+  const reviewedCount = getReviewedCount();
+  const brandCount    = getBrandCount();
+  // Featured paddle for HUD readout chips — uses the configured hottest paddle
+  const featuredPaddle = getPaddleBySlug(siteConfig.hottestPaddleSlug) ?? null;
+
   // Per-video exclusions for the home page Latest Reviews surface only.
   // The /reviews page still shows everything. Used for older or off-brand
   // reviews we don't want eating a homepage slot.
@@ -152,17 +160,27 @@ export default async function HomePage() {
 
   return (
     <>
-      <Hero />
+      <LabHero
+        totalPaddles={totalPaddles}
+        reviewedCount={reviewedCount}
+        brandCount={brandCount}
+        featuredPaddle={featuredPaddle}
+      />
+
+      <PlayStyleFinder />
 
       <div id="paddles"><HottestPaddle /></div>
 
       <div id="latest-reviews">
-        <LatestReviews items={latestReviewItems} />
+        <LatestReviews
+          featuredGroup={latestReviewItems[0]}
+          items={latestReviewItems.slice(1)}
+        />
       </div>
 
-      <TrendingSection paddles={paddles} />
-
       <LatestPaddles paddles={latestPaddles} />
+
+      <TrendingSection paddles={paddles} />
 
       {/* Drills App */}
       <PromoBar
@@ -184,6 +202,7 @@ export default async function HomePage() {
         ctaHref={promoA.link}
         image={promoA.featuredImage || promoA.image || undefined}
         imageAlt={`${promoA.brand} ${promoA.name}`}
+        imageMode={promoA.imageMode}
         badge={promoA.badge || undefined}
         icon={!promoA.image ? <GraduationCap className="w-5 h-5" strokeWidth={2} /> : undefined}
         bg={promoA.bg}
@@ -224,7 +243,7 @@ export default async function HomePage() {
           <div className="sm:col-span-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: "#60a5fa" }}>
-                Updated May 2026
+                Updated October 2026
               </p>
               <p className="text-xl font-extrabold" style={{ color: "var(--text-primary)" }}>
                 Best Pickleball Paddles of 2026 — Tested &amp; Ranked
@@ -252,6 +271,7 @@ export default async function HomePage() {
         ctaHref={promoB.link}
         image={promoB.featuredImage || promoB.image || undefined}
         imageAlt={`${promoB.brand} ${promoB.name}`}
+        imageMode={promoB.imageMode}
         badge={promoB.badge || undefined}
         icon={!promoB.image ? <GraduationCap className="w-5 h-5" strokeWidth={2} /> : undefined}
         bg={promoB.bg}
@@ -269,6 +289,7 @@ export default async function HomePage() {
         ctaHref={promoC.link}
         image={promoC.featuredImage || promoC.image || undefined}
         imageAlt={`${promoC.brand} ${promoC.name}`}
+        imageMode={promoC.imageMode}
         badge={promoC.badge || undefined}
         icon={!promoC.image ? <GraduationCap className="w-5 h-5" strokeWidth={2} /> : undefined}
         bg={promoC.bg}
