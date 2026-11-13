@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { getTrending, paddles as allPaddles } from "@/data/paddles";
+import { isTrendingExcluded, takeTopBySeriesDedup } from "@/lib/trending";
 import type { Paddle } from "@/types";
 
 // ── Catalog distributions (computed once at module load) ──────────────────────
@@ -69,10 +70,10 @@ function MiniHistogram({
               height: `${Math.max(8, heightPct)}%`,
               borderRadius: 1.5,
               background: isActive
-                ? "var(--lab-green)"
+                ? "#0a64bc"
                 : isAdjacent
-                ? "rgba(163,230,53,0.35)"
-                : "rgba(163,230,53,0.12)",
+                ? "rgba(10,100,188,0.4)"
+                : "rgba(10,100,188,0.15)",
               transition: "height 0.3s ease",
             }}
           />
@@ -135,7 +136,7 @@ function SpecChip({
           fontSize: "clamp(14px, 1.8vw, 18px)",
           fontWeight: 600,
           lineHeight: 1,
-          color: display === "—" ? "var(--lab-text-muted)" : "var(--lab-text-mono)",
+          color: display === "—" ? "var(--lab-text-muted)" : "#60a5fa",
           letterSpacing: "-0.02em",
         }}
       >
@@ -158,9 +159,12 @@ function SpecChip({
 
 // ── Main export ───────────────────────────────────────────────────────────────
 export default function PaddleCanvas({ featuredPaddle: _ignored }: { featuredPaddle?: Paddle | null }) {
-  const list: Paddle[] = getTrending(50)
-    .filter((p) => p.image && p.swingWeight > 0)
-    .slice(0, 10);
+  const candidates = getTrending(100)
+    .filter((p) => p.image && p.swingWeight > 0 && !isTrendingExcluded(p.slug));
+  const list: Paddle[] = takeTopBySeriesDedup(
+    candidates.map((p) => ({ paddle: p })),
+    10,
+  ).map((t) => t.paddle);
 
   const [idx, setIdx]         = useState(0);
   const [opacity, setOpacity] = useState(1);
