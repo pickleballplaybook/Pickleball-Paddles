@@ -35,18 +35,18 @@ export const siteConfig = {
   // The paddle (or series) featured in the top hero slot.
   // Swap the slug to change the featured paddle; update the series fields below
   // when promoting a multi-variant series.
-  hottestPaddleSlug: "honolulu-j6cr-m105-crystal-blue-elongated",
+  hottestPaddleSlug: "selkirk-boomstik-st-elongated",
   hottestPaddleSeries: {
     // Display name shown as the headline (can be a series or single paddle name)
-    headline: "Honolulu J6CR M105",
-    subheadline: "Honolulu's most powerful paddle yet — MPP Core with Crystal Blue Endurance Surface and BlueGrit™ spin tech.",
+    headline: "Selkirk Boomstik ST",
+    subheadline: "Selkirk's most powerful paddle yet — 16mm Gen 3 Raw Carbon with a head-heavy power bias.",
     bullets: [
-      "MPP Core · Dynamic PowerFlex™",
-      "Crystal Blue Endurance Surface",
-      "SW 115.67 · Pre-order at $195",
+      "16mm Gen 3 Raw Carbon",
+      "Head-Heavy Power Design",
+      "SW 114.86 · Available Now",
     ],
     // Affiliate link for the SHOP NOW button — uses the paddle's discountLink if blank
-    seriesLink: "https://808pickle.com/discount/PLAYBOOK?redirect=/products/j6cr-m-105-crystal-blue%E2%84%A2-endurance-surface%E2%84%A2-pre-order",
+    seriesLink: "https://selkirk.com/?circle_aff=inf-playbook",
   },
 
   // ── Homepage — Paddle of the Week ───────────────────────────────────────────
