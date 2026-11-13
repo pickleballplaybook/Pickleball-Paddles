@@ -123,7 +123,7 @@ export default function LabHero({
     <section
       className="lab-section relative w-full overflow-hidden"
       style={{
-        minHeight: "100svh",
+        minHeight: "80svh",
         paddingTop: "var(--topbar-h, 112px)",
       }}
       aria-label="Paddle Lab hero"
@@ -146,9 +146,9 @@ export default function LabHero({
       <div
         className="container-xl relative z-10 flex flex-col lg:grid lg:grid-cols-[1fr_480px] xl:grid-cols-[1fr_540px] gap-10 xl:gap-16 items-center"
         style={{
-          minHeight: "calc(100svh - var(--topbar-h, 112px))",
-          paddingTop: "clamp(2rem, 5vh, 4rem)",
-          paddingBottom: "clamp(5rem, 10vh, 7rem)",
+          minHeight: "calc(80svh - var(--topbar-h, 112px))",
+          paddingTop: "clamp(1.5rem, 3vh, 3rem)",
+          paddingBottom: "clamp(3rem, 6vh, 5rem)",
         }}
       >
         {/* ── LEFT: copy ────────────────────────────────────────────── */}
@@ -182,11 +182,9 @@ export default function LabHero({
               maxWidth: "14ch",
             }}
           >
-            Real specs.
+            Know how it plays
             <br />
-            <span style={{ color: "var(--lab-green-cta)" }}>Real testing.</span>
-            <br />
-            Then the review.
+            <span style={{ color: "var(--lab-green-cta)" }}>before you buy it.</span>
           </h1>
 
           {/* Subheadline */}
@@ -200,8 +198,7 @@ export default function LabHero({
               marginBottom: "clamp(1.75rem, 4vh, 2.5rem)",
             }}
           >
-            Swing weight, twist weight, and balance point logged on every paddle —
-            then tested on court with a drilling partner before we write a word.
+            Power, spin, control, pop, and speed — we test every category on court before writing a word. Other reviewers tell you what&apos;s inside the paddle. We tell you how it actually plays.
           </p>
 
           {/* CTAs */}
