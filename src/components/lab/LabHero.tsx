@@ -239,11 +239,11 @@ export default function LabHero({
               maxWidth: "14ch",
             }}
           >
-            Every paddle
+            Real specs.
             <br />
-            <span style={{ color: "var(--lab-green)" }}>measured</span>
+            <span style={{ color: "var(--lab-green-cta)" }}>Real testing.</span>
             <br />
-            before it's reviewed.
+            Then the review.
           </h1>
 
           {/* Subheadline */}
@@ -267,11 +267,11 @@ export default function LabHero({
               href="/paddles"
               className="inline-flex items-center justify-center gap-2 font-bold rounded-xl px-8 py-4 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
               style={{
-                background: "var(--lab-green)",
+                background: "var(--lab-green-cta)",
                 color: "#060a08",
                 fontSize: "0.9375rem",
                 letterSpacing: "0.02em",
-                boxShadow: "0 0 32px rgba(163,230,53,0.3), 0 4px 16px rgba(0,0,0,0.4)",
+                boxShadow: "0 0 32px rgba(200,241,53,0.3), 0 4px 16px rgba(0,0,0,0.4)",
                 // focus ring color
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 ["--tw-ring-color" as any]: "var(--lab-green)",

@@ -158,7 +158,7 @@ function PaddleMesh() {
       {/* ── Butt cap ──────────────────────────────────────────────────── */}
       <mesh position={[0, -0.665, 0]}>
         <cylinderGeometry args={[0.055, 0.052, 0.025, 20]} />
-        <meshStandardMaterial color="#a3e635" roughness={0.5} metalness={0.2} />
+        <meshStandardMaterial color="#c8f135" roughness={0.5} metalness={0.2} />
       </mesh>
     </group>
   );

@@ -311,7 +311,8 @@ html.dark .brand-photo {
   --lab-elevated:    #121e17;
 
   /* Lab accent: lime → matches brand logo ball colour family */
-  --lab-green:       #a3e635;
+  --lab-green:       #a3e635;          /* grids, large surfaces, backgrounds */
+  --lab-green-cta:   #c8f135;          /* CTAs, butt cap, small accents — brighter */
   --lab-green-dim:   rgba(163,230,53,0.12);
   --lab-green-glow:  rgba(163,230,53,0.28);
   --lab-green-rgb:   163,230,53;
@@ -324,7 +325,7 @@ html.dark .brand-photo {
   /* Lab text */
   --lab-text-primary:  #f0faf2;
   --lab-text-body:     #86a88e;
-  --lab-text-muted:    #445749;
+  --lab-text-muted:    #6b8a73;  /* WCAG AA ~5.4:1 on --lab-bg */
   --lab-text-mono:     #86efac;  /* data readouts — lighter green */
 
   /* Lab borders */
