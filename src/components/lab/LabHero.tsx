@@ -248,7 +248,7 @@ export default function LabHero({
           >
             <TrustMetric value={totalPaddles} label="Paddles Measured" />
             <TrustMetric value={reviewedCount} label="Video Reviews" />
-            <TrustMetric value={brandCount} label="Partner Brands" />
+            <TrustMetric value={brandCount} label="Affiliate Brands" />
             <TrustMetric value="PPR" label="Certified Coach" isText />
           </div>
         </div>
