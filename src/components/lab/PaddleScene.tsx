@@ -14,7 +14,7 @@ function buildFaceTexture(): THREE.CanvasTexture {
   const ctx = canvas.getContext("2d")!;
 
   // Carbon-dark base
-  ctx.fillStyle = "#080f0a";
+  ctx.fillStyle = "#0f1f12";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   // Carbon weave pattern — small diagonal rectangles
@@ -23,13 +23,13 @@ function buildFaceTexture(): THREE.CanvasTexture {
     for (let x = 0; x < canvas.width; x += cell) {
       const phase = Math.floor(y / cell) % 2;
       const shade = (Math.floor(x / cell) + phase) % 2;
-      ctx.fillStyle = shade === 0 ? "rgba(163,230,53,0.038)" : "rgba(163,230,53,0.018)";
+      ctx.fillStyle = shade === 0 ? "rgba(163,230,53,0.09)" : "rgba(163,230,53,0.045)";
       ctx.fillRect(x + 1, y + 1, cell - 2, cell - 2);
     }
   }
 
   // Fine grid overlay
-  ctx.strokeStyle = "rgba(163,230,53,0.05)";
+  ctx.strokeStyle = "rgba(163,230,53,0.1)";
   ctx.lineWidth = 0.5;
   for (let x = 0; x < canvas.width; x += 32) {
     ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
@@ -107,7 +107,7 @@ function PaddleMesh() {
         position={[0, 0.26, 0]}
       >
         <meshStandardMaterial
-          color="#0a1208"
+          color="#1e3020"
           roughness={0.22}
           metalness={0.45}
           envMapIntensity={0.6}
@@ -119,7 +119,7 @@ function PaddleMesh() {
         <meshBasicMaterial
           color="#a3e635"
           transparent
-          opacity={0.12}
+          opacity={0.28}
         />
       </mesh>
 
@@ -136,20 +136,20 @@ function PaddleMesh() {
       {/* ── Throat taper connecting head to handle ────────────────────── */}
       <mesh position={[0, -0.265, 0]}>
         <cylinderGeometry args={[0.055, 0.075, 0.12, 20]} />
-        <meshStandardMaterial color="#0d140b" roughness={0.4} metalness={0.3} />
+        <meshStandardMaterial color="#1a2818" roughness={0.4} metalness={0.3} />
       </mesh>
 
       {/* ── Handle core ───────────────────────────────────────────────── */}
       <mesh position={[0, -0.44, 0]}>
         <cylinderGeometry args={[0.052, 0.046, 0.46, 20]} />
-        <meshStandardMaterial color="#0a0a0a" roughness={0.85} metalness={0.05} />
+        <meshStandardMaterial color="#161616" roughness={0.85} metalness={0.05} />
       </mesh>
 
       {/* ── Grip wrap (slightly larger cylinder, ribbed look) ─────────── */}
       <mesh position={[0, -0.44, 0]}>
         <cylinderGeometry args={[0.058, 0.052, 0.42, 20, 12]} />
         <meshStandardMaterial
-          color="#141a12"
+          color="#1e2a1c"
           roughness={0.92}
           metalness={0.0}
         />
@@ -173,16 +173,18 @@ export default function PaddleScene() {
       gl={{ antialias: true, alpha: true }}
       style={{ background: "transparent", width: "100%", height: "100%" }}
     >
-      {/* Soft fill from above */}
-      <ambientLight intensity={0.18} color="#f0faf2" />
-      {/* Key light — slightly warm, from upper-left */}
-      <directionalLight position={[3, 5, 4]}  intensity={2.2}  color="#e8f4e8" />
+      {/* Soft fill */}
+      <ambientLight intensity={0.55} color="#d4f0da" />
+      {/* Key light — upper-left */}
+      <directionalLight position={[3, 5, 4]}  intensity={2.8}  color="#e8f4e8" />
+      {/* Front fill — lifts the dark face off the background */}
+      <pointLight position={[0, 0.2, 2.8]} intensity={2.2} color="#c8f0d0" />
       {/* Rim light — lime accent, from right */}
-      <directionalLight position={[-4, 2, 2]} intensity={0.65} color="#a3e635" />
-      {/* Fill light — orange secondary, from below-right */}
-      <directionalLight position={[2, -3, 1]} intensity={0.35} color="#fb923c" />
-      {/* Back light — creates depth separation */}
-      <directionalLight position={[0, 0, -4]} intensity={0.25} color="#1a2018" />
+      <directionalLight position={[-4, 2, 2]} intensity={1.1} color="#a3e635" />
+      {/* Fill light — from below-right */}
+      <directionalLight position={[2, -3, 1]} intensity={0.5} color="#fb923c" />
+      {/* Back light — depth separation */}
+      <directionalLight position={[0, 0, -4]} intensity={0.3} color="#1a2018" />
 
       <PaddleMesh />
     </Canvas>
