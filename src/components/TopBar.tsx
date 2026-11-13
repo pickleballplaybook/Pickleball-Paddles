@@ -42,7 +42,7 @@ export default function TopBar() {
 
         <div
           className="relative mx-auto text-center"
-          style={{ maxWidth: "900px", padding: "11px 48px 11px" }}
+          style={{ maxWidth: "900px", padding: "7px 48px 7px" }}
         >
           {/* Line 1 */}
           <p

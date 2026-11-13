@@ -177,8 +177,7 @@ export default function LabHero({
           <h1
             className="lab-headline mb-5"
             style={{
-              fontSize: "clamp(2.6rem, 6vw, 5.2rem)",
-              maxWidth: "14ch",
+              fontSize: "clamp(2rem, 3.8vw, 3.4rem)",
             }}
           >
             Know how it plays
@@ -194,14 +193,14 @@ export default function LabHero({
               lineHeight: 1.6,
               color: "var(--lab-text-body)",
               maxWidth: "46ch",
-              marginBottom: "clamp(1.75rem, 4vh, 2.5rem)",
+              marginBottom: "clamp(1rem, 2.5vh, 1.75rem)",
             }}
           >
             Power, spin, control, pop, and speed — we test every category on court before writing a word. Other reviewers tell you what&apos;s inside the paddle. We tell you how it actually plays.
           </p>
 
           {/* CTAs */}
-          <div className="flex flex-col sm:flex-row gap-3 mb-10 sm:mb-12 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row gap-3 mb-6 sm:mb-8 w-full sm:w-auto">
             <Link
               href="/paddles"
               className="inline-flex items-center justify-center gap-2 font-bold rounded-xl px-8 py-4 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
@@ -240,10 +239,10 @@ export default function LabHero({
 
           {/* Trust metrics */}
           <div
-            className="grid grid-cols-2 sm:grid-cols-4 gap-x-8 gap-y-5 w-full"
+            className="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-4 w-full"
             style={{
               borderTop: "1px solid var(--lab-border)",
-              paddingTop: "clamp(1.25rem, 3vh, 1.75rem)",
+              paddingTop: "clamp(1rem, 2vh, 1.5rem)",
             }}
           >
             <TrustMetric value={totalPaddles} label="Paddles Measured" />

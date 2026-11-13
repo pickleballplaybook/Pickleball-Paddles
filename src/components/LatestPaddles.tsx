@@ -5,7 +5,6 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Paddle } from "@/types";
 
-const SCROLL = 290;
 const NEW_DAYS = 14;
 
 function daysAgo(iso: string): number {
@@ -47,22 +46,21 @@ function calcDiscountedPrice(price: string, amountOff: string): string | null {
   return `$${discounted.toFixed(2)}`;
 }
 
-function PaddleCard({ paddle }: { paddle: Paddle }) {
+function PaddleCard({ paddle, className }: { paddle: Paddle; className?: string }) {
   const age = daysAgo(paddle.addedAt);
   const isNew = age <= NEW_DAYS;
   const newLabel = age === 0 ? "Today" : age === 1 ? "Yesterday" : `${age}d ago`;
   return (
     <Link
       href={`/paddles/${paddle.slug}`}
-      className="group flex-shrink-0 w-52 sm:w-60 rounded-2xl overflow-hidden flex flex-col transition-transform duration-200 hover:-translate-y-1"
+      className={`group flex-shrink-0 rounded-2xl overflow-hidden flex flex-col transition-transform duration-200 hover:-translate-y-1 ${className ?? ""}`}
       style={{
         background: "var(--bg-card)",
         border: "1px solid var(--border)",
         boxShadow: "0 4px 24px rgba(0,0,0,0.18)",
       }}
     >
-      {/* Image area — minimal padding so source images (especially 1000x1000
-          paddle photos with built-in whitespace) fill more of the card. */}
+      {/* Image area */}
       <div
         className="relative w-full flex items-center justify-center p-3 flex-shrink-0 overflow-hidden"
         style={{
@@ -183,7 +181,10 @@ export default function LatestPaddles({ paddles }: { paddles: Paddle[] }) {
   function scroll(dir: "left" | "right") {
     const el = scrollRef.current;
     if (!el) return;
-    el.scrollTo({ left: el.scrollLeft + (dir === "left" ? -SCROLL : SCROLL), behavior: "smooth" });
+    const firstCard = el.firstElementChild as HTMLElement | null;
+    if (!firstCard) return;
+    const amount = firstCard.offsetWidth + 20; // card width + gap
+    el.scrollBy({ left: dir === "left" ? -amount : amount, behavior: "smooth" });
   }
 
   return (
@@ -209,14 +210,10 @@ export default function LatestPaddles({ paddles }: { paddles: Paddle[] }) {
           <div className="flex items-center gap-3 flex-shrink-0">
             <Link
               href="/paddles"
-              className="hidden sm:inline-flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-xl transition-all duration-150 hover:scale-[1.03]"
-              style={{
-                background: "rgba(10, 100, 188, 0.12)",
-                color: "#60a5fa",
-                border: "1px solid rgba(10, 100, 188, 0.3)",
-              }}
+              className="text-sm font-semibold transition-colors hover:opacity-80"
+              style={{ color: "#60a5fa" }}
             >
-              View All <ChevronRight className="w-3.5 h-3.5" />
+              View All
             </Link>
             <ArrowBtn dir="left" onClick={() => scroll("left")} />
             <ArrowBtn dir="right" onClick={() => scroll("right")} />
@@ -230,10 +227,14 @@ export default function LatestPaddles({ paddles }: { paddles: Paddle[] }) {
           style={{
             scrollbarWidth: "none",
             msOverflowStyle: "none",
-          }}
+          } as React.CSSProperties}
         >
           {paddles.map((p) => (
-            <PaddleCard key={p.id} paddle={p} />
+            <PaddleCard
+              key={p.id}
+              paddle={p}
+              className="w-[calc(50%-10px)] sm:w-[calc(25%-15px)]"
+            />
           ))}
         </div>
 
