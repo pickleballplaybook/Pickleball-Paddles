@@ -48,6 +48,9 @@ export interface Paddle {
   // crossover videos that should appear ALONGSIDE the primary review, not
   // replace it. Renders below the main review with a "Featured" label.
   featuredReviewUrl?: string;
+  // Multiple comparison/head-to-head videos — each renders as an additional
+  // "Head-to-Head Review" block below the main review.
+  featuredReviewUrls?: string[];
   manualVideoId?: string;
 
   // ── Categorisation ────────────────────────────────────────────────────────
@@ -77,6 +80,11 @@ export interface Paddle {
   yearReleased?: string;
   usapApproved?: boolean;
 
+  // ── Related paddle overrides ──────────────────────────────────────────────
+  // Slugs always shown in the "You Might Also Like" comparable grid, bypassing
+  // the 2-per-brand cap. Use sparingly — algorithmic picks cover most cases.
+  pinnedRelated?: string[];
+
   // ── Catalog metadata ──────────────────────────────────────────────────────
   addedAt: string;        // ISO date — powers "Just Added"
   trendingScore: number;  // 0–100 — powers "What's Trending"
@@ -85,6 +93,18 @@ export interface Paddle {
   // to a "Coming Soon" state. Use a full ISO string with timezone offset
   // (e.g. "2026-06-15T00:00:00-04:00" for midnight ET). Helper: isPreLaunch().
   launchAt?: string;
+
+  // When true, paddle is no longer sold — exclude from auto-generated compare pages.
+  discontinued?: boolean;
+
+  // ── Lab measurement fields ────────────────────────────────────────────────
+  // Physical measurements from on-court testing. All are optional — gauges
+  // and readouts only render when real values are present. Never use
+  // ratings.power / ratings.spin as proxies for these physical units.
+  exitSpeedMph?: number;    // ball exit speed from Stalker Pro 3S, in mph
+  spinRpm?: number;         // ball spin from topspin test, in RPM
+  resetAbsorption?: number; // 0–100 dampening score
+  testedDate?: string;      // ISO date when physical lab measurements were taken
 }
 
 // ── Filter types ──────────────────────────────────────────────────────────────
