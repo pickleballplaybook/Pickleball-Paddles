@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { getTrending, paddles as allPaddles } from "@/data/paddles";
@@ -35,6 +35,32 @@ function valueToBin(value: number, values: number[], binCount = 10): number {
   return Math.min(binCount - 1, Math.floor(((value - min) / range) * binCount));
 }
 
+// ── Animated number (counts from prev → next over ~280ms) ────────────────────
+function useAnimatedValue(target: number, duration = 280): number {
+  const [current, setCurrent] = useState(target);
+  const prevTarget = useRef(target);
+  const rafRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (prevTarget.current === target) return;
+    const from = prevTarget.current;
+    prevTarget.current = target;
+    const start = performance.now();
+    function tick(now: number) {
+      const t = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - t, 2);
+      setCurrent(from + (target - from) * eased);
+      if (t < 1) rafRef.current = requestAnimationFrame(tick);
+      else setCurrent(target);
+    }
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(tick);
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+  }, [target, duration]);
+
+  return current;
+}
+
 // ── Mini histogram ─────────────────────────────────────────────────────────────
 function MiniHistogram({
   values,
@@ -44,7 +70,7 @@ function MiniHistogram({
   currentValue: number;
 }) {
   const BIN_COUNT = 10;
-  const bins = buildBins(values, BIN_COUNT);
+  const bins = useMemo(() => buildBins(values, BIN_COUNT), [values]);
   const activeBin = currentValue > 0 ? valueToBin(currentValue, values, BIN_COUNT) : -1;
   const maxBin = Math.max(...bins, 1);
 
@@ -53,10 +79,10 @@ function MiniHistogram({
       style={{
         display: "flex",
         alignItems: "flex-end",
-        gap: 1.5,
-        height: 20,
-        marginBottom: 4,
-        marginTop: 2,
+        gap: 2,
+        height: 48,
+        marginBottom: 6,
+        marginTop: 4,
       }}
     >
       {bins.map((count, i) => {
@@ -68,14 +94,14 @@ function MiniHistogram({
             key={i}
             style={{
               flex: 1,
-              height: `${Math.max(8, heightPct)}%`,
-              borderRadius: 1.5,
+              height: `${Math.max(6, heightPct)}%`,
+              borderRadius: 2,
               background: isActive
                 ? "#0a64bc"
                 : isAdjacent
-                ? "rgba(10,100,188,0.4)"
+                ? "rgba(10,100,188,0.45)"
                 : "rgba(10,100,188,0.15)",
-              transition: "height 0.3s ease",
+              transition: "background 0.25s ease",
             }}
           />
         );
@@ -99,18 +125,17 @@ function SpecChip({
   allValues: number[];
 }) {
   let numericValue = 0;
-  let display: string;
+  const decimals = typeof value === "number" && value < 10 ? 2 : 1;
 
   if (typeof value === "number") {
     numericValue = value;
-    display = value > 0 ? value.toFixed(value >= 10 ? 1 : 2) : "—";
   } else if (typeof value === "string") {
     const n = parseFloat(value);
     numericValue = !isNaN(n) ? n : 0;
-    display = !isNaN(n) && n > 0 ? String(n) : (value || "—");
-  } else {
-    display = "—";
   }
+
+  const animated = useAnimatedValue(numericValue > 0 ? numericValue : 0);
+  const display = numericValue > 0 ? animated.toFixed(decimals) : "—";
 
   return (
     <div
@@ -120,7 +145,7 @@ function SpecChip({
       <div
         style={{
           fontFamily: "var(--font-jetbrains-mono)",
-          fontSize: "9px",
+          fontSize: "10px",
           fontWeight: 600,
           letterSpacing: "0.18em",
           textTransform: "uppercase" as const,
@@ -134,10 +159,10 @@ function SpecChip({
       <div
         style={{
           fontFamily: "var(--font-jetbrains-mono)",
-          fontSize: "clamp(14px, 1.8vw, 18px)",
-          fontWeight: 600,
+          fontSize: "clamp(18px, 2.2vw, 26px)",
+          fontWeight: 700,
           lineHeight: 1,
-          color: display === "—" ? "var(--lab-text-muted)" : "#60a5fa",
+          color: numericValue > 0 ? "#60a5fa" : "var(--lab-text-muted)",
           letterSpacing: "-0.02em",
         }}
       >
@@ -146,9 +171,9 @@ function SpecChip({
       <div
         style={{
           fontFamily: "var(--font-jetbrains-mono)",
-          fontSize: "8px",
+          fontSize: "9px",
           color: "var(--lab-text-muted)",
-          marginTop: 2,
+          marginTop: 3,
           letterSpacing: "0.1em",
         }}
       >

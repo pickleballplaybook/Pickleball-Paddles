@@ -412,10 +412,10 @@ html.dark {
   font-family: var(--font-jetbrains-mono);
   background: rgba(255,255,255,0.90);
   border: 1px solid var(--lab-border-accent);
-  border-radius: 8px;
-  padding: 8px 12px;
+  border-radius: 10px;
+  padding: 12px 16px;
   backdrop-filter: blur(12px);
-  min-width: 72px;
+  min-width: 110px;
 }
 html.dark .lab-hud-chip {
   background: rgba(6,10,18,0.88);

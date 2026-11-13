@@ -123,8 +123,8 @@ export default function LabHero({
     <section
       className="lab-section relative w-full overflow-hidden"
       style={{
-        minHeight: "80svh",
         paddingTop: "var(--topbar-h, 112px)",
+        paddingBottom: "clamp(2rem, 4vh, 3rem)",
       }}
       aria-label="Paddle Lab hero"
     >
@@ -146,9 +146,8 @@ export default function LabHero({
       <div
         className="container-xl relative z-10 flex flex-col lg:grid lg:grid-cols-[1fr_480px] xl:grid-cols-[1fr_540px] gap-10 xl:gap-16 items-center"
         style={{
-          minHeight: "calc(80svh - var(--topbar-h, 112px))",
-          paddingTop: "clamp(1.5rem, 3vh, 3rem)",
-          paddingBottom: "clamp(3rem, 6vh, 5rem)",
+          paddingTop: "clamp(1.25rem, 2vh, 2rem)",
+          paddingBottom: "clamp(1.5rem, 3vh, 2.5rem)",
         }}
       >
         {/* ── LEFT: copy ────────────────────────────────────────────── */}
