@@ -392,6 +392,11 @@ html.dark .brand-photo {
   to   { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes lab-paddle-float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-10px); }
+}
+
 @keyframes lab-pulse-ring {
   0%   { transform: scale(1);   opacity: 0.5; }
   100% { transform: scale(1.5); opacity: 0;   }

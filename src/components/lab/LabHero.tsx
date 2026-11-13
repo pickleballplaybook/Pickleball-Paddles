@@ -61,63 +61,6 @@ function CountUp({
   );
 }
 
-// ── HUD readout chip (floating spec label around 3D canvas) ───────────────────
-interface HudChipProps {
-  label: string;
-  value: string | number | undefined;
-  unit?: string;
-  align?: "left" | "right";
-}
-
-function HudChip({ label, value, unit, align = "left" }: HudChipProps) {
-  if (value == null || value === 0) return null;
-  return (
-    <div
-      className="lab-hud-chip"
-      style={{ textAlign: align === "right" ? "right" : "left" }}
-    >
-      <div
-        style={{
-          fontFamily: "var(--font-jetbrains-mono)",
-          fontSize: "9px",
-          fontWeight: 600,
-          letterSpacing: "0.18em",
-          textTransform: "uppercase",
-          color: "var(--lab-text-muted)",
-          marginBottom: 3,
-        }}
-      >
-        {label}
-      </div>
-      <div
-        style={{
-          fontFamily: "var(--font-jetbrains-mono)",
-          fontSize: "clamp(16px, 2.2vw, 22px)",
-          fontWeight: 600,
-          lineHeight: 1,
-          color: "var(--lab-text-mono)",
-          letterSpacing: "-0.02em",
-        }}
-      >
-        {typeof value === "number" ? value.toFixed(value >= 10 ? 1 : 2) : value}
-      </div>
-      {unit && (
-        <div
-          style={{
-            fontFamily: "var(--font-jetbrains-mono)",
-            fontSize: "8px",
-            color: "var(--lab-text-muted)",
-            marginTop: 2,
-            letterSpacing: "0.1em",
-          }}
-        >
-          {unit}
-        </div>
-      )}
-    </div>
-  );
-}
-
 // ── Trust metric pill ─────────────────────────────────────────────────────────
 function TrustMetric({
   value,
@@ -314,7 +257,7 @@ export default function LabHero({
           </div>
         </div>
 
-        {/* ── RIGHT: 3D canvas + HUD chips ──────────────────────────── */}
+        {/* ── RIGHT: paddle showcase ─────────────────────────────── */}
         <div
           className="relative order-1 lg:order-2 w-full flex-shrink-0"
           style={{
@@ -322,75 +265,7 @@ export default function LabHero({
             maxHeight: "60vh",
           }}
         >
-          {/* HUD chips — hidden on small mobile, visible from sm */}
-          {featuredPaddle && (
-            <>
-              {/* Top-left: swing weight */}
-              <div
-                className="hidden sm:block absolute z-10"
-                style={{ top: "10%", left: "-4%", animation: "lab-count-up 0.6s 0.8s both" }}
-              >
-                <HudChip
-                  label="Swing Wt"
-                  value={featuredPaddle.swingWeight}
-                  unit="SW"
-                  align="left"
-                />
-              </div>
-              {/* Top-right: twist weight */}
-              <div
-                className="hidden sm:block absolute z-10"
-                style={{ top: "10%", right: "-4%", animation: "lab-count-up 0.6s 1.0s both" }}
-              >
-                <HudChip
-                  label="Twist Wt"
-                  value={featuredPaddle.twistWeight}
-                  unit="TW"
-                  align="right"
-                />
-              </div>
-              {/* Bottom-left: weight */}
-              <div
-                className="hidden sm:block absolute z-10"
-                style={{ bottom: "12%", left: "-4%", animation: "lab-count-up 0.6s 1.2s both" }}
-              >
-                <HudChip
-                  label="Weight"
-                  value={featuredPaddle.weight.replace(" oz", "")}
-                  unit="oz"
-                  align="left"
-                />
-              </div>
-              {/* Bottom-right: balance point */}
-              {featuredPaddle.balancePoint && (
-                <div
-                  className="hidden sm:block absolute z-10"
-                  style={{ bottom: "12%", right: "-4%", animation: "lab-count-up 0.6s 1.4s both" }}
-                >
-                  <HudChip
-                    label="Balance"
-                    value={featuredPaddle.balancePoint}
-                    unit="cm BP"
-                    align="right"
-                  />
-                </div>
-              )}
-            </>
-          )}
-
-          {/* 3D canvas or SVG fallback */}
-          <PaddleCanvas />
-
-          {/* Lab frame border — cosmetic */}
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              border: "1px solid rgba(163,230,53,0.08)",
-              borderRadius: 24,
-              boxShadow: "inset 0 0 60px rgba(163,230,53,0.03)",
-            }}
-            aria-hidden
-          />
+          <PaddleCanvas featuredPaddle={featuredPaddle} />
         </div>
       </div>
 
