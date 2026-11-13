@@ -22,7 +22,7 @@ function calcDiscountedPrice(price: string, amountOff: string): string | null {
 }
 
 const HERO_PADDLES = [
-  "honolulu-j6cr-m105-crystal-blue-elongated",
+  siteConfig.hottestPaddleSlug,
 ];
 
 export default function HottestPaddle() {

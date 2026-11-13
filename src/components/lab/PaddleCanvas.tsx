@@ -48,8 +48,9 @@ export default function PaddleCanvas({ featuredPaddle }: { featuredPaddle?: Padd
   // Build rotation list: featured paddle first, then fill with top trending
   const topTen = getTrending(12);
   const list: Paddle[] = (() => {
-    if (!featuredPaddle) return topTen.slice(0, 10);
-    const rest = topTen.filter((p) => p.slug !== featuredPaddle.slug);
+    const withImg = topTen.filter((p) => p.image);
+    if (!featuredPaddle?.image) return withImg.slice(0, 10);
+    const rest = withImg.filter((p) => p.slug !== featuredPaddle.slug);
     return [featuredPaddle, ...rest].slice(0, 10);
   })();
 
@@ -112,7 +113,7 @@ export default function PaddleCanvas({ featuredPaddle }: { featuredPaddle?: Padd
           aria-label={`${paddle.brand} ${paddle.name}`}
         >
           <Image
-            src={paddle.image}
+            src={paddle.image!}
             alt={`${paddle.brand} ${paddle.name}`}
             fill
             style={{ objectFit: "contain" }}

@@ -7,7 +7,6 @@ import { Paddle, ReviewGroup } from "@/types";
 import { Smartphone, GraduationCap, Play } from "lucide-react";
 
 import LabHero          from "@/components/lab/LabHero";
-import PlayStyleFinder  from "@/components/PlayStyleFinder";
 import LatestPaddles    from "@/components/LatestPaddles";
 import Link           from "next/link";
 import HottestPaddle  from "@/components/HottestPaddle";
@@ -167,7 +166,7 @@ export default async function HomePage() {
         featuredPaddle={featuredPaddle}
       />
 
-      <PlayStyleFinder />
+      <LatestPaddles paddles={latestPaddles} />
 
       <div id="paddles"><HottestPaddle /></div>
 
@@ -177,8 +176,6 @@ export default async function HomePage() {
           items={latestReviewItems.slice(1)}
         />
       </div>
-
-      <LatestPaddles paddles={latestPaddles} />
 
       <TrendingSection paddles={paddles} />
 
