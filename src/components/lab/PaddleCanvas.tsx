@@ -162,7 +162,7 @@ function SpecChip({
           fontSize: "clamp(18px, 2.2vw, 26px)",
           fontWeight: 700,
           lineHeight: 1,
-          color: numericValue > 0 ? "#60a5fa" : "var(--lab-text-muted)",
+          color: numericValue > 0 ? "#ffffff" : "var(--lab-text-muted)",
           letterSpacing: "-0.02em",
         }}
       >
