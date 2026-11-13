@@ -4,7 +4,8 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { getTrending, paddles as allPaddles } from "@/data/paddles";
-import { isTrendingExcluded, takeTopBySeriesDedup } from "@/lib/trending";
+import { getTrendingPaddles, isTrendingExcluded, takeTopBySeriesDedup } from "@/lib/trending";
+import { supabase } from "@/lib/supabaseClient";
 import type { Paddle } from "@/types";
 
 // ── Catalog distributions (computed once at module load) ──────────────────────
@@ -157,17 +158,48 @@ function SpecChip({
   );
 }
 
-// ── Main export ───────────────────────────────────────────────────────────────
-export default function PaddleCanvas({ featuredPaddle: _ignored }: { featuredPaddle?: Paddle | null }) {
+// ── Static fallback list (trendingScore, no live data) ───────────────────────
+function buildStaticList(): Paddle[] {
   const candidates = getTrending(100)
     .filter((p) => p.image && p.swingWeight > 0 && !isTrendingExcluded(p.slug));
-  const list: Paddle[] = takeTopBySeriesDedup(
-    candidates.map((p) => ({ paddle: p })),
-    10,
-  ).map((t) => t.paddle);
+  return takeTopBySeriesDedup(candidates.map((p) => ({ paddle: p })), 10).map((t) => t.paddle);
+}
 
+// ── Main export ───────────────────────────────────────────────────────────────
+export default function PaddleCanvas({ featuredPaddle: _ignored }: { featuredPaddle?: Paddle | null }) {
+  const [list, setList] = useState<Paddle[]>(buildStaticList);
   const [idx, setIdx]         = useState(0);
   const [opacity, setOpacity] = useState(1);
+
+  // Fetch live hearts + weighted views to match /trending exactly
+  useEffect(() => {
+    async function loadLiveList() {
+      try {
+        const [heartsRes, viewsRes] = await Promise.all([
+          supabase.from("paddle_hearts").select("paddle_id, created_at"),
+          fetch("/api/views/weighted?days=30", { cache: "no-store" }).then((r) => r.json()).catch(() => ({})),
+        ]);
+        const heartRecords = (heartsRes.data ?? []).map((row: { paddle_id: string; created_at: string }) => ({
+          paddleId: row.paddle_id,
+          createdAt: row.created_at,
+        }));
+        const viewCounts: Record<string, number> = viewsRes ?? {};
+        const cutoff = Date.now() - 30 * 86400000;
+        const filtered = heartRecords.filter((h: { paddleId: string; createdAt: string }) => new Date(h.createdAt).getTime() >= cutoff);
+        const allTrending = getTrendingPaddles(allPaddles, filtered, allPaddles.length);
+        const scored = allTrending
+          .map((t) => ({ ...t, views: viewCounts[t.paddle.slug] ?? 0 }))
+          .sort((a, b) => b.views - a.views || b.weightedScore - a.weightedScore)
+          .filter((t) => !isTrendingExcluded(t.paddle.slug))
+          .filter((t) => t.paddle.image && t.paddle.swingWeight > 0);
+        const top10 = takeTopBySeriesDedup(scored, 10).map((t) => t.paddle);
+        if (top10.length >= 6) setList(top10);
+      } catch {
+        // keep static fallback
+      }
+    }
+    loadLiveList();
+  }, []);
   const timer1 = useRef<ReturnType<typeof setTimeout> | null>(null);
   const timer2 = useRef<ReturnType<typeof setTimeout> | null>(null);
 
